@@ -10,7 +10,7 @@ Este documento detalha o futuro planejado para o projeto, focando em mecânicas,
 - [x] **Touch Joysticks**: Controles otimizados para telas pequenas.
 
 ## ⚔️ Fase 2: Conteúdo & Variedade (Próximo)
-- [ ] **Sistemas de Loot**: Itens raros (Drop rate procedural) com modificadores de atributos.
+- [x] **Sistemas de Loot**: Itens raros (Drop rate procedural) com modificadores de atributos.
 - [ ] **Boss Fights**: Encontros únicos a cada 5 andares com mecânicas de "Bullet Hell".
 - [ ] **Bestiário Dinâmico**: Inimigos com fraquezas elementais (Sangue, Osso, Fogo).
 

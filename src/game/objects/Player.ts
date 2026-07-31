@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { PlayerStats, SpellConfig } from '../../types/game';
+import { PlayerStats, SpellConfig, LootItem } from '../../types/game';
 import spellsData from '../../data/spells.json';
 import { soundEngine } from '../../utils/soundEngine';
 
@@ -11,6 +11,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private skillCooldowns: Record<string, number> = {};
   public isInvulnerable: boolean = false;
   private invulnerableTimer: number = 0;
+  public equippedLoot: LootItem[] = [];
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'spr_bloodmage');
@@ -196,5 +197,28 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       return true; // Triggered level up!
     }
     return false;
+  }
+
+  public equipLoot(item: LootItem) {
+    this.equippedLoot.push(item);
+    
+    if (item.stats.maxHpBonus) {
+      this.stats.maxHp += item.stats.maxHpBonus;
+      this.stats.hp += item.stats.maxHpBonus; // Heal by bonus amount
+    }
+    if (item.stats.speedBonus) {
+      this.stats.moveSpeed += item.stats.speedBonus;
+    }
+    if (item.stats.damageMultiplier) {
+      this.stats.damageMultiplier += item.stats.damageMultiplier;
+    }
+    if (item.stats.lifestealBonus) {
+      this.stats.vampirism += item.stats.lifestealBonus;
+    }
+
+    soundEngine.playOrbPickup(); // Play sound for loot
+    
+    // Notify React UI
+    window.dispatchEvent(new CustomEvent('loot-acquired', { detail: item }));
   }
 }

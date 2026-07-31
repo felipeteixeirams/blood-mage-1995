@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { MainMenu } from './components/MainMenu';
 import { GameplayHUD } from './components/GameplayHUD';
 import { LevelUpModal } from './components/LevelUpModal';
@@ -8,50 +8,26 @@ import { HighScoresModal } from './components/HighScoresModal';
 import { GameOverModal } from './components/GameOverModal';
 import { PhaserGame } from './game/PhaserGame';
 import { GameScene } from './game/scenes/GameScene';
-import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord } from './types/game';
-import { loadSettings, saveSettings, loadHighScores, saveHighScore } from './utils/localStorage';
+import { PlayerStats, UpgradeOption } from './types/game';
 import { soundEngine } from './utils/soundEngine';
+import { useGameStore } from './store/gameStore';
 
 export default function App() {
-  const [gameState, setGameState] = useState<'menu' | 'playing' | 'paused'>('menu');
-  const [settings, setSettings] = useState<GameSettings>(loadSettings);
-  const [highScores, setHighScores] = useState<HighScoreRecord[]>(loadHighScores);
-  const [isMuted, setIsMuted] = useState<boolean>(false);
-
-  // Modals state
-  const [isBestiaryOpen, setIsBestiaryOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isHighScoresOpen, setIsHighScoresOpen] = useState(false);
-  const [levelUpData, setLevelUpData] = useState<{ level: number; choices: UpgradeOption[] } | null>(null);
-  const [gameOverStats, setGameOverStats] = useState<PlayerStats | null>(null);
-
-  // Real-time gameplay player stats
-  const [playerStats, setPlayerStats] = useState<PlayerStats>({
-    hp: 100,
-    maxHp: 100,
-    mana: 100,
-    maxMana: 100,
-    level: 1,
-    currentXp: 0,
-    nextLevelXp: 50,
-    moveSpeed: 160,
-    damageMultiplier: 1.0,
-    cooldownReduction: 0,
-    vampirism: 0,
-    projectileBonus: 0,
-    kills: 0,
-    souls: 0,
-    wave: 1,
-    floorDepth: 1,
-    score: 0,
-    timeSurvivedSeconds: 0,
-    unlockedSpells: ['blood_bolt', 'hellfire_nova', 'syphon_soul', 'bone_shield'],
-  });
-
-  // Touch Joysticks & Skill triggers
-  const [touchMoveInput, setTouchMoveInput] = useState({ x: 0, y: 0 });
-  const [touchAimInput, setTouchAimInput] = useState({ x: 0, y: 0 });
-  const [activeSkillTrigger, setActiveSkillTrigger] = useState<'nova' | 'syphon' | 'bone_shield' | null>(null);
+  const {
+    gameState, setGameState,
+    settings, updateSettings,
+    highScores, addHighScore,
+    isMuted, toggleMute,
+    isBestiaryOpen, setBestiaryOpen,
+    isSettingsOpen, setSettingsOpen,
+    isHighScoresOpen, setHighScoresOpen,
+    levelUpData, setLevelUpData,
+    gameOverStats, setGameOverStats,
+    playerStats, setPlayerStats,
+    touchMoveInput, setTouchMoveInput,
+    touchAimInput, setTouchAimInput,
+    activeSkillTrigger, setActiveSkillTrigger
+  } = useGameStore();
 
   const gameSceneRef = useRef<GameScene | null>(null);
 
@@ -63,16 +39,6 @@ export default function App() {
     setGameOverStats(null);
     setLevelUpData(null);
     setGameState('playing');
-  };
-
-  const handleToggleMute = () => {
-    const muted = soundEngine.toggleMute();
-    setIsMuted(muted);
-  };
-
-  const handleUpdateSettings = (newSettings: GameSettings) => {
-    setSettings(newSettings);
-    saveSettings(newSettings);
   };
 
   const handleSelectUpgrade = (option: UpgradeOption) => {
@@ -90,15 +56,14 @@ export default function App() {
     const m = Math.floor(stats.timeSurvivedSeconds / 60).toString().padStart(2, '0');
     const s = Math.floor(stats.timeSurvivedSeconds % 60).toString().padStart(2, '0');
 
-    // Save record to local storage
-    const updated = saveHighScore({
+    // Save record to local storage via store
+    addHighScore({
       score: stats.score,
       kills: stats.kills,
       wave: stats.wave,
       timeSurvived: `${m}:${s}`,
       levelReached: stats.level,
     });
-    setHighScores(updated);
   };
 
   const getCooldownRemaining = (spellId: string): number => {
@@ -114,11 +79,11 @@ export default function App() {
       {gameState === 'menu' && !gameOverStats && (
         <MainMenu
           onStartGame={handleStartGame}
-          onOpenSettings={() => setIsSettingsOpen(true)}
-          onOpenBestiary={() => setIsBestiaryOpen(true)}
-          onOpenHighScores={() => setIsHighScoresOpen(true)}
+          onOpenSettings={() => setSettingsOpen(true)}
+          onOpenBestiary={() => setBestiaryOpen(true)}
+          onOpenHighScores={() => setHighScoresOpen(true)}
           isMuted={isMuted}
-          onToggleMute={handleToggleMute}
+          onToggleMute={toggleMute}
         />
       )}
 
@@ -126,27 +91,11 @@ export default function App() {
       {gameState === 'playing' && (
         <>
           <PhaserGame
-            onStatsUpdate={(stats) => setPlayerStats(stats)}
-            onLevelUp={(level, choices) => setLevelUpData({ level, choices })}
-            onGameOver={handleGameOver}
-            touchMoveInput={touchMoveInput}
-            touchAimInput={touchAimInput}
-            activeSkillTrigger={activeSkillTrigger}
-            onSkillTriggerProcessed={() => setActiveSkillTrigger(null)}
             gameSceneRef={gameSceneRef}
           />
-
           {/* Gameplay HUD */}
           <GameplayHUD
-            stats={playerStats}
-            onSkillClick={(skillKey) => setActiveSkillTrigger(skillKey)}
             getCooldownRemaining={getCooldownRemaining}
-            onMoveJoystickUpdate={(x, y) => setTouchMoveInput({ x, y })}
-            onAimJoystickUpdate={(x, y) => setTouchAimInput({ x, y })}
-            onPauseToggle={() => setGameState('paused')}
-            isMuted={isMuted}
-            onToggleMute={handleToggleMute}
-            virtualControlsOpacity={settings.virtualControlsOpacity}
           />
         </>
       )}
@@ -164,7 +113,7 @@ export default function App() {
                 CONTINUAR RITUAL
               </button>
               <button
-                onClick={() => setIsSettingsOpen(true)}
+                onClick={() => setSettingsOpen(true)}
                 className="py-3 bg-black/80 hover:bg-gray-900 border border-gray-800 text-gray-300 font-retro text-base rounded transition-colors cursor-pointer"
               >
                 CONFIGURAÇÕES
@@ -199,18 +148,18 @@ export default function App() {
       )}
 
       {/* 6. Aux Modals */}
-      {isBestiaryOpen && <BestiaryModal onClose={() => setIsBestiaryOpen(false)} />}
+      {isBestiaryOpen && <BestiaryModal onClose={() => setBestiaryOpen(false)} />}
       {isSettingsOpen && (
         <SettingsModal
           settings={settings}
-          onUpdateSettings={handleUpdateSettings}
-          onClose={() => setIsSettingsOpen(false)}
+          onUpdateSettings={updateSettings}
+          onClose={() => setSettingsOpen(false)}
         />
       )}
       {isHighScoresOpen && (
         <HighScoresModal
           scores={highScores}
-          onClose={() => setIsHighScoresOpen(false)}
+          onClose={() => setHighScoresOpen(false)}
         />
       )}
     </div>
