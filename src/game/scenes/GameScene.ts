@@ -502,7 +502,7 @@ export class GameScene extends Phaser.Scene {
     const blastRadius = 180;
     const damage = 60;
 
-    this.enemies.getChildren().forEach((obj: any) => {
+    this.enemiesGroup.getChildren().forEach((obj: any) => {
       const enemy = obj as Enemy;
       const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
       if (dist <= blastRadius) {
@@ -526,6 +526,11 @@ export class GameScene extends Phaser.Scene {
 
   update(time: number, delta: number) {
     if (this.isPaused) return;
+
+    // Sync enemy count to SoundEngine for dynamic BGM transition
+    if (this.enemiesGroup) {
+      soundEngine.setEnemyCount(this.enemiesGroup.countActive());
+    }
 
     // ISO Y-SORTING DEPTH SYSTEM
     this.depthGroup.getChildren().forEach((gameObject: any) => {
