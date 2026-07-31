@@ -60,6 +60,11 @@ export class GameScene extends Phaser.Scene {
   // Bone shield visuals
   private boneShieldVisuals: Phaser.GameObjects.Sprite[] = [];
 
+  private bloodEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
+  private isNovaReady: boolean = true;
+  private lastNovaTime: number = 0;
+  private readonly NOVA_COOLDOWN = 8000;
+
   constructor() {
     super({ key: 'GameScene' });
   }
@@ -77,6 +82,17 @@ export class GameScene extends Phaser.Scene {
     // 2. Physics & Graphics Groups
     this.depthGroup = this.add.group();
     this.bloodStainsGroup = this.add.group();
+    
+    // Blood Particles Emitter
+    this.bloodEmitter = this.add.particles(0, 0, 'particle_blood_red', {
+      scale: { start: 0.1, end: 0 },
+      alpha: { start: 0.7, end: 0 },
+      speed: { min: 40, max: 100 },
+      lifespan: 300,
+      gravityY: 100,
+      emitting: false
+    }).setDepth(1900);
+
     this.wallsGroup = this.physics.add.staticGroup();
     this.chestsGroup = this.physics.add.staticGroup();
     this.enemiesGroup = this.physics.add.group({ runChildUpdate: false });
@@ -473,6 +489,41 @@ export class GameScene extends Phaser.Scene {
     this.physics.resume();
   }
 
+  private triggerBloodNova() {
+    const now = this.time.now;
+    if (now < this.lastNovaTime + this.NOVA_COOLDOWN) return;
+
+    this.lastNovaTime = now;
+    this.cameras.main.flash(200, 200, 0, 0);
+    this.cameras.main.shake(300, 0.02);
+    soundEngine.playLevelUp(); // Temporary sound for nova
+
+    // Circular blast logic
+    const blastRadius = 180;
+    const damage = 60;
+
+    this.enemies.getChildren().forEach((obj: any) => {
+      const enemy = obj as Enemy;
+      const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
+      if (dist <= blastRadius) {
+        if (this.bloodEmitter) {
+          this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 15);
+        }
+        enemy.takeDamage(damage);
+      }
+    });
+
+    // Visual circle effect
+    const circle = this.add.circle(this.player.x, this.player.y, 10, 0xff0000, 0.5);
+    this.tweens.add({
+      targets: circle,
+      radius: blastRadius,
+      alpha: 0,
+      duration: 400,
+      onComplete: () => circle.destroy()
+    });
+  }
+
   update(time: number, delta: number) {
     if (this.isPaused) return;
 
@@ -626,6 +677,7 @@ export class GameScene extends Phaser.Scene {
       if (enemy.active) {
         const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
         if (dist <= 180) {
+          if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 10);
           const isDead = enemy.takeDamage(65 * this.player.stats.damageMultiplier);
           const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, enemy.x, enemy.y);
           enemy.x += Math.cos(angle) * 30;
@@ -654,6 +706,7 @@ export class GameScene extends Phaser.Scene {
       if (enemy.active) {
         const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
         if (dist <= 150) {
+          if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 8);
           const isDead = enemy.takeDamage(45 * this.player.stats.damageMultiplier);
           totalStolenHp += 8;
           if (isDead) {
@@ -757,6 +810,12 @@ export class GameScene extends Phaser.Scene {
     const enemy = enemyObj as Enemy;
 
     if (!proj.active || !enemy.active) return;
+    
+    // Blood Particles
+    if (this.bloodEmitter) {
+      this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 6);
+    }
+
     proj.destroy();
 
     // Taking damage alerts group!
