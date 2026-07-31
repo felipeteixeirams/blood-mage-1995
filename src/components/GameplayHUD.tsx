@@ -40,7 +40,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
 
   // Touch handlers for Left Movement Joystick
   const handleMoveTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    e.preventDefault();
+    if (e.cancelable) e.preventDefault();
     const touch = e.changedTouches[0];
     moveTouchId.current = touch.identifier;
     setMoveJoystickActive(true);
@@ -48,7 +48,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
   };
 
   const handleMoveTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    e.preventDefault();
+    if (e.cancelable) e.preventDefault();
     if (moveTouchId.current === null) return;
     for (let i = 0; i < e.changedTouches.length; i++) {
       if (e.changedTouches[i].identifier === moveTouchId.current) {
@@ -59,7 +59,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
   };
 
   const handleMoveTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-    e.preventDefault();
+    if (e.cancelable) e.preventDefault();
     moveTouchId.current = null;
     setMoveJoystickActive(false);
     setMoveJoystickPos({ x: 0, y: 0 });
@@ -76,6 +76,13 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
     const dy = touch.clientY - centerY;
     const dist = Math.hypot(dx, dy);
 
+    // Sensibilidade de deadzone
+    if (dist < 10 && moveJoystickActive) {
+      onMoveJoystickUpdate(0, 0);
+      setMoveJoystickPos({ x: 0, y: 0 });
+      return;
+    }
+
     const normX = Math.min(1, Math.max(-1, dx / maxRadius));
     const normY = Math.min(1, Math.max(-1, dy / maxRadius));
 
@@ -88,7 +95,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
 
   // Touch handlers for Right Aim Joystick
   const handleAimTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    e.preventDefault();
+    if (e.cancelable) e.preventDefault();
     const touch = e.changedTouches[0];
     aimTouchId.current = touch.identifier;
     setAimJoystickActive(true);
@@ -96,7 +103,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
   };
 
   const handleAimTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    e.preventDefault();
+    if (e.cancelable) e.preventDefault();
     if (aimTouchId.current === null) return;
     for (let i = 0; i < e.changedTouches.length; i++) {
       if (e.changedTouches[i].identifier === aimTouchId.current) {
@@ -107,11 +114,11 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
   };
 
   const handleAimTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-    e.preventDefault();
+    if (e.cancelable) e.preventDefault();
     aimTouchId.current = null;
     setAimJoystickActive(false);
     setAimJoystickPos({ x: 0, y: 0 });
-    onAimJoystickUpdate(0, 0);
+    // Não zeramos o aim no final para manter a última direção de mira
   };
 
   const updateAimJoystick = (touch: React.Touch, element: HTMLElement) => {

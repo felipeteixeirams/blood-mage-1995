@@ -776,6 +776,11 @@ export class GameScene extends Phaser.Scene {
 
   private playerHitByEnemy(damage: number) {
     const isDead = this.player.takeDamage(damage);
+    
+    // Juice: Screen Shake and Red Flash on damage
+    this.cameras.main.shake(150, 0.015);
+    this.cameras.main.flash(100, 150, 0, 0, false);
+
     if (isDead) {
       this.triggerGameOver();
     }

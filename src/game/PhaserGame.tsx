@@ -34,6 +34,9 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
       height: containerRef.current.clientHeight || window.innerHeight,
       backgroundColor: '#0a0508',
       pixelArt: true,
+      input: {
+        activePointers: 3,
+      },
       scale: {
         mode: Phaser.Scale.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH,

@@ -15,3 +15,4 @@ Jogo de sobrevivência estilo "Vampire Survivors" / "Dungeon Crawler" com temát
 1. Não faça overengineering de padrões de estado (como Redux) sem extrema necessidade.
 2. Sprites são gerados via código base64 proceduralmente.
 3. Mantenha as interfaces React limpas, isolando estilos via Tailwind.
+4. Siga as diretrizes em `/docs/BEST_PRACTICES.md` para melhorias de UX/Juice e Performance.
