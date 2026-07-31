@@ -159,6 +159,11 @@ export class GameScene extends Phaser.Scene {
       this
     );
 
+    this.physics.add.collider(this.enemiesGroup, this.enemiesGroup);
+
+    // Listen for Blood Nova event from UI
+    window.addEventListener('trigger-blood-nova', () => this.triggerBloodNova());
+
     this.physics.add.overlap(
       this.player,
       this.enemiesGroup,
@@ -490,38 +495,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private triggerBloodNova() {
-    const now = this.time.now;
-    if (now < this.lastNovaTime + this.NOVA_COOLDOWN) return;
-
-    this.lastNovaTime = now;
-    this.cameras.main.flash(200, 200, 0, 0);
-    this.cameras.main.shake(300, 0.02);
-    soundEngine.playLevelUp(); // Temporary sound for nova
-
-    // Circular blast logic
-    const blastRadius = 180;
-    const damage = 60;
-
-    this.enemies.getChildren().forEach((obj: any) => {
-      const enemy = obj as Enemy;
-      const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
-      if (dist <= blastRadius) {
-        if (this.bloodEmitter) {
-          this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 15);
-        }
-        enemy.takeDamage(damage);
-      }
-    });
-
-    // Visual circle effect
-    const circle = this.add.circle(this.player.x, this.player.y, 10, 0xff0000, 0.5);
-    this.tweens.add({
-      targets: circle,
-      radius: blastRadius,
-      alpha: 0,
-      duration: 400,
-      onComplete: () => circle.destroy()
-    });
+    this.executeNovaEffect();
   }
 
   update(time: number, delta: number) {
@@ -663,12 +637,18 @@ export class GameScene extends Phaser.Scene {
   }
 
   private executeNovaEffect() {
-    const novaRing = this.add.circle(this.player.x, this.player.y, 10, 0x22c55e, 0.7).setDepth(1500);
+    const novaRing = this.add.circle(this.player.x, this.player.y, 10, 0xef4444, 0.7).setDepth(1500);
+    
+    // Juice: Screen Shake and Flash
+    this.cameras.main.shake(300, 0.02);
+    this.cameras.main.flash(200, 200, 0, 0, false);
+    soundEngine.playLevelUp(); // Temporary powerful sound
+
     this.tweens.add({
       targets: novaRing,
-      radius: 180,
+      radius: 200,
       alpha: 0,
-      duration: 350,
+      duration: 400,
       onComplete: () => novaRing.destroy(),
     });
 
@@ -676,12 +656,12 @@ export class GameScene extends Phaser.Scene {
       const enemy = enemyObj as Enemy;
       if (enemy.active) {
         const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
-        if (dist <= 180) {
-          if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 10);
-          const isDead = enemy.takeDamage(65 * this.player.stats.damageMultiplier);
+        if (dist <= 200) {
+          if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 15);
+          const isDead = enemy.takeDamage(75 * this.player.stats.damageMultiplier);
           const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, enemy.x, enemy.y);
-          enemy.x += Math.cos(angle) * 30;
-          enemy.y += Math.sin(angle) * 30;
+          enemy.x += Math.cos(angle) * 40;
+          enemy.y += Math.sin(angle) * 40;
 
           if (isDead) {
             this.handleEnemyDeath(enemy);

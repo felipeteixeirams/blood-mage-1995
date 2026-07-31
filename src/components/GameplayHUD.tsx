@@ -156,7 +156,13 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
   const boneCd = getCooldownRemaining('bone_shield');
 
   return (
-    <div className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-3 md:p-6 select-none">
+    <div className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-3 md:p-6 select-none overflow-hidden">
+      {/* CRT Scanline & Vignette Overlays */}
+      <div className="fixed inset-0 pointer-events-none z-[100] opacity-[0.12] mix-blend-overlay" 
+           style={{ background: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%)', backgroundSize: '100% 4px' }}>
+      </div>
+      <div className="fixed inset-0 pointer-events-none z-[101] shadow-[inset_0_0_120px_rgba(0,0,0,0.6)]"></div>
+      
       {/* Top Header HUD: HP/Mana Orbs + Wave Stats + Menu Buttons */}
       <div className="w-full flex justify-between items-start">
         {/* Left: Stone Gothic Frame for HP / Mana / Level */}
@@ -333,8 +339,31 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
           </div>
 
           {/* Aim Virtual Joystick */}
-          <div
-            onTouchStart={handleAimTouchStart}
+          <div className="relative group pointer-events-auto">
+            {/* Blood Nova Shortcut (Mobile) */}
+            <button 
+              onClick={() => {
+                soundEngine.playButtonClick();
+                onSkillClick('nova');
+              }}
+              disabled={novaCd > 0 || stats.mana < typedSpells['hellfire_nova'].manaCost}
+              className={`absolute -top-20 right-0 w-16 h-16 rounded-full border-4 flex items-center justify-center transition-all active:scale-90 ${
+                novaCd > 0 
+                  ? 'bg-gray-900/90 border-gray-700 opacity-50' 
+                  : 'bg-red-950/90 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.4)]'
+              }`}
+            >
+              <Flame className={`w-7 h-7 ${novaCd > 0 ? 'text-gray-600' : 'text-red-400 animate-pulse'}`} />
+              {novaCd > 0 && (
+                <div className="absolute inset-0 flex items-center justify-center font-pixel text-xs text-red-400">
+                  {Math.ceil(novaCd/1000)}
+                </div>
+              )}
+            </button>
+            <div className="absolute -top-6 right-3 text-[8px] font-pixel text-red-500/80">BLOOD NOVA</div>
+
+            <div
+              onTouchStart={handleAimTouchStart}
             onTouchMove={handleAimTouchMove}
             onTouchEnd={handleAimTouchEnd}
             style={{ opacity: virtualControlsOpacity }}
@@ -353,5 +382,6 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 };
