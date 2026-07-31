@@ -1,0 +1,93 @@
+[
+  {
+    "id": "upgrade_extra_proj",
+    "title": "Bifurcação de Sangue",
+    "description": "Adiciona +1 projétil adicional ao Disparo de Sangue em leque.",
+    "category": "spell",
+    "rarity": "rare",
+    "icon": "sparkles",
+    "effect": {
+      "projectileAdd": 1
+    }
+  },
+  {
+    "id": "upgrade_damage_boost",
+    "title": "Fúria das Sombras",
+    "description": "Aumenta o dano de todas as magias em +25%.",
+    "category": "stat",
+    "rarity": "common",
+    "icon": "zap",
+    "effect": {
+      "damageMultiplierPercent": 25
+    }
+  },
+  {
+    "id": "upgrade_vampirism",
+    "title": "Pacto Vampírico",
+    "description": "Ganha 12% de roubo de vida em todos os danos causados.",
+    "category": "passive",
+    "rarity": "rare",
+    "icon": "heart",
+    "effect": {
+      "vampirismPercent": 12
+    }
+  },
+  {
+    "id": "upgrade_cooldown_red",
+    "title": "Aceleração Necrótica",
+    "description": "Reduz o tempo de recarga de todas as habilidades em -18%.",
+    "category": "stat",
+    "rarity": "common",
+    "icon": "clock",
+    "effect": {
+      "cooldownReductionPercent": 18
+    }
+  },
+  {
+    "id": "upgrade_vitality",
+    "title": "Vitalidade Monolítica",
+    "description": "Aumenta a vida máxima em +40 HP e restaura totalmente a vida.",
+    "category": "stat",
+    "rarity": "common",
+    "icon": "shield-plus",
+    "effect": {
+      "hpMaxAdd": 40
+    }
+  },
+  {
+    "id": "upgrade_movespeed",
+    "title": "Passo Espectral",
+    "description": "Aumenta a velocidade de movimento em +20%.",
+    "category": "stat",
+    "rarity": "common",
+    "icon": "footprints",
+    "effect": {
+      "moveSpeedPercent": 20
+    }
+  },
+  {
+    "id": "upgrade_mana_flow",
+    "title": "Reservatório de Almas",
+    "description": "Aumenta a Mana máxima em +50 MP e acelera a regeneração de Mana.",
+    "category": "stat",
+    "rarity": "common",
+    "icon": "droplet",
+    "effect": {
+      "manaMaxAdd": 50
+    }
+  },
+  {
+    "id": "upgrade_legendary_archmage",
+    "title": "Supremacia Sanguinária",
+    "description": "+40% Dano, +20% Velocidade, +1 Projétil Adicional e Cura Instantânea.",
+    "category": "passive",
+    "rarity": "legendary",
+    "icon": "crown",
+    "effect": {
+      "damageMultiplierPercent": 40,
+      "moveSpeedPercent": 20,
+      "projectileAdd": 1,
+      "hpMaxAdd": 50
+    }
+  }
+]
