@@ -1,4 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { AnimatePresence } from 'motion/react';
+import { SplashScreen } from './components/SplashScreen';
 import { MainMenu } from './components/MainMenu';
 import { GameplayHUD } from './components/GameplayHUD';
 import { LevelUpModal } from './components/LevelUpModal';
@@ -13,6 +15,8 @@ import { soundEngine } from './utils/soundEngine';
 import { useGameStore } from './store/gameStore';
 
 export default function App() {
+  const [isBooting, setIsBooting] = useState(true);
+
   const {
     gameState, setGameState,
     settings, updateSettings,
@@ -75,8 +79,10 @@ export default function App() {
 
   return (
     <div className={`relative w-screen h-screen overflow-hidden bg-black ${settings.crtFilter ? 'crt-overlay' : ''}`}>
+      {isBooting && <SplashScreen onComplete={() => setIsBooting(false)} />}
+      
       {/* 1. Main Menu Overlay */}
-      {gameState === 'menu' && !gameOverStats && (
+      {!isBooting && gameState === 'menu' && !gameOverStats && (
         <MainMenu
           onStartGame={handleStartGame}
           onOpenSettings={() => setSettingsOpen(true)}
@@ -148,20 +154,22 @@ export default function App() {
       )}
 
       {/* 6. Aux Modals */}
-      {isBestiaryOpen && <BestiaryModal onClose={() => setBestiaryOpen(false)} />}
-      {isSettingsOpen && (
-        <SettingsModal
-          settings={settings}
-          onUpdateSettings={updateSettings}
-          onClose={() => setSettingsOpen(false)}
-        />
-      )}
-      {isHighScoresOpen && (
-        <HighScoresModal
-          scores={highScores}
-          onClose={() => setHighScoresOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {isBestiaryOpen && <BestiaryModal onClose={() => setBestiaryOpen(false)} />}
+        {isSettingsOpen && (
+          <SettingsModal
+            settings={settings}
+            onUpdateSettings={updateSettings}
+            onClose={() => setSettingsOpen(false)}
+          />
+        )}
+        {isHighScoresOpen && (
+          <HighScoresModal
+            scores={highScores}
+            onClose={() => setHighScoresOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
