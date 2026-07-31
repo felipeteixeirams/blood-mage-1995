@@ -1,6 +1,29 @@
 import Phaser from 'phaser';
 
 /**
+ * Stitch Design Tokens for Bloodmage 1995.
+ * These align with the high-fidelity dark OLED and glassmorphism themes
+ * from Stitch, while keeping retro 16-bit color constraints.
+ */
+export const StitchTokens = {
+  background: '#0a0508',       // OLED Deep Dark / Void
+  primaryElectricBlue: '#00D1FF', // Electric Blue (HUD, Alertas, Magic detail)
+  secondaryViolet: '#AF52DE',    // Vibrant Violet (Cultists, Portals)
+  tertiaryMint: '#10b981',       // XP Gem / Ethereal glow
+  crimsonRed: '#dc2626',         // Blood Mage robe, blood bolts, damage flash
+  bloodBright: '#ff3344',        // Glowing Blood Eyes/Core, lights
+  bloodDark: '#610a0e',          // Dried Blood, grounds, shadow robe
+  boneWhite: '#e2e8f0',          // Skeletons, shields
+  boneShadow: '#718096',         // Darker bone shading
+  goldAccent: '#f59e0b',         // Gold trim, chests, alert icons
+  obsidianDark: '#18181b',       // Walls, dark armor, bosses
+  obsidianMedium: '#2e252f',     // Brick shading
+  obsidianLight: '#533e56',      // Wall highlights
+  golemFlesh: '#3f2e2b',         // Flesh Golem base
+  golemFleshDark: '#2b1e1b',     // Shadow flesh
+};
+
+/**
  * Procedurally generates 16-bit Pixel Art Sprites & Textures for Phaser 3
  */
 export function generateGameTextures(scene: Phaser.Scene) {
@@ -21,8 +44,8 @@ export function generateGameTextures(scene: Phaser.Scene) {
 
   // 1. Isometric Ground Tile (64x32 Isometric Diamond)
   const tileCanvas = createPixelCanvas(64, 32, (ctx) => {
-    // Fill dark stone diamond
-    ctx.fillStyle = '#1c151b';
+    // Fill dark stone diamond - Stitch background/obsidian blend
+    ctx.fillStyle = '#161015';
     ctx.beginPath();
     ctx.moveTo(32, 0);
     ctx.lineTo(64, 16);
@@ -32,19 +55,19 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fill();
 
     // Dark border
-    ctx.strokeStyle = '#2d1f27';
+    ctx.strokeStyle = '#251b22';
     ctx.lineWidth = 2;
     ctx.stroke();
 
     // Cobblestone pixel details
-    ctx.fillStyle = '#2d2229';
+    ctx.fillStyle = '#261c23';
     ctx.fillRect(20, 8, 8, 4);
     ctx.fillRect(36, 12, 10, 5);
     ctx.fillRect(16, 18, 12, 6);
     ctx.fillRect(38, 22, 8, 4);
 
-    // Blood stains in cobblestone
-    ctx.fillStyle = '#610a0e';
+    // Blood stains in cobblestone - Stitch bloodDark
+    ctx.fillStyle = StitchTokens.bloodDark;
     ctx.fillRect(28, 14, 4, 3);
     ctx.fillRect(32, 16, 3, 3);
   });
@@ -56,16 +79,16 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#110507'; // Shadow
     ctx.fillRect(8, 8, 16, 38);
 
-    ctx.fillStyle = '#7a121d'; // Crimson Cape
+    ctx.fillStyle = StitchTokens.bloodDark; // Crimson Cape
     ctx.fillRect(10, 10, 12, 36);
 
     // Hood & Shoulders
-    ctx.fillStyle = '#a81c2b';
+    ctx.fillStyle = StitchTokens.crimsonRed;
     ctx.fillRect(10, 4, 12, 12);
     ctx.fillRect(8, 14, 16, 8);
 
-    // Glowing Crimson Eyes
-    ctx.fillStyle = '#ff3344';
+    // Glowing Crimson Eyes - Stitch bloodBright
+    ctx.fillStyle = StitchTokens.bloodBright;
     ctx.fillRect(12, 9, 3, 2);
     ctx.fillRect(17, 9, 3, 2);
 
@@ -73,32 +96,32 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#3a271d'; // Wood
     ctx.fillRect(24, 6, 3, 38);
 
-    // Staff Ruby Orb
-    ctx.fillStyle = '#ff1133';
+    // Staff Ruby Orb - Stitch bloodBright
+    ctx.fillStyle = StitchTokens.bloodBright;
     ctx.beginPath();
     ctx.arc(25.5, 6, 4, 0, Math.PI * 2);
     ctx.fill();
 
-    // Golden Trim
-    ctx.fillStyle = '#d4af37';
+    // Golden Trim - Stitch goldAccent
+    ctx.fillStyle = StitchTokens.goldAccent;
     ctx.fillRect(11, 20, 10, 2);
   });
   scene.textures.addBase64('spr_bloodmage', playerCanvas);
 
   // 3. Skeleton Warrior (32x40)
   const skeletonCanvas = createPixelCanvas(32, 40, (ctx) => {
-    // Skull
-    ctx.fillStyle = '#d1c7b7';
+    // Skull - Stitch boneWhite
+    ctx.fillStyle = StitchTokens.boneWhite;
     ctx.fillRect(10, 4, 12, 10);
     // Eye sockets
-    ctx.fillStyle = '#0f0c08';
+    ctx.fillStyle = StitchTokens.background;
     ctx.fillRect(12, 7, 3, 3);
     ctx.fillRect(17, 7, 3, 3);
 
-    // Ribcage & Spine
-    ctx.fillStyle = '#e8e0d3';
+    // Ribcage & Spine - Stitch boneWhite / boneShadow
+    ctx.fillStyle = StitchTokens.boneWhite;
     ctx.fillRect(12, 14, 8, 12);
-    ctx.fillStyle = '#100e0b';
+    ctx.fillStyle = StitchTokens.boneShadow;
     ctx.fillRect(12, 17, 8, 2);
     ctx.fillRect(12, 21, 8, 2);
 
@@ -112,14 +135,14 @@ export function generateGameTextures(scene: Phaser.Scene) {
 
   // 4. Cultist Acolyte (32x40)
   const cultistCanvas = createPixelCanvas(32, 40, (ctx) => {
-    // Purple robe
+    // Purple robe - Stitch secondaryViolet
     ctx.fillStyle = '#3b1254';
     ctx.fillRect(8, 10, 16, 28);
     // Dark cowl
-    ctx.fillStyle = '#5c1d85';
+    ctx.fillStyle = StitchTokens.secondaryViolet;
     ctx.fillRect(10, 4, 12, 10);
-    // Green glowing eyes
-    ctx.fillStyle = '#22c55e';
+    // Green glowing eyes (using mint token)
+    ctx.fillStyle = StitchTokens.tertiaryMint;
     ctx.fillRect(12, 8, 2, 2);
     ctx.fillRect(18, 8, 2, 2);
   });
@@ -128,16 +151,16 @@ export function generateGameTextures(scene: Phaser.Scene) {
   // 5. Hell Hound (36x28)
   const houndCanvas = createPixelCanvas(36, 28, (ctx) => {
     // Demonic red quadruped
-    ctx.fillStyle = '#7f1d1d';
+    ctx.fillStyle = StitchTokens.bloodDark;
     ctx.fillRect(6, 8, 22, 12);
     // Head & Fangs
     ctx.fillRect(24, 4, 10, 10);
-    ctx.fillStyle = '#facc15'; // Yellow eyes
+    ctx.fillStyle = StitchTokens.goldAccent; // Yellow eyes
     ctx.fillRect(28, 6, 3, 2);
-    ctx.fillStyle = '#ffffff'; // Fangs
+    ctx.fillStyle = StitchTokens.boneWhite; // Fangs
     ctx.fillRect(32, 12, 2, 4);
     // Spikes on back
-    ctx.fillStyle = '#18181b';
+    ctx.fillStyle = StitchTokens.obsidianDark;
     ctx.fillRect(10, 4, 2, 4);
     ctx.fillRect(16, 4, 2, 4);
     ctx.fillRect(22, 4, 2, 4);
@@ -147,33 +170,33 @@ export function generateGameTextures(scene: Phaser.Scene) {
   // 6. Flesh Golem (48x56)
   const golemCanvas = createPixelCanvas(48, 56, (ctx) => {
     // Massive stitched body
-    ctx.fillStyle = '#3f2e2b';
+    ctx.fillStyle = StitchTokens.golemFlesh;
     ctx.fillRect(8, 10, 32, 40);
     // Sutures & Scars
-    ctx.fillStyle = '#8c2d19';
+    ctx.fillStyle = StitchTokens.bloodDark;
     ctx.fillRect(16, 16, 16, 3);
     ctx.fillRect(22, 28, 12, 3);
-    ctx.fillStyle = '#e2e8f0';
+    ctx.fillStyle = StitchTokens.boneWhite;
     ctx.fillRect(20, 14, 2, 7);
     ctx.fillRect(26, 26, 2, 7);
     // Head
-    ctx.fillStyle = '#2b1e1b';
+    ctx.fillStyle = StitchTokens.golemFleshDark;
     ctx.fillRect(18, 2, 12, 10);
-    ctx.fillStyle = '#ef4444'; // Glowing red eye
+    ctx.fillStyle = StitchTokens.bloodBright; // Glowing red eye
     ctx.fillRect(20, 5, 4, 3);
   });
   scene.textures.addBase64('spr_golem', golemCanvas);
 
   // 7. Blood Specter (32x40)
   const specterCanvas = createPixelCanvas(32, 40, (ctx) => {
-    ctx.fillStyle = 'rgba(225, 29, 72, 0.85)';
+    ctx.fillStyle = 'rgba(220, 38, 38, 0.85)'; // Stitch crimsonRed alpha
     ctx.beginPath();
     ctx.arc(16, 14, 12, 0, Math.PI * 2);
     ctx.fill();
     // Wispy tail
     ctx.fillRect(10, 20, 12, 18);
     // White glowing hollow eyes
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = StitchTokens.boneWhite;
     ctx.fillRect(12, 12, 3, 4);
     ctx.fillRect(18, 12, 3, 4);
   });
@@ -182,18 +205,18 @@ export function generateGameTextures(scene: Phaser.Scene) {
   // 8. Necro Lord Boss (64x72)
   const bossCanvas = createPixelCanvas(64, 72, (ctx) => {
     // Huge obsidian armor & horned helm
-    ctx.fillStyle = '#18181b';
+    ctx.fillStyle = StitchTokens.obsidianDark;
     ctx.fillRect(16, 16, 32, 50);
     // Horns
     ctx.fillRect(10, 4, 6, 16);
     ctx.fillRect(48, 4, 6, 16);
-    // Glowing red chest gem
-    ctx.fillStyle = '#dc2626';
+    // Glowing red chest gem - Stitch bloodBright
+    ctx.fillStyle = StitchTokens.bloodBright;
     ctx.beginPath();
     ctx.arc(32, 32, 8, 0, Math.PI * 2);
     ctx.fill();
     // Crimson cape
-    ctx.fillStyle = '#991b1b';
+    ctx.fillStyle = StitchTokens.crimsonRed;
     ctx.fillRect(12, 22, 6, 44);
     ctx.fillRect(46, 22, 6, 44);
   });
@@ -201,11 +224,11 @@ export function generateGameTextures(scene: Phaser.Scene) {
 
   // 9. Projectile: Blood Bolt (16x16)
   const boltCanvas = createPixelCanvas(16, 16, (ctx) => {
-    ctx.fillStyle = '#ef4444';
+    ctx.fillStyle = StitchTokens.crimsonRed;
     ctx.beginPath();
     ctx.arc(8, 8, 6, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = StitchTokens.boneWhite;
     ctx.beginPath();
     ctx.arc(8, 8, 2, 0, Math.PI * 2);
     ctx.fill();
@@ -214,7 +237,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
 
   // 10. Projectile: Cultist Energy Bolt (16x16)
   const energyBoltCanvas = createPixelCanvas(16, 16, (ctx) => {
-    ctx.fillStyle = '#a855f7';
+    ctx.fillStyle = StitchTokens.secondaryViolet;
     ctx.beginPath();
     ctx.arc(8, 8, 5, 0, Math.PI * 2);
     ctx.fill();
@@ -227,7 +250,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
 
   // 11. Health Orb (16x16)
   const hporbCanvas = createPixelCanvas(16, 16, (ctx) => {
-    ctx.fillStyle = '#dc2626';
+    ctx.fillStyle = StitchTokens.crimsonRed;
     ctx.beginPath();
     ctx.arc(8, 8, 6, 0, Math.PI * 2);
     ctx.fill();
@@ -238,18 +261,18 @@ export function generateGameTextures(scene: Phaser.Scene) {
 
   // 12. Mana Orb (16x16)
   const manaorbCanvas = createPixelCanvas(16, 16, (ctx) => {
-    ctx.fillStyle = '#2563eb';
+    ctx.fillStyle = '#2563eb'; // Deep Blue
     ctx.beginPath();
     ctx.arc(8, 8, 6, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#93c5fd';
+    ctx.fillStyle = StitchTokens.primaryElectricBlue; // Electric blue details
     ctx.fillRect(5, 5, 3, 3);
   });
   scene.textures.addBase64('orb_mana', manaorbCanvas);
 
   // 13. XP Blood Gem (12x12)
   const gemCanvas = createPixelCanvas(12, 12, (ctx) => {
-    ctx.fillStyle = '#10b981';
+    ctx.fillStyle = StitchTokens.tertiaryMint;
     ctx.beginPath();
     ctx.moveTo(6, 0);
     ctx.lineTo(12, 6);
@@ -262,14 +285,14 @@ export function generateGameTextures(scene: Phaser.Scene) {
 
   // 14. Particle Blood Drop (8x8)
   const bloodPartCanvas = createPixelCanvas(8, 8, (ctx) => {
-    ctx.fillStyle = '#b91c1c';
+    ctx.fillStyle = StitchTokens.bloodDark;
     ctx.fillRect(1, 1, 6, 6);
   });
   scene.textures.addBase64('particle_blood_red', bloodPartCanvas);
 
   // 15. Blood Pool Ground Stain (32x20)
   const bloodPoolCanvas = createPixelCanvas(32, 20, (ctx) => {
-    ctx.fillStyle = 'rgba(120, 10, 18, 0.75)';
+    ctx.fillStyle = 'rgba(97, 10, 14, 0.75)'; // Stitch bloodDark alpha
     ctx.beginPath();
     ctx.ellipse(16, 10, 14, 8, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -278,10 +301,10 @@ export function generateGameTextures(scene: Phaser.Scene) {
 
   // 16. Dungeon Stone Brick Wall Block (32x32)
   const wallCanvas = createPixelCanvas(32, 32, (ctx) => {
-    ctx.fillStyle = '#221922'; // Base dark stone
+    ctx.fillStyle = StitchTokens.background; // Base dark stone
     ctx.fillRect(0, 0, 32, 32);
 
-    ctx.fillStyle = '#3a2d3c'; // Bricks
+    ctx.fillStyle = StitchTokens.obsidianMedium; // Bricks
     ctx.fillRect(2, 2, 13, 6);
     ctx.fillRect(17, 2, 13, 6);
     ctx.fillRect(2, 10, 28, 6);
@@ -290,7 +313,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(2, 26, 28, 4);
 
     // Highlights & Moss
-    ctx.fillStyle = '#533e56';
+    ctx.fillStyle = StitchTokens.obsidianLight;
     ctx.fillRect(2, 2, 13, 1);
     ctx.fillRect(17, 2, 13, 1);
     ctx.fillStyle = '#1e382b'; // Dark moss in crevices
@@ -305,14 +328,14 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(0, 0, 32, 32);
 
     // Archway outline
-    ctx.fillStyle = '#4a2333';
+    ctx.fillStyle = StitchTokens.bloodDark;
     ctx.beginPath();
     ctx.arc(16, 16, 12, Math.PI, 0);
     ctx.fill();
     ctx.fillRect(4, 16, 24, 14);
 
     // Inner passage shadow
-    ctx.fillStyle = '#0a050a';
+    ctx.fillStyle = StitchTokens.background;
     ctx.beginPath();
     ctx.arc(16, 16, 9, Math.PI, 0);
     ctx.fill();
@@ -327,12 +350,12 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.arc(20, 20, 18, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = '#dc2626'; // Mid swirl
+    ctx.fillStyle = StitchTokens.secondaryViolet; // Mid swirl
     ctx.beginPath();
     ctx.arc(20, 20, 13, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = '#fef08a'; // Glowing core
+    ctx.fillStyle = StitchTokens.primaryElectricBlue; // Glowing core
     ctx.beginPath();
     ctx.arc(20, 20, 6, 0, Math.PI * 2);
     ctx.fill();
@@ -344,22 +367,22 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#78350f'; // Dark wood
     ctx.fillRect(2, 4, 20, 14);
 
-    ctx.fillStyle = '#d97706'; // Gold trim
+    ctx.fillStyle = StitchTokens.goldAccent; // Gold trim
     ctx.fillRect(2, 4, 20, 3);
     ctx.fillRect(2, 15, 20, 3);
     ctx.fillRect(10, 4, 4, 14);
 
-    ctx.fillStyle = '#fef08a'; // Glowing lock
+    ctx.fillStyle = StitchTokens.primaryElectricBlue; // Glowing lock
     ctx.fillRect(10, 9, 4, 4);
   });
   scene.textures.addBase64('spr_chest', chestCanvas);
 
   // 20. AI Alert Icon "!" (12x18)
   const alertCanvas = createPixelCanvas(12, 18, (ctx) => {
-    ctx.fillStyle = '#ef4444';
+    ctx.fillStyle = StitchTokens.bloodBright;
     ctx.fillRect(4, 1, 4, 10);
     ctx.fillRect(4, 13, 4, 4);
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = StitchTokens.boneWhite;
     ctx.fillRect(5, 2, 2, 8);
     ctx.fillRect(5, 14, 2, 2);
   });
@@ -367,19 +390,19 @@ export function generateGameTextures(scene: Phaser.Scene) {
 
   // 21. AI Suspicious Icon "?" (12x18)
   const questCanvas = createPixelCanvas(12, 18, (ctx) => {
-    ctx.fillStyle = '#f59e0b';
+    ctx.fillStyle = StitchTokens.goldAccent;
     ctx.fillRect(2, 1, 8, 3);
     ctx.fillRect(7, 4, 3, 4);
     ctx.fillRect(4, 8, 4, 3);
     ctx.fillRect(4, 13, 4, 4);
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = StitchTokens.boneWhite;
     ctx.fillRect(5, 14, 2, 2);
   });
   scene.textures.addBase64('icon_suspicious', questCanvas);
 
   // 22. AI Panic/Flee Icon (12x18)
   const fleeCanvas = createPixelCanvas(12, 18, (ctx) => {
-    ctx.fillStyle = '#3b82f6';
+    ctx.fillStyle = StitchTokens.primaryElectricBlue;
     ctx.beginPath();
     ctx.arc(6, 12, 4, 0, Math.PI * 2);
     ctx.fill();
