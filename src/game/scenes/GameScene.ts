@@ -624,6 +624,11 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
+    // Sync enemy count to SoundEngine for dynamic BGM transition
+    if (this.enemiesGroup) {
+      soundEngine.setEnemyCount(this.enemiesGroup.countActive());
+    }
+
     // Sync HUD callback
     if (this.callbacks?.onStatsUpdate) {
       this.callbacks.onStatsUpdate({ ...this.player.stats });
