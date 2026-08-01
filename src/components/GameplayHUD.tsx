@@ -9,6 +9,7 @@ import { useJoystick } from '../hooks/useJoystick';
 import { Flame } from 'lucide-react';
 import { soundEngine } from '../utils/soundEngine';
 import { useGameStore } from '../store/gameStore';
+import { BossHealthBar } from './hud/BossHealthBar';
 
 interface GameplayHUDProps {
   getCooldownRemaining: (spellId: string) => number;
@@ -45,6 +46,9 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       </div>
       <div className="fixed inset-0 pointer-events-none z-[101] shadow-[inset_0_0_120px_rgba(0,0,0,0.6)]"></div>
       
+      {/* Boss Health Bar */}
+      <BossHealthBar />
+
       {/* Top Header HUD */}
       <div className="w-full flex justify-between items-start relative">
         <PlayerStatus stats={stats} />

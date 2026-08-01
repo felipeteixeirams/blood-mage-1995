@@ -1,4 +1,4 @@
-export type ItemRarity = 'common' | 'rare' | 'epic';
+export type ItemRarity = 'common' | 'rare' | 'epic' | 'legendary';
 export type ItemType = 'weapon' | 'armor' | 'relic';
 
 export interface LootItem {

@@ -36,7 +36,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   // Individual AI Personality & Movement Enhancements
   private speedMultiplier: number = 1.0;
   private personalPhase: number = 0;
-  private baseScale: number = 1.0;
+  protected baseScale: number = 1.0;
 
   // Attack Telegraphing & Realism Engine
   public attackPhase: 'none' | 'windup' | 'strike' | 'recovery' = 'none';

@@ -19,7 +19,7 @@ export const LootLog: React.FC = () => {
 
   if (!lootLog) return null;
 
-  const color = lootLog.rarity === 'epic' ? '#a855f7' : lootLog.rarity === 'rare' ? '#3b82f6' : '#ffffff';
+  const color = lootLog.rarity === 'legendary' ? '#f59e0b' : lootLog.rarity === 'epic' ? '#a855f7' : lootLog.rarity === 'rare' ? '#3b82f6' : '#ffffff';
 
   return (
     <div className="absolute top-14 left-1/2 -translate-x-1/2 animate-bounce bg-black/90 border border-gray-600 px-3 py-1.5 rounded-lg flex items-center gap-2 pointer-events-none">

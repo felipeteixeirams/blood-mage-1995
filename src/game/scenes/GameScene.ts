@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { Player } from '../objects/Player';
 import { Enemy } from '../objects/Enemy';
+import { Boss } from '../objects/Boss';
 import { Projectile } from '../objects/Projectile';
 import { Collectible } from '../objects/Collectible';
 import { LootSprite } from '../objects/Loot';
@@ -263,7 +264,10 @@ export class GameScene extends Phaser.Scene {
       if (room.type === 'boss') {
         // Boss Sanctum Room
         const bossId = currentWave.isBossWave && currentWave.bossMonsterId ? currentWave.bossMonsterId : 'necro_lord_boss';
-        const boss = new Enemy(this, room.centerX, room.centerY, bossId);
+        const isBossFloor = floorDepth % 5 === 0;
+        const boss = isBossFloor
+          ? new Boss(this, room.centerX, room.centerY, bossId)
+          : new Enemy(this, room.centerX, room.centerY, bossId);
         this.enemiesGroup.add(boss);
         this.depthGroup.add(boss);
         this.totalFloorMonsters++;
@@ -709,15 +713,31 @@ export class GameScene extends Phaser.Scene {
 
     soundEngine.playChestOpen();
 
-    // Spawn 3 XP gems & HP/Mana Orbs
-    for (let i = 0; i < 3; i++) {
-      const gem = new Collectible(this, chest.x + (Math.random() - 0.5) * 30, chest.y + (Math.random() - 0.5) * 30, 'xp', 25);
+    const isBossChest = chest.getData('isBossChest') === true;
+
+    // Spawn 3 XP gems & HP/Mana Orbs (more for boss!)
+    const xpCount = isBossChest ? 6 : 3;
+    for (let i = 0; i < xpCount; i++) {
+      const gem = new Collectible(this, chest.x + (Math.random() - 0.5) * 40, chest.y + (Math.random() - 0.5) * 40, 'xp', isBossChest ? 50 : 25);
       this.collectiblesGroup.add(gem);
     }
 
-    const orbType = Math.random() < 0.5 ? 'hp' : 'mana';
-    const orb = new Collectible(this, chest.x, chest.y, orbType, 35);
-    this.collectiblesGroup.add(orb);
+    if (isBossChest) {
+      // Spawn both HP and Mana Orbs
+      const hpOrb = new Collectible(this, chest.x - 20, chest.y, 'hp', 50);
+      const mpOrb = new Collectible(this, chest.x + 20, chest.y, 'mana', 50);
+      this.collectiblesGroup.add(hpOrb);
+      this.collectiblesGroup.add(mpOrb);
+
+      // 100% Guaranteed Rare or Legendary/Epic items!
+      const lootData = LootSystem.generateBossChestLoot(this.currentFloorDepth);
+      const loot = new LootSprite(this, chest.x, chest.y + 15, lootData);
+      this.lootGroup.add(loot);
+    } else {
+      const orbType = Math.random() < 0.5 ? 'hp' : 'mana';
+      const orb = new Collectible(this, chest.x, chest.y, orbType, 35);
+      this.collectiblesGroup.add(orb);
+    }
 
     // Open chest animation
     chest.setTint(0x444444);
@@ -834,7 +854,14 @@ export class GameScene extends Phaser.Scene {
     }
 
     // 5. Check Loot Drop
-    if (LootSystem.rollLootChance()) {
+    const isBoss = enemy instanceof Boss;
+    if (isBoss) {
+      const chest = this.chestsGroup.create(enemy.x, enemy.y, 'spr_chest');
+      chest.setTint(0xfacc15); // Golden Tint
+      chest.setData('isBossChest', true);
+      chest.setScale(1.4); // Larger chest
+      chest.setDepth(enemy.y);
+    } else if (LootSystem.rollLootChance()) {
       const lootData = LootSystem.generateLoot(this.currentFloorDepth);
       const loot = new LootSprite(this, enemy.x + (Math.random() - 0.5) * 30, enemy.y + (Math.random() - 0.5) * 30, lootData);
       this.lootGroup.add(loot);
@@ -938,7 +965,7 @@ export class GameScene extends Phaser.Scene {
     const text = this.add.text(loot.x, loot.y - 15, `+ ${loot.lootData.name}`, {
       fontFamily: '"Press Start 2P", monospace',
       fontSize: '8px',
-      color: loot.lootData.rarity === 'epic' ? '#a855f7' : loot.lootData.rarity === 'rare' ? '#3b82f6' : '#ffffff'
+      color: loot.lootData.rarity === 'legendary' ? '#f59e0b' : loot.lootData.rarity === 'epic' ? '#a855f7' : loot.lootData.rarity === 'rare' ? '#3b82f6' : '#ffffff'
     }).setOrigin(0.5).setDepth(2000);
 
     this.tweens.add({

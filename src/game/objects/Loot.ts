@@ -18,6 +18,7 @@ export class LootSprite extends Phaser.Physics.Arcade.Sprite {
     if (lootData.rarity === 'common') this.setTint(0xffffff);
     else if (lootData.rarity === 'rare') this.setTint(0x3b82f6); // Blue
     else if (lootData.rarity === 'epic') this.setTint(0xa855f7); // Purple
+    else if (lootData.rarity === 'legendary') this.setTint(0xfacc15); // Golden
 
     // Simple floating animation
     this.floatTween = scene.tweens.add({

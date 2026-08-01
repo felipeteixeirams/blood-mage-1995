@@ -47,6 +47,14 @@ interface GameStore {
   setTouchAimInput: (x: number, y: number) => void;
   activeSkillTrigger: 'nova' | 'syphon' | 'bone_shield' | null;
   setActiveSkillTrigger: (skill: 'nova' | 'syphon' | 'bone_shield' | null) => void;
+
+  // Boss Status
+  bossHealth: number;
+  bossMaxHealth: number;
+  bossActive: boolean;
+  bossName: string;
+  updateBossHealth: (hp: number, maxHp: number) => void;
+  setBossActive: (active: boolean, name?: string, maxHp?: number) => void;
 }
 
 const defaultPlayerStats: PlayerStats = {
@@ -106,4 +114,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   activeSkillTrigger: null,
   setActiveSkillTrigger: (skill) => set({ activeSkillTrigger: skill }),
+
+  bossHealth: 0,
+  bossMaxHealth: 100,
+  bossActive: false,
+  bossName: '',
+  updateBossHealth: (hp, maxHp) => set({ bossHealth: hp, bossMaxHealth: maxHp }),
+  setBossActive: (active, name = '', maxHp = 100) => set({
+    bossActive: active,
+    bossName: name,
+    bossHealth: maxHp,
+    bossMaxHealth: maxHp,
+  }),
 }));
