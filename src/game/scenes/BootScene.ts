@@ -12,6 +12,6 @@ export class BootScene extends Phaser.Scene {
   }
 
   create() {
-    this.scene.start('GameScene');
+    this.scene.start('GameScene', this.sys.settings.data);
   }
 }

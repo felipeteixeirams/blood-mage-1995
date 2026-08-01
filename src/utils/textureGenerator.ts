@@ -7,7 +7,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
   // Check if textures already generated
   if (scene.textures.exists('spr_bloodmage')) return;
 
-  const createPixelCanvas = (width: number, height: number, drawFn: (ctx: CanvasRenderingContext2D) => void): string => {
+  const createPixelCanvas = (width: number, height: number, drawFn: (ctx: CanvasRenderingContext2D) => void): HTMLCanvasElement => {
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
@@ -16,7 +16,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
       ctx.imageSmoothingEnabled = false;
       drawFn(ctx);
     }
-    return canvas.toDataURL();
+    return canvas;
   };
 
   // 1. Isometric Ground Tile (64x32 Isometric Diamond)
@@ -48,7 +48,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(28, 14, 4, 3);
     ctx.fillRect(32, 16, 3, 3);
   });
-  scene.textures.addBase64('tile_ground', tileCanvas);
+  scene.textures.addCanvas('tile_ground', tileCanvas);
 
   // 2. Bloodmage Player (32x48)
   const playerCanvas = createPixelCanvas(32, 48, (ctx) => {
@@ -83,7 +83,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#d4af37';
     ctx.fillRect(11, 20, 10, 2);
   });
-  scene.textures.addBase64('spr_bloodmage', playerCanvas);
+  scene.textures.addCanvas('spr_bloodmage', playerCanvas);
 
   // 3. Skeleton Warrior (32x40)
   const skeletonCanvas = createPixelCanvas(32, 40, (ctx) => {
@@ -108,7 +108,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#8f4115'; // Rust
     ctx.fillRect(22, 18, 3, 6);
   });
-  scene.textures.addBase64('spr_skeleton', skeletonCanvas);
+  scene.textures.addCanvas('spr_skeleton', skeletonCanvas);
 
   // 4. Cultist Acolyte (32x40)
   const cultistCanvas = createPixelCanvas(32, 40, (ctx) => {
@@ -123,7 +123,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(12, 8, 2, 2);
     ctx.fillRect(18, 8, 2, 2);
   });
-  scene.textures.addBase64('spr_cultist', cultistCanvas);
+  scene.textures.addCanvas('spr_cultist', cultistCanvas);
 
   // 5. Hell Hound (36x28)
   const houndCanvas = createPixelCanvas(36, 28, (ctx) => {
@@ -142,7 +142,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(16, 4, 2, 4);
     ctx.fillRect(22, 4, 2, 4);
   });
-  scene.textures.addBase64('spr_hound', houndCanvas);
+  scene.textures.addCanvas('spr_hound', houndCanvas);
 
   // 6. Flesh Golem (48x56)
   const golemCanvas = createPixelCanvas(48, 56, (ctx) => {
@@ -162,7 +162,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#ef4444'; // Glowing red eye
     ctx.fillRect(20, 5, 4, 3);
   });
-  scene.textures.addBase64('spr_golem', golemCanvas);
+  scene.textures.addCanvas('spr_golem', golemCanvas);
 
   // 7. Blood Specter (32x40)
   const specterCanvas = createPixelCanvas(32, 40, (ctx) => {
@@ -177,7 +177,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(12, 12, 3, 4);
     ctx.fillRect(18, 12, 3, 4);
   });
-  scene.textures.addBase64('spr_specter', specterCanvas);
+  scene.textures.addCanvas('spr_specter', specterCanvas);
 
   // 8. Necro Lord Boss (64x72)
   const bossCanvas = createPixelCanvas(64, 72, (ctx) => {
@@ -197,7 +197,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(12, 22, 6, 44);
     ctx.fillRect(46, 22, 6, 44);
   });
-  scene.textures.addBase64('spr_boss', bossCanvas);
+  scene.textures.addCanvas('spr_boss', bossCanvas);
 
   // 9. Projectile: Blood Bolt (16x16)
   const boltCanvas = createPixelCanvas(16, 16, (ctx) => {
@@ -210,7 +210,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.arc(8, 8, 2, 0, Math.PI * 2);
     ctx.fill();
   });
-  scene.textures.addBase64('proj_blood_bolt', boltCanvas);
+  scene.textures.addCanvas('proj_blood_bolt', boltCanvas);
 
   // 10. Projectile: Cultist Energy Bolt (16x16)
   const energyBoltCanvas = createPixelCanvas(16, 16, (ctx) => {
@@ -223,7 +223,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.arc(8, 8, 2, 0, Math.PI * 2);
     ctx.fill();
   });
-  scene.textures.addBase64('proj_energy_bolt', energyBoltCanvas);
+  scene.textures.addCanvas('proj_energy_bolt', energyBoltCanvas);
 
   // 11. Health Orb (16x16)
   const hporbCanvas = createPixelCanvas(16, 16, (ctx) => {
@@ -234,7 +234,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#fca5a5';
     ctx.fillRect(5, 5, 3, 3);
   });
-  scene.textures.addBase64('orb_hp', hporbCanvas);
+  scene.textures.addCanvas('orb_hp', hporbCanvas);
 
   // 12. Mana Orb (16x16)
   const manaorbCanvas = createPixelCanvas(16, 16, (ctx) => {
@@ -245,7 +245,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#93c5fd';
     ctx.fillRect(5, 5, 3, 3);
   });
-  scene.textures.addBase64('orb_mana', manaorbCanvas);
+  scene.textures.addCanvas('orb_mana', manaorbCanvas);
 
   // 13. XP Blood Gem (12x12)
   const gemCanvas = createPixelCanvas(12, 12, (ctx) => {
@@ -258,14 +258,14 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.closePath();
     ctx.fill();
   });
-  scene.textures.addBase64('gem_xp', gemCanvas);
+  scene.textures.addCanvas('gem_xp', gemCanvas);
 
   // 14. Particle Blood Drop (8x8)
   const bloodPartCanvas = createPixelCanvas(8, 8, (ctx) => {
     ctx.fillStyle = '#b91c1c';
     ctx.fillRect(1, 1, 6, 6);
   });
-  scene.textures.addBase64('particle_blood_red', bloodPartCanvas);
+  scene.textures.addCanvas('particle_blood_red', bloodPartCanvas);
 
   // 15. Blood Pool Ground Stain (32x20)
   const bloodPoolCanvas = createPixelCanvas(32, 20, (ctx) => {
@@ -274,7 +274,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.ellipse(16, 10, 14, 8, 0, 0, Math.PI * 2);
     ctx.fill();
   });
-  scene.textures.addBase64('blood_pool_stain', bloodPoolCanvas);
+  scene.textures.addCanvas('blood_pool_stain', bloodPoolCanvas);
 
   // 16. Dungeon Stone Brick Wall Block (32x32)
   const wallCanvas = createPixelCanvas(32, 32, (ctx) => {
@@ -297,7 +297,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(12, 14, 4, 2);
     ctx.fillRect(2, 24, 6, 2);
   });
-  scene.textures.addBase64('tile_wall_brick', wallCanvas);
+  scene.textures.addCanvas('tile_wall_brick', wallCanvas);
 
   // 17. Dungeon Door Archway (32x32)
   const doorCanvas = createPixelCanvas(32, 32, (ctx) => {
@@ -318,7 +318,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fill();
     ctx.fillRect(7, 16, 18, 14);
   });
-  scene.textures.addBase64('tile_door', doorCanvas);
+  scene.textures.addCanvas('tile_door', doorCanvas);
 
   // 18. Portal to Next Dungeon Floor (40x40)
   const portalCanvas = createPixelCanvas(40, 40, (ctx) => {
@@ -337,7 +337,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.arc(20, 20, 6, 0, Math.PI * 2);
     ctx.fill();
   });
-  scene.textures.addBase64('spr_portal', portalCanvas);
+  scene.textures.addCanvas('spr_portal', portalCanvas);
 
   // 19. Dungeon Treasure Chest (24x20)
   const chestCanvas = createPixelCanvas(24, 20, (ctx) => {
@@ -352,7 +352,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#fef08a'; // Glowing lock
     ctx.fillRect(10, 9, 4, 4);
   });
-  scene.textures.addBase64('spr_chest', chestCanvas);
+  scene.textures.addCanvas('spr_chest', chestCanvas);
 
   // 20. AI Alert Icon "!" (12x18)
   const alertCanvas = createPixelCanvas(12, 18, (ctx) => {
@@ -363,7 +363,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(5, 2, 2, 8);
     ctx.fillRect(5, 14, 2, 2);
   });
-  scene.textures.addBase64('icon_alert', alertCanvas);
+  scene.textures.addCanvas('icon_alert', alertCanvas);
 
   // 21. AI Suspicious Icon "?" (12x18)
   const questCanvas = createPixelCanvas(12, 18, (ctx) => {
@@ -375,7 +375,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(5, 14, 2, 2);
   });
-  scene.textures.addBase64('icon_suspicious', questCanvas);
+  scene.textures.addCanvas('icon_suspicious', questCanvas);
 
   // 22. AI Panic/Flee Icon (12x18)
   const fleeCanvas = createPixelCanvas(12, 18, (ctx) => {
@@ -390,5 +390,5 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.closePath();
     ctx.fill();
   });
-  scene.textures.addBase64('icon_flee', fleeCanvas);
+  scene.textures.addCanvas('icon_flee', fleeCanvas);
 }

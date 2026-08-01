@@ -81,7 +81,7 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
     phaserGameRef.current = game;
 
     // Listen for GameScene boot
-    game.events.on('ready', () => {
+    game.events.once('ready', () => {
       const scene = game.scene.getScene('GameScene') as GameScene;
       if (scene) {
         scene.init({ callbacks: { onStatsUpdate, onLevelUp, onGameOver } });
@@ -97,6 +97,9 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
         try {
           if (currentGame.loop) {
             currentGame.loop.stop();
+          }
+          if (currentGame.scale) {
+            currentGame.scale.removeAllListeners();
           }
           currentGame.destroy(true);
         } catch (e) {

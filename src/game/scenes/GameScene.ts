@@ -161,7 +161,14 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.enemiesGroup, this.enemiesGroup);
 
     // Listen for Blood Nova event from UI
-    window.addEventListener('trigger-blood-nova', () => this.triggerBloodNova());
+    const handleNovaEvent = () => this.triggerBloodNova();
+    window.addEventListener('trigger-blood-nova', handleNovaEvent);
+    this.events.once('shutdown', () => {
+      window.removeEventListener('trigger-blood-nova', handleNovaEvent);
+    });
+    this.events.once('destroy', () => {
+      window.removeEventListener('trigger-blood-nova', handleNovaEvent);
+    });
 
     this.physics.add.overlap(
       this.player,
