@@ -10,6 +10,7 @@ import wavesData from '../../data/waves.json';
 import upgradesData from '../../data/upgrades.json';
 import { soundEngine } from '../../utils/soundEngine';
 import { useGameStore } from '../../store/gameStore';
+import { telemetry } from '../../utils/telemetry';
 
 export interface GameSceneCallbacks {
   onStatsUpdate: (stats: PlayerStats) => void;
@@ -251,6 +252,8 @@ export class GameScene extends Phaser.Scene {
     useGameStore.getState().setCurrentBiome(biome);
 
     const rooms = this.dungeonGenerator.generate(mapW, mapH, biome);
+
+    telemetry.trackEvent('floor_start', { floor: floorDepth, biome, rooms: rooms.length });
 
     // Create Player in Spawn Room 0
     const spawnRoom = rooms[0];
@@ -573,6 +576,17 @@ export class GameScene extends Phaser.Scene {
     // Sync HUD callback
     if (this.callbacks?.onStatsUpdate) {
       this.callbacks.onStatsUpdate({ ...this.player.stats });
+    }
+
+    // Telemetry Performance Snapshot (throttle every 60 frames approx)
+    if (this.game.loop.frame % 60 === 0) {
+      const entityCount = this.enemiesGroup.countActive() + this.playerProjectilesGroup.countActive() + this.enemyProjectilesGroup.countActive();
+      telemetry.updatePerformanceMetrics(
+        this.game.loop.actualFps,
+        this.game.loop.delta,
+        entityCount,
+        soundEngine.getActiveVoices()
+      );
     }
   }
 

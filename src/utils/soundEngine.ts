@@ -12,9 +12,22 @@ class SoundEngine {
   private bgmGain: GainNode | null = null;
   private isBgmPlaying: boolean = false;
   private bgmIntervalTimer: ReturnType<typeof setInterval> | null = null;
+  private activeVoicesCount: number = 0;
 
   constructor() {
     // Lazy init audio context on first user interaction
+  }
+
+  public getActiveVoices(): number {
+    return this.activeVoicesCount;
+  }
+
+  private incrementVoices() {
+    this.activeVoicesCount++;
+  }
+
+  private decrementVoices() {
+    this.activeVoicesCount = Math.max(0, this.activeVoicesCount - 1);
   }
 
   private initCtx() {

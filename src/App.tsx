@@ -10,11 +10,13 @@ import { HighScoresModal } from './components/HighScoresModal';
 import { GameOverModal } from './components/GameOverModal';
 import { InventoryModal } from './components/InventoryModal';
 import { TalentsModal } from './components/TalentsModal';
+import { ObservabilityModal } from './components/ObservabilityModal';
 import { PhaserGame } from './game/PhaserGame';
 import { GameScene } from './game/scenes/GameScene';
 import { PlayerStats, UpgradeOption } from './types/game';
 import { soundEngine } from './utils/soundEngine';
 import { useGameStore } from './store/gameStore';
+import { telemetry } from './utils/telemetry';
 
 export default function App() {
   const [isBooting, setIsBooting] = useState(true);
@@ -29,6 +31,7 @@ export default function App() {
     isHighScoresOpen, setHighScoresOpen,
     isInventoryOpen, setInventoryOpen,
     isTalentsOpen, setTalentsOpen,
+    isObservabilityOpen, setObservabilityOpen,
     levelUpData, setLevelUpData,
     gameOverStats, setGameOverStats,
   } = useGameStore();
@@ -42,6 +45,11 @@ export default function App() {
   // Keyboard hotkeys for modals
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'o' || e.key === 'O') {
+        soundEngine.playButtonClick();
+        setObservabilityOpen(!useGameStore.getState().isObservabilityOpen);
+      }
+
       if (gameState !== 'playing') return;
 
       if (e.key === 'i' || e.key === 'I') {
@@ -55,12 +63,13 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState, setInventoryOpen, setTalentsOpen]);
+  }, [gameState, setInventoryOpen, setTalentsOpen, setObservabilityOpen]);
 
   const handleStartGame = () => {
     setGameOverStats(null);
     setLevelUpData(null);
     setGameState('playing');
+    telemetry.trackEvent('game_start');
   };
 
   const handleSelectUpgrade = (option: UpgradeOption) => {
@@ -68,11 +77,13 @@ export default function App() {
       gameSceneRef.current.applyUpgradeChoice(option);
     }
     setLevelUpData(null);
+    telemetry.trackEvent('upgrade_selected', { upgradeId: option.id });
   };
 
   const handleGameOver = (stats: PlayerStats) => {
     setGameOverStats(stats);
     setGameState('menu'); // reset game canvas loop state
+    telemetry.trackEvent('game_over', { wave: stats.wave, score: stats.score, kills: stats.kills });
 
     // Format time
     const m = Math.floor(stats.timeSurvivedSeconds / 60).toString().padStart(2, '0');
@@ -197,6 +208,9 @@ export default function App() {
         )}
         {isTalentsOpen && (
           <TalentsModal onClose={() => setTalentsOpen(false)} />
+        )}
+        {isObservabilityOpen && (
+          <ObservabilityModal onClose={() => setObservabilityOpen(false)} />
         )}
       </AnimatePresence>
     </div>

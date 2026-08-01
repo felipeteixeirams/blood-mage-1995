@@ -1,4 +1,5 @@
 import { LootItem, ItemRarity, ItemType } from '../../types/game';
+import { telemetry } from '../../utils/telemetry';
 
 const COMMON_NAMES: Record<ItemType, string[]> = {
   weapon: ['Adaga Enferrujada', 'Lâmina de Cobre', 'Glaive Rachada'],
@@ -80,6 +81,8 @@ export class LootSystem {
       stats.maxHpBonus = Math.round(10 * mult * scaling);
       description = `Aumenta Velocidade, reduz Cooldowns em -${Math.round((stats.cooldownReductionBonus || 0) * 100)}% e +${stats.maxHpBonus} HP.`;
     }
+
+    telemetry.trackEvent('loot_generated', { name, type, rarity, isChest });
 
     return {
       id,
