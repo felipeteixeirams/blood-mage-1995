@@ -73,13 +73,13 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         </div>
 
         {/* Action Buttons Stack */}
-        <div className="flex flex-col gap-3.5 w-full max-w-xs pt-4">
+        <div className="flex flex-col gap-3.5 w-full max-w-xs pt-4 pointer-events-auto">
           <button
             onClick={() => {
               soundEngine.playButtonClick();
               onStartGame();
             }}
-            className="w-full group relative py-4 px-6 bg-gradient-to-r from-emerald-950 via-emerald-800 to-emerald-950 hover:from-emerald-900 hover:to-emerald-700 text-emerald-100 font-pixel text-sm rounded gothic-border border-emerald-600/80 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] active:scale-95 transition-all flex items-center justify-center gap-3 cursor-pointer"
+            className="w-full group relative py-4 px-6 bg-gradient-to-r from-emerald-950 via-emerald-800 to-emerald-950 hover:from-emerald-900 hover:to-emerald-700 text-emerald-100 font-pixel text-sm rounded gothic-border border-emerald-600/80 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] active:scale-95 transition-all flex items-center justify-center gap-3 cursor-pointer touch-manipulation pointer-events-auto"
           >
             <Play className="w-5 h-5 fill-emerald-300 text-emerald-300 group-hover:scale-110 transition-transform" />
             <span>INICIAR RITUAL</span>
@@ -91,7 +91,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 soundEngine.playButtonClick();
                 onOpenBestiary();
               }}
-              className="py-3 px-2 bg-black/80 hover:bg-red-950/80 border border-red-900/60 rounded text-red-300 font-retro text-base flex flex-col items-center justify-center gap-1 hover:border-red-600 transition-colors cursor-pointer"
+              className="py-3 px-2 bg-black/80 hover:bg-red-950/80 border border-red-900/60 rounded text-red-300 font-retro text-base flex flex-col items-center justify-center gap-1 hover:border-red-600 transition-colors cursor-pointer touch-manipulation pointer-events-auto"
             >
               <BookOpen className="w-4 h-4 text-amber-500" />
               <span>BESTIÁRIO</span>
@@ -102,7 +102,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 soundEngine.playButtonClick();
                 onOpenHighScores();
               }}
-              className="py-3 px-2 bg-black/80 hover:bg-amber-950/80 border border-amber-900/60 rounded text-amber-300 font-retro text-base flex flex-col items-center justify-center gap-1 hover:border-amber-500 transition-colors cursor-pointer"
+              className="py-3 px-2 bg-black/80 hover:bg-amber-950/80 border border-amber-900/60 rounded text-amber-300 font-retro text-base flex flex-col items-center justify-center gap-1 hover:border-amber-500 transition-colors cursor-pointer touch-manipulation pointer-events-auto"
             >
               <Trophy className="w-4 h-4 text-amber-400" />
               <span>RECORDES</span>
@@ -113,7 +113,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 soundEngine.playButtonClick();
                 onOpenSettings();
               }}
-              className="py-3 px-2 bg-black/80 hover:bg-gray-900 border border-gray-800 rounded text-gray-300 font-retro text-base flex flex-col items-center justify-center gap-1 hover:border-gray-600 transition-colors cursor-pointer"
+              className="py-3 px-2 bg-black/80 hover:bg-gray-900 border border-gray-800 rounded text-gray-300 font-retro text-base flex flex-col items-center justify-center gap-1 hover:border-gray-600 transition-colors cursor-pointer touch-manipulation pointer-events-auto"
             >
               <Settings className="w-4 h-4 text-gray-400" />
               <span>OPÇÕES</span>

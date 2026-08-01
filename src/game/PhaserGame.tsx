@@ -91,7 +91,18 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
 
     return () => {
       gameSceneRef.current = null;
-      game.destroy(true);
+      if (phaserGameRef.current) {
+        const currentGame = phaserGameRef.current;
+        phaserGameRef.current = null;
+        try {
+          if (currentGame.loop) {
+            currentGame.loop.stop();
+          }
+          currentGame.destroy(true);
+        } catch (e) {
+          // Ignore destroy errors on fast unmounts
+        }
+      }
     };
   }, []);
 

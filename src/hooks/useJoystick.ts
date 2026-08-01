@@ -6,19 +6,19 @@ export const useJoystick = (
 ) => {
   const [active, setActive] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
-  const touchId = useRef<number | null>(null);
+  const activePointerId = useRef<number | null>(null);
 
-  const updateJoystick = (touch: React.Touch, element: HTMLElement) => {
+  const calculateAndApply = (clientX: number, clientY: number, element: HTMLElement) => {
     const rect = element.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     const maxRadius = rect.width / 2;
 
-    const dx = touch.clientX - centerX;
-    const dy = touch.clientY - centerY;
+    const dx = clientX - centerX;
+    const dy = clientY - centerY;
     const dist = Math.hypot(dx, dy);
 
-    if (dist < 10 && active && resetOnEnd) {
+    if (dist < 8 && resetOnEnd) {
       onUpdate(0, 0);
       setPos({ x: 0, y: 0 });
       return;
@@ -34,28 +34,26 @@ export const useJoystick = (
     onUpdate(normX, normY);
   };
 
-  const onTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (e.cancelable) e.preventDefault();
-    const touch = e.changedTouches[0];
-    touchId.current = touch.identifier;
+  // Pointer Handlers (Works for Touch, Mouse, and Stylus)
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (activePointerId.current !== null) return;
+    activePointerId.current = e.pointerId;
+    e.currentTarget.setPointerCapture(e.pointerId);
     setActive(true);
-    updateJoystick(touch, e.currentTarget);
+    calculateAndApply(e.clientX, e.clientY, e.currentTarget);
   };
 
-  const onTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (e.cancelable) e.preventDefault();
-    if (touchId.current === null) return;
-    for (let i = 0; i < e.changedTouches.length; i++) {
-      if (e.changedTouches[i].identifier === touchId.current) {
-        updateJoystick(e.changedTouches[i], e.currentTarget);
-        break;
-      }
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (activePointerId.current !== e.pointerId) return;
+    calculateAndApply(e.clientX, e.clientY, e.currentTarget);
+  };
+
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (activePointerId.current !== e.pointerId) return;
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
     }
-  };
-
-  const onTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (e.cancelable) e.preventDefault();
-    touchId.current = null;
+    activePointerId.current = null;
     setActive(false);
     if (resetOnEnd) {
       setPos({ x: 0, y: 0 });
@@ -63,5 +61,40 @@ export const useJoystick = (
     }
   };
 
-  return { active, pos, onTouchStart, onTouchMove, onTouchEnd };
+  // Legacy Touch Handlers for backwards compatibility
+  const onTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.cancelable) e.preventDefault();
+    const touch = e.changedTouches[0];
+    setActive(true);
+    calculateAndApply(touch.clientX, touch.clientY, e.currentTarget);
+  };
+
+  const onTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.cancelable) e.preventDefault();
+    const touch = e.changedTouches[0];
+    if (touch) {
+      calculateAndApply(touch.clientX, touch.clientY, e.currentTarget);
+    }
+  };
+
+  const onTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.cancelable) e.preventDefault();
+    setActive(false);
+    if (resetOnEnd) {
+      setPos({ x: 0, y: 0 });
+      onUpdate(0, 0);
+    }
+  };
+
+  return {
+    active,
+    pos,
+    onPointerDown,
+    onPointerMove,
+    onPointerUp,
+    onTouchStart,
+    onTouchMove,
+    onTouchEnd,
+  };
 };
+

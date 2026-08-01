@@ -65,6 +65,9 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       <div className="w-full flex justify-between items-end pb-2">
         {/* Bottom Left: Touch Movement Joystick */}
         <div
+          onPointerDown={moveJoystick.onPointerDown}
+          onPointerMove={moveJoystick.onPointerMove}
+          onPointerUp={moveJoystick.onPointerUp}
           onTouchStart={moveJoystick.onTouchStart}
           onTouchMove={moveJoystick.onTouchMove}
           onTouchEnd={moveJoystick.onTouchEnd}
@@ -98,7 +101,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                 onSkillClick('nova');
               }}
               disabled={novaCd > 0 || !hasManaForNova}
-              className={`absolute -top-20 right-0 w-16 h-16 rounded-full border-4 flex items-center justify-center transition-all active:scale-90 ${
+              className={`absolute -top-20 right-0 w-16 h-16 rounded-full border-4 flex items-center justify-center transition-all active:scale-90 cursor-pointer ${
                 novaCd > 0 
                   ? 'bg-gray-900/90 border-gray-700 opacity-50' 
                   : 'bg-red-950/90 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.4)]'
@@ -114,6 +117,9 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
             <div className="absolute -top-6 right-3 text-[8px] font-pixel text-red-500/80">BLOOD NOVA</div>
 
             <div
+              onPointerDown={aimJoystick.onPointerDown}
+              onPointerMove={aimJoystick.onPointerMove}
+              onPointerUp={aimJoystick.onPointerUp}
               onTouchStart={aimJoystick.onTouchStart}
               onTouchMove={aimJoystick.onTouchMove}
               onTouchEnd={aimJoystick.onTouchEnd}

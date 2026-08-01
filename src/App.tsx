@@ -71,14 +71,19 @@ export default function App() {
   };
 
   const getCooldownRemaining = (spellId: string): number => {
-    if (gameSceneRef.current) {
+    if (gameSceneRef.current?.player?.getCooldownRemaining) {
       return gameSceneRef.current.player.getCooldownRemaining(spellId);
     }
     return 0;
   };
 
   return (
-    <div className={`relative w-screen h-screen overflow-hidden bg-black ${settings.crtFilter ? 'crt-overlay' : ''}`}>
+    <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
+      {/* Standalone CRT Scanline Overlay - pointer-events-none ensures touch & click pass through */}
+      {settings.crtFilter && (
+        <div className="fixed inset-0 pointer-events-none z-[120] crt-overlay" />
+      )}
+
       {isBooting && <SplashScreen onComplete={() => setIsBooting(false)} />}
       
       {/* 1. Main Menu Overlay */}
