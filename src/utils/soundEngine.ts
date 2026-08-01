@@ -11,6 +11,7 @@ class SoundEngine {
   private bgmOscillators: OscillatorNode[] = [];
   private bgmGain: GainNode | null = null;
   private isBgmPlaying: boolean = false;
+  private bgmIntervalTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     // Lazy init audio context on first user interaction
@@ -220,6 +221,185 @@ class SoundEngine {
     osc.stop(now + 0.04);
   }
 
+  public playChestOpen() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    // Wood/Latch click (square wave click)
+    const osc1 = this.ctx.createOscillator();
+    const gain1 = this.ctx.createGain();
+    osc1.type = 'square';
+    osc1.frequency.setValueAtTime(300, now);
+    osc1.frequency.exponentialRampToValueAtTime(80, now + 0.08);
+    gain1.gain.setValueAtTime(this.sfxVolume * 0.4, now);
+    gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+    osc1.connect(gain1);
+    gain1.connect(this.ctx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.08);
+
+    // Golden Chime Sweep (Triangle synth arpeggio)
+    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    notes.forEach((freq, i) => {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + 0.06 + i * 0.05);
+      gain.gain.setValueAtTime(this.sfxVolume * 0.25, now + 0.06 + i * 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06 + i * 0.05 + 0.3);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now + 0.06 + i * 0.05);
+      osc.stop(now + 0.06 + i * 0.05 + 0.3);
+    });
+  }
+
+  public playPortalEnter() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(120, now);
+    osc.frequency.exponentialRampToValueAtTime(600, now + 0.4);
+    osc.frequency.exponentialRampToValueAtTime(80, now + 0.7);
+
+    gain.gain.setValueAtTime(0.01, now);
+    gain.gain.linearRampToValueAtTime(this.sfxVolume * 0.4, now + 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.7);
+  }
+
+  public playPlayerHurt() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(50, now + 0.18);
+
+    gain.gain.setValueAtTime(this.sfxVolume * 0.5, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.18);
+  }
+
+  public playEquipLoot() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    // Metallic Ring
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, now);
+    osc.frequency.exponentialRampToValueAtTime(1760, now + 0.1);
+
+    gain.gain.setValueAtTime(this.sfxVolume * 0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.2);
+  }
+
+  public playBossRoar() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(55, now);
+    osc.frequency.linearRampToValueAtTime(110, now + 0.4);
+    osc.frequency.linearRampToValueAtTime(35, now + 1.2);
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(450, now);
+
+    gain.gain.setValueAtTime(this.sfxVolume * 0.6, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 1.2);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 1.2);
+  }
+
+  public playBoneShield() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(320, now);
+    osc.frequency.exponentialRampToValueAtTime(640, now + 0.15);
+
+    gain.gain.setValueAtTime(this.sfxVolume * 0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.15);
+  }
+
+  public playSyphonSoul() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(700, now);
+    osc.frequency.exponentialRampToValueAtTime(220, now + 0.25);
+
+    gain.gain.setValueAtTime(this.sfxVolume * 0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.25);
+  }
+
   public startGothicAmbientBGM() {
     if (this.isBgmPlaying) return;
     this.initCtx();
@@ -250,9 +430,36 @@ class SoundEngine {
       osc.start();
       this.bgmOscillators.push(osc);
     });
+
+    // Subdued gothic arpeggiator pulse
+    const arpNotes = [293.66, 349.23, 440.00, 523.25]; // D4, F4, A4, C5
+    let arpIdx = 0;
+    this.bgmIntervalTimer = setInterval(() => {
+      if (this.isMuted || !this.ctx || !this.bgmGain || !this.isBgmPlaying) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(arpNotes[arpIdx % arpNotes.length], now);
+      arpIdx++;
+
+      gain.gain.setValueAtTime(this.bgmVolume * 0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+      osc.connect(gain);
+      gain.connect(this.bgmGain);
+
+      osc.start(now);
+      osc.stop(now + 0.3);
+    }, 450);
   }
 
   public stopBGM() {
+    if (this.bgmIntervalTimer) {
+      clearInterval(this.bgmIntervalTimer);
+      this.bgmIntervalTimer = null;
+    }
     this.bgmOscillators.forEach((osc) => {
       try { osc.stop(); } catch {}
     });

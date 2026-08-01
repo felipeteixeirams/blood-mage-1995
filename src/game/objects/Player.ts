@@ -149,7 +149,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.stats.mana -= spell.manaCost;
     const cd = spell.cooldownMs * (1 - this.stats.cooldownReduction);
     this.skillCooldowns['syphon_soul'] = cd;
-    soundEngine.playOrbPickup();
+    soundEngine.playSyphonSoul();
     return true;
   }
 
@@ -161,7 +161,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.stats.mana -= spell.manaCost;
     const cd = spell.cooldownMs * (1 - this.stats.cooldownReduction);
     this.skillCooldowns['bone_shield'] = cd;
-    soundEngine.playButtonClick();
+    soundEngine.playBoneShield();
     return true;
   }
 
@@ -171,7 +171,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.stats.hp = Math.max(0, this.stats.hp - amount);
     this.isInvulnerable = true;
     this.invulnerableTimer = 800; // 0.8s invulnerability frame
-    soundEngine.playDemonRoar();
+    soundEngine.playPlayerHurt();
 
     return this.stats.hp <= 0;
   }
@@ -216,7 +216,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.stats.vampirism += item.stats.lifestealBonus;
     }
 
-    soundEngine.playOrbPickup(); // Play sound for loot
+    soundEngine.playEquipLoot(); // Play sound for loot
     
     // Notify React UI
     window.dispatchEvent(new CustomEvent('loot-acquired', { detail: item }));

@@ -680,7 +680,7 @@ export class GameScene extends Phaser.Scene {
     const chest = chestObj as Phaser.Physics.Arcade.Sprite;
     if (!chest.active) return;
 
-    soundEngine.playOrbPickup();
+    soundEngine.playChestOpen();
 
     // Spawn 3 XP gems & HP/Mana Orbs
     for (let i = 0; i < 3; i++) {
@@ -844,6 +844,7 @@ export class GameScene extends Phaser.Scene {
 
   private advanceToNextFloor() {
     this.isPortalActive = false;
+    soundEngine.playPortalEnter();
     if (this.portalSprite) {
       this.portalSprite.destroy();
       this.portalSprite = undefined;
