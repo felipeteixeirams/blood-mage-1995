@@ -487,11 +487,11 @@ export class GameScene extends Phaser.Scene {
     });
 
     // 4. Update Enemies with FOV, State Machine & Raycast Walls
-    this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
-      const enemy = enemyObj as Enemy;
+    const activeEnemiesList = this.enemiesGroup.getChildren() as Enemy[];
+    activeEnemiesList.forEach((enemy: Enemy) => {
       if (enemy.active) {
         const hasWallBetween = !this.hasLineOfSight(enemy.x, enemy.y, this.player.x, this.player.y);
-        const updateResult = enemy.updateEnemy(time, delta, this.player.x, this.player.y, hasWallBetween);
+        const updateResult = enemy.updateEnemy(time, delta, this.player.x, this.player.y, hasWallBetween, activeEnemiesList);
 
         if (updateResult.attack) {
           if (enemy.config.behavior === 'ranged' || enemy.config.behavior === 'boss') {
