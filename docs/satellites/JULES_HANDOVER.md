@@ -18,4 +18,4 @@ token_weight: Low (~400 tokens)
 3. **Persistência Cloud**: Transição do `localStorage` para Firebase/Cloud SQL se necessário.
 
 ## 🤖 Prompt Recomendado para Início no Jules
-> "Olá Jules! Estou migrando o projeto **Bloodmage 1995** para você. Consulte o arquivo raiz `/AGENTS.md` para navegar na estrutura `Graph Documental`. A prioridade atual é seguir o roadmap em `/docs/satellites/ROADMAP.md`."
+> "Olá Jules! Estou migrando o projeto **Bloodmage 1995** para você. Consulte o arquivo de especificação `/docs/satellites/SPEC_BOSS_FIGHTS.md` para implementar a funcionalidade de Boss Fights com Bullet Hell sem desvios do escopo e alinhado ao Graph Documental do projeto."

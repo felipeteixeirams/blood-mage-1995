@@ -6,6 +6,7 @@ token_weight: Medium (~500 tokens)
 active_satellites:
   - /docs/satellites/SPEC_LOOT.md
   - /docs/satellites/SPEC_REFACTOR.md
+  - /docs/satellites/SPEC_BOSS_FIGHTS.md
 ---
 
 # 📋 Master: Specifications Index (Spec Hub)
@@ -20,6 +21,7 @@ Este é o **Nó Mestre da Metodologia Spec-Driven Development**. Qualquer nova f
 | :--- | :--- | :--- | :--- |
 | **Sistema de Loot & Atributos** | 🟢 Concluído | Mecânica de Jogo / Inventário | `/docs/satellites/SPEC_LOOT.md` |
 | **Refatoração Estrutural Fase 1.5** | 🟡 Em Progresso | Modularização de `GameScene` e `HUD` | `/docs/satellites/SPEC_REFACTOR.md` |
+| **Boss Encounters & Bullet Hell** | 🟡 Prontos p/ Jules | Boss Fights & Padrões de Ataque | `/docs/satellites/SPEC_BOSS_FIGHTS.md` |
 
 ---
 
