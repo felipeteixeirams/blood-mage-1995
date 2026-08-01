@@ -3,8 +3,6 @@ import { Player } from '../objects/Player';
 import { Enemy } from '../objects/Enemy';
 import { Projectile } from '../objects/Projectile';
 import { Collectible } from '../objects/Collectible';
-import { LootSprite } from '../objects/Loot';
-import { LootSystem } from '../systems/LootSystem';
 import { PlayerStats, WaveConfig, UpgradeOption } from '../../types/game';
 import wavesData from '../../data/waves.json';
 import upgradesData from '../../data/upgrades.json';
@@ -16,7 +14,15 @@ export interface GameSceneCallbacks {
   onGameOver: (stats: PlayerStats) => void;
 }
 
-import { DungeonGenerator, RoomData } from '../systems/DungeonGenerator';
+interface RoomData {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  centerX: number;
+  centerY: number;
+  type: 'spawn' | 'chamber' | 'boss';
+}
 
 export class GameScene extends Phaser.Scene {
   public player!: Player;
@@ -25,11 +31,9 @@ export class GameScene extends Phaser.Scene {
   private playerProjectilesGroup!: Phaser.Physics.Arcade.Group;
   private enemyProjectilesGroup!: Phaser.Physics.Arcade.Group;
   private collectiblesGroup!: Phaser.Physics.Arcade.Group;
-  private lootGroup!: Phaser.Physics.Arcade.Group;
   private bloodStainsGroup!: Phaser.GameObjects.Group;
   private wallsGroup!: Phaser.Physics.Arcade.StaticGroup;
   private chestsGroup!: Phaser.Physics.Arcade.StaticGroup;
-  public dungeonGenerator!: DungeonGenerator;
 
   // Floor Depth Progression
   private currentFloorDepth: number = 1;
@@ -60,6 +64,9 @@ export class GameScene extends Phaser.Scene {
   private isNovaReady: boolean = true;
   private lastNovaTime: number = 0;
   private readonly NOVA_COOLDOWN = 8000;
+  private portalLight?: Phaser.GameObjects.Light;
+  private boneShieldLights: Phaser.GameObjects.Light[] = [];
+  private dungeonStaticLights: Phaser.GameObjects.Light[] = [];
 
   constructor() {
     super({ key: 'GameScene' });
@@ -70,6 +77,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
+    // 1. Enable Phaser Dynamic Lighting
+    this.lights.enable();
+    // Ambient color: dark gothic dark violet/dark burgundy shadow
+    this.lights.setAmbientColor(0x1a1118);
     // 1. Set World Bounds for Dungeon (1920 x 1440)
     const mapW = 1920;
     const mapH = 1440;
@@ -95,9 +106,6 @@ export class GameScene extends Phaser.Scene {
     this.playerProjectilesGroup = this.physics.add.group({ runChildUpdate: true });
     this.enemyProjectilesGroup = this.physics.add.group({ runChildUpdate: true });
     this.collectiblesGroup = this.physics.add.group();
-    this.lootGroup = this.physics.add.group();
-
-    this.dungeonGenerator = new DungeonGenerator(this, this.wallsGroup, this.chestsGroup);
 
     // 3. Generate Dungeon Map Layout
     this.buildDungeonMap(mapW, mapH, this.currentFloorDepth);
@@ -158,11 +166,6 @@ export class GameScene extends Phaser.Scene {
       this
     );
 
-    this.physics.add.collider(this.enemiesGroup, this.enemiesGroup);
-
-    // Listen for Blood Nova event from UI
-    window.addEventListener('trigger-blood-nova', () => this.triggerBloodNova());
-
     this.physics.add.overlap(
       this.player,
       this.enemiesGroup,
@@ -175,14 +178,6 @@ export class GameScene extends Phaser.Scene {
       this.player,
       this.collectiblesGroup,
       this.handleCollectItem as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
-      undefined,
-      this
-    );
-
-    this.physics.add.overlap(
-      this.player,
-      this.lootGroup,
-      this.handleCollectLoot as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
       undefined,
       this
     );
@@ -214,7 +209,88 @@ export class GameScene extends Phaser.Scene {
    * Builds procedural 3x3 interconnected Dungeon Map with Rooms, Corridors, Walls, Chests & Enemies
    */
   private buildDungeonMap(mapW: number, mapH: number, floorDepth: number) {
-    const rooms = this.dungeonGenerator.generate(mapW, mapH);
+    // Clear static lights
+    this.dungeonStaticLights.forEach(light => this.lights.removeLight(light));
+    this.dungeonStaticLights = [];
+    // Fill Isometric Floor Tiles
+    for (let x = 0; x < mapW; x += 48) {
+      for (let y = 0; y < mapH; y += 24) {
+        const tile = this.add.image(x + (y % 48 === 0 ? 0 : 24), y, 'tile_ground');
+        tile.setDepth(1);
+        tile.setLighting(true);
+      }
+    }
+
+    // Define 3x3 Room Grid Layout
+    const rooms: RoomData[] = [];
+    const cols = 3;
+    const rows = 3;
+    const roomW = 440;
+    const roomH = 320;
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const rx = 100 + c * 580;
+        const ry = 80 + r * 440;
+        const type: 'spawn' | 'chamber' | 'boss' = r === 0 && c === 0 ? 'spawn' : r === 2 && c === 2 ? 'boss' : 'chamber';
+
+        rooms.push({
+          x: rx,
+          y: ry,
+          width: roomW,
+          height: roomH,
+          centerX: rx + roomW / 2,
+          centerY: ry + roomH / 2,
+          type,
+        });
+      }
+    }
+
+    // Outer Perimeter Walls
+    this.buildWallLine(0, 0, mapW, 0); // Top
+    this.buildWallLine(0, mapH - 32, mapW, mapH - 32); // Bottom
+    this.buildWallLine(0, 0, 0, mapH); // Left
+    this.buildWallLine(mapW - 32, 0, mapW - 32, mapH); // Right
+
+    // Build Partition Walls around rooms with door openings (passages)
+    rooms.forEach((room, idx) => {
+      // Room perimeter walls with 80px door openings
+      const doorWidth = 80;
+
+      // Top Wall (with central doorway if connected)
+      if (room.y > 100) {
+        const midX = room.centerX;
+        this.buildWallLine(room.x, room.y, midX - doorWidth / 2, room.y);
+        this.buildWallLine(midX + doorWidth / 2, room.y, room.x + room.width, room.y);
+        // Door visual arch
+        const doorImage = this.add.image(midX, room.y, 'tile_door').setDepth(2);
+        doorImage.setLighting(true);
+        // Add soft ambient static light inside doorways (Vibrant Violet / Blue glow)
+        const doorLight = this.lights.addLight(midX, room.y, 100, 0xaf52de, 0.9);
+        this.dungeonStaticLights.push(doorLight);
+      }
+
+      // Left Wall (with central doorway if connected)
+      if (room.x > 120) {
+        const midY = room.centerY;
+        this.buildWallLine(room.x, room.y, room.x, midY - doorWidth / 2);
+        this.buildWallLine(room.x, midY + doorWidth / 2, room.x, room.y + room.height);
+        // Door visual arch
+        this.add.image(room.x, midY, 'tile_door').setDepth(2);
+      }
+
+      // Populate Chests in non-spawn rooms
+      if (room.type !== 'spawn' && Math.random() < 0.65) {
+        const chestX = room.x + 40 + Math.random() * (room.width - 80);
+        const chestY = room.y + 40 + Math.random() * (room.height - 80);
+        const chest = this.chestsGroup.create(chestX, chestY, 'spr_chest');
+        chest.setDepth(chestY);
+        chest.setLighting(true);
+        // Chest golden glow
+        const chestLight = this.lights.addLight(chestX, chestY, 80, 0xf59e0b, 1.0);
+        this.dungeonStaticLights.push(chestLight);
+      }
+    });
 
     // Create Player in Spawn Room 0
     const spawnRoom = rooms[0];
@@ -225,6 +301,10 @@ export class GameScene extends Phaser.Scene {
       this.player.setPosition(spawnRoom.centerX, spawnRoom.centerY);
     }
     this.player.stats.floorDepth = floorDepth;
+
+    if (!this.player.light) {
+      this.player.light = this.lights.addLight(this.player.x, this.player.y, 180, 0xff3344, 1.2);
+    }
 
     // Populate Enemies across Chambers & Boss Room
     this.totalFloorMonsters = 0;
@@ -242,6 +322,9 @@ export class GameScene extends Phaser.Scene {
         this.enemiesGroup.add(boss);
         this.depthGroup.add(boss);
         this.totalFloorMonsters++;
+
+        const bossLight = this.lights.addLight(room.centerX, room.centerY, 180, 0xdc2626, 1.4);
+        this.dungeonStaticLights.push(bossLight);
 
         // Add 2 Elite Bodyguards
         for (let i = 0; i < 2; i++) {
@@ -272,6 +355,28 @@ export class GameScene extends Phaser.Scene {
 
     // Floor Announcement Banner
     this.showFloorBanner(floorDepth);
+  }
+
+  /**
+   * Helper to build a line of stone wall physics bodies
+   */
+  private buildWallLine(x1: number, y1: number, x2: number, y2: number) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const dist = Math.hypot(dx, dy);
+    const steps = Math.ceil(dist / 32);
+
+    for (let i = 0; i <= steps; i++) {
+      const t = steps === 0 ? 0 : i / steps;
+      const wx = x1 + dx * t;
+      const wy = y1 + dy * t;
+
+      const wall = this.wallsGroup.create(wx, wy, 'tile_wall_brick');
+      wall.setSize(32, 32);
+      wall.setDepth(wy + 16);
+      wall.refreshBody();
+      wall.setLighting(true);
+    }
   }
 
   private showFloorBanner(floorDepth: number) {
@@ -305,7 +410,19 @@ export class GameScene extends Phaser.Scene {
    * Raycasting helper to test if line between two coordinates is blocked by dungeon walls
    */
   public hasLineOfSight(x1: number, y1: number, x2: number, y2: number): boolean {
-    return this.dungeonGenerator.hasLineOfSight(x1, y1, x2, y2);
+    const line = new Phaser.Geom.Line(x1, y1, x2, y2);
+    const wallChildren = this.wallsGroup.getChildren();
+
+    for (let i = 0; i < wallChildren.length; i++) {
+      const wall = wallChildren[i] as Phaser.Physics.Arcade.Sprite;
+      if (wall.active) {
+        const rect = new Phaser.Geom.Rectangle(wall.x - 16, wall.y - 16, 32, 32);
+        if (Phaser.Geom.Intersects.LineToRectangle(line, rect)) {
+          return false; // Obstacle blocks line of sight!
+        }
+      }
+    }
+    return true; // Clear line of sight!
   }
 
   /**
@@ -400,11 +517,55 @@ export class GameScene extends Phaser.Scene {
   }
 
   private triggerBloodNova() {
-    this.executeNovaEffect();
+    const now = this.time.now;
+    if (now < this.lastNovaTime + this.NOVA_COOLDOWN) return;
+
+    this.lastNovaTime = now;
+    this.cameras.main.flash(200, 200, 0, 0);
+    this.cameras.main.shake(300, 0.02);
+    soundEngine.playLevelUp(); // Temporary sound for nova
+
+    // Circular blast logic
+    const blastRadius = 180;
+    const damage = 60;
+
+    this.enemiesGroup.getChildren().forEach((obj: any) => {
+      const enemy = obj as Enemy;
+      const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
+      if (dist <= blastRadius) {
+        if (this.bloodEmitter) {
+          this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 15);
+        }
+        enemy.takeDamage(damage);
+      }
+    });
+
+    // Visual circle effect
+    const circle = this.add.circle(this.player.x, this.player.y, 10, 0xff0000, 0.5);
+    const novaLight = this.lights.addLight(this.player.x, this.player.y, 20, 0xdc2626, 3.0);
+    this.tweens.add({
+      targets: novaLight,
+      radius: blastRadius,
+      intensity: 0.1,
+      duration: 400,
+      onComplete: () => this.lights.removeLight(novaLight)
+    });
+    this.tweens.add({
+      targets: circle,
+      radius: blastRadius,
+      alpha: 0,
+      duration: 400,
+      onComplete: () => circle.destroy()
+    });
   }
 
   update(time: number, delta: number) {
     if (this.isPaused) return;
+
+    // Sync enemy count to SoundEngine for dynamic BGM transition
+    if (this.enemiesGroup) {
+      soundEngine.setEnemyCount(this.enemiesGroup.countActive());
+    }
 
     // ISO Y-SORTING DEPTH SYSTEM
     this.depthGroup.getChildren().forEach((gameObject: any) => {
@@ -542,31 +703,38 @@ export class GameScene extends Phaser.Scene {
   }
 
   private executeNovaEffect() {
-    const novaRing = this.add.circle(this.player.x, this.player.y, 10, 0xef4444, 0.7).setDepth(1500);
-    
-    // Juice: Screen Shake and Flash
-    this.cameras.main.shake(300, 0.02);
-    this.cameras.main.flash(200, 200, 0, 0, false);
-    soundEngine.playLevelUp(); // Temporary powerful sound
+    const novaRing = this.add.circle(this.player.x, this.player.y, 10, 0x22c55e, 0.7).setDepth(1500);
+    if (typeof (novaRing as any).setLighting === "function") (novaRing as any).setLighting(true);
 
+    // Create an explosive green dynamic Point Light at Nova site
+    const novaLight = this.lights.addLight(this.player.x, this.player.y, 20, 0x10b981, 3.0);
+    this.tweens.add({
+      targets: novaLight,
+      radius: 180,
+      intensity: 0.1,
+      duration: 350,
+    });
     this.tweens.add({
       targets: novaRing,
-      radius: 200,
+      radius: 180,
       alpha: 0,
-      duration: 400,
-      onComplete: () => novaRing.destroy(),
+      duration: 350,
+      onComplete: () => {
+        novaRing.destroy();
+        this.lights.removeLight(novaLight);
+      },
     });
 
     this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
       const enemy = enemyObj as Enemy;
       if (enemy.active) {
         const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
-        if (dist <= 200) {
-          if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 15);
-          const isDead = enemy.takeDamage(75 * this.player.stats.damageMultiplier);
+        if (dist <= 180) {
+          if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 10);
+          const isDead = enemy.takeDamage(65 * this.player.stats.damageMultiplier);
           const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, enemy.x, enemy.y);
-          enemy.x += Math.cos(angle) * 40;
-          enemy.y += Math.sin(angle) * 40;
+          enemy.x += Math.cos(angle) * 30;
+          enemy.y += Math.sin(angle) * 30;
 
           if (isDead) {
             this.handleEnemyDeath(enemy);
@@ -578,11 +746,24 @@ export class GameScene extends Phaser.Scene {
 
   private executeSyphonEffect() {
     const circle = this.add.circle(this.player.x, this.player.y, 150, 0x9333ea, 0.25).setDepth(1400);
+    if (typeof (circle as any).setLighting === "function") (circle as any).setLighting(true);
+
+    // Large dynamic Point Light pulsing for Syphon Soul
+    const syphonLight = this.lights.addLight(this.player.x, this.player.y, 10, 0xaf52de, 2.5);
+    this.tweens.add({
+      targets: syphonLight,
+      radius: 200,
+      intensity: 0.2,
+      duration: 400,
+    });
     this.tweens.add({
       targets: circle,
       alpha: 0,
       duration: 400,
-      onComplete: () => circle.destroy(),
+      onComplete: () => {
+        circle.destroy();
+        this.lights.removeLight(syphonLight);
+      },
     });
 
     let totalStolenHp = 0;
@@ -611,9 +792,17 @@ export class GameScene extends Phaser.Scene {
     this.boneShieldVisuals.forEach((s) => s.destroy());
     this.boneShieldVisuals = [];
 
+    this.boneShieldLights.forEach((light) => this.lights.removeLight(light));
+    this.boneShieldLights = [];
+
     for (let i = 0; i < 3; i++) {
       const bone = this.add.sprite(this.player.x, this.player.y, 'particle_blood_red').setTint(0xe2e8f0).setScale(1.8).setDepth(1800);
+      bone.setLighting(true);
       this.boneShieldVisuals.push(bone);
+
+      // Link orbital light to each bone
+      const bLight = this.lights.addLight(bone.x, bone.y, 40, 0xe2e8f0, 1.2);
+      this.boneShieldLights.push(bLight);
     }
 
     let angle = 0;
@@ -626,7 +815,16 @@ export class GameScene extends Phaser.Scene {
         angle += 0.1;
         this.boneShieldVisuals.forEach((bone, idx) => {
           const boneAngle = angle + (idx * Math.PI * 2) / 3;
-          bone.setPosition(this.player.x + Math.cos(boneAngle) * 45, this.player.y + Math.sin(boneAngle) * 45);
+          const targetX = this.player.x + Math.cos(boneAngle) * 45;
+          const targetY = this.player.y + Math.sin(boneAngle) * 45;
+          bone.setPosition(targetX, targetY);
+
+          // Update linked light position
+          const bLight = this.boneShieldLights[idx];
+          if (bLight) {
+            bLight.x = targetX;
+            bLight.y = targetY;
+          }
 
           this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
             const enemy = enemyObj as Enemy;
@@ -656,6 +854,7 @@ export class GameScene extends Phaser.Scene {
     // Create wall spark / dust impact effect
     for (let i = 0; i < 4; i++) {
       const spark = this.add.image(proj.x, proj.y, 'particle_blood_red').setTint(0xfacc15).setDepth(1700).setScale(0.8);
+      spark.setLighting(true);
       this.tweens.add({
         targets: spark,
         x: proj.x + (Math.random() - 0.5) * 30,
@@ -753,12 +952,14 @@ export class GameScene extends Phaser.Scene {
 
     // 2. Gore Effect: Blood Stain on Floor
     const stain = this.add.image(enemy.x, enemy.y, 'blood_pool_stain').setDepth(2);
+    stain.setLighting(true);
     stain.setRotation(Math.random() * Math.PI);
     stain.setAlpha(0.8);
 
     // 3. Particle Splatter
     for (let i = 0; i < 8; i++) {
       const particle = this.add.image(enemy.x, enemy.y, 'particle_blood_red');
+      particle.setLighting(true);
       particle.setTint(enemy.config.goreEffect === 'bone_dust' ? 0xdcd3c1 : 0xb91c1c);
       particle.setDepth(1600);
 
@@ -785,13 +986,6 @@ export class GameScene extends Phaser.Scene {
       this.collectiblesGroup.add(orb);
     }
 
-    // 5. Check Loot Drop
-    if (LootSystem.rollLootChance()) {
-      const lootData = LootSystem.generateLoot(this.currentFloorDepth);
-      const loot = new LootSprite(this, enemy.x + (Math.random() - 0.5) * 30, enemy.y + (Math.random() - 0.5) * 30, lootData);
-      this.lootGroup.add(loot);
-    }
-
     enemy.destroy();
 
     // Check if Floor Cleared -> Reveal Portal
@@ -803,6 +997,10 @@ export class GameScene extends Phaser.Scene {
   private revealDescentPortal(x: number, y: number) {
     this.isPortalActive = true;
     this.portalSprite = this.add.sprite(x, y, 'spr_portal').setDepth(10).setScale(1.2);
+    this.portalSprite.setLighting(true);
+
+    // Create a dynamic portal point light (swirling magical secondaryViolet color)
+    this.portalLight = this.lights.addLight(x, y, 140, 0xaf52de, 1.8);
 
     // Swirling portal tween
     this.tweens.add({
@@ -874,30 +1072,6 @@ export class GameScene extends Phaser.Scene {
     }
 
     item.destroy();
-  }
-
-  private handleCollectLoot(playerObj: any, lootObj: any) {
-    const loot = lootObj as LootSprite;
-    if (!loot.active) return;
-
-    this.player.equipLoot(loot.lootData);
-    
-    // Fancy text particle
-    const text = this.add.text(loot.x, loot.y - 15, `+ ${loot.lootData.name}`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '8px',
-      color: loot.lootData.rarity === 'epic' ? '#a855f7' : loot.lootData.rarity === 'rare' ? '#3b82f6' : '#ffffff'
-    }).setOrigin(0.5).setDepth(2000);
-
-    this.tweens.add({
-      targets: text,
-      y: loot.y - 40,
-      alpha: 0,
-      duration: 1200,
-      onComplete: () => text.destroy()
-    });
-
-    loot.destroy();
   }
 
   private triggerLevelUp() {

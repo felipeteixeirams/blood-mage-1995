@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { PlayerStats, SpellConfig, LootItem } from '../../types/game';
+import { PlayerStats, SpellConfig } from '../../types/game';
 import spellsData from '../../data/spells.json';
 import { soundEngine } from '../../utils/soundEngine';
 
@@ -11,7 +11,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private skillCooldowns: Record<string, number> = {};
   public isInvulnerable: boolean = false;
   private invulnerableTimer: number = 0;
-  public equippedLoot: LootItem[] = [];
+  public light?: Phaser.GameObjects.Light;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'spr_bloodmage');
@@ -21,6 +21,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(true);
     this.setSize(20, 24);
     this.setOffset(6, 20);
+
+    // Set lighting pipeline
+    this.setLighting(true);
+
+    // Create a dynamic light centered on the Player
+    this.light = scene.lights.addLight(x, y, 180, 0xff3344, 1.2);
 
     const typedSpellsData = spellsData as Record<string, SpellConfig>;
 
@@ -69,6 +75,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Movement Physics
     const speed = this.stats.moveSpeed;
     this.setVelocity(this.moveVector.x * speed, this.moveVector.y * speed);
+
+    // Update player light position
+    if (this.light) {
+      this.light.x = this.x;
+      this.light.y = this.y;
+    }
 
     // Flip sprite based on move or aim direction
     if (this.aimVector.x !== 0) {
@@ -199,26 +211,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     return false;
   }
 
-  public equipLoot(item: LootItem) {
-    this.equippedLoot.push(item);
-    
-    if (item.stats.maxHpBonus) {
-      this.stats.maxHp += item.stats.maxHpBonus;
-      this.stats.hp += item.stats.maxHpBonus; // Heal by bonus amount
+  public destroy(fromScene?: boolean) {
+    if (this.light) {
+      this.scene.lights.removeLight(this.light);
+      this.light = undefined;
     }
-    if (item.stats.speedBonus) {
-      this.stats.moveSpeed += item.stats.speedBonus;
-    }
-    if (item.stats.damageMultiplier) {
-      this.stats.damageMultiplier += item.stats.damageMultiplier;
-    }
-    if (item.stats.lifestealBonus) {
-      this.stats.vampirism += item.stats.lifestealBonus;
-    }
-
-    soundEngine.playOrbPickup(); // Play sound for loot
-    
-    // Notify React UI
-    window.dispatchEvent(new CustomEvent('loot-acquired', { detail: item }));
+    super.destroy(fromScene);
   }
 }

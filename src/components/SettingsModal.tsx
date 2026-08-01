@@ -1,7 +1,6 @@
 import React from 'react';
 import { GameSettings } from '../types/game';
 import { X, Volume2, Monitor, Touchpad, Settings as SettingsIcon } from 'lucide-react';
-import { motion } from 'motion/react';
 import { soundEngine } from '../utils/soundEngine';
 
 interface SettingsModalProps {
@@ -22,18 +21,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none"
-    >
-      <motion.div 
-        initial={{ scale: 0.95, opacity: 0, y: 10 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        className="w-full max-w-lg bg-[#120a0e] border-4 border-red-900/80 rounded-xl p-5 md:p-6 shadow-[0_0_50px_rgba(185,28,28,0.5)] flex flex-col space-y-5"
-      >
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none">
+      <div className="w-full max-w-lg bg-[#120a0e] border-4 border-red-900/80 rounded-xl p-5 md:p-6 shadow-[0_0_50px_rgba(185,28,28,0.5)] flex flex-col space-y-5">
         {/* Header */}
         <div className="flex justify-between items-center border-b border-red-900/60 pb-3">
           <div className="flex items-center gap-3">
@@ -151,7 +140,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         >
           SALVAR & FECHAR
         </button>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };

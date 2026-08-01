@@ -13,9 +13,6 @@ export default defineConfig(() => {
       VitePWA({
         registerType: 'autoUpdate',
         includeAssets: ['icon-512.png'],
-        workbox: {
-          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        },
         manifest: {
           name: 'Bloodmage 1995',
           short_name: 'Bloodmage',

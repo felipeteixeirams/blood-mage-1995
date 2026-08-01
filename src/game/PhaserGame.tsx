@@ -1,54 +1,28 @@
 import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import { BootScene } from './scenes/BootScene';
-import { GameScene } from './scenes/GameScene';
-import { useGameStore } from '../store/gameStore';
-import { PlayerStats, UpgradeOption } from '../types/game';
-import { saveHighScore } from '../utils/localStorage';
+import { GameScene, GameSceneCallbacks } from './scenes/GameScene';
 
-interface PhaserGameProps {
+interface PhaserGameProps extends GameSceneCallbacks {
+  touchMoveInput: { x: number; y: number };
+  touchAimInput: { x: number; y: number };
+  activeSkillTrigger: 'nova' | 'syphon' | 'bone_shield' | null;
+  onSkillTriggerProcessed: () => void;
   gameSceneRef: React.MutableRefObject<GameScene | null>;
 }
 
 export const PhaserGame: React.FC<PhaserGameProps> = ({
+  onStatsUpdate,
+  onLevelUp,
+  onGameOver,
+  touchMoveInput,
+  touchAimInput,
+  activeSkillTrigger,
+  onSkillTriggerProcessed,
   gameSceneRef,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const phaserGameRef = useRef<Phaser.Game | null>(null);
-
-  const {
-    setPlayerStats: onStatsUpdate,
-    setLevelUpData,
-    setGameOverStats,
-    setGameState,
-    addHighScore,
-    touchMoveInput,
-    touchAimInput,
-    activeSkillTrigger,
-    setActiveSkillTrigger: onSkillTriggerProcessed,
-  } = useGameStore();
-
-  const onLevelUp = (level: number, choices: UpgradeOption[]) => {
-    setLevelUpData({ level, choices });
-  };
-
-  const onGameOver = (stats: PlayerStats) => {
-    setGameOverStats(stats);
-    setGameState('menu'); // reset game canvas loop state
-
-    // Format time
-    const m = Math.floor(stats.timeSurvivedSeconds / 60).toString().padStart(2, '0');
-    const s = Math.floor(stats.timeSurvivedSeconds % 60).toString().padStart(2, '0');
-
-    // Save record to local storage via store
-    addHighScore({
-      score: stats.score,
-      kills: stats.kills,
-      wave: stats.wave,
-      timeSurvived: `${m}:${s}`,
-      levelReached: stats.level,
-    });
-  };
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -111,7 +85,7 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
   useEffect(() => {
     if (activeSkillTrigger && gameSceneRef.current) {
       gameSceneRef.current.triggerSkill(activeSkillTrigger);
-      onSkillTriggerProcessed(null);
+      onSkillTriggerProcessed();
     }
   }, [activeSkillTrigger]);
 

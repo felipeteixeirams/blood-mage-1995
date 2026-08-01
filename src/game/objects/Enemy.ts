@@ -49,6 +49,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(true);
     this.setSize(22, 26);
 
+    // Set lighting pipeline
+    this.setLighting(true);
+
     // Initial facing angle randomized
     this.facingAngle = Math.random() * Math.PI * 2;
 
@@ -129,6 +132,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.emoteSprite.destroy();
     }
     this.emoteSprite = this.scene.add.image(this.x, this.y - 28, key).setDepth(2000);
+    this.emoteSprite.setLighting(true); // Lit status icon
     this.scene.tweens.add({
       targets: this.emoteSprite,
       y: this.y - 38,
@@ -378,5 +382,13 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     soundEngine.playBloodSquish();
     return this.hp <= 0;
+  }
+
+  public destroy(fromScene?: boolean) {
+    if (this.emoteSprite) {
+      this.emoteSprite.destroy();
+      this.emoteSprite = undefined;
+    }
+    super.destroy(fromScene);
   }
 }
