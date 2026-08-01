@@ -1,3 +1,19 @@
+export type ItemRarity = 'common' | 'rare' | 'epic';
+export type ItemType = 'weapon' | 'armor' | 'relic';
+
+export interface LootItem {
+  id: string;
+  name: string;
+  type: ItemType;
+  rarity: ItemRarity;
+  stats: {
+    damageMultiplier?: number;
+    maxHpBonus?: number;
+    speedBonus?: number;
+    lifestealBonus?: number;
+  };
+}
+
 export type MonsterBehavior = 'chaser' | 'ranged' | 'charger' | 'swarmer' | 'boss';
 
 export type MonsterTemperament = 'aggressive' | 'tactical' | 'timid' | 'relentless';

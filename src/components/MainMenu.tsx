@@ -1,5 +1,6 @@
 import React from 'react';
 import { Play, Settings, BookOpen, Trophy, Volume2, VolumeX, ShieldAlert } from 'lucide-react';
+import { motion } from 'motion/react';
 import { soundEngine } from '../utils/soundEngine';
 
 interface MainMenuProps {
@@ -20,7 +21,12 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   onToggleMute,
 }) => {
   return (
-    <div className="relative w-full h-full min-h-screen bg-[#0d0709] flex flex-col items-center justify-between p-4 md:p-8 overflow-hidden select-none">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.2, ease: "easeOut" }}
+      className="relative w-full h-full min-h-screen bg-[#0d0709] flex flex-col items-center justify-between p-4 md:p-8 overflow-hidden select-none"
+    >
       {/* Background Animated Graveyard & Fog Atmosphere */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-950/20 via-[#0a0508] to-black pointer-events-none" />
 
@@ -47,7 +53,12 @@ export const MainMenu: React.FC<MainMenuProps> = ({
       </div>
 
       {/* Center Hero Area */}
-      <div className="relative z-10 flex flex-col items-center text-center my-auto space-y-6 max-w-2xl">
+      <motion.div 
+        initial={{ y: 30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+        className="relative z-10 flex flex-col items-center text-center my-auto space-y-6 max-w-2xl"
+      >
         {/* Title Logo */}
         <div className="space-y-2">
           <p className="text-xs md:text-sm font-pixel text-red-600 tracking-widest uppercase">
@@ -109,13 +120,13 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             </button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Footer Instructions */}
       <div className="relative z-10 text-center text-xs text-gray-500 font-mono space-y-1 pb-2">
         <p>Controles: [WASD / Joysticks Virtuais Mobile] • [Mouse / Touch Para Mirar] • [1, 2, 3 Magias]</p>
         <p className="text-gray-600">Desenvolvido com Phaser 3 + React • PWA Suportado</p>
       </div>
-    </div>
+    </motion.div>
   );
 };

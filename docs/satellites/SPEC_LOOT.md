@@ -1,7 +1,14 @@
-# Spec: Sistema de Loot e Atributos Dinâmicos
+---
+node_type: Satellite
+parent_node: /docs/SPEC.md
+domain: Gameplay Mechanics / Loot System
+token_weight: Medium (~600 tokens)
+---
+
+# 📦 Satellite Spec: Sistema de Loot e Atributos Dinâmicos
 
 ## Objetivo Geral
-Adicionar profundidade ao ciclo de jogo recompensando o jogador com itens que alteram atributos ao derrotar inimigos e explorar andares, sem conflitar com a revisão visual que será feita pelo Jules.
+Adicionar profundidade ao ciclo de jogo recompensando o jogador com itens que alteram atributos ao derrotar inimigos e explorar andares.
 
 ## Escopo
 - Definição de tipos de itens (Arma, Armadura, Relíquia).
