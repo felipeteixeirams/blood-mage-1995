@@ -1,36 +1,38 @@
-# [Project name]
+# Bloodmage 1995
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A browser-based isometric 16-bit action RPG dungeon crawler. Players battle waves of monsters, collect loot, cast spells, level up, and progress through procedurally-generated dungeons in a dark gothic fantasy world. Built with Phaser 4 + React + Zustand.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- Workflows manage dev servers — use the Replit UI or `WorkflowsRestart` tool
 - `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Frontend: React 19 + Vite 7, Tailwind CSS v4, Zustand 5, Motion
+- Game engine: Phaser 4 (arcade physics, procedural dungeon generation)
+- UI: shadcn/ui components, Radix UI primitives
+- API: Express 5 (scaffold, not heavily used — game state is client-side)
+- DB: PostgreSQL + Drizzle ORM (scaffold, high scores stored in localStorage)
+- Fonts: Press Start 2P, Cinzel, UnifrakturMaguntia, VT323 (Google Fonts)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/bloodmage/src/game/` — Phaser scenes, game objects, systems
+- `artifacts/bloodmage/src/components/` — React UI overlays (HUD, modals, menus)
+- `artifacts/bloodmage/src/store/gameStore.ts` — Zustand global state
+- `artifacts/bloodmage/src/utils/` — sound engine, telemetry, localStorage helpers
+- `artifacts/bloodmage/src/data/` — JSON data files (monsters, spells, talents, waves)
+- `artifacts/bloodmage/index.html` — entry point with Google Fonts preloads
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
-
-## Product
-
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Game runs entirely client-side; high scores and settings persist via localStorage
+- Phaser canvas is mounted as a React component (`PhaserGame.tsx`) with a `gameSceneRef` for cross-boundary calls
+- PWA/service-worker removed (not supported in Replit workspace); `vite-plugin-pwa` dropped
+- All game deps (`phaser`, `zustand`, `motion`) are in `devDependencies` per workspace convention for static artifacts
 
 ## User preferences
 
@@ -38,7 +40,9 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Do not run `pnpm dev` at the workspace root — artifacts need env vars (`PORT`, `BASE_PATH`) injected by the managed workflow
+- `phaser`, `zustand`, `motion` must remain in `artifacts/bloodmage/package.json` devDependencies — they are not in the workspace catalog
+- The `virtual:pwa-register` import was removed from `main.tsx`; do not re-add it without also adding `vite-plugin-pwa`
 
 ## Pointers
 

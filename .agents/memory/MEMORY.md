@@ -1,0 +1,1 @@
+- [Phaser game migration](phaser-migration.md) — Phaser/Zustand/Motion must be in artifact devDeps; PWA plugin removed; game is fully client-side
