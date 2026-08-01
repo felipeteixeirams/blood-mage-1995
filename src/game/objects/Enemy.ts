@@ -38,6 +38,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private personalPhase: number = 0;
   private baseScale: number = 1.0;
 
+  // Attack Telegraphing & Realism Engine
+  public attackPhase: 'none' | 'windup' | 'strike' | 'recovery' = 'none';
+  private attackPhaseEndTime: number = 0;
+  private attackTargetPos: { x: number; y: number } = { x: 0, y: 0 };
+  private attackType: 'melee' | 'ranged' = 'melee';
+
   constructor(scene: Phaser.Scene, x: number, y: number, monsterId: string) {
     const rawData = monstersData as Record<string, MonsterConfig>;
     const monsterConfig = rawData[monsterId] || rawData['skeleton_warrior'];
@@ -192,7 +198,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     playerY: number,
     hasWallBetweenPlayer: boolean,
     nearbyEnemies?: Enemy[]
-  ): { attack: boolean; damage: number } {
+  ): { attack: boolean; damage: number; attackType?: 'melee' | 'ranged'; dodged?: boolean } {
     if (!this.active) return { attack: false, damage: 0 };
 
     const distanceToPlayer = Phaser.Math.Distance.Between(this.x, this.y, playerX, playerY);
@@ -238,11 +244,75 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       }
     }
 
-    let result = { attack: false, damage: 0 };
+    let result: { attack: boolean; damage: number; attackType?: 'melee' | 'ranged'; dodged?: boolean } = { attack: false, damage: 0 };
 
     // If dodging, retain side-step velocity
     if (this.isDodging) {
       return result;
+    }
+
+    // ACTIVE ATTACK STATE MACHINE (Windup -> Strike -> Recovery)
+    if (this.attackPhase !== 'none') {
+      if (this.attackPhase === 'windup') {
+        // Slow down and coil during windup
+        if (this.body) {
+          this.setVelocity(this.body.velocity.x * 0.15, this.body.velocity.y * 0.15);
+        }
+        this.facingAngle = Phaser.Math.Angle.Between(this.x, this.y, this.attackTargetPos.x, this.attackTargetPos.y);
+        this.setFlipX(this.attackTargetPos.x < this.x);
+
+        // Visual telegraph: warning tint & backward coil stretch
+        this.setTint(0xef4444);
+        const coilFactor = 1.0 + Math.sin(time * 0.02) * 0.08;
+        this.setScale(this.baseScale * 0.86 * coilFactor, this.baseScale * 1.2 * coilFactor);
+        this.setRotation(this.flipX ? 0.18 : -0.18);
+
+        if (time >= this.attackPhaseEndTime) {
+          this.attackPhase = 'strike';
+          this.attackPhaseEndTime = time + 110;
+
+          soundEngine.playSwing();
+
+          // Rapid forward lunge toward target position
+          const lungeAngle = Phaser.Math.Angle.Between(this.x, this.y, this.attackTargetPos.x, this.attackTargetPos.y);
+          const lungeSpeed = (this.config.speed || 100) * 2.6;
+          this.setVelocity(Math.cos(lungeAngle) * lungeSpeed, Math.sin(lungeAngle) * lungeSpeed);
+
+          // Hit check: Did player remain in the attack range during windup?
+          if (this.attackType === 'ranged') {
+            result = { attack: true, damage: this.config.damage, attackType: 'ranged' };
+          } else {
+            const currentDist = Phaser.Math.Distance.Between(this.x, this.y, playerX, playerY);
+            if (currentDist <= this.config.attackRange + 22) {
+              result = { attack: true, damage: this.config.damage, attackType: 'melee' };
+            } else {
+              result = { attack: false, damage: 0, dodged: true };
+            }
+          }
+        }
+        return result;
+      } else if (this.attackPhase === 'strike') {
+        // Extension snap during active hit window
+        this.setScale(this.baseScale * 1.25, this.baseScale * 0.82);
+        this.setRotation(this.flipX ? -0.15 : 0.15);
+
+        if (time >= this.attackPhaseEndTime) {
+          this.attackPhase = 'recovery';
+          this.attackPhaseEndTime = time + 220;
+          this.applyBaseTint();
+        }
+        return result;
+      } else if (this.attackPhase === 'recovery') {
+        // Recovery cool-down stance
+        this.setScale(this.baseScale);
+        this.setRotation(0);
+
+        if (time >= this.attackPhaseEndTime) {
+          this.attackPhase = 'none';
+          this.lastAttackTime = time;
+        }
+        return result;
+      }
     }
 
     const effectiveBaseSpeed = this.config.speed * this.speedMultiplier;
@@ -318,9 +388,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
             this.setVelocity(Math.cos(waveAngle) * currentSpeed, Math.sin(waveAngle) * currentSpeed);
 
             if (distanceToPlayer <= this.config.attackRange) {
-              if (time > this.lastAttackTime + 1000) {
-                this.lastAttackTime = time;
-                result = { attack: true, damage: this.config.damage };
+              if (time > this.lastAttackTime + 900) {
+                this.attackPhase = 'windup';
+                this.attackPhaseEndTime = time + 180;
+                this.attackTargetPos = { x: playerX, y: playerY };
+                this.attackType = 'melee';
+                soundEngine.playTelegraph();
               }
             }
             break;
@@ -336,9 +409,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
             );
 
             if (distanceToPlayer <= this.config.attackRange) {
-              if (time > this.lastAttackTime + 1000) {
-                this.lastAttackTime = time;
-                result = { attack: true, damage: this.config.damage };
+              if (time > this.lastAttackTime + 1100) {
+                this.attackPhase = 'windup';
+                this.attackPhaseEndTime = time + 300;
+                this.attackTargetPos = { x: playerX, y: playerY };
+                this.attackType = 'melee';
+                soundEngine.playTelegraph();
               }
             }
             break;
@@ -355,10 +431,13 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
               this.scene.physics.moveTo(this, playerX, playerY, currentSpeed);
             }
             if (distanceToPlayer <= this.config.attackRange) {
-              if (time > this.lastAttackTime + 800) {
-                this.lastAttackTime = time;
+              if (time > this.lastAttackTime + 900) {
                 this.isCharging = false;
-                result = { attack: true, damage: this.config.damage };
+                this.attackPhase = 'windup';
+                this.attackPhaseEndTime = time + 420;
+                this.attackTargetPos = { x: playerX, y: playerY };
+                this.attackType = 'melee';
+                soundEngine.playTelegraph();
               }
             }
             break;
@@ -381,9 +460,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
             }
 
             if (distanceToPlayer <= this.config.attackRange + 50) {
-              if (time > this.lastAttackTime + (this.aiState === 'frenzy' ? 1400 : 2100)) {
-                this.lastAttackTime = time;
-                result = { attack: true, damage: this.config.damage };
+              if (time > this.lastAttackTime + (this.aiState === 'frenzy' ? 1300 : 1900)) {
+                this.attackPhase = 'windup';
+                this.attackPhaseEndTime = time + 380;
+                this.attackTargetPos = { x: playerX, y: playerY };
+                this.attackType = 'ranged';
+                soundEngine.playTelegraph();
               }
             }
             break;

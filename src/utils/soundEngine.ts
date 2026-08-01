@@ -400,6 +400,62 @@ class SoundEngine {
     osc.stop(now + 0.25);
   }
 
+  public playSwing() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const bufferSize = this.ctx.sampleRate * 0.12;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1200, now);
+    filter.frequency.exponentialRampToValueAtTime(300, now + 0.12);
+    filter.Q.value = 3;
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(this.sfxVolume * 0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    noise.start(now);
+  }
+
+  public playTelegraph() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.exponentialRampToValueAtTime(280, now + 0.15);
+
+    gain.gain.setValueAtTime(this.sfxVolume * 0.25, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.15);
+  }
+
   public startGothicAmbientBGM() {
     if (this.isBgmPlaying) return;
     this.initCtx();

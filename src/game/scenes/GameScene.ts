@@ -512,7 +512,7 @@ export class GameScene extends Phaser.Scene {
         const updateResult = enemy.updateEnemy(time, delta, this.player.x, this.player.y, hasWallBetween, activeEnemiesList);
 
         if (updateResult.attack) {
-          if (enemy.config.behavior === 'ranged' || enemy.config.behavior === 'boss') {
+          if (updateResult.attackType === 'ranged' || enemy.config.behavior === 'ranged' || enemy.config.behavior === 'boss') {
             // Fire ranged energy bolt
             const proj = new Projectile(this, enemy.x, enemy.y, 'proj_energy_bolt');
             const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, this.player.x, this.player.y);
@@ -521,7 +521,11 @@ export class GameScene extends Phaser.Scene {
           } else {
             // Melee hit player
             this.playerHitByEnemy(updateResult.damage);
+            const attackAngle = Phaser.Math.Angle.Between(enemy.x, enemy.y, this.player.x, this.player.y);
+            this.spawnMeleeSlashEffect(this.player.x, this.player.y, attackAngle);
           }
+        } else if (updateResult.dodged) {
+          this.spawnFloatingText(this.player.x, this.player.y - 14, 'MISS!', '#94a3b8', false);
         }
       }
     });
@@ -1001,6 +1005,24 @@ export class GameScene extends Phaser.Scene {
       duration: isCrit ? 850 : 650,
       ease: 'Cubic.easeOut',
       onComplete: () => txt.destroy(),
+    });
+  }
+
+  private spawnMeleeSlashEffect(x: number, y: number, angle: number) {
+    const slash = this.add.graphics({ x, y }).setDepth(2000);
+    slash.lineStyle(3, 0xef4444, 0.95);
+    slash.beginPath();
+    slash.arc(0, 0, 20, angle - 0.75, angle + 0.75, false);
+    slash.strokePath();
+
+    this.tweens.add({
+      targets: slash,
+      alpha: 0,
+      scaleX: 1.45,
+      scaleY: 1.45,
+      duration: 150,
+      ease: 'Quad.easeOut',
+      onComplete: () => slash.destroy(),
     });
   }
 
