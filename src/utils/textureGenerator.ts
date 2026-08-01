@@ -4,8 +4,12 @@ import Phaser from 'phaser';
  * Procedurally generates 16-bit Pixel Art Sprites & Textures for Phaser 3
  */
 export function generateGameTextures(scene: Phaser.Scene) {
-  // Check if textures already generated
-  if (scene.textures.exists('spr_bloodmage')) return;
+  const addTexture = (key: string, canvas: HTMLCanvasElement) => {
+    if (scene.textures.exists(key)) {
+      scene.textures.remove(key);
+    }
+    scene.textures.addCanvas(key, canvas);
+  };
 
   const createPixelCanvas = (width: number, height: number, drawFn: (ctx: CanvasRenderingContext2D) => void): HTMLCanvasElement => {
     const canvas = document.createElement('canvas');
@@ -19,10 +23,10 @@ export function generateGameTextures(scene: Phaser.Scene) {
     return canvas;
   };
 
-  // 1. Isometric Ground Tile (64x32 Isometric Diamond)
+  // 1. Dark Gothic Isometric Ground Tile (64x32 Isometric Diamond)
   const tileCanvas = createPixelCanvas(64, 32, (ctx) => {
-    // Fill dark stone diamond
-    ctx.fillStyle = '#1c151b';
+    // Fill dark stone diamond base
+    ctx.fillStyle = '#140e15';
     ctx.beginPath();
     ctx.moveTo(32, 0);
     ctx.lineTo(64, 16);
@@ -31,24 +35,30 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.closePath();
     ctx.fill();
 
-    // Dark border
-    ctx.strokeStyle = '#2d1f27';
-    ctx.lineWidth = 2;
+    // Dark slate stone border mortar
+    ctx.strokeStyle = '#221623';
+    ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    // Cobblestone pixel details
-    ctx.fillStyle = '#2d2229';
-    ctx.fillRect(20, 8, 8, 4);
-    ctx.fillRect(36, 12, 10, 5);
-    ctx.fillRect(16, 18, 12, 6);
-    ctx.fillRect(38, 22, 8, 4);
+    // Cobblestone / Flagstone slab pixel textures
+    ctx.fillStyle = '#1f1621';
+    ctx.fillRect(18, 6, 12, 6);
+    ctx.fillRect(34, 10, 14, 7);
+    ctx.fillRect(12, 16, 16, 8);
+    ctx.fillRect(32, 20, 12, 6);
 
-    // Blood stains in cobblestone
-    ctx.fillStyle = '#610a0e';
-    ctx.fillRect(28, 14, 4, 3);
-    ctx.fillRect(32, 16, 3, 3);
+    // Subtle stone highlights
+    ctx.fillStyle = '#2b1e2d';
+    ctx.fillRect(19, 7, 10, 2);
+    ctx.fillRect(35, 11, 12, 2);
+    ctx.fillRect(13, 17, 14, 2);
+
+    // Ancient blood stains on dungeon floor
+    ctx.fillStyle = 'rgba(100, 12, 20, 0.65)';
+    ctx.fillRect(26, 12, 6, 4);
+    ctx.fillRect(30, 15, 5, 4);
   });
-  scene.textures.addCanvas('tile_ground', tileCanvas);
+  addTexture('tile_ground', tileCanvas);
 
   // 2. Bloodmage Player (32x48)
   const playerCanvas = createPixelCanvas(32, 48, (ctx) => {
@@ -83,7 +93,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#d4af37';
     ctx.fillRect(11, 20, 10, 2);
   });
-  scene.textures.addCanvas('spr_bloodmage', playerCanvas);
+  addTexture('spr_bloodmage', playerCanvas);
 
   // 3. Skeleton Warrior (32x40)
   const skeletonCanvas = createPixelCanvas(32, 40, (ctx) => {
@@ -108,7 +118,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#8f4115'; // Rust
     ctx.fillRect(22, 18, 3, 6);
   });
-  scene.textures.addCanvas('spr_skeleton', skeletonCanvas);
+  addTexture('spr_skeleton', skeletonCanvas);
 
   // 4. Cultist Acolyte (32x40)
   const cultistCanvas = createPixelCanvas(32, 40, (ctx) => {
@@ -123,7 +133,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(12, 8, 2, 2);
     ctx.fillRect(18, 8, 2, 2);
   });
-  scene.textures.addCanvas('spr_cultist', cultistCanvas);
+  addTexture('spr_cultist', cultistCanvas);
 
   // 5. Hell Hound (36x28)
   const houndCanvas = createPixelCanvas(36, 28, (ctx) => {
@@ -142,7 +152,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(16, 4, 2, 4);
     ctx.fillRect(22, 4, 2, 4);
   });
-  scene.textures.addCanvas('spr_hound', houndCanvas);
+  addTexture('spr_hound', houndCanvas);
 
   // 6. Flesh Golem (48x56)
   const golemCanvas = createPixelCanvas(48, 56, (ctx) => {
@@ -162,7 +172,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#ef4444'; // Glowing red eye
     ctx.fillRect(20, 5, 4, 3);
   });
-  scene.textures.addCanvas('spr_golem', golemCanvas);
+  addTexture('spr_golem', golemCanvas);
 
   // 7. Blood Specter (32x40)
   const specterCanvas = createPixelCanvas(32, 40, (ctx) => {
@@ -177,7 +187,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(12, 12, 3, 4);
     ctx.fillRect(18, 12, 3, 4);
   });
-  scene.textures.addCanvas('spr_specter', specterCanvas);
+  addTexture('spr_specter', specterCanvas);
 
   // 8. Necro Lord Boss (64x72)
   const bossCanvas = createPixelCanvas(64, 72, (ctx) => {
@@ -197,7 +207,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(12, 22, 6, 44);
     ctx.fillRect(46, 22, 6, 44);
   });
-  scene.textures.addCanvas('spr_boss', bossCanvas);
+  addTexture('spr_boss', bossCanvas);
 
   // 9. Projectile: Blood Bolt (16x16)
   const boltCanvas = createPixelCanvas(16, 16, (ctx) => {
@@ -210,7 +220,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.arc(8, 8, 2, 0, Math.PI * 2);
     ctx.fill();
   });
-  scene.textures.addCanvas('proj_blood_bolt', boltCanvas);
+  addTexture('proj_blood_bolt', boltCanvas);
 
   // 10. Projectile: Cultist Energy Bolt (16x16)
   const energyBoltCanvas = createPixelCanvas(16, 16, (ctx) => {
@@ -223,7 +233,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.arc(8, 8, 2, 0, Math.PI * 2);
     ctx.fill();
   });
-  scene.textures.addCanvas('proj_energy_bolt', energyBoltCanvas);
+  addTexture('proj_energy_bolt', energyBoltCanvas);
 
   // 11. Health Orb (16x16)
   const hporbCanvas = createPixelCanvas(16, 16, (ctx) => {
@@ -234,7 +244,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#fca5a5';
     ctx.fillRect(5, 5, 3, 3);
   });
-  scene.textures.addCanvas('orb_hp', hporbCanvas);
+  addTexture('orb_hp', hporbCanvas);
 
   // 12. Mana Orb (16x16)
   const manaorbCanvas = createPixelCanvas(16, 16, (ctx) => {
@@ -245,7 +255,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#93c5fd';
     ctx.fillRect(5, 5, 3, 3);
   });
-  scene.textures.addCanvas('orb_mana', manaorbCanvas);
+  addTexture('orb_mana', manaorbCanvas);
 
   // 13. XP Blood Gem (12x12)
   const gemCanvas = createPixelCanvas(12, 12, (ctx) => {
@@ -258,14 +268,14 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.closePath();
     ctx.fill();
   });
-  scene.textures.addCanvas('gem_xp', gemCanvas);
+  addTexture('gem_xp', gemCanvas);
 
   // 14. Particle Blood Drop (8x8)
   const bloodPartCanvas = createPixelCanvas(8, 8, (ctx) => {
     ctx.fillStyle = '#b91c1c';
     ctx.fillRect(1, 1, 6, 6);
   });
-  scene.textures.addCanvas('particle_blood_red', bloodPartCanvas);
+  addTexture('particle_blood_red', bloodPartCanvas);
 
   // 15. Blood Pool Ground Stain (32x20)
   const bloodPoolCanvas = createPixelCanvas(32, 20, (ctx) => {
@@ -274,7 +284,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.ellipse(16, 10, 14, 8, 0, 0, Math.PI * 2);
     ctx.fill();
   });
-  scene.textures.addCanvas('blood_pool_stain', bloodPoolCanvas);
+  addTexture('blood_pool_stain', bloodPoolCanvas);
 
   // 16. Dungeon Stone Brick Wall Block (32x32)
   const wallCanvas = createPixelCanvas(32, 32, (ctx) => {
@@ -297,7 +307,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(12, 14, 4, 2);
     ctx.fillRect(2, 24, 6, 2);
   });
-  scene.textures.addCanvas('tile_wall_brick', wallCanvas);
+  addTexture('tile_wall_brick', wallCanvas);
 
   // 17. Dungeon Door Archway (32x32)
   const doorCanvas = createPixelCanvas(32, 32, (ctx) => {
@@ -318,7 +328,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fill();
     ctx.fillRect(7, 16, 18, 14);
   });
-  scene.textures.addCanvas('tile_door', doorCanvas);
+  addTexture('tile_door', doorCanvas);
 
   // 18. Portal to Next Dungeon Floor (40x40)
   const portalCanvas = createPixelCanvas(40, 40, (ctx) => {
@@ -337,7 +347,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.arc(20, 20, 6, 0, Math.PI * 2);
     ctx.fill();
   });
-  scene.textures.addCanvas('spr_portal', portalCanvas);
+  addTexture('spr_portal', portalCanvas);
 
   // 19. Dungeon Treasure Chest (24x20)
   const chestCanvas = createPixelCanvas(24, 20, (ctx) => {
@@ -352,7 +362,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#fef08a'; // Glowing lock
     ctx.fillRect(10, 9, 4, 4);
   });
-  scene.textures.addCanvas('spr_chest', chestCanvas);
+  addTexture('spr_chest', chestCanvas);
 
   // 20. AI Alert Icon "!" (12x18)
   const alertCanvas = createPixelCanvas(12, 18, (ctx) => {
@@ -363,7 +373,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(5, 2, 2, 8);
     ctx.fillRect(5, 14, 2, 2);
   });
-  scene.textures.addCanvas('icon_alert', alertCanvas);
+  addTexture('icon_alert', alertCanvas);
 
   // 21. AI Suspicious Icon "?" (12x18)
   const questCanvas = createPixelCanvas(12, 18, (ctx) => {
@@ -375,7 +385,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(5, 14, 2, 2);
   });
-  scene.textures.addCanvas('icon_suspicious', questCanvas);
+  addTexture('icon_suspicious', questCanvas);
 
   // 22. AI Panic/Flee Icon (12x18)
   const fleeCanvas = createPixelCanvas(12, 18, (ctx) => {
@@ -390,5 +400,5 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.closePath();
     ctx.fill();
   });
-  scene.textures.addCanvas('icon_flee', fleeCanvas);
+  addTexture('icon_flee', fleeCanvas);
 }
