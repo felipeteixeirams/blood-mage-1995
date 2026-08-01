@@ -144,9 +144,24 @@ export class DungeonGenerator {
     const line = new Phaser.Geom.Line(x1, y1, x2, y2);
     const wallChildren = this.wallsGroup.getChildren();
 
+    // ⚡ Bolt: Fast Axis-Aligned Bounding Box (AABB) pruning.
+    // Precompute the bounding box of the line segment with a 16px padding on each side.
+    // If a wall tile's center (plus its own 16px radius) is completely outside this box,
+    // they cannot possibly intersect. This reduces complex geometric intersection checks
+    // from O(N_walls) to nearly O(1) for nearby lines.
+    const minX = Math.min(x1, x2) - 16;
+    const maxX = Math.max(x1, x2) + 16;
+    const minY = Math.min(y1, y2) - 16;
+    const maxY = Math.max(y1, y2) + 16;
+
     for (let i = 0; i < wallChildren.length; i++) {
       const wall = wallChildren[i] as Phaser.Physics.Arcade.Sprite;
       if (wall.active) {
+        // Fast boundary rejection test: check if the wall's center is outside the padded line bounds
+        if (wall.x < minX || wall.x > maxX || wall.y < minY || wall.y > maxY) {
+          continue;
+        }
+
         const rect = new Phaser.Geom.Rectangle(wall.x - 16, wall.y - 16, 32, 32);
         if (Phaser.Geom.Intersects.LineToRectangle(line, rect)) {
           return false; // Obstacle blocks line of sight!
