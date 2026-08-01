@@ -4,6 +4,7 @@ parent_node: /AGENTS.md
 domain: Specification Hub & Feature Contracts
 token_weight: Medium (~500 tokens)
 active_satellites:
+  - /docs/satellites/SPEC_COMBAT_REALISM.md
   - /docs/satellites/SPEC_LOOT.md
   - /docs/satellites/SPEC_REFACTOR.md
   - /docs/satellites/SPEC_BOSS_FIGHTS.md
@@ -19,9 +20,11 @@ Este é o **Nó Mestre da Metodologia Spec-Driven Development**. Qualquer nova f
 
 | Especificação | Status | Domínio | Arquivo Satélite |
 | :--- | :--- | :--- | :--- |
+| **Realismo de Combate & Telegrafia** | 🟢 Concluído | FSM de Inimigos, Esquiva, Floating Text | `/docs/satellites/SPEC_COMBAT_REALISM.md` |
 | **Sistema de Loot & Atributos** | 🟢 Concluído | Mecânica de Jogo / Inventário | `/docs/satellites/SPEC_LOOT.md` |
 | **Refatoração Estrutural Fase 1.5** | 🟡 Em Progresso | Modularização de `GameScene` e `HUD` | `/docs/satellites/SPEC_REFACTOR.md` |
 | **Boss Encounters & Bullet Hell** | 🟡 Prontos p/ Jules | Boss Fights & Padrões de Ataque | `/docs/satellites/SPEC_BOSS_FIGHTS.md` |
+
 
 ---
 
