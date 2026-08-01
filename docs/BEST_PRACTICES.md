@@ -15,8 +15,8 @@ A separação de responsabilidades é vital para evitar o "God Object".
 - **Data (JSON):** Configurações de inimigos, magias e ondas são isoladas em arquivos de dados para fácil balanceamento.
 
 ### 🧠 Gerenciamento de Estado
-- **Zustand (Global Store):** Utilizamos Zustand (`src/store/gameStore.ts`) para manter o estado global sincronizado (Status do Jogo, Status do Jogador, Inventário, Scores).
-- **Single Source of Truth Complementar:** O estado vital do jogador durante o combate ainda vive no objeto `Player` no Phaser, mas o store Zustand atua como ponte confiável entre o loop do jogo e os componentes React para desacoplamento de HUD e Menus.
+- **Single Source of Truth:** O estado do jogador vive no objeto `Player` e é sincronizado com a UI React via callbacks de eventos no `GameScene`.
+- **Separação de Frequência:** O Phaser processa a física a 60fps, enquanto o React atualiza apenas os componentes necessários (barras de vida, cooldowns) quando o estado muda.
 
 ---
 

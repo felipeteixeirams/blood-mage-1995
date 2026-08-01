@@ -15,6 +15,9 @@ export class Collectible extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
+    // Set lighting pipeline
+    this.setLighting(true);
+
     // Floating bobbing animation
     scene.tweens.add({
       targets: this,

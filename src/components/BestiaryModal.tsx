@@ -3,7 +3,6 @@ import monstersData from '../data/monsters.json';
 import spellsData from '../data/spells.json';
 import { MonsterConfig, SpellConfig } from '../types/game';
 import { X, Skull, Flame } from 'lucide-react';
-import { motion } from 'motion/react';
 import { soundEngine } from '../utils/soundEngine';
 
 interface BestiaryModalProps {
@@ -16,18 +15,8 @@ export const BestiaryModal: React.FC<BestiaryModalProps> = ({ onClose }) => {
   const spells = Object.values(spellsData) as SpellConfig[];
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none"
-    >
-      <motion.div 
-        initial={{ scale: 0.95, opacity: 0, y: 10 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        className="w-full max-w-3xl bg-[#120a0e] border-4 border-red-900/80 rounded-xl p-5 md:p-6 shadow-[0_0_50px_rgba(185,28,28,0.5)] flex flex-col max-h-[90vh]"
-      >
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none">
+      <div className="w-full max-w-3xl bg-[#120a0e] border-4 border-red-900/80 rounded-xl p-5 md:p-6 shadow-[0_0_50px_rgba(185,28,28,0.5)] flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex justify-between items-center border-b border-red-900/60 pb-3 mb-4">
           <div className="flex items-center gap-3">
@@ -129,7 +118,7 @@ export const BestiaryModal: React.FC<BestiaryModalProps> = ({ onClose }) => {
             </div>
           )}
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
