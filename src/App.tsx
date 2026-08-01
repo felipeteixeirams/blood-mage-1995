@@ -8,6 +8,8 @@ import { BestiaryModal } from './components/BestiaryModal';
 import { SettingsModal } from './components/SettingsModal';
 import { HighScoresModal } from './components/HighScoresModal';
 import { GameOverModal } from './components/GameOverModal';
+import { InventoryModal } from './components/InventoryModal';
+import { TalentsModal } from './components/TalentsModal';
 import { PhaserGame } from './game/PhaserGame';
 import { GameScene } from './game/scenes/GameScene';
 import { PlayerStats, UpgradeOption } from './types/game';
@@ -25,12 +27,10 @@ export default function App() {
     isBestiaryOpen, setBestiaryOpen,
     isSettingsOpen, setSettingsOpen,
     isHighScoresOpen, setHighScoresOpen,
+    isInventoryOpen, setInventoryOpen,
+    isTalentsOpen, setTalentsOpen,
     levelUpData, setLevelUpData,
     gameOverStats, setGameOverStats,
-    playerStats, setPlayerStats,
-    touchMoveInput, setTouchMoveInput,
-    touchAimInput, setTouchAimInput,
-    activeSkillTrigger, setActiveSkillTrigger
   } = useGameStore();
 
   const gameSceneRef = useRef<GameScene | null>(null);
@@ -38,6 +38,24 @@ export default function App() {
   useEffect(() => {
     soundEngine.setVolumes(settings.sfxVolume, settings.bgmVolume);
   }, [settings]);
+
+  // Keyboard hotkeys for modals
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (gameState !== 'playing') return;
+
+      if (e.key === 'i' || e.key === 'I') {
+        soundEngine.playButtonClick();
+        setInventoryOpen(!useGameStore.getState().isInventoryOpen);
+      } else if (e.key === 't' || e.key === 'T') {
+        soundEngine.playButtonClick();
+        setTalentsOpen(!useGameStore.getState().isTalentsOpen);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [gameState, setInventoryOpen, setTalentsOpen]);
 
   const handleStartGame = () => {
     setGameOverStats(null);
@@ -173,6 +191,12 @@ export default function App() {
             scores={highScores}
             onClose={() => setHighScoresOpen(false)}
           />
+        )}
+        {isInventoryOpen && (
+          <InventoryModal onClose={() => setInventoryOpen(false)} />
+        )}
+        {isTalentsOpen && (
+          <TalentsModal onClose={() => setTalentsOpen(false)} />
         )}
       </AnimatePresence>
     </div>

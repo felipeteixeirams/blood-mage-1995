@@ -21,16 +21,17 @@ O jogo é estruturado em duas camadas principais que se comunicam através de ev
 ```
 ┌────────────────────────────────────────────────────────┐
 │                   React 18 Layer                       │
-│  - App.tsx (Controlador de Telas & Modais)            │
-│  - GameplayHUD.tsx (Joystick, Vida, XP, Logs de Loot) │
-│  - Modais (Bestiary, HighScores, Settings)             │
+│  - App.tsx (Controlador de Telas, Hotkeys [I]/[T])    │
+│  - GameplayHUD.tsx (Joystick, status, Biomas, Cristais)│
+│  - Modais (InventoryModal, TalentsModal, Bestiary)     │
 └───────────────────────────┬────────────────────────────┘
                             │ (Events & Zustand Sync)
 ┌───────────────────────────┴────────────────────────────┐
 │                  Phaser 3 Canvas Layer                 │
 │  - PhaserGame.tsx (Container de Inicialização)         │
-│  - GameScene.ts (Loop Principal de Física & Render)    │
-│  - Objects & Systems (Player, Enemy, Bullet, Loot)     │
+│  - GameScene.ts (Loop Principal, Biomas, Baús & Loot)  │
+│  - DungeonGenerator.ts (3x3 Grid, Tints, Decais, Boss) │
+│  - Objects & Systems (Player, Enemy, LootSystem)       │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -39,6 +40,7 @@ O jogo é estruturado em duas camadas principais que se comunicam através de ev
 ## 🧠 Estado & Sincronização (`src/store/gameStore.ts`)
 
 - **Zustand Store**: Mantém o estado global sincronizado entre UI (Menus, HUD) e Phaser.
+- **Metagame & Equipamentos**: Gerencia saldo de Cristais de Sangue (💎), níveis da Árvore de Talentos do Hemomante, Slots de Equipamentos e Bioma Ativo (`fosso_chagas`, `catacumbas_martires`, `santuario_sangue`).
 - **Single Source of Truth**: Durante o loop de gameplay a 60 FPS, o estado de física e posição reside nos objetos nativos do Phaser. O Zustand é atualizado em marcos de mudança de estado (Level Up, Dano Sofrido, Morte de Inimigo, Coleta de Loot).
 
 ---
@@ -52,9 +54,17 @@ A lógica de IA dos monstros é baseada em uma Máquina de Estados Finita (FSM) 
 
 ---
 
+## 🏰 Biomas & Masmorras Procedurais (`src/game/systems/DungeonGenerator.ts`)
+
+O gerador de masmorras cria layouts interconectados de salas 3x3 com:
+- **Biomas Temáticos:** Tinting de chão e paredes dinâmicos para Fosso das Chagas, Catacumbas dos Mártires e Santuário de Sangue.
+- **Salas Especiais:** Salas de spawn seguras, câmaras normais, salas de tesouro secreto (garantia de múltiplos baús) e o Santuário do Boss com decais de pentagrama profano.
+
+---
+
 ## 💾 Persistência & Recursos Procedurais
 
-- **Persistência Local**: Pontuações e configurações (Som, Filtros CRT) usam `localStorage` via `src/utils/localStorage.ts`.
+- **Persistência Local**: Configurações, High Scores, saldo de Cristais de Sangue e Níveis de Talentos usam `localStorage` via `src/utils/localStorage.ts`.
 - **Proceduralidade Total**: Zero imagens estáticas externas. Texturas são geradas proceduralmente via HTML5 Canvas e convertidas para Base64. Áudio é sintetizado em tempo real via Web Audio API (`soundEngine.ts`).
 
 ---

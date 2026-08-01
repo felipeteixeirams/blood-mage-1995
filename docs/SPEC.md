@@ -21,9 +21,11 @@ Este é o **Nó Mestre da Metodologia Spec-Driven Development**. Qualquer nova f
 | Especificação | Status | Domínio | Arquivo Satélite |
 | :--- | :--- | :--- | :--- |
 | **Realismo de Combate & Telegrafia** | 🟢 Concluído | FSM de Inimigos, Esquiva, Floating Text | `/docs/satellites/SPEC_COMBAT_REALISM.md` |
-| **Sistema de Loot & Atributos** | 🟢 Concluído | Mecânica de Jogo / Inventário | `/docs/satellites/SPEC_LOOT.md` |
-| **Refatoração Estrutural Fase 1.5** | 🟡 Em Progresso | Modularização de `GameScene` e `HUD` | `/docs/satellites/SPEC_REFACTOR.md` |
-| **Boss Encounters & Bullet Hell** | 🟡 Prontos p/ Jules | Boss Fights & Padrões de Ataque | `/docs/satellites/SPEC_BOSS_FIGHTS.md` |
+| **Sistema de Loot & Atributos Expansão** | 🟢 Concluído | Loot Lendário, Baús, Slots & Inventário | `/docs/satellites/SPEC_LOOT.md` |
+| **Biomas & Masmorras Procedurais** | 🟢 Concluído | Fosso das Chagas, Catacumbas, Santuário | `/docs/ARCHITECTURE.md` |
+| **Árvore de Talentos & Metagame** | 🟢 Concluído | Cristais de Sangue, Nós de Evolução | `/docs/satellites/ROADMAP.md` |
+| **Refatoração Estrutural Fase 1.5** | 🟢 Concluído | Modularização de `GameScene` e `HUD` | `/docs/satellites/SPEC_REFACTOR.md` |
+| **Boss Encounters & Bullet Hell** | 🟢 Concluído | Boss Fights & Padrões de Ataque | `/docs/satellites/SPEC_BOSS_FIGHTS.md` |
 
 
 ---

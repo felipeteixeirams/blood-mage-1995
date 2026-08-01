@@ -2,6 +2,50 @@ import { GameSettings, HighScoreRecord } from '../types/game';
 
 const SETTINGS_KEY = 'bloodmage_1995_settings';
 const HIGHSCORES_KEY = 'bloodmage_1995_highscores';
+const BLOOD_CRYSTALS_KEY = 'bloodmage_1995_blood_crystals';
+const TALENTS_KEY = 'bloodmage_1995_talents';
+
+export function loadBloodCrystals(): number {
+  try {
+    const raw = localStorage.getItem(BLOOD_CRYSTALS_KEY);
+    if (raw) return parseInt(raw, 10) || 0;
+  } catch (e) {
+    console.warn('Failed to load blood crystals', e);
+  }
+  return 0;
+}
+
+export function saveBloodCrystals(amount: number): void {
+  try {
+    localStorage.setItem(BLOOD_CRYSTALS_KEY, amount.toString());
+  } catch (e) {
+    console.warn('Failed to save blood crystals', e);
+  }
+}
+
+export function loadTalentLevels(): Record<string, number> {
+  try {
+    const raw = localStorage.getItem(TALENTS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    console.warn('Failed to load talents', e);
+  }
+  return {
+    hemomancy_power: 0,
+    martyr_vitality: 0,
+    vampiric_thirst: 0,
+    abyssal_haste: 0,
+    sacrifice_mastery: 0,
+  };
+}
+
+export function saveTalentLevels(talents: Record<string, number>): void {
+  try {
+    localStorage.setItem(TALENTS_KEY, JSON.stringify(talents));
+  } catch (e) {
+    console.warn('Failed to save talents', e);
+  }
+}
 
 export const defaultSettings: GameSettings = {
   crtFilter: true,

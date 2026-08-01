@@ -5,10 +5,11 @@ import { Projectile } from '../objects/Projectile';
 import { Collectible } from '../objects/Collectible';
 import { LootSprite } from '../objects/Loot';
 import { LootSystem } from '../systems/LootSystem';
-import { PlayerStats, WaveConfig, UpgradeOption } from '../../types/game';
+import { PlayerStats, WaveConfig, UpgradeOption, BiomeType } from '../../types/game';
 import wavesData from '../../data/waves.json';
 import upgradesData from '../../data/upgrades.json';
 import { soundEngine } from '../../utils/soundEngine';
+import { useGameStore } from '../../store/gameStore';
 
 export interface GameSceneCallbacks {
   onStatsUpdate: (stats: PlayerStats) => void;
@@ -239,7 +240,17 @@ export class GameScene extends Phaser.Scene {
    * Builds procedural 3x3 interconnected Dungeon Map with Rooms, Corridors, Walls, Chests & Enemies
    */
   private buildDungeonMap(mapW: number, mapH: number, floorDepth: number) {
-    const rooms = this.dungeonGenerator.generate(mapW, mapH);
+    // Determine Biome based on Floor Depth
+    let biome: BiomeType = 'fosso_chagas';
+    if (floorDepth >= 5) {
+      biome = 'santuario_sangue';
+    } else if (floorDepth >= 3) {
+      biome = 'catacumbas_martires';
+    }
+
+    useGameStore.getState().setCurrentBiome(biome);
+
+    const rooms = this.dungeonGenerator.generate(mapW, mapH, biome);
 
     // Create Player in Spawn Room 0
     const spawnRoom = rooms[0];
@@ -907,6 +918,16 @@ export class GameScene extends Phaser.Scene {
     const orb = new Collectible(this, chest.x, chest.y, orbType, 35);
     this.collectiblesGroup.add(orb);
 
+    // Guaranteed Chest Equipment Loot (Higher Rarity)
+    const chestLoot = LootSystem.generateLoot(this.currentFloorDepth, true);
+    const lootSprite = new LootSprite(this, chest.x + (Math.random() - 0.5) * 30, chest.y + (Math.random() - 0.5) * 30, chestLoot);
+    this.lootGroup.add(lootSprite);
+
+    // Grant Blood Crystals (15 to 30)
+    const crystals = 15 + Math.floor(Math.random() * 16);
+    useGameStore.getState().addBloodCrystals(crystals);
+    this.spawnFloatingText(chest.x, chest.y - 25, `+${crystals} CRISTAIS 💎`, '#f43f5e', true);
+
     // Open chest animation
     chest.setTint(0x444444);
     chest.destroy();
@@ -1159,12 +1180,17 @@ export class GameScene extends Phaser.Scene {
     if (!loot.active) return;
 
     this.player.equipLoot(loot.lootData);
+
+    // Sync state with Zustand Store for Inventory Modal
+    useGameStore.getState().equipItem(loot.lootData);
+    useGameStore.getState().addLootLog(`Equipou: ${loot.lootData.name} (${loot.lootData.rarity.toUpperCase()})`);
     
     // Fancy text particle
+    const rarityColor = loot.lootData.rarity === 'legendary' ? '#f59e0b' : loot.lootData.rarity === 'epic' ? '#a855f7' : loot.lootData.rarity === 'rare' ? '#3b82f6' : '#ffffff';
     const text = this.add.text(loot.x, loot.y - 15, `+ ${loot.lootData.name}`, {
       fontFamily: '"Press Start 2P", monospace',
       fontSize: '8px',
-      color: loot.lootData.rarity === 'epic' ? '#a855f7' : loot.lootData.rarity === 'rare' ? '#3b82f6' : '#ffffff'
+      color: rarityColor,
     }).setOrigin(0.5).setDepth(2000);
 
     this.tweens.add({

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord } from '../types/game';
-import { loadSettings, saveSettings, loadHighScores, saveHighScore } from '../utils/localStorage';
+import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, EquipmentSlots, BiomeType } from '../types/game';
+import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels } from '../utils/localStorage';
 import { soundEngine } from '../utils/soundEngine';
 
 type GameStateStatus = 'menu' | 'playing' | 'paused';
@@ -22,13 +22,33 @@ interface GameStore {
   isMuted: boolean;
   toggleMute: () => void;
 
-  // Modals
+  // Modals & UI overlays
   isBestiaryOpen: boolean;
   setBestiaryOpen: (isOpen: boolean) => void;
   isSettingsOpen: boolean;
   setSettingsOpen: (isOpen: boolean) => void;
   isHighScoresOpen: boolean;
   setHighScoresOpen: (isOpen: boolean) => void;
+  isTalentsOpen: boolean;
+  setTalentsOpen: (isOpen: boolean) => void;
+  isInventoryOpen: boolean;
+  setInventoryOpen: (isOpen: boolean) => void;
+
+  // Metagame Currency & Talents
+  bloodCrystals: number;
+  addBloodCrystals: (amount: number) => void;
+  talentLevels: Record<string, number>;
+  upgradeTalent: (talentId: string, cost: number) => boolean;
+
+  // Equipment & Loot
+  equipment: EquipmentSlots;
+  equipItem: (item: LootItem) => void;
+  recentLootLog: string[];
+  addLootLog: (msg: string) => void;
+
+  // Biome & Environment
+  currentBiome: BiomeType;
+  setCurrentBiome: (biome: BiomeType) => void;
 
   // Gameplay Events
   levelUpData: { level: number; choices: UpgradeOption[] } | null;
@@ -56,7 +76,7 @@ const defaultPlayerStats: PlayerStats = {
   moveSpeed: 160, damageMultiplier: 1.0, cooldownReduction: 0,
   vampirism: 0, projectileBonus: 0,
   kills: 0, souls: 0, wave: 1, floorDepth: 1, score: 0, timeSurvivedSeconds: 0,
-  unlockedSpells: ['blood_bolt', 'hellfire_nova', 'syphon_soul', 'bone_shield'],
+  unlockedSpells: ['blood_bolt', 'hellfire_nova', 'syphon_soul', 'bone_shield', 'crimson_scythe', 'blood_ritual_circle', 'hemomancy_beam'],
 };
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -88,6 +108,69 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setSettingsOpen: (isOpen) => set({ isSettingsOpen: isOpen }),
   isHighScoresOpen: false,
   setHighScoresOpen: (isOpen) => set({ isHighScoresOpen: isOpen }),
+  isTalentsOpen: false,
+  setTalentsOpen: (isOpen) => set({ isTalentsOpen: isOpen }),
+  isInventoryOpen: false,
+  setInventoryOpen: (isOpen) => set({ isInventoryOpen: isOpen }),
+
+  bloodCrystals: loadBloodCrystals(),
+  addBloodCrystals: (amount) => {
+    const current = get().bloodCrystals;
+    const next = current + amount;
+    saveBloodCrystals(next);
+    set({ bloodCrystals: next });
+  },
+
+  talentLevels: loadTalentLevels(),
+  upgradeTalent: (talentId, cost) => {
+    const { bloodCrystals, talentLevels } = get();
+    if (bloodCrystals < cost) return false;
+
+    const nextCrystals = bloodCrystals - cost;
+    const currentLvl = talentLevels[talentId] || 0;
+    const nextTalents = { ...talentLevels, [talentId]: currentLvl + 1 };
+
+    saveBloodCrystals(nextCrystals);
+    saveTalentLevels(nextTalents);
+
+    set({
+      bloodCrystals: nextCrystals,
+      talentLevels: nextTalents,
+    });
+    return true;
+  },
+
+  equipment: {
+    weapon: null,
+    armor: null,
+    relics: [],
+  },
+  equipItem: (item) => {
+    const { equipment } = get();
+    const updated = { ...equipment };
+    if (item.type === 'weapon') {
+      updated.weapon = item;
+    } else if (item.type === 'armor') {
+      updated.armor = item;
+    } else if (item.type === 'relic') {
+      // Up to 3 relics, replaces oldest if full
+      if (updated.relics.length < 3) {
+        updated.relics = [...updated.relics, item];
+      } else {
+        updated.relics = [updated.relics[1], updated.relics[2], item];
+      }
+    }
+    set({ equipment: updated });
+  },
+
+  recentLootLog: [],
+  addLootLog: (msg) => {
+    const current = get().recentLootLog;
+    set({ recentLootLog: [msg, ...current].slice(0, 5) });
+  },
+
+  currentBiome: 'fosso_chagas',
+  setCurrentBiome: (biome) => set({ currentBiome: biome }),
 
   levelUpData: null,
   setLevelUpData: (data) => set({ levelUpData: data }),

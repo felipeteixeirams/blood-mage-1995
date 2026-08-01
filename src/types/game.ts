@@ -1,4 +1,4 @@
-export type ItemRarity = 'common' | 'rare' | 'epic';
+export type ItemRarity = 'common' | 'rare' | 'epic' | 'legendary';
 export type ItemType = 'weapon' | 'armor' | 'relic';
 
 export interface LootItem {
@@ -6,12 +6,47 @@ export interface LootItem {
   name: string;
   type: ItemType;
   rarity: ItemRarity;
+  description?: string;
   stats: {
     damageMultiplier?: number;
     maxHpBonus?: number;
     speedBonus?: number;
     lifestealBonus?: number;
+    cooldownReductionBonus?: number;
+    critChanceBonus?: number;
+    hpRegenBonus?: number;
   };
+}
+
+export interface EquipmentSlots {
+  weapon: LootItem | null;
+  armor: LootItem | null;
+  relics: LootItem[];
+}
+
+export type BiomeType = 'fosso_chagas' | 'catacumbas_martires' | 'santuario_sangue';
+
+export interface BiomeConfig {
+  id: BiomeType;
+  name: string;
+  description: string;
+  ambientColor: string;
+  tileGroundKey: string;
+  tileWallKey: string;
+  accentColor: string;
+}
+
+export interface TalentNode {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: 'offense' | 'defense' | 'utility';
+  currentLevel: number;
+  maxLevel: number;
+  costPerLevel: number;
+  statKey: 'damage' | 'maxHp' | 'hpRegen' | 'lifesteal' | 'cooldown' | 'moveSpeed' | 'sacrificeDiscount';
+  bonusPerLevel: number;
 }
 
 export type MonsterBehavior = 'chaser' | 'ranged' | 'charger' | 'swarmer' | 'boss';

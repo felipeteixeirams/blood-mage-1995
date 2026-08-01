@@ -12,30 +12,33 @@ Adicionar profundidade ao ciclo de jogo recompensando o jogador com itens que al
 
 ## Escopo
 - Definição de tipos de itens (Arma, Armadura, Relíquia).
-- Tabela de drop rate (Comum, Raro, Épico).
-- Sistema de inventário em memória (aplicação de status passivos no Player).
-- HUD simplificado no React para mostrar últimos itens coletados.
-- Baús de loot pelo mapa.
+- Tabela de drop rate e raridades (Comum, Raro, Épico, Lendário).
+- Slots de equipamento (Arma Principal, Armadura, Relíquias).
+- Modal de Inventário do Hemomante (tecla [I]) com estatísticas e log.
+- Baús de loot procedural com taxas de drop elevadas e garantidas.
+- Moeda metagame Cristais de Sangue (💎) ao derrotar chefes e abrir baús.
 
 ## Fora do Escopo
 - Gráficos hiper-realistas para itens (usaremos cores/textos procedurais).
-- Drag-and-drop complexo no inventário (aplicação automática de bônus por agora).
+- Drag-and-drop complexo no inventário.
 
 ## Arquitetura
-- `src/game/objects/Loot.ts`: Classe do item físico no chão.
-- `src/game/systems/LootSystem.ts`: Gerador procedural de atributos.
-- `src/types/loot.ts`: Contratos e tipos de itens.
-- Modificação em `src/game/objects/Player.ts` para recalcular status (Dano, HP Máximo, Velocidade) baseado nos itens.
-- Modificação no `GameScene` para spawnar loot ao matar inimigos ou abrir baús.
+- `src/game/objects/Loot.ts`: Sprite animado do loot com brilho colorido por raridade (Lendário = pulso dourado).
+- `src/game/systems/LootSystem.ts`: Gerador procedural de atributos, tabela de raridade e drop pools para baús.
+- `src/types/game.ts`: Interfaces `LootItem`, `EquipmentSlots`, `ItemRarity` e `ItemType`.
+- `src/components/InventoryModal.tsx`: Interface gótica do inventário com visualização de slots e resumo de status.
+- Modificação em `src/game/objects/Player.ts` para recalcular status e aplicar vampirismo/cooldown.
+- Modificação em `src/game/scenes/GameScene.ts` para spawnar loot ao matar inimigos e abrir baús.
 
 ## Contratos
 ```typescript
-export type ItemRarity = 'common' | 'rare' | 'epic';
+export type ItemRarity = 'common' | 'rare' | 'epic' | 'legendary';
 export type ItemType = 'weapon' | 'armor' | 'relic';
 
 export interface LootItem {
   id: string;
   name: string;
+  description: string;
   type: ItemType;
   rarity: ItemRarity;
   stats: {
@@ -43,7 +46,14 @@ export interface LootItem {
     maxHpBonus?: number;
     speedBonus?: number;
     lifestealBonus?: number;
+    cooldownReduction?: number;
   };
+}
+
+export interface EquipmentSlots {
+  weapon: LootItem | null;
+  armor: LootItem | null;
+  relics: LootItem[];
 }
 ```
 
