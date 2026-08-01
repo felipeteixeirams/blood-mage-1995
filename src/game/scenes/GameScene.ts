@@ -57,6 +57,11 @@ export class GameScene extends Phaser.Scene {
   private boneShieldVisuals: Phaser.GameObjects.Sprite[] = [];
 
   private bloodEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
+  private emberEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
+
+  private comboKillCount: number = 0;
+  private comboTimerEvent?: Phaser.Time.TimerEvent;
+
   private isNovaReady: boolean = true;
   private lastNovaTime: number = 0;
   private readonly NOVA_COOLDOWN = 8000;
@@ -88,6 +93,19 @@ export class GameScene extends Phaser.Scene {
       gravityY: 100,
       emitting: false
     }).setDepth(1900);
+
+    // Atmospheric Dungeon Embers
+    this.emberEmitter = this.add.particles(0, 0, 'particle_blood_red', {
+      scale: { start: 0.1, end: 0.02 },
+      alpha: { start: 0.35, end: 0 },
+      tint: 0xd97706,
+      speedY: { min: -15, max: -40 },
+      speedX: { min: -8, max: 8 },
+      lifespan: 2000,
+      frequency: 140,
+      emitting: true,
+      bounds: new Phaser.Geom.Rectangle(0, 0, mapW, mapH)
+    }).setDepth(1950);
 
     this.wallsGroup = this.physics.add.staticGroup();
     this.chestsGroup = this.physics.add.staticGroup();
@@ -570,7 +588,9 @@ export class GameScene extends Phaser.Scene {
         const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
         if (dist <= 200) {
           if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 15);
-          const isDead = enemy.takeDamage(75 * this.player.stats.damageMultiplier);
+          const novaDamage = Math.round(75 * this.player.stats.damageMultiplier);
+          const isDead = enemy.takeDamage(novaDamage);
+          this.spawnFloatingText(enemy.x, enemy.y, `${novaDamage}!`, '#f97316', true);
           const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, enemy.x, enemy.y);
           enemy.x += Math.cos(angle) * 40;
           enemy.y += Math.sin(angle) * 40;
@@ -599,7 +619,9 @@ export class GameScene extends Phaser.Scene {
         const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
         if (dist <= 150) {
           if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 8);
-          const isDead = enemy.takeDamage(45 * this.player.stats.damageMultiplier);
+          const syphonDmg = Math.round(45 * this.player.stats.damageMultiplier);
+          const isDead = enemy.takeDamage(syphonDmg);
+          this.spawnFloatingText(enemy.x, enemy.y, syphonDmg.toString(), '#a855f7', false);
           totalStolenHp += 8;
           if (isDead) {
             this.handleEnemyDeath(enemy);
@@ -611,6 +633,7 @@ export class GameScene extends Phaser.Scene {
     if (totalStolenHp > 0) {
       this.player.heal(totalStolenHp);
       this.player.addMana(15);
+      this.spawnFloatingText(this.player.x, this.player.y - 15, `+${totalStolenHp} HP`, '#22c55e', true);
     }
   }
 
@@ -713,11 +736,21 @@ export class GameScene extends Phaser.Scene {
     // Taking damage alerts group!
     this.triggerGroupAlert(enemy.x, enemy.y, 220);
 
-    const isDead = enemy.takeDamage(proj.damage);
+    // Critical Hit Roll (15% chance for 1.75x damage)
+    const isCrit = Math.random() < 0.15;
+    const finalDamage = isCrit ? proj.damage * 1.75 : proj.damage;
+
+    const isDead = enemy.takeDamage(finalDamage);
+
+    // Floating damage numbers
+    const dmgText = Math.round(finalDamage).toString();
+    this.spawnFloatingText(enemy.x, enemy.y, isCrit ? `${dmgText}!` : dmgText, isCrit ? '#facc15' : '#ffffff', isCrit);
 
     // Vampirism life steal
     if (this.player.stats.vampirism > 0) {
-      this.player.heal(proj.damage * this.player.stats.vampirism);
+      const stolen = finalDamage * this.player.stats.vampirism;
+      this.player.heal(stolen);
+      this.spawnFloatingText(this.player.x, this.player.y - 12, `+${Math.round(stolen)}`, '#22c55e', false);
     }
 
     if (isDead) {
@@ -728,6 +761,9 @@ export class GameScene extends Phaser.Scene {
   private playerHitByEnemy(damage: number) {
     const isDead = this.player.takeDamage(damage);
     
+    // Floating damage number on player
+    this.spawnFloatingText(this.player.x, this.player.y, `-${Math.round(damage)}`, '#ef4444', true);
+
     // Juice: Screen Shake and Red Flash on damage
     this.cameras.main.shake(150, 0.015);
     this.cameras.main.flash(100, 150, 0, 0, false);
@@ -757,6 +793,7 @@ export class GameScene extends Phaser.Scene {
     this.player.stats.kills++;
     this.player.stats.score += enemy.config.scoreValue;
     this.floorMonstersKilled++;
+    this.registerKillCombo(enemy.x, enemy.y);
 
     // 2. Gore Effect: Blood Stain on Floor
     const stain = this.add.image(enemy.x, enemy.y, 'blood_pool_stain').setDepth(2);
@@ -872,10 +909,13 @@ export class GameScene extends Phaser.Scene {
 
     if (item.type === 'hp') {
       this.player.heal(item.amount);
+      this.spawnFloatingText(this.player.x, this.player.y - 12, `+${item.amount} HP`, '#22c55e', false);
     } else if (item.type === 'mana') {
       this.player.addMana(item.amount);
+      this.spawnFloatingText(this.player.x, this.player.y - 12, `+${item.amount} MP`, '#a855f7', false);
     } else if (item.type === 'xp') {
       const leveledUp = this.player.addXp(item.amount);
+      this.spawnFloatingText(this.player.x, this.player.y - 12, `+${item.amount} XP`, '#3b82f6', false);
       if (leveledUp) {
         this.triggerLevelUp();
       }
@@ -927,6 +967,67 @@ export class GameScene extends Phaser.Scene {
 
     if (this.callbacks?.onGameOver) {
       this.callbacks.onGameOver({ ...this.player.stats });
+    }
+  }
+
+  public spawnFloatingText(x: number, y: number, text: string, color: string = '#f87171', isCrit: boolean = false) {
+    const fontSize = isCrit ? '14px' : '11px';
+    const strokeColor = isCrit ? '#000000' : '#0f172a';
+
+    const jitterX = (Math.random() - 0.5) * 16;
+    const txt = this.add.text(x + jitterX, y - 10, text, {
+      fontSize,
+      fontFamily: '"Press Start 2P", monospace',
+      color,
+      stroke: strokeColor,
+      strokeThickness: isCrit ? 4 : 3,
+    }).setOrigin(0.5).setDepth(2100);
+
+    if (isCrit) {
+      txt.setScale(1.35);
+      this.tweens.add({
+        targets: txt,
+        scaleX: 1.0,
+        scaleY: 1.0,
+        duration: 120,
+        ease: 'Quad.easeOut',
+      });
+    }
+
+    this.tweens.add({
+      targets: txt,
+      y: y - (isCrit ? 40 : 28),
+      alpha: 0,
+      duration: isCrit ? 850 : 650,
+      ease: 'Cubic.easeOut',
+      onComplete: () => txt.destroy(),
+    });
+  }
+
+  private registerKillCombo(x: number, y: number) {
+    this.comboKillCount++;
+
+    if (this.comboTimerEvent) {
+      this.comboTimerEvent.destroy();
+    }
+
+    this.comboTimerEvent = this.time.addEvent({
+      delay: 2500,
+      callback: () => {
+        this.comboKillCount = 0;
+      },
+    });
+
+    if (this.comboKillCount >= 3) {
+      const isHighCombo = this.comboKillCount >= 8;
+      const comboLabel = `${this.comboKillCount}x COMBO!`;
+      const color = isHighCombo ? '#facc15' : '#ef4444';
+      this.spawnFloatingText(x, y - 24, comboLabel, color, true);
+
+      if (this.comboKillCount === 3 || this.comboKillCount === 5 || this.comboKillCount === 8 || this.comboKillCount === 12) {
+        soundEngine.playNova();
+        this.cameras.main.shake(120, 0.008);
+      }
     }
   }
 }
