@@ -51,6 +51,7 @@ export interface SpellConfig {
   name: string;
   description: string;
   manaCost: number;
+  hpCost?: number;
   cooldownMs: number;
   baseDamage: number;
   projectileSpeed: number;

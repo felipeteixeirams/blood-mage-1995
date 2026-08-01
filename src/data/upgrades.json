@@ -89,5 +89,16 @@
       "projectileAdd": 1,
       "hpMaxAdd": 50
     }
+  },
+  {
+    "id": "upgrade_sacrificial_pact",
+    "title": "Lâmina do Mártir",
+    "description": "Aumenta o dano de todas as artes sacrificiais (Foice, Círculo e Feixe) em +35%.",
+    "category": "spell",
+    "rarity": "rare",
+    "icon": "sword",
+    "effect": {
+      "damageMultiplierPercent": 35
+    }
   }
 ]

@@ -127,7 +127,7 @@ export class GameScene extends Phaser.Scene {
 
     // 4. Keyboard Controls
     if (this.input.keyboard) {
-      this.keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,Q,E,SPACE,ONE,TWO,THREE') as Record<string, Phaser.Input.Keyboard.Key>;
+      this.keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,Q,E,SPACE,R,SHIFT,F,ONE,TWO,THREE,FOUR,FIVE,SIX') as Record<string, Phaser.Input.Keyboard.Key>;
     }
 
     // Mouse Aim
@@ -379,7 +379,7 @@ export class GameScene extends Phaser.Scene {
     this.touchAimVector.y = aimY;
   }
 
-  public triggerSkill(skillKey: 'nova' | 'syphon' | 'bone_shield') {
+  public triggerSkill(skillKey: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam') {
     if (this.isPaused) return;
 
     if (skillKey === 'nova' && this.player.castNova()) {
@@ -391,6 +391,15 @@ export class GameScene extends Phaser.Scene {
     } else if (skillKey === 'bone_shield' && this.player.castBoneShield()) {
       this.executeBoneShieldEffect();
       this.emitSound(this.player.x, this.player.y, 350);
+    } else if (skillKey === 'crimson_scythe' && this.player.castCrimsonScythe()) {
+      this.executeCrimsonScytheEffect();
+      this.emitSound(this.player.x, this.player.y, 450);
+    } else if (skillKey === 'blood_ritual_circle' && this.player.castRitualCircle()) {
+      this.executeRitualCircleEffect();
+      this.emitSound(this.player.x, this.player.y, 400);
+    } else if (skillKey === 'hemomancy_beam' && this.player.castHemomancyBeam()) {
+      this.executeHemomancyBeamEffect();
+      this.emitSound(this.player.x, this.player.y, 520);
     }
   }
 
@@ -457,6 +466,15 @@ export class GameScene extends Phaser.Scene {
       }
       if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE) || Phaser.Input.Keyboard.JustDown(this.keys.THREE)) {
         this.triggerSkill('bone_shield');
+      }
+      if (Phaser.Input.Keyboard.JustDown(this.keys.R) || Phaser.Input.Keyboard.JustDown(this.keys.FOUR)) {
+        this.triggerSkill('crimson_scythe');
+      }
+      if (Phaser.Input.Keyboard.JustDown(this.keys.SHIFT) || Phaser.Input.Keyboard.JustDown(this.keys.FIVE)) {
+        this.triggerSkill('blood_ritual_circle');
+      }
+      if (Phaser.Input.Keyboard.JustDown(this.keys.F) || Phaser.Input.Keyboard.JustDown(this.keys.SIX)) {
+        this.triggerSkill('hemomancy_beam');
       }
     }
 
@@ -683,6 +701,176 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  private executeCrimsonScytheEffect() {
+    const aimVec = this.player.getAimVector();
+    const baseAngle = Math.atan2(aimVec.y, aimVec.x);
+
+    // Visual: Arc Graphics sweeping
+    const arcGfx = this.add.graphics().setDepth(1850);
+    this.cameras.main.shake(150, 0.012);
+
+    const startAngle = baseAngle - Math.PI / 3;
+    const endAngle = baseAngle + Math.PI / 3;
+
+    arcGfx.lineStyle(8, 0xef4444, 0.95);
+    arcGfx.fillStyle(0xdc2626, 0.4);
+    arcGfx.beginPath();
+    arcGfx.moveTo(this.player.x, this.player.y);
+    arcGfx.arc(this.player.x, this.player.y, 90, startAngle, endAngle, false);
+    arcGfx.closePath();
+    arcGfx.strokePath();
+    arcGfx.fillPath();
+
+    this.tweens.add({
+      targets: arcGfx,
+      alpha: 0,
+      scaleX: 1.15,
+      scaleY: 1.15,
+      duration: 250,
+      onComplete: () => arcGfx.destroy(),
+    });
+
+    // Blood particles
+    for (let i = 0; i < 12; i++) {
+      const pAngle = startAngle + Math.random() * (endAngle - startAngle);
+      const pDist = 30 + Math.random() * 55;
+      const px = this.player.x + Math.cos(pAngle) * pDist;
+      const py = this.player.y + Math.sin(pAngle) * pDist;
+      if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(px, py, 1);
+    }
+
+    // Damage enemies in arc
+    const scytheDmg = Math.round(115 * this.player.stats.damageMultiplier);
+    this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
+      const enemy = enemyObj as Enemy;
+      if (enemy.active) {
+        const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
+        if (dist <= 95) {
+          const enemyAngle = Phaser.Math.Angle.Between(this.player.x, this.player.y, enemy.x, enemy.y);
+          const angleDiff = Phaser.Math.Angle.Wrap(enemyAngle - baseAngle);
+          if (Math.abs(angleDiff) <= Math.PI / 2.5) {
+            const isDead = enemy.takeDamage(scytheDmg);
+            this.spawnFloatingText(enemy.x, enemy.y, `${scytheDmg}!`, '#dc2626', true);
+            // Knockback
+            enemy.x += Math.cos(enemyAngle) * 35;
+            enemy.y += Math.sin(enemyAngle) * 35;
+            if (isDead) this.handleEnemyDeath(enemy);
+          }
+        }
+      }
+    });
+  }
+
+  private executeRitualCircleEffect() {
+    const aimVec = this.player.getAimVector();
+    const targetX = Phaser.Math.Clamp(this.player.x + aimVec.x * 120, 40, this.physics.world.bounds.width - 40);
+    const targetY = Phaser.Math.Clamp(this.player.y + aimVec.y * 120, 40, this.physics.world.bounds.height - 40);
+
+    // Spawn Pentagram Ritual Circle
+    const circleRing = this.add.circle(targetX, targetY, 80, 0xef4444, 0.25).setStrokeStyle(3, 0xf43f5e, 0.9).setDepth(1300);
+    const innerStar = this.add.star(targetX, targetY, 5, 20, 40, 0xdc2626, 0.4).setDepth(1305);
+
+    let ticks = 0;
+    const maxTicks = 16; // 4 seconds (every 250ms)
+    this.time.addEvent({
+      delay: 250,
+      callback: () => {
+        ticks++;
+        innerStar.setRotation(innerStar.rotation + 0.15);
+
+        if (this.bloodEmitter && Math.random() > 0.3) {
+          this.bloodEmitter.emitParticleAt(targetX + (Math.random() - 0.5) * 60, targetY + (Math.random() - 0.5) * 60, 2);
+        }
+
+        let enemiesPulled = 0;
+        this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
+          const enemy = enemyObj as Enemy;
+          if (enemy.active) {
+            const dist = Phaser.Math.Distance.Between(targetX, targetY, enemy.x, enemy.y);
+            if (dist <= 110) {
+              enemiesPulled++;
+              // Pull toward center
+              const pullAngle = Phaser.Math.Angle.Between(enemy.x, enemy.y, targetX, targetY);
+              enemy.x += Math.cos(pullAngle) * 8;
+              enemy.y += Math.sin(pullAngle) * 8;
+
+              // Tick damage
+              const tickDmg = Math.round(10 * this.player.stats.damageMultiplier);
+              const isDead = enemy.takeDamage(tickDmg);
+              if (ticks % 2 === 0) {
+                this.spawnFloatingText(enemy.x, enemy.y, `${tickDmg}`, '#e11d48', false);
+              }
+              if (isDead) this.handleEnemyDeath(enemy);
+            }
+          }
+        });
+
+        // Regenerate Mana from blood transmutations
+        if (enemiesPulled > 0) {
+          this.player.addMana(enemiesPulled * 2);
+        }
+
+        if (ticks >= maxTicks) {
+          this.tweens.add({
+            targets: [circleRing, innerStar],
+            alpha: 0,
+            scale: 1.3,
+            duration: 300,
+            onComplete: () => {
+              circleRing.destroy();
+              innerStar.destroy();
+            },
+          });
+        }
+      },
+      repeat: maxTicks - 1,
+    });
+  }
+
+  private executeHemomancyBeamEffect() {
+    const aimVec = this.player.getAimVector();
+    const angle = Math.atan2(aimVec.y, aimVec.x);
+    const startX = this.player.x;
+    const startY = this.player.y;
+    const beamLength = 480;
+
+    const endX = startX + Math.cos(angle) * beamLength;
+    const endY = startY + Math.sin(angle) * beamLength;
+
+    this.cameras.main.shake(250, 0.016);
+
+    // Draw Piercing Blood Laser Graphics
+    const beamGfx = this.add.graphics().setDepth(1900);
+    beamGfx.lineStyle(16, 0xf43f5e, 0.95);
+    beamGfx.lineBetween(startX, startY, endX, endY);
+    beamGfx.lineStyle(6, 0xffffff, 0.9);
+    beamGfx.lineBetween(startX, startY, endX, endY);
+
+    this.tweens.add({
+      targets: beamGfx,
+      alpha: 0,
+      duration: 350,
+      onComplete: () => beamGfx.destroy(),
+    });
+
+    // Beam Line Segment collision check against enemies
+    const beamLine = new Phaser.Geom.Line(startX, startY, endX, endY);
+    const beamDmg = Math.round(160 * this.player.stats.damageMultiplier);
+
+    this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
+      const enemy = enemyObj as Enemy;
+      if (enemy.active) {
+        const enemyCircle = new Phaser.Geom.Circle(enemy.x, enemy.y, 22);
+        if (Phaser.Geom.Intersects.LineToCircle(beamLine, enemyCircle)) {
+          if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 10);
+          const isDead = enemy.takeDamage(beamDmg);
+          this.spawnFloatingText(enemy.x, enemy.y, `${beamDmg}!`, '#f43f5e', true);
+          if (isDead) this.handleEnemyDeath(enemy);
+        }
+      }
+    });
+  }
+
   private handleProjectileHitWall(projObj: any, wallObj: any) {
     const proj = projObj as Projectile;
     if (!proj.active) return;
@@ -800,9 +988,47 @@ export class GameScene extends Phaser.Scene {
     this.registerKillCombo(enemy.x, enemy.y);
 
     // 2. Gore Effect: Blood Stain on Floor
-    const stain = this.add.image(enemy.x, enemy.y, 'blood_pool_stain').setDepth(2);
+    const isAbomination = enemy.config.id === 'gore_abomination';
+    const isZombie = enemy.config.id === 'zombie_shambler';
+
+    const stainScale = isAbomination ? 2.5 : 1.0;
+    const stain = this.add.image(enemy.x, enemy.y, 'blood_pool_stain').setDepth(2).setScale(stainScale);
     stain.setRotation(Math.random() * Math.PI);
-    stain.setAlpha(0.8);
+    stain.setAlpha(0.85);
+
+    // Gore Abomination Explosion Effect
+    if (isAbomination) {
+      soundEngine.playGoreExplosion();
+      this.cameras.main.shake(220, 0.018);
+
+      const expRing = this.add.circle(enemy.x, enemy.y, 15, 0x22c55e, 0.85).setDepth(1700);
+      this.tweens.add({
+        targets: expRing,
+        radius: 110,
+        alpha: 0,
+        duration: 400,
+        onComplete: () => expRing.destroy(),
+      });
+
+      // Area damage to player
+      const distToPlayer = Phaser.Math.Distance.Between(enemy.x, enemy.y, this.player.x, this.player.y);
+      if (distToPlayer <= 110) {
+        this.playerHitByEnemy(28);
+        this.spawnFloatingText(this.player.x, this.player.y - 15, 'EXPLOSÃO TÓXICA!', '#22c55e', true);
+      }
+    }
+
+    // Zombie Shambler Death Spawns Bat Swarm
+    if (isZombie) {
+      for (let b = 0; b < 2; b++) {
+        const batX = enemy.x + (Math.random() - 0.5) * 30;
+        const batY = enemy.y + (Math.random() - 0.5) * 30;
+        const bat = new Enemy(this, batX, batY, 'bat_swarm');
+        bat.alertToCombat();
+        this.enemiesGroup.add(bat);
+      }
+      this.spawnFloatingText(enemy.x, enemy.y - 12, 'MORCEGOS LIBERTADOS!', '#a855f7', false);
+    }
 
     // 3. Particle Splatter
     for (let i = 0; i < 8; i++) {

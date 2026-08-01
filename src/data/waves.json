@@ -1,37 +1,37 @@
 [
   {
     "waveNumber": 1,
-    "monsterPool": ["skeleton_warrior"],
-    "totalMonsters": 15,
-    "spawnIntervalMs": 1800,
+    "monsterPool": ["skeleton_warrior", "zombie_shambler", "bat_swarm"],
+    "totalMonsters": 18,
+    "spawnIntervalMs": 1700,
     "isBossWave": false
   },
   {
     "waveNumber": 2,
-    "monsterPool": ["skeleton_warrior", "cultist_acolyte"],
-    "totalMonsters": 25,
-    "spawnIntervalMs": 1500,
+    "monsterPool": ["skeleton_warrior", "cultist_acolyte", "zombie_shambler", "bat_swarm"],
+    "totalMonsters": 28,
+    "spawnIntervalMs": 1400,
     "isBossWave": false
   },
   {
     "waveNumber": 3,
-    "monsterPool": ["skeleton_warrior", "cultist_acolyte", "hell_hound"],
-    "totalMonsters": 35,
-    "spawnIntervalMs": 1200,
+    "monsterPool": ["skeleton_warrior", "vampire_stalker", "hell_hound", "cultist_acolyte", "bat_swarm"],
+    "totalMonsters": 38,
+    "spawnIntervalMs": 1150,
     "isBossWave": false
   },
   {
     "waveNumber": 4,
-    "monsterPool": ["skeleton_warrior", "hell_hound", "flesh_golem"],
-    "totalMonsters": 45,
-    "spawnIntervalMs": 1000,
+    "monsterPool": ["werewolf_lycan", "vampire_stalker", "flesh_golem", "gore_abomination", "blood_specter"],
+    "totalMonsters": 48,
+    "spawnIntervalMs": 950,
     "isBossWave": false
   },
   {
     "waveNumber": 5,
-    "monsterPool": ["skeleton_warrior", "cultist_acolyte", "blood_specter"],
-    "totalMonsters": 50,
-    "spawnIntervalMs": 850,
+    "monsterPool": ["vampire_stalker", "werewolf_lycan", "blood_specter", "gore_abomination"],
+    "totalMonsters": 55,
+    "spawnIntervalMs": 800,
     "isBossWave": true,
     "bossMonsterId": "necro_lord_boss"
   }

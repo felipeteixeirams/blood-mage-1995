@@ -37,6 +37,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private speedMultiplier: number = 1.0;
   private personalPhase: number = 0;
   private baseScale: number = 1.0;
+  private hasTriggeredHowl: boolean = false;
 
   // Attack Telegraphing & Realism Engine
   public attackPhase: 'none' | 'windup' | 'strike' | 'recovery' = 'none';
@@ -232,9 +233,17 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.config.temperament === 'aggressive' &&
       hpRatio < 0.5
     ) {
+      if (!this.hasTriggeredHowl && this.config.id === 'werewolf_lycan') {
+        this.hasTriggeredHowl = true;
+        soundEngine.playHowl();
+        this.baseScale = this.config.scale * 1.25;
+        this.showEmote('icon_alert');
+      }
       this.aiState = 'frenzy';
       this.setTint(0xff3333);
-      this.showEmote('icon_alert');
+      if (!this.hasTriggeredHowl) {
+        this.showEmote('icon_alert');
+      }
     }
 
     // Perception check: Can see player?
@@ -285,6 +294,15 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
             const currentDist = Phaser.Math.Distance.Between(this.x, this.y, playerX, playerY);
             if (currentDist <= this.config.attackRange + 22) {
               result = { attack: true, damage: this.config.damage, attackType: 'melee' };
+
+              // Vampire Stalker Lifesteal Ability
+              if (this.config.id === 'vampire_stalker') {
+                const stolenHp = Math.round(this.config.damage * 0.5);
+                this.hp = Math.min(this.maxHp, this.hp + stolenHp);
+                if ((this.scene as any).spawnFloatingText) {
+                  (this.scene as any).spawnFloatingText(this.x, this.y - 10, `+${stolenHp} HP`, '#22c55e', false);
+                }
+              }
             } else {
               result = { attack: false, damage: 0, dodged: true };
             }

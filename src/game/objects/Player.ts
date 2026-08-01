@@ -43,7 +43,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       floorDepth: 1,
       score: 0,
       timeSurvivedSeconds: 0,
-      unlockedSpells: ['blood_bolt', 'hellfire_nova', 'syphon_soul', 'bone_shield'],
+      unlockedSpells: ['blood_bolt', 'hellfire_nova', 'syphon_soul', 'bone_shield', 'crimson_scythe', 'blood_ritual_circle', 'hemomancy_beam'],
     };
 
     // Init skill cooldowns
@@ -162,6 +162,51 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const cd = spell.cooldownMs * (1 - this.stats.cooldownReduction);
     this.skillCooldowns['bone_shield'] = cd;
     soundEngine.playBoneShield();
+    return true;
+  }
+
+  public castCrimsonScythe(): boolean {
+    const spell = (spellsData as Record<string, SpellConfig>)['crimson_scythe'];
+    if (this.getCooldownRemaining('crimson_scythe') > 0) return false;
+    if (this.stats.mana < spell.manaCost) return false;
+    const hpCost = spell.hpCost || 0;
+    if (this.stats.hp <= hpCost) return false;
+
+    this.stats.mana -= spell.manaCost;
+    this.stats.hp -= hpCost;
+    const cd = spell.cooldownMs * (1 - this.stats.cooldownReduction);
+    this.skillCooldowns['crimson_scythe'] = cd;
+    soundEngine.playScytheSlash();
+    return true;
+  }
+
+  public castRitualCircle(): boolean {
+    const spell = (spellsData as Record<string, SpellConfig>)['blood_ritual_circle'];
+    if (this.getCooldownRemaining('blood_ritual_circle') > 0) return false;
+    if (this.stats.mana < spell.manaCost) return false;
+    const hpCost = spell.hpCost || 0;
+    if (this.stats.hp <= hpCost) return false;
+
+    this.stats.mana -= spell.manaCost;
+    this.stats.hp -= hpCost;
+    const cd = spell.cooldownMs * (1 - this.stats.cooldownReduction);
+    this.skillCooldowns['blood_ritual_circle'] = cd;
+    soundEngine.playRitualCircle();
+    return true;
+  }
+
+  public castHemomancyBeam(): boolean {
+    const spell = (spellsData as Record<string, SpellConfig>)['hemomancy_beam'];
+    if (this.getCooldownRemaining('hemomancy_beam') > 0) return false;
+    if (this.stats.mana < spell.manaCost) return false;
+    const hpCost = spell.hpCost || 0;
+    if (this.stats.hp <= hpCost) return false;
+
+    this.stats.mana -= spell.manaCost;
+    this.stats.hp -= hpCost;
+    const cd = spell.cooldownMs * (1 - this.stats.cooldownReduction);
+    this.skillCooldowns['hemomancy_beam'] = cd;
+    soundEngine.playHemomancyBeam();
     return true;
   }
 

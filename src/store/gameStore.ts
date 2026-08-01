@@ -45,8 +45,8 @@ interface GameStore {
   setTouchMoveInput: (x: number, y: number) => void;
   touchAimInput: { x: number; y: number };
   setTouchAimInput: (x: number, y: number) => void;
-  activeSkillTrigger: 'nova' | 'syphon' | 'bone_shield' | null;
-  setActiveSkillTrigger: (skill: 'nova' | 'syphon' | 'bone_shield' | null) => void;
+  activeSkillTrigger: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | null;
+  setActiveSkillTrigger: (skill: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | null) => void;
 }
 
 const defaultPlayerStats: PlayerStats = {

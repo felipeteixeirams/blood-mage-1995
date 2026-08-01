@@ -209,6 +209,119 @@ export function generateGameTextures(scene: Phaser.Scene) {
   });
   addTexture('spr_boss', bossCanvas);
 
+  // 8b. Zombie Shambler (32x40) - Classic Rotting Corpse
+  const zombieCanvas = createPixelCanvas(32, 40, (ctx) => {
+    // Olive/decay green rotting flesh
+    ctx.fillStyle = '#2d3a24';
+    ctx.fillRect(8, 10, 16, 26);
+    // Open gore chest wound
+    ctx.fillStyle = '#7f1d1d';
+    ctx.fillRect(12, 16, 8, 10);
+    // Exposed ribcage bone
+    ctx.fillStyle = '#dcd3c1';
+    ctx.fillRect(13, 18, 6, 2);
+    ctx.fillRect(13, 22, 6, 2);
+    // Head with missing jaw
+    ctx.fillStyle = '#3a4a2f';
+    ctx.fillRect(10, 2, 12, 10);
+    ctx.fillStyle = '#f59e0b'; // Feral glowing yellow eyes
+    ctx.fillRect(12, 5, 2, 2);
+    ctx.fillRect(17, 5, 2, 2);
+  });
+  addTexture('spr_zombie_shambler', zombieCanvas);
+
+  // 8c. Vampire Stalker (32x44) - Aristocratic Blood Predator
+  const vampireCanvas = createPixelCanvas(32, 44, (ctx) => {
+    // Pale alabaster skin
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(10, 2, 12, 10);
+    // Velvet black coat & crimson lining
+    ctx.fillStyle = '#18181b';
+    ctx.fillRect(6, 12, 20, 30);
+    ctx.fillStyle = '#991b1b'; // Red cape interior
+    ctx.fillRect(4, 12, 4, 28);
+    ctx.fillRect(24, 12, 4, 28);
+    // Glowing crimson eyes & sharp white fangs
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(12, 5, 2, 2);
+    ctx.fillRect(18, 5, 2, 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(13, 9, 2, 3);
+    ctx.fillRect(17, 9, 2, 3);
+  });
+  addTexture('spr_vampire_stalker', vampireCanvas);
+
+  // 8d. Werewolf Lycan (38x44) - Feral Beast
+  const lycanCanvas = createPixelCanvas(38, 44, (ctx) => {
+    // Dark hunched charcoal fur
+    ctx.fillStyle = '#27272a';
+    ctx.fillRect(6, 8, 26, 32);
+    // Hunched head with snout
+    ctx.fillRect(12, 2, 18, 10);
+    // Massive razor claws
+    ctx.fillStyle = '#a1a1aa';
+    ctx.fillRect(2, 22, 5, 12);
+    ctx.fillRect(31, 22, 5, 12);
+    // Feral yellow eyes & white fangs
+    ctx.fillStyle = '#facc15';
+    ctx.fillRect(20, 4, 3, 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(24, 8, 3, 3);
+  });
+  addTexture('spr_werewolf_lycan', lycanCanvas);
+
+  // 8e. Bat Swarm (20x20) - Fast Shadow Bat
+  const batCanvas = createPixelCanvas(20, 20, (ctx) => {
+    // Small dark purple body
+    ctx.fillStyle = '#2e1065';
+    ctx.fillRect(8, 6, 4, 8);
+    // Membrane wings
+    ctx.fillStyle = '#3b0764';
+    ctx.beginPath();
+    ctx.moveTo(8, 8);
+    ctx.lineTo(1, 2);
+    ctx.lineTo(4, 14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(12, 8);
+    ctx.lineTo(19, 2);
+    ctx.lineTo(16, 14);
+    ctx.closePath();
+    ctx.fill();
+    // Glowing red eyes
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(8, 7, 1, 1);
+    ctx.fillRect(11, 7, 1, 1);
+  });
+  addTexture('spr_bat_swarm', batCanvas);
+
+  // 8f. Gore Abomination (52x60) - Huge Pulsating Flesh Colossus
+  const abomCanvas = createPixelCanvas(52, 60, (ctx) => {
+    // Massive gore flesh colossus
+    ctx.fillStyle = '#450a0a';
+    ctx.fillRect(8, 10, 36, 46);
+    ctx.fillStyle = '#7f1d1d';
+    ctx.fillRect(12, 14, 28, 38);
+    // Toxic green puss pustules
+    ctx.fillStyle = '#22c55e';
+    ctx.beginPath();
+    ctx.arc(18, 22, 5, 0, Math.PI * 2);
+    ctx.arc(32, 34, 6, 0, Math.PI * 2);
+    ctx.arc(22, 42, 4, 0, Math.PI * 2);
+    ctx.fill();
+    // Bone protrusions
+    ctx.fillStyle = '#dcd3c1';
+    ctx.fillRect(4, 18, 6, 12);
+    ctx.fillRect(42, 28, 6, 12);
+    // Multiple glowing eyes
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(20, 6, 3, 3);
+    ctx.fillRect(26, 8, 2, 2);
+    ctx.fillRect(30, 5, 3, 3);
+  });
+  addTexture('spr_gore_abomination', abomCanvas);
+
   // 9. Projectile: Blood Bolt (16x16)
   const boltCanvas = createPixelCanvas(16, 16, (ctx) => {
     ctx.fillStyle = '#ef4444';
