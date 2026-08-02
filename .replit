@@ -18,3 +18,10 @@ expertMode = true
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
+
+[userenv]
+
+[userenv.production]
+
+[userenv.shared]
+VITE_SENTRY_DSN = "https://22e23bc6d0ab0d602707e8b6eddadcc9@o4511843296542720.ingest.us.sentry.io/4511843301916672"
