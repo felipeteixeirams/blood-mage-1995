@@ -1,0 +1,4 @@
+## 2025-02-19 - Safe LocalStorage Validation and Sanitization Pattern
+**Vulnerability:** Potential client-side application crashes, state corruption, or prototype pollution if external, corrupted, or maliciously manipulated data exists in `localStorage` parsed via raw `JSON.parse`.
+**Learning:** Pure client-side RPGs (like Bloodmage 1995) rely on `localStorage` for high scores, talent progression, settings, and currency. Raw loading of these keys can compromise local client stability or allow prototype pollution if malicious properties are merged.
+**Prevention:** Always use Zod's strict schema parsing with safe fallback defaults (`.strict()`, `.catch()`, or `safeParse`) to guarantee the loaded data conforms to the expected type and structure, discarding any unexpected or prototype-polluting properties.
