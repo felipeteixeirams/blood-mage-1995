@@ -69,6 +69,10 @@ interface GameStore {
   setTouchAimInput: (x: number, y: number) => void;
   activeSkillTrigger: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | null;
   setActiveSkillTrigger: (skill: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | null) => void;
+
+  /** 4 spell IDs the player has pinned to the HUD skill bar */
+  skillPreset: string[];
+  setSkillPreset: (preset: string[]) => void;
 }
 
 const defaultPlayerStats: PlayerStats = {
@@ -194,4 +198,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   activeSkillTrigger: null,
   setActiveSkillTrigger: (skill) => set({ activeSkillTrigger: skill }),
+
+  skillPreset: ['hellfire_nova', 'syphon_soul', 'bone_shield', 'crimson_scythe'],
+  setSkillPreset: (preset) => set({ skillPreset: preset }),
 }));
