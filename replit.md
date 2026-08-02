@@ -5,6 +5,7 @@ A browser-based isometric 16-bit action RPG dungeon crawler. Players battle wave
 ## Run & Operate
 
 - Workflows manage dev servers — use the Replit UI or `WorkflowsRestart` tool
+- `pnpm verify` — full typecheck + build de todos os artifacts (mesmo pipeline do Vercel)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 
