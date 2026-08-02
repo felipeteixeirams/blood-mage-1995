@@ -11,6 +11,7 @@ import { GameOverModal } from './components/GameOverModal';
 import { InventoryModal } from './components/InventoryModal';
 import { TalentsModal } from './components/TalentsModal';
 import { ObservabilityModal } from './components/ObservabilityModal';
+import { RotateDeviceOverlay } from './components/RotateDeviceOverlay';
 import { PhaserGame } from './game/PhaserGame';
 import { GameScene } from './game/scenes/GameScene';
 import { PlayerStats, UpgradeOption } from './types/game';
@@ -108,6 +109,9 @@ export default function App() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
+      {/* Orientation lock overlay — forces landscape mode */}
+      <RotateDeviceOverlay />
+
       {/* Standalone CRT Scanline Overlay - pointer-events-none ensures touch & click pass through */}
       {settings.crtFilter && (
         <div className="fixed inset-0 pointer-events-none z-[120] crt-overlay" />
