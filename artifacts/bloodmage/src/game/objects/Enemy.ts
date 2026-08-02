@@ -543,6 +543,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   public takeDamage(amount: number): boolean {
     this.hp -= amount;
 
+    // Visual: blood burst particles
+    if (this.active) {
+      (this.scene as any).spawnBloodBurst?.(this.x, this.y, 6);
+    }
+
     // Alert instantly to combat when damaged!
     this.alertToCombat();
 

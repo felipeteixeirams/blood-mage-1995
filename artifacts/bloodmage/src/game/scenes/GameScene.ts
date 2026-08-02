@@ -33,6 +33,14 @@ export class GameScene extends Phaser.Scene {
   private chestsGroup!: Phaser.Physics.Arcade.StaticGroup;
   public dungeonGenerator!: DungeonGenerator;
 
+  // --- Visual improvements ---
+  private rooms: RoomData[] = [];
+  private darknessOverlay!: Phaser.GameObjects.Graphics;
+  private lightSprites: Phaser.GameObjects.Image[] = [];
+  private fogOverlay!: Phaser.GameObjects.TileSprite;
+  private bloodBurstEmitter!: Phaser.GameObjects.Particles.ParticleEmitter;
+  private flickerTimer?: Phaser.Time.TimerEvent;
+
   // Floor Depth Progression
   private currentFloorDepth: number = 1;
   private totalFloorMonsters: number = 0;
@@ -140,6 +148,79 @@ export class GameScene extends Phaser.Scene {
     // 3. Generate Dungeon Map Layout
     this.buildDungeonMap(mapW, mapH, this.currentFloorDepth);
 
+    // --- VISUAL: Darkness overlay + Lighting ---
+    this.darknessOverlay = this.add.graphics().setDepth(1990);
+    this.darknessOverlay.fillStyle(0x000000, 0.65);
+    this.darknessOverlay.fillRect(0, 0, mapW, mapH);
+
+    // Place light sprites (additive blend over darkness)
+    this.lightSprites.forEach(s => s.destroy());
+    this.lightSprites = [];
+    this.rooms.forEach((room) => {
+      // Torches flanking doorways on each wall
+      const flamePositions: { x: number; y: number; kind: 'torch' | 'brazier' }[] = [];
+
+      if (room.y > 80) {
+        flamePositions.push({ x: room.centerX - 70, y: room.y - 6, kind: 'torch' });
+        flamePositions.push({ x: room.centerX + 70, y: room.y - 6, kind: 'torch' });
+      }
+      if (room.x > 100) {
+        flamePositions.push({ x: room.x - 6, y: room.centerY - 40, kind: 'torch' });
+        flamePositions.push({ x: room.x - 6, y: room.centerY + 40, kind: 'torch' });
+      }
+      // Corners of the room
+      flamePositions.push({ x: room.x + 40, y: room.y + 40, kind: 'torch' });
+      flamePositions.push({ x: room.x + room.width - 40, y: room.y + 40, kind: 'torch' });
+      flamePositions.push({ x: room.x + 40, y: room.y + room.height - 40, kind: 'torch' });
+      flamePositions.push({ x: room.x + room.width - 40, y: room.y + room.height - 40, kind: 'torch' });
+
+      // Boss room: massive brazier in center
+      if (room.type === 'boss') {
+        flamePositions.push({ x: room.centerX, y: room.centerY + 60, kind: 'brazier' });
+      }
+
+      flamePositions.forEach((fp) => {
+        const texKey = fp.kind === 'brazier' ? 'light_brazier' : 'light_torch';
+        const scale = fp.kind === 'brazier' ? 1.0 : 0.6 + Math.random() * 0.3;
+        const light = this.add.image(fp.x, fp.y, texKey)
+          .setBlendMode(Phaser.BlendModes.ADD)
+          .setDepth(1995)
+          .setAlpha(0.6 + Math.random() * 0.2)
+          .setScale(scale);
+        this.lightSprites.push(light);
+      });
+    });
+
+    // Flicker timer — randomizes scale + alpha of all light sprites
+    this.flickerTimer = this.time.addEvent({
+      delay: 180,
+      loop: true,
+      callback: () => {
+        this.lightSprites.forEach((sprite) => {
+          const flicker = 0.82 + Math.random() * 0.3;
+          sprite.setScale(sprite.displayWidth < 100 ? 0.6 * flicker : flicker);
+          sprite.setAlpha(0.45 + Math.random() * 0.4);
+        });
+      },
+    });
+
+    // --- VISUAL: Ground-level mist / fog ---
+    this.fogOverlay = this.add.tileSprite(0, 0, mapW, mapH, 'fog_mist')
+      .setOrigin(0, 0)
+      .setDepth(750)          // between floor (1) and entities
+      .setAlpha(0.18);
+
+    // --- VISUAL: Blood burst emitter (one-shot bursts) ---
+    this.bloodBurstEmitter = this.add.particles(0, 0, 'particle_blood_red', {
+      scale: { start: 0.12, end: 0 },
+      alpha: { start: 0.9, end: 0 },
+      speed: { min: 60, max: 180 },
+      angle: { min: 0, max: 360 },
+      lifespan: { min: 250, max: 500 },
+      gravityY: 120,
+      emitting: false,
+    }).setDepth(2100);
+
     // Camera setup
     this.cameras.main.setBounds(0, 0, mapW, mapH);
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
@@ -203,9 +284,11 @@ export class GameScene extends Phaser.Scene {
     window.addEventListener('trigger-blood-nova', handleNovaEvent);
     this.events.once('shutdown', () => {
       window.removeEventListener('trigger-blood-nova', handleNovaEvent);
+      if (this.flickerTimer) this.flickerTimer.destroy();
     });
     this.events.once('destroy', () => {
       window.removeEventListener('trigger-blood-nova', handleNovaEvent);
+      if (this.flickerTimer) this.flickerTimer.destroy();
     });
 
     this.physics.add.overlap(
@@ -270,6 +353,7 @@ export class GameScene extends Phaser.Scene {
     useGameStore.getState().setCurrentBiome(biome);
 
     const rooms = this.dungeonGenerator.generate(mapW, mapH, biome);
+    this.rooms = rooms;
 
     telemetry.trackEvent('floor_start', { floor: floorDepth, biome, rooms: rooms.length });
 
@@ -471,6 +555,12 @@ export class GameScene extends Phaser.Scene {
 
   update(time: number, delta: number) {
     if (this.isPaused) return;
+
+    // --- Fog / mist slow drift ---
+    if (this.fogOverlay?.active) {
+      this.fogOverlay.tilePositionX += 0.12;
+      this.fogOverlay.tilePositionY += 0.06;
+    }
 
     // ISO Y-SORTING DEPTH SYSTEM
     this.depthGroup.getChildren().forEach((gameObject: any) => {
@@ -1256,6 +1346,13 @@ export class GameScene extends Phaser.Scene {
 
     if (this.callbacks?.onGameOver) {
       this.callbacks.onGameOver({ ...this.player.stats });
+    }
+  }
+
+  /** Emit a short burst of blood particles at a position — used by enemy damage */
+  public spawnBloodBurst(x: number, y: number, count: number = 6) {
+    if (this.bloodBurstEmitter?.active) {
+      this.bloodBurstEmitter.emitParticleAt(x, y, count);
     }
   }
 

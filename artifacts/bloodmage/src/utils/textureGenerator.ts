@@ -514,4 +514,45 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fill();
   });
   addTexture('icon_flee', fleeCanvas);
+
+  // 23. Torch Light Sprite (128×128 radial glow)
+  const torchLightCanvas = createPixelCanvas(128, 128, (ctx) => {
+    const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gradient.addColorStop(0, 'rgba(255, 200, 100, 1)');
+    gradient.addColorStop(0.15, 'rgba(255, 150, 50, 0.7)');
+    gradient.addColorStop(0.4, 'rgba(200, 80, 20, 0.25)');
+    gradient.addColorStop(0.7, 'rgba(100, 30, 10, 0.08)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 128, 128);
+  });
+  addTexture('light_torch', torchLightCanvas);
+
+  // 24. Brazier / Large Light Sprite (192×192 radial glow)
+  const brazierLightCanvas = createPixelCanvas(192, 192, (ctx) => {
+    const gradient = ctx.createRadialGradient(96, 96, 0, 96, 96, 96);
+    gradient.addColorStop(0, 'rgba(255, 180, 80, 1)');
+    gradient.addColorStop(0.15, 'rgba(255, 120, 40, 0.6)');
+    gradient.addColorStop(0.35, 'rgba(200, 70, 20, 0.2)');
+    gradient.addColorStop(0.6, 'rgba(100, 30, 10, 0.06)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 192, 192);
+  });
+  addTexture('light_brazier', brazierLightCanvas);
+
+  // 25. Ground Mist / Fog Texture (128×128 soft clouds)
+  const fogCanvas = createPixelCanvas(128, 128, (ctx) => {
+    for (let i = 0; i < 300; i++) {
+      const fx = Math.random() * 128;
+      const fy = Math.random() * 128;
+      const fr = 6 + Math.random() * 20;
+      const alpha = 0.01 + Math.random() * 0.04;
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(fx, fy, fr, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+  addTexture('fog_mist', fogCanvas);
 }
