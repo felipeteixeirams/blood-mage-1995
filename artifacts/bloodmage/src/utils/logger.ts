@@ -67,23 +67,19 @@ class LoggerService {
       this.buffer.pop();
     }
 
-    // Console output styling
-    const color =
-      level === 'ERROR'
-        ? '#ef4444'
-        : level === 'WARN'
-        ? '#f59e0b'
-        : level === 'INFO'
-        ? '#3b82f6'
-        : '#94a3b8';
+    // Console output — use correct method per level so DevTools filters work
+    // and so any server-side runner (Node.js, Vercel Functions) routes them correctly
+    const prefix = `[${entry.timestamp.split('T')[1].slice(0, 12)}] [${entry.level}] [${entry.namespace}]`;
+    const msg = `${prefix} ${entry.message}`;
 
-    const logHeader = `%c[${entry.timestamp.split('T')[1].slice(0, 12)}] [${entry.level}] [${entry.namespace}] ${entry.message}`;
-    const style = `color: ${color}; font-weight: bold;`;
-
-    if (data !== undefined) {
-      console.log(logHeader, style, data);
+    if (level === 'ERROR') {
+      data !== undefined ? console.error(msg, data) : console.error(msg);
+    } else if (level === 'WARN') {
+      data !== undefined ? console.warn(msg, data) : console.warn(msg);
+    } else if (level === 'INFO') {
+      data !== undefined ? console.info(msg, data) : console.info(msg);
     } else {
-      console.log(logHeader, style);
+      data !== undefined ? console.debug(msg, data) : console.debug(msg);
     }
 
     this.notify();
