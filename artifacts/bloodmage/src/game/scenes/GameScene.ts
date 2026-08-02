@@ -150,7 +150,7 @@ export class GameScene extends Phaser.Scene {
 
     // --- VISUAL: Darkness overlay + Lighting ---
     this.darknessOverlay = this.add.graphics().setDepth(1990);
-    this.darknessOverlay.fillStyle(0x000000, 0.65);
+    this.darknessOverlay.fillStyle(0x050510, 0.35);
     this.darknessOverlay.fillRect(0, 0, mapW, mapH);
 
     // Place light sprites (additive blend over darkness)
@@ -185,7 +185,7 @@ export class GameScene extends Phaser.Scene {
         const light = this.add.image(fp.x, fp.y, texKey)
           .setBlendMode(Phaser.BlendModes.ADD)
           .setDepth(1995)
-          .setAlpha(0.6 + Math.random() * 0.2)
+          .setAlpha(0.7 + Math.random() * 0.3)
           .setScale(scale);
         this.lightSprites.push(light);
       });
@@ -199,7 +199,7 @@ export class GameScene extends Phaser.Scene {
         this.lightSprites.forEach((sprite) => {
           const flicker = 0.82 + Math.random() * 0.3;
           sprite.setScale(sprite.displayWidth < 100 ? 0.6 * flicker : flicker);
-          sprite.setAlpha(0.45 + Math.random() * 0.4);
+          sprite.setAlpha(0.65 + Math.random() * 0.35);
         });
       },
     });
@@ -545,8 +545,7 @@ export class GameScene extends Phaser.Scene {
       this.player.stats.projectileBonus += e.projectileAdd;
     }
 
-    this.isPaused = false;
-    this.physics.resume();
+    // Level up choice applied — game keeps running (no pause)
   }
 
   private triggerBloodNova() {
@@ -1031,15 +1030,10 @@ export class GameScene extends Phaser.Scene {
 
     soundEngine.playChestOpen();
 
-    // Spawn 3 XP gems & HP/Mana Orbs
-    for (let i = 0; i < 3; i++) {
-      const gem = new Collectible(this, chest.x + (Math.random() - 0.5) * 30, chest.y + (Math.random() - 0.5) * 30, 'xp', 25);
-      this.collectiblesGroup.add(gem);
-    }
-
-    const orbType = Math.random() < 0.5 ? 'hp' : 'mana';
-    const orb = new Collectible(this, chest.x, chest.y, orbType, 35);
-    this.collectiblesGroup.add(orb);
+    // Chest: guaranteed equipment loot + blood crystals (no XP/HP drops)
+    // Grant some XP directly
+    this.player.addXp(30);
+    this.spawnFloatingText(chest.x, chest.y - 13, '+30 XP', '#3b82f6', false);
 
     // Guaranteed Chest Equipment Loot (Higher Rarity)
     const chestLoot = LootSystem.generateLoot(this.currentFloorDepth, true);
@@ -1193,14 +1187,11 @@ export class GameScene extends Phaser.Scene {
       });
     }
 
-    // 4. Drop XP Blood Gem or HP/Mana Orbs
-    const xpDrop = new Collectible(this, enemy.x, enemy.y, 'xp', enemy.config.xpDrop);
-    this.collectiblesGroup.add(xpDrop);
-
-    if (Math.random() < 0.25) {
-      const type = Math.random() < 0.5 ? 'hp' : 'mana';
-      const orb = new Collectible(this, enemy.x + (Math.random() - 0.5) * 20, enemy.y + (Math.random() - 0.5) * 20, type, 25);
-      this.collectiblesGroup.add(orb);
+    // 4. Grant XP directly to player (no gems to collect)
+    const leveledUp = this.player.addXp(enemy.config.xpDrop);
+    this.spawnFloatingText(enemy.x, enemy.y - 30, `+${enemy.config.xpDrop} XP`, '#3b82f6', false);
+    if (leveledUp) {
+      this.triggerLevelUp();
     }
 
     // 5. Check Loot Drop
@@ -1287,12 +1278,6 @@ export class GameScene extends Phaser.Scene {
     } else if (item.type === 'mana') {
       this.player.addMana(item.amount);
       this.spawnFloatingText(this.player.x, this.player.y - 12, `+${item.amount} MP`, '#a855f7', false);
-    } else if (item.type === 'xp') {
-      const leveledUp = this.player.addXp(item.amount);
-      this.spawnFloatingText(this.player.x, this.player.y - 12, `+${item.amount} XP`, '#3b82f6', false);
-      if (leveledUp) {
-        this.triggerLevelUp();
-      }
     }
 
     item.destroy();
@@ -1328,13 +1313,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   private triggerLevelUp() {
-    this.isPaused = true;
-    this.physics.pause();
-
-    const shuffled = [...upgradesData].sort(() => 0.5 - Math.random());
-    const selectedOptions = shuffled.slice(0, 3) as UpgradeOption[];
-
+    // Just store pending data — player distributes later via talent tree (T key)
     if (this.callbacks?.onLevelUp) {
+      const shuffled = [...upgradesData].sort(() => 0.5 - Math.random());
+      const selectedOptions = shuffled.slice(0, 3) as UpgradeOption[];
       this.callbacks.onLevelUp(this.player.stats.level, selectedOptions);
     }
   }

@@ -1,13 +1,13 @@
 import Phaser from 'phaser';
 
-export type CollectibleType = 'hp' | 'mana' | 'xp';
+export type CollectibleType = 'hp' | 'mana';
 
 export class Collectible extends Phaser.Physics.Arcade.Sprite {
   public type: CollectibleType;
   public amount: number;
 
   constructor(scene: Phaser.Scene, x: number, y: number, type: CollectibleType, amount: number) {
-    const key = type === 'hp' ? 'orb_hp' : type === 'mana' ? 'orb_mana' : 'gem_xp';
+    const key = type === 'hp' ? 'orb_hp' : 'orb_mana';
     super(scene, x, y, key);
     this.type = type;
     this.amount = amount;

@@ -13,6 +13,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private invulnerableTimer: number = 0;
   public equippedLoot: LootItem[] = [];
 
+  // Movement acceleration (Dungeon Siege feel)
+  private currentVx: number = 0;
+  private currentVy: number = 0;
+  private readonly ACCELERATION = 1400;
+  private readonly DECELERATION = 1000;
+
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'spr_bloodmage');
     scene.add.existing(this);
@@ -44,6 +50,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       score: 0,
       timeSurvivedSeconds: 0,
       unlockedSpells: ['blood_bolt', 'hellfire_nova', 'syphon_soul', 'bone_shield', 'crimson_scythe', 'blood_ritual_circle', 'hemomancy_beam'],
+      pendingStatPoints: 0,
     };
 
     // Init skill cooldowns
@@ -66,9 +73,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public updatePlayer(time: number, delta: number) {
-    // Movement Physics
+    // Movement Physics — acceleration-based for smooth start/stop
     const speed = this.stats.moveSpeed;
-    this.setVelocity(this.moveVector.x * speed, this.moveVector.y * speed);
+    const dt = delta / 1000;
+    const targetVx = this.moveVector.x * speed;
+    const targetVy = this.moveVector.y * speed;
+
+    // Accelerate toward target (instant if target is zero = friction)
+    if (this.moveVector.x !== 0 || this.moveVector.y !== 0) {
+      this.currentVx = this.moveToward(this.currentVx, targetVx, this.ACCELERATION * dt);
+      this.currentVy = this.moveToward(this.currentVy, targetVy, this.ACCELERATION * dt);
+    } else {
+      this.currentVx = this.moveToward(this.currentVx, 0, this.DECELERATION * dt);
+      this.currentVy = this.moveToward(this.currentVy, 0, this.DECELERATION * dt);
+    }
+    this.setVelocity(this.currentVx, this.currentVy);
 
     // Flip sprite based on move or aim direction
     if (this.aimVector.x !== 0) {
@@ -236,12 +255,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.stats.level += 1;
       this.stats.currentXp -= this.stats.nextLevelXp;
       this.stats.nextLevelXp = Math.floor(this.stats.nextLevelXp * 1.4);
-      this.stats.hp = this.stats.maxHp; // Full heal on level up
-      this.stats.mana = this.stats.maxMana;
+      this.stats.pendingStatPoints = (this.stats.pendingStatPoints || 0) + 1;
       soundEngine.playLevelUp();
       return true; // Triggered level up!
     }
     return false;
+  }
+
+  /** Move a value toward target by at most maxDelta (for acceleration) */
+  private moveToward(current: number, target: number, maxDelta: number): number {
+    const diff = target - current;
+    if (Math.abs(diff) <= maxDelta) return target;
+    return current + Math.sign(diff) * maxDelta;
   }
 
   public equipLoot(item: LootItem) {

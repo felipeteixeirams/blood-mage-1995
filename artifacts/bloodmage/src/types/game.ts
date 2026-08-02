@@ -136,6 +136,7 @@ export interface PlayerStats {
   score: number;
   timeSurvivedSeconds: number;
   unlockedSpells: string[]; // spell IDs
+  pendingStatPoints: number; // unspent talent/skill points
 }
 
 export interface WaveConfig {

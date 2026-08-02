@@ -45,6 +45,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private attackTargetPos: { x: number; y: number } = { x: 0, y: 0 };
   private attackType: 'melee' | 'ranged' = 'melee';
 
+  // Movement acceleration (mass-based feel per monster type)
+  private moveVx: number = 0;
+  private moveVy: number = 0;
+
   constructor(scene: Phaser.Scene, x: number, y: number, monsterId: string) {
     const rawData = monstersData as Record<string, MonsterConfig>;
     const monsterConfig = rawData[monsterId] || rawData['skeleton_warrior'];
@@ -338,7 +342,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // STATE MACHINE IMPLEMENTATION
     switch (this.aiState) {
       case 'idle':
-        this.setVelocity(0, 0);
+        this.accelerateToward(0, 0, delta);
         // Slowly look around
         this.facingAngle += Math.sin(time * 0.002 + this.personalPhase) * 0.01;
         break;
@@ -346,7 +350,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       case 'patrol': {
         const distP = Phaser.Math.Distance.Between(this.x, this.y, this.currentPatrolTarget.x, this.currentPatrolTarget.y);
         if (distP < 15) {
-          this.setVelocity(0, 0);
+          this.accelerateToward(0, 0, delta);
           if (time > this.patrolWaitTimer) {
             this.currentPatrolTarget = this.currentPatrolTarget === this.patrolP1 ? this.patrolP2 : this.patrolP1;
             this.patrolWaitTimer = time + 2000 + Math.random() * 2000;
@@ -355,7 +359,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
           const moveAngle = Phaser.Math.Angle.Between(this.x, this.y, this.currentPatrolTarget.x, this.currentPatrolTarget.y);
           this.facingAngle = moveAngle;
           const patrolSpeed = effectiveBaseSpeed * 0.45;
-          this.setVelocity(Math.cos(moveAngle) * patrolSpeed, Math.sin(moveAngle) * patrolSpeed);
+          this.accelerateToward(Math.cos(moveAngle) * patrolSpeed, Math.sin(moveAngle) * patrolSpeed, delta);
           this.setFlipX(Math.cos(moveAngle) < 0);
         }
         break;
@@ -368,10 +372,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
             const moveAngle = Phaser.Math.Angle.Between(this.x, this.y, this.investigatePoint.x, this.investigatePoint.y);
             this.facingAngle = moveAngle;
             const invSpeed = effectiveBaseSpeed * 0.65;
-            this.setVelocity(Math.cos(moveAngle) * invSpeed, Math.sin(moveAngle) * invSpeed);
+            this.accelerateToward(Math.cos(moveAngle) * invSpeed, Math.sin(moveAngle) * invSpeed, delta);
             this.setFlipX(Math.cos(moveAngle) < 0);
           } else {
-            this.setVelocity(0, 0);
+            this.accelerateToward(0, 0, delta);
             if (time > this.investigateTimer) {
               // Return to patrol
               this.aiState = 'patrol';
@@ -387,7 +391,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         const fleeAngle = angleToPlayer + Math.PI;
         this.facingAngle = fleeAngle;
         const fleeSpeed = effectiveBaseSpeed * 1.25;
-        this.setVelocity(Math.cos(fleeAngle) * fleeSpeed, Math.sin(fleeAngle) * fleeSpeed);
+        this.accelerateToward(Math.cos(fleeAngle) * fleeSpeed, Math.sin(fleeAngle) * fleeSpeed, delta);
         this.setFlipX(Math.cos(fleeAngle) < 0);
         break;
       }
@@ -403,7 +407,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
           case 'swarmer': {
             // Bat / Swarmer: Erratic swooping sine wave flight
             const waveAngle = angleToPlayer + Math.sin(time * 0.007 + this.personalPhase) * 0.42;
-            this.setVelocity(Math.cos(waveAngle) * currentSpeed, Math.sin(waveAngle) * currentSpeed);
+            this.accelerateToward(Math.cos(waveAngle) * currentSpeed, Math.sin(waveAngle) * currentSpeed, delta);
 
             if (distanceToPlayer <= this.config.attackRange) {
               if (time > this.lastAttackTime + 900) {
@@ -421,10 +425,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
             // Progressive acceleration when hunting player up close + slight zigzag weave
             const huntingBoost = distanceToPlayer < 150 ? 1.15 : 1.0;
             const weaveAngle = angleToPlayer + Math.sin(time * 0.005 + this.personalPhase) * 0.16;
-            this.setVelocity(
-              Math.cos(weaveAngle) * currentSpeed * huntingBoost,
-              Math.sin(weaveAngle) * currentSpeed * huntingBoost
-            );
+            const chaseVx = Math.cos(weaveAngle) * currentSpeed * huntingBoost;
+            const chaseVy = Math.sin(weaveAngle) * currentSpeed * huntingBoost;
+            this.accelerateToward(chaseVx, chaseVy, delta);
 
             if (distanceToPlayer <= this.config.attackRange) {
               if (time > this.lastAttackTime + 1100) {
@@ -444,7 +447,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
               this.chargeVector.setTo(playerX - this.x, playerY - this.y).normalize();
             }
             if (this.isCharging) {
-              this.setVelocity(this.chargeVector.x * currentSpeed * 1.7, this.chargeVector.y * currentSpeed * 1.7);
+              // Charger builds up speed slowly during charge
+              const chargeTargetVx = this.chargeVector.x * currentSpeed * 1.7;
+              const chargeTargetVy = this.chargeVector.y * currentSpeed * 1.7;
+              this.accelerateToward(chargeTargetVx, chargeTargetVy, delta);
             } else {
               this.scene.physics.moveTo(this, playerX, playerY, currentSpeed);
             }
@@ -462,20 +468,25 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
           case 'ranged':
           case 'boss': {
+            let moveTargetVx = 0, moveTargetVy = 0;
             if (distanceToPlayer > this.config.attackRange) {
               // Approach with slight curve
               const curveAngle = angleToPlayer + Math.sin(time * 0.003 + this.personalPhase) * 0.2;
-              this.setVelocity(Math.cos(curveAngle) * currentSpeed, Math.sin(curveAngle) * currentSpeed);
+              moveTargetVx = Math.cos(curveAngle) * currentSpeed;
+              moveTargetVy = Math.sin(curveAngle) * currentSpeed;
             } else if (distanceToPlayer < this.config.attackRange * 0.55) {
               // Tactical backing away with angled steps
               const backAngle = angleToPlayer + Math.PI + Math.sin(time * 0.004 + this.personalPhase) * 0.35;
-              this.setVelocity(Math.cos(backAngle) * currentSpeed * 1.05, Math.sin(backAngle) * currentSpeed * 1.05);
+              moveTargetVx = Math.cos(backAngle) * currentSpeed * 1.05;
+              moveTargetVy = Math.sin(backAngle) * currentSpeed * 1.05;
             } else {
               // Tactical circle-strafing around player
               const strafeDirection = Math.sin(time * 0.002 + this.personalPhase) > 0 ? 1 : -1;
               const strafeAngle = angleToPlayer + (strafeDirection * Math.PI) / 2;
-              this.setVelocity(Math.cos(strafeAngle) * currentSpeed * 0.6, Math.sin(strafeAngle) * currentSpeed * 0.6);
+              moveTargetVx = Math.cos(strafeAngle) * currentSpeed * 0.6;
+              moveTargetVy = Math.sin(strafeAngle) * currentSpeed * 0.6;
             }
+            this.accelerateToward(moveTargetVx, moveTargetVy, delta);
 
             if (distanceToPlayer <= this.config.attackRange + 50) {
               if (time > this.lastAttackTime + (this.aiState === 'frenzy' ? 1300 : 1900)) {
@@ -514,8 +525,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         }
       }
       if (count > 0) {
-        const bodyVel = this.body.velocity;
-        this.setVelocity(bodyVel.x + sepX, bodyVel.y + sepY);
+        this.moveVx += sepX;
+        this.moveVy += sepY;
+        this.setVelocity(this.moveVx, this.moveVy);
       }
     }
 
@@ -538,6 +550,36 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     return result;
+  }
+
+  /** Smoothly accelerate toward a target velocity —
+   *  heavier monsters accelerate slower (Dungeon Siege feel) */
+  private accelerateToward(targetVx: number, targetVy: number, delta: number) {
+    const dt = delta / 1000;
+    const isMoving = targetVx !== 0 || targetVy !== 0;
+    const accel = this.getAccelRate();
+    const rate = isMoving ? accel : accel * 0.55; // deceleration is gentler
+
+    this.moveVx = this._moveToward(this.moveVx, targetVx, rate * dt);
+    this.moveVy = this._moveToward(this.moveVy, targetVy, rate * dt);
+    this.setVelocity(this.moveVx, this.moveVy);
+  }
+
+  private getAccelRate(): number {
+    switch (this.config.behavior) {
+      case 'swarmer': return 2400;  // bats, flies — twitchy
+      case 'chaser':  return 1200;  // skeletons, wolves
+      case 'charger': return 600;   // heavy brutes — slow start
+      case 'boss':    return 480;   // biggest — very sluggish
+      case 'ranged':  return 900;   // casters, archers
+      default:        return 1000;
+    }
+  }
+
+  private _moveToward(current: number, target: number, maxDelta: number): number {
+    const diff = target - current;
+    if (Math.abs(diff) <= maxDelta) return target;
+    return current + Math.sign(diff) * maxDelta;
   }
 
   public takeDamage(amount: number): boolean {

@@ -79,6 +79,7 @@ const defaultPlayerStats: PlayerStats = {
   vampirism: 0, projectileBonus: 0,
   kills: 0, souls: 0, wave: 1, floorDepth: 1, score: 0, timeSurvivedSeconds: 0,
   unlockedSpells: ['blood_bolt', 'hellfire_nova', 'syphon_soul', 'bone_shield', 'crimson_scythe', 'blood_ritual_circle', 'hemomancy_beam'],
+  pendingStatPoints: 0,
 };
 
 export const useGameStore = create<GameStore>((set, get) => ({
