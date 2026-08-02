@@ -515,26 +515,96 @@ export function generateGameTextures(scene: Phaser.Scene) {
   });
   addTexture('icon_flee', fleeCanvas);
 
-  // 23. Torch Light Sprite (128×128 radial glow)
+  // 23. Torch Light Sprite (128×128 — visible handle + flame + glow)
   const torchLightCanvas = createPixelCanvas(128, 128, (ctx) => {
-    const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-    gradient.addColorStop(0, 'rgba(255, 200, 100, 1)');
-    gradient.addColorStop(0.15, 'rgba(255, 150, 50, 0.7)');
-    gradient.addColorStop(0.4, 'rgba(200, 80, 20, 0.25)');
-    gradient.addColorStop(0.7, 'rgba(100, 30, 10, 0.08)');
+    // Draw torch handle (brown wooden stick) — centered at (64, 64), pointing down-right
+    ctx.fillStyle = '#5c3a1e';
+    ctx.fillRect(59, 70, 10, 28);            // stick
+    ctx.fillStyle = '#3d2510';
+    ctx.fillRect(61, 72, 6, 24);              // stick shadow side
+
+    // Flame core (bright yellow-white teardrop)
+    ctx.fillStyle = '#ffecb3';
+    ctx.beginPath();
+    ctx.ellipse(64, 56, 10, 18, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Flame mid (orange)
+    ctx.fillStyle = '#ff8c42';
+    ctx.beginPath();
+    ctx.ellipse(64, 58, 14, 24, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Flame outer (red)
+    ctx.fillStyle = '#d43d1a';
+    ctx.beginPath();
+    ctx.ellipse(64, 60, 18, 30, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Glow gradient over everything
+    const gradient = ctx.createRadialGradient(64, 58, 0, 64, 58, 64);
+    gradient.addColorStop(0, 'rgba(255, 200, 100, 0.5)');
+    gradient.addColorStop(0.2, 'rgba(255, 150, 50, 0.35)');
+    gradient.addColorStop(0.45, 'rgba(200, 80, 20, 0.15)');
+    gradient.addColorStop(0.75, 'rgba(100, 30, 10, 0.05)');
     gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 128, 128);
   });
   addTexture('light_torch', torchLightCanvas);
 
-  // 24. Brazier / Large Light Sprite (192×192 radial glow)
+  // 24. Brazier / Large Light Sprite (192×192 — visible bowl + flame + glow)
   const brazierLightCanvas = createPixelCanvas(192, 192, (ctx) => {
-    const gradient = ctx.createRadialGradient(96, 96, 0, 96, 96, 96);
-    gradient.addColorStop(0, 'rgba(255, 180, 80, 1)');
-    gradient.addColorStop(0.15, 'rgba(255, 120, 40, 0.6)');
-    gradient.addColorStop(0.35, 'rgba(200, 70, 20, 0.2)');
-    gradient.addColorStop(0.6, 'rgba(100, 30, 10, 0.06)');
+    // Brazier bowl (dark metal cauldron shape) — centered at (96, 106)
+    ctx.fillStyle = '#2a1e1a';
+    ctx.beginPath();
+    ctx.moveTo(66, 92);
+    ctx.lineTo(56, 118);
+    ctx.lineTo(60, 130);
+    ctx.lineTo(132, 130);
+    ctx.lineTo(136, 118);
+    ctx.lineTo(126, 92);
+    ctx.closePath();
+    ctx.fill();
+
+    // Bowl rim highlight
+    ctx.fillStyle = '#4a3630';
+    ctx.fillRect(64, 92, 64, 4);
+
+    // Bowl inner (dark ember glow)
+    ctx.fillStyle = '#8a3a1a';
+    ctx.fillRect(68, 96, 56, 18);
+
+    // Embers inside
+    ctx.fillStyle = '#ff6a20';
+    ctx.fillRect(76, 100, 8, 6);
+    ctx.fillRect(92, 98, 10, 8);
+    ctx.fillRect(110, 102, 6, 4);
+
+    // Flame rising from bowl (multiple tongues)
+    for (let i = 0; i < 5; i++) {
+      const fx = 78 + i * 9;
+      const fy = 68 + Math.sin(i * 1.3) * 8;
+      const fw = 6 + (i % 3) * 2;
+      const fh = 14 + (i % 4) * 6;
+      ctx.fillStyle = i % 2 === 0 ? '#ff8c42' : '#d43d1a';
+      ctx.beginPath();
+      ctx.ellipse(fx, fy, fw, fh, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Flame core
+    ctx.fillStyle = '#ffecb3';
+    ctx.beginPath();
+    ctx.ellipse(96, 62, 8, 14, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Glow gradient
+    const gradient = ctx.createRadialGradient(96, 80, 0, 96, 80, 96);
+    gradient.addColorStop(0, 'rgba(255, 180, 80, 0.45)');
+    gradient.addColorStop(0.2, 'rgba(255, 120, 40, 0.3)');
+    gradient.addColorStop(0.4, 'rgba(200, 70, 20, 0.12)');
+    gradient.addColorStop(0.65, 'rgba(100, 30, 10, 0.04)');
     gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 192, 192);

@@ -147,27 +147,27 @@ export default function App() {
 
       {/* 3. Pause Screen Overlay */}
       {gameState === 'paused' && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center p-4">
-          <div className="bg-[#120a0e] border-4 border-amber-900 rounded-xl p-8 max-w-sm w-full text-center space-y-6">
-            <h2 className="text-3xl font-gothic text-amber-200">JOGO PAUSADO</h2>
-            <div className="flex flex-col gap-3">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 md:p-4">
+          <div className="bg-[#120a0e] border-2 md:border-4 border-amber-900 rounded-xl p-4 md:p-8 max-w-sm w-full text-center space-y-3 md:space-y-6">
+            <h2 className="text-xl md:text-3xl font-gothic text-amber-200">JOGO PAUSADO</h2>
+            <div className="flex flex-row md:flex-col gap-2 md:gap-3">
               <button
                 onClick={() => setGameState('playing')}
-                className="py-3 bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-100 font-pixel text-xs rounded transition-colors cursor-pointer"
+                className="flex-1 md:w-full py-2.5 md:py-3 bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-100 font-pixel text-[10px] md:text-xs rounded transition-colors cursor-pointer touch-manipulation"
               >
-                CONTINUAR RITUAL
+                CONTINUAR
               </button>
               <button
                 onClick={() => setSettingsOpen(true)}
-                className="py-3 bg-black/80 hover:bg-gray-900 border border-gray-800 text-gray-300 font-retro text-base rounded transition-colors cursor-pointer"
+                className="flex-1 md:w-full py-2.5 md:py-3 bg-black/80 hover:bg-gray-900 border border-gray-800 text-gray-300 font-retro text-sm md:text-base rounded transition-colors cursor-pointer touch-manipulation"
               >
-                CONFIGURAÇÕES
+                CONFIG
               </button>
               <button
                 onClick={() => setGameState('menu')}
-                className="py-3 bg-red-950 hover:bg-red-900 border border-red-800 text-red-200 font-retro text-base rounded transition-colors cursor-pointer"
+                className="flex-1 md:w-full py-2.5 md:py-3 bg-red-950 hover:bg-red-900 border border-red-800 text-red-200 font-retro text-sm md:text-base rounded transition-colors cursor-pointer touch-manipulation"
               >
-                SAIR PARA O MENU
+                SAIR
               </button>
             </div>
           </div>
