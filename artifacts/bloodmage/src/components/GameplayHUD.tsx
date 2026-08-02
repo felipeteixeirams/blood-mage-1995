@@ -76,6 +76,10 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
     settings,
   } = useGameStore();
 
+  const {
+    setInventoryOpen, setTalentsOpen,
+  } = useGameStore();
+
   const onPauseToggle = useCallback(() => setGameState('paused'), [setGameState]);
 
   const moveJoystick = useFloatingJoystick(onMoveUpdate);
@@ -105,12 +109,17 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
         <div className="flex flex-col items-center gap-1">
           <GameStats stats={stats} />
           <LootLog />
-          {/* Pending stat points nudge */}
+          {/* Pending stat points nudge — clicável em mobile */}
           {pendingPoints > 0 && (
-            <div className="mt-1 px-3 py-1 bg-amber-900/90 border border-amber-500 rounded-full
-                            font-pixel text-[9px] text-amber-300 animate-pulse shadow-[0_0_12px_rgba(245,158,11,0.5)]">
-              ✨ {pendingPoints} ponto{pendingPoints > 1 ? 's' : ''} disponível — abra Talentos [T]
-            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); setTalentsOpen(true); }}
+              className="mt-1 px-3 py-1 bg-amber-900/90 border border-amber-500 rounded-full
+                         font-pixel text-[9px] text-amber-300 animate-pulse
+                         shadow-[0_0_12px_rgba(245,158,11,0.5)] cursor-pointer hover:bg-amber-800/90
+                         transition-colors"
+            >
+              ✨ {pendingPoints} ponto{pendingPoints > 1 ? 's' : ''} disponível — toque para gastar
+            </button>
           )}
         </div>
 

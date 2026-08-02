@@ -224,7 +224,10 @@ export class GameScene extends Phaser.Scene {
     // Camera setup
     this.cameras.main.setBounds(0, 0, mapW, mapH);
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-    this.cameras.main.setZoom(1.15);
+    // Zoom adaptativo: mobile vê mais do mapa, desktop vê mais detalhe
+    const screenW = this.cameras.main.width || window.innerWidth;
+    const adaptiveZoom = Math.max(0.55, Math.min(1.15, screenW / 1000));
+    this.cameras.main.setZoom(adaptiveZoom);
 
     // 4. Keyboard Controls
     if (this.input.keyboard) {

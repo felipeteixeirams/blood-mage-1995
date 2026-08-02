@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* ── Mobile-first global guardrails ── */
+html {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+body {
+  overscroll-behavior: none;
+  touch-action: manipulation;   /* elimina delay de 300ms em toques */
+  -webkit-tap-highlight-color: transparent; /* remove highlight azul ao tocar */
+}
+
 @layer utilities {
   .font-gothic {
     font-family: 'UnifrakturMaguntia', 'Cinzel', serif;
