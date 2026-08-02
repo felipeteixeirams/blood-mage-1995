@@ -5,9 +5,10 @@ import { Projectile } from '../objects/Projectile';
 import { Collectible } from '../objects/Collectible';
 import { LootSprite } from '../objects/Loot';
 import { LootSystem } from '../systems/LootSystem';
-import { PlayerStats, WaveConfig, UpgradeOption, BiomeType } from '../../types/game';
+import { PlayerStats, WaveConfig, UpgradeOption, BiomeType, SpellConfig } from '../../types/game';
 import wavesData from '../../data/waves.json';
 import upgradesData from '../../data/upgrades.json';
+import spellsData from '../../data/spells.json';
 import { soundEngine } from '../../utils/soundEngine';
 import { useGameStore } from '../../store/gameStore';
 import { telemetry } from '../../utils/telemetry';
@@ -714,13 +715,14 @@ export class GameScene extends Phaser.Scene {
       const offset = (i - (count - 1) / 2) * spreadAngle;
       const angle = baseAngle + offset;
 
+      const boltCfg = (spellsData as Record<string, SpellConfig>)['blood_bolt'];
       const proj = new Projectile(this, this.player.x, this.player.y, 'proj_blood_bolt');
       proj.fire(
         this.player.x,
         this.player.y,
         angle,
-        450,
-        22 * this.player.stats.damageMultiplier,
+        boltCfg.projectileSpeed,
+        boltCfg.baseDamage * this.player.stats.damageMultiplier,
         false
       );
       this.playerProjectilesGroup.add(proj);
@@ -749,7 +751,8 @@ export class GameScene extends Phaser.Scene {
         const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
         if (dist <= 200) {
           if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 15);
-          const novaDamage = Math.round(75 * this.player.stats.damageMultiplier);
+          const novaDmgCfg = (spellsData as Record<string, SpellConfig>)['hellfire_nova'].baseDamage;
+          const novaDamage = Math.round(novaDmgCfg * this.player.stats.damageMultiplier);
           const isDead = enemy.takeDamage(novaDamage);
           this.spawnFloatingText(enemy.x, enemy.y, `${novaDamage}!`, '#f97316', true);
           const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, enemy.x, enemy.y);
@@ -780,7 +783,8 @@ export class GameScene extends Phaser.Scene {
         const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
         if (dist <= 150) {
           if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 8);
-          const syphonDmg = Math.round(45 * this.player.stats.damageMultiplier);
+          const syphonDmgCfg = (spellsData as Record<string, SpellConfig>)['syphon_soul'].baseDamage;
+          const syphonDmg = Math.round(syphonDmgCfg * this.player.stats.damageMultiplier);
           const isDead = enemy.takeDamage(syphonDmg);
           this.spawnFloatingText(enemy.x, enemy.y, syphonDmg.toString(), '#a855f7', false);
           totalStolenHp += 8;
@@ -879,7 +883,8 @@ export class GameScene extends Phaser.Scene {
     }
 
     // Damage enemies in arc
-    const scytheDmg = Math.round(115 * this.player.stats.damageMultiplier);
+    const scytheDmgCfg = (spellsData as Record<string, SpellConfig>)['crimson_scythe'].baseDamage;
+    const scytheDmg = Math.round(scytheDmgCfg * this.player.stats.damageMultiplier);
     this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
       const enemy = enemyObj as Enemy;
       if (enemy.active) {
@@ -994,7 +999,8 @@ export class GameScene extends Phaser.Scene {
 
     // Beam Line Segment collision check against enemies
     const beamLine = new Phaser.Geom.Line(startX, startY, endX, endY);
-    const beamDmg = Math.round(160 * this.player.stats.damageMultiplier);
+    const beamDmgCfg = (spellsData as Record<string, SpellConfig>)['hemomancy_beam'].baseDamage;
+    const beamDmg = Math.round(beamDmgCfg * this.player.stats.damageMultiplier);
 
     this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
       const enemy = enemyObj as Enemy;
