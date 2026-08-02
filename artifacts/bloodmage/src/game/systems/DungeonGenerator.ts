@@ -21,6 +21,8 @@ export class DungeonGenerator {
   private scene: Phaser.Scene;
   private wallsGroup: Phaser.Physics.Arcade.StaticGroup;
   private chestsGroup: Phaser.Physics.Arcade.StaticGroup;
+  private cachedLine = new Phaser.Geom.Line();
+  private cachedRect = new Phaser.Geom.Rectangle();
 
   constructor(
     scene: Phaser.Scene,
@@ -140,15 +142,33 @@ export class DungeonGenerator {
     }
   }
 
+  /**
+   * Raycasting helper with AABB pruning and pre-allocated objects for high-performance line-of-sight checks.
+   */
   public hasLineOfSight(x1: number, y1: number, x2: number, y2: number): boolean {
-    const line = new Phaser.Geom.Line(x1, y1, x2, y2);
+    this.cachedLine.setTo(x1, y1, x2, y2);
     const wallChildren = this.wallsGroup.getChildren();
+
+    const minX = Math.min(x1, x2);
+    const maxX = Math.max(x1, x2);
+    const minY = Math.min(y1, y2);
+    const maxY = Math.max(y1, y2);
 
     for (let i = 0; i < wallChildren.length; i++) {
       const wall = wallChildren[i] as Phaser.Physics.Arcade.Sprite;
       if (wall.active) {
-        const rect = new Phaser.Geom.Rectangle(wall.x - 16, wall.y - 16, 32, 32);
-        if (Phaser.Geom.Intersects.LineToRectangle(line, rect)) {
+        const wallX = wall.x;
+        const wallY = wall.y;
+
+        // Fast AABB pruning phase: if the wall's bounding box doesn't overlap the line's bounding box,
+        // it cannot possibly block line of sight.
+        if (wallX + 16 < minX || wallX - 16 > maxX || wallY + 16 < minY || wallY - 16 > maxY) {
+          continue;
+        }
+
+        // Only do full geometric intersection calculation if bounds overlap
+        this.cachedRect.setTo(wallX - 16, wallY - 16, 32, 32);
+        if (Phaser.Geom.Intersects.LineToRectangle(this.cachedLine, this.cachedRect)) {
           return false; // Obstacle blocks line of sight!
         }
       }

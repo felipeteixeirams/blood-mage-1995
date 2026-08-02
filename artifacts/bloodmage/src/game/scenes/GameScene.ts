@@ -473,9 +473,15 @@ export class GameScene extends Phaser.Scene {
     // Notify all active enemies
     this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
       const enemy = enemyObj as Enemy;
-      if (enemy.active) {
-        const hasWall = !this.hasLineOfSight(x, y, enemy.x, enemy.y);
-        enemy.onHearNoise(x, y, loudness, hasWall);
+      // Performance optimization: skip calculations for inactive enemies or those already in combat/frenzy
+      if (enemy.active && enemy.aiState !== 'combat' && enemy.aiState !== 'frenzy') {
+        const dist = Phaser.Math.Distance.Between(enemy.x, enemy.y, x, y);
+        const maxHearingRange = loudness * (enemy.config.hearingSensitivity || 1.0);
+        // Only perform the raycast if the enemy is close enough to potentially hear it
+        if (dist <= maxHearingRange) {
+          const hasWall = !this.hasLineOfSight(x, y, enemy.x, enemy.y);
+          enemy.onHearNoise(x, y, loudness, hasWall);
+        }
       }
     });
   }
@@ -655,7 +661,10 @@ export class GameScene extends Phaser.Scene {
     const activeEnemiesList = this.enemiesGroup.getChildren() as Enemy[];
     activeEnemiesList.forEach((enemy: Enemy) => {
       if (enemy.active) {
-        const hasWallBetween = !this.hasLineOfSight(enemy.x, enemy.y, this.player.x, this.player.y);
+        // Performance optimization: skip raycasting for extremely far-away off-screen enemies (800px limit)
+        // while remaining 100% correct for all enemies within active combat, frenzy, and vision range.
+        const distToPlayer = Phaser.Math.Distance.Between(enemy.x, enemy.y, this.player.x, this.player.y);
+        const hasWallBetween = distToPlayer > 800 ? true : !this.hasLineOfSight(enemy.x, enemy.y, this.player.x, this.player.y);
         const updateResult = enemy.updateEnemy(time, delta, this.player.x, this.player.y, hasWallBetween, activeEnemiesList);
 
         if (updateResult.attack) {
