@@ -1,0 +1,57 @@
+[
+  {
+    "id": "hemomancy_power",
+    "name": "Poder Hemomântico",
+    "description": "Aumenta o Dano de todos os projéteis e artes de sangue.",
+    "category": "offense",
+    "icon": "flame",
+    "maxLevel": 10,
+    "costPerLevel": 20,
+    "statKey": "damage",
+    "bonusPerLevel": 0.05
+  },
+  {
+    "id": "martyr_vitality",
+    "name": "Vitalidade do Mártir",
+    "description": "Aumenta o HP Máximo e conceded regeneração passiva de vida.",
+    "category": "defense",
+    "icon": "heart",
+    "maxLevel": 10,
+    "costPerLevel": 20,
+    "statKey": "maxHp",
+    "bonusPerLevel": 15
+  },
+  {
+    "id": "vampiric_thirst",
+    "name": "Sede Vampírica",
+    "description": "Concede Vampirismo (% de cura baseada no dano causado).",
+    "category": "offense",
+    "icon": "droplet",
+    "maxLevel": 5,
+    "costPerLevel": 35,
+    "statKey": "lifesteal",
+    "bonusPerLevel": 0.02
+  },
+  {
+    "id": "abyssal_haste",
+    "name": "Vontade Abissal",
+    "description": "Reduz o Cooldown de todas as habilidades e aumenta a Velocidade de Movimento.",
+    "category": "utility",
+    "icon": "zap",
+    "maxLevel": 5,
+    "costPerLevel": 30,
+    "statKey": "cooldown",
+    "bonusPerLevel": 0.03
+  },
+  {
+    "id": "sacrifice_mastery",
+    "name": "Mestria em Sacrifício",
+    "description": "Reduz o Custo de HP das habilidades sacrificiais (Foice, Círculo e Feixe).",
+    "category": "defense",
+    "icon": "shield",
+    "maxLevel": 5,
+    "costPerLevel": 40,
+    "statKey": "sacrificeDiscount",
+    "bonusPerLevel": 0.10
+  }
+]
