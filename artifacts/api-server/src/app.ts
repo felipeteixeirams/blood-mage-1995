@@ -3,8 +3,15 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { securityHeaders } from "./middlewares/security";
 
 const app: Express = express();
+
+// Disable x-powered-by header to prevent Express footprint information leakage
+app.disable("x-powered-by");
+
+// Apply custom security headers middleware for defense-in-depth protection
+app.use(securityHeaders);
 
 app.use(
   pinoHttp({
