@@ -1,1 +1,3 @@
 - [Phaser game migration](phaser-migration.md) — Phaser/Zustand/Motion must be in artifact devDeps; PWA plugin removed; game is fully client-side
+- [Specs de Evolução](../../docs/SPECS_EVOLUCAO.md) — 7 contextos de evolução do produto (PWA, Combate/Gore, Controles Mobile, Atmosfera, Progressão/Quests, UI/UX, Áudio) com critérios de aceite e esforço estimado. Baseado no Discovery de Agosto/2026.
+- **Base documental em `./docs/`** — pasta recriada em Agosto/2026 após remoção na migração Replit.
