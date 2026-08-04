@@ -661,10 +661,24 @@ export class GameScene extends Phaser.Scene {
     const activeEnemiesList = this.enemiesGroup.getChildren() as Enemy[];
     activeEnemiesList.forEach((enemy: Enemy) => {
       if (enemy.active) {
-        // Performance optimization: skip raycasting for extremely far-away off-screen enemies (800px limit)
-        // while remaining 100% correct for all enemies within active combat, frenzy, and vision range.
         const distToPlayer = Phaser.Math.Distance.Between(enemy.x, enemy.y, this.player.x, this.player.y);
-        const hasWallBetween = distToPlayer > 800 ? true : !this.hasLineOfSight(enemy.x, enemy.y, this.player.x, this.player.y);
+
+        // ⚡ Bolt's Optimization: Skip expensive wall raycasting (hasLineOfSight) for out-of-range passive enemies.
+        // For combat-related states, we retain accurate wall-collision details to prevent logic regressions
+        // like wall-hacking projectiles (up to 800px). For idle/patrol/investigating states, we prune
+        // raycasting entirely if they are outside their maximum vision range (defaults to 320px).
+        let hasWallBetween = true;
+        const isCombatState = enemy.aiState === 'combat' || enemy.aiState === 'frenzy' || enemy.aiState === 'flee';
+
+        if (isCombatState) {
+          hasWallBetween = distToPlayer > 800 ? true : !this.hasLineOfSight(enemy.x, enemy.y, this.player.x, this.player.y);
+        } else {
+          const maxVisionDist = enemy.config.visionDistance || 320;
+          if (distToPlayer <= maxVisionDist) {
+            hasWallBetween = !this.hasLineOfSight(enemy.x, enemy.y, this.player.x, this.player.y);
+          }
+        }
+
         const updateResult = enemy.updateEnemy(time, delta, this.player.x, this.player.y, hasWallBetween, activeEnemiesList);
 
         if (updateResult.attack) {
