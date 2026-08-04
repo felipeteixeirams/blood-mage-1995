@@ -32,58 +32,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         initial={{ scale: 0.95, opacity: 0, y: 10 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        className="w-full max-w-lg bg-[#120a0e] border-4 border-red-900/80 rounded-xl p-5 md:p-6 shadow-[0_0_50px_rgba(185,28,28,0.5)] flex flex-col space-y-5"
+        className="w-full max-w-lg ornate-plate rounded p-6 shadow-2xl flex flex-col space-y-6"
       >
         {/* Header */}
-        <div className="flex justify-between items-center border-b border-red-900/60 pb-3">
-          <div className="flex items-center gap-3">
-            <SettingsIcon className="w-5 h-5 text-gray-400" />
-            <h2 className="text-2xl font-gothic text-amber-200">CONFIGURAÇÕES</h2>
-          </div>
-          <button
-            onClick={() => {
-              soundEngine.playButtonClick();
-              onClose();
-            }}
-            className="p-1.5 hover:bg-red-950 text-gray-400 hover:text-red-200 rounded border border-transparent hover:border-red-800 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+        <div className="flex justify-center items-center pb-2 relative">
+          <h2 className="text-3xl font-gothic text-[#d4af37] tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,1)] text-center">
+            BLOODMAGE 1995
+          </h2>
         </div>
 
         {/* Options Stack */}
-        <div className="space-y-4 font-retro text-base">
-          {/* CRT Scanline Filter */}
-          <div className="flex justify-between items-center bg-black/60 p-3 rounded border border-red-900/40">
-            <div className="flex items-center gap-2">
-              <Monitor className="w-4 h-4 text-amber-400" />
-              <span>Filtro CRT Scanlines (Retro 1995)</span>
-            </div>
-            <button
-              onClick={() => {
-                soundEngine.playButtonClick();
-                handleChange('crtFilter', !settings.crtFilter);
-              }}
-              className={`px-3 py-1 font-pixel text-xs rounded border cursor-pointer transition-colors ${
-                settings.crtFilter
-                  ? 'bg-emerald-950 text-emerald-300 border-emerald-700'
-                  : 'bg-red-950 text-red-400 border-red-800'
-              }`}
-            >
-              {settings.crtFilter ? 'LIGADO' : 'DESLIGADO'}
-            </button>
-          </div>
-
+        <div className="space-y-6 font-retro text-lg text-[#e0d0b0]">
           {/* SFX Volume */}
-          <div className="bg-black/60 p-3 rounded border border-red-900/40 space-y-1">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <Volume2 className="w-4 h-4 text-red-400" />
-                <span>Volume dos Efeitos (SFX)</span>
-              </div>
-              <span className="font-pixel text-xs text-amber-400">
-                {Math.round(settings.sfxVolume * 100)}%
-              </span>
+          <div className="space-y-2">
+            <div className="text-center font-bold tracking-widest text-shadow-sm shadow-black">
+              AUDIO VOLUME <span className="text-xs text-[#d4af37] opacity-80 ml-2">({Math.round(settings.sfxVolume * 100)}%)</span>
             </div>
             <input
               type="range"
@@ -92,20 +55,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               step="0.05"
               value={settings.sfxVolume}
               onChange={(e) => handleChange('sfxVolume', parseFloat(e.target.value))}
-              className="w-full accent-red-600 cursor-pointer"
+              className="ruby-slider"
             />
           </div>
 
-          {/* BGM Volume */}
-          <div className="bg-black/60 p-3 rounded border border-red-900/40 space-y-1">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <Volume2 className="w-4 h-4 text-purple-400" />
-                <span>Música de Fundo (BGM Gothic)</span>
-              </div>
-              <span className="font-pixel text-xs text-amber-400">
-                {Math.round(settings.bgmVolume * 100)}%
-              </span>
+          {/* BGM Volume (Re-purposing Brightness from ref) */}
+          <div className="space-y-2">
+            <div className="text-center font-bold tracking-widest text-shadow-sm shadow-black">
+              MUSIC VOLUME <span className="text-xs text-[#d4af37] opacity-80 ml-2">({Math.round(settings.bgmVolume * 100)}%)</span>
             </div>
             <input
               type="range"
@@ -114,20 +71,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               step="0.05"
               value={settings.bgmVolume}
               onChange={(e) => handleChange('bgmVolume', parseFloat(e.target.value))}
-              className="w-full accent-purple-600 cursor-pointer"
+              className="ruby-slider"
             />
           </div>
 
-          {/* Virtual Controls Opacity */}
-          <div className="bg-black/60 p-3 rounded border border-red-900/40 space-y-1">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <Touchpad className="w-4 h-4 text-emerald-400" />
-                <span>Opacidade dos Joysticks Virtuais</span>
-              </div>
-              <span className="font-pixel text-xs text-amber-400">
-                {Math.round(settings.virtualControlsOpacity * 100)}%
-              </span>
+          {/* Virtual Controls Opacity (Re-purposing Contrast from ref) */}
+          <div className="space-y-2">
+            <div className="text-center font-bold tracking-widest text-shadow-sm shadow-black">
+              CONTROLS OPACITY <span className="text-xs text-[#d4af37] opacity-80 ml-2">({Math.round(settings.virtualControlsOpacity * 100)}%)</span>
             </div>
             <input
               type="range"
@@ -136,21 +87,61 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               step="0.05"
               value={settings.virtualControlsOpacity}
               onChange={(e) => handleChange('virtualControlsOpacity', parseFloat(e.target.value))}
-              className="w-full accent-emerald-600 cursor-pointer"
+              className="ruby-slider"
             />
+          </div>
+          
+          {/* CRT Filter toggle styled to match somewhat */}
+          <div className="flex justify-center mt-2">
+            <button
+              onClick={() => {
+                soundEngine.playButtonClick();
+                handleChange('crtFilter', !settings.crtFilter);
+              }}
+              className={`px-4 py-2 font-pixel text-xs border-2 shadow-lg transition-colors cursor-pointer ${
+                settings.crtFilter
+                  ? 'bg-emerald-950 text-emerald-300 border-emerald-700'
+                  : 'bg-red-950 text-red-400 border-red-800'
+              }`}
+            >
+              CRT FILTER: {settings.crtFilter ? 'ON' : 'OFF'}
+            </button>
           </div>
         </div>
 
-        {/* Done Button */}
-        <button
-          onClick={() => {
-            soundEngine.playButtonClick();
-            onClose();
-          }}
-          className="w-full py-3 bg-red-950 hover:bg-red-900 border border-red-700 rounded text-amber-200 font-pixel text-xs transition-colors cursor-pointer"
-        >
-          SALVAR & FECHAR
-        </button>
+        {/* Footer Buttons */}
+        <div className="flex justify-between gap-3 pt-4">
+          <button
+            onClick={() => {
+              soundEngine.playButtonClick();
+              onClose();
+            }}
+            className="flex-1 py-2 stone-btn font-pixel text-[10px] sm:text-xs cursor-pointer"
+          >
+            APPLY
+          </button>
+          <button
+            onClick={() => {
+              soundEngine.playButtonClick();
+              handleChange('sfxVolume', 1);
+              handleChange('bgmVolume', 1);
+              handleChange('crtFilter', true);
+              handleChange('virtualControlsOpacity', 0.5);
+            }}
+            className="flex-1 py-2 stone-btn font-pixel text-[10px] sm:text-xs cursor-pointer"
+          >
+            RESET
+          </button>
+          <button
+            onClick={() => {
+              soundEngine.playButtonClick();
+              onClose();
+            }}
+            className="flex-1 py-2 stone-btn font-pixel text-[10px] sm:text-xs cursor-pointer"
+          >
+            EXIT
+          </button>
+        </div>
       </motion.div>
     </motion.div>
   );

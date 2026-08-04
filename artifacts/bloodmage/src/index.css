@@ -90,3 +90,102 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #7a222a;
 }
+
+/* Settings Button Stone Texture */
+.stone-btn {
+  background: linear-gradient(to bottom, #4a4a5a, #2a2a3a);
+  border: 4px solid #1a1a2a;
+  border-top-color: #5a5a6a;
+  border-left-color: #5a5a6a;
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.8), 0 4px 6px rgba(0,0,0,0.6);
+  color: #e0d0b0;
+  text-shadow: 2px 2px 0px black;
+  transition: all 0.1s ease;
+}
+
+.stone-btn:active {
+  border-top-color: #1a1a2a;
+  border-left-color: #1a1a2a;
+  border-bottom-color: #5a5a6a;
+  border-right-color: #5a5a6a;
+  transform: translateY(2px);
+  background: linear-gradient(to bottom, #2a2a3a, #1a1a2a);
+}
+
+/* Ruby Slider */
+.ruby-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+}
+.ruby-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 28px;
+  width: 28px;
+  background: radial-gradient(circle at 35% 35%, #ffb3b3, #d30000 40%, #5a0000 80%, #2a0000 100%);
+  border: 3px solid #d4af37; /* Gold border */
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.9), inset 0 0 6px rgba(255,255,255,0.7);
+  cursor: pointer;
+  margin-top: -11px;
+}
+.ruby-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8px;
+  cursor: pointer;
+  background: linear-gradient(to bottom, #5c4516, #d4af37, #5c4516);
+  border: 1px solid #111;
+  border-radius: 3px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.9), 0 1px 1px rgba(255,255,255,0.2);
+}
+
+/* Ornate Plate (Settings Background) */
+.ornate-plate {
+  background: #080c14; /* Deep dark blueish */
+  position: relative;
+  border: 12px solid transparent;
+  border-image: linear-gradient(to bottom right, #3a4b6b, #1a2233) 1;
+  box-shadow: inset 0 0 50px rgba(0,0,0,1), 0 0 30px rgba(0,0,0,0.8);
+}
+.ornate-plate::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 2px solid #556b99; /* Inner decorative border */
+  pointer-events: none;
+}
+
+
+/* Portal Swirl */
+.portal-swirl {
+  background: radial-gradient(circle at center, #1a1a2e 0%, #0d0d1a 40%, #000 80%);
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+.portal-swirl::after {
+  content: "";
+  position: absolute;
+  top: -50%; left: -50%; right: -50%; bottom: -50%;
+  background: repeating-conic-gradient(from 0deg, transparent 0deg 15deg, rgba(50, 30, 80, 0.15) 15deg 30deg);
+  animation: swirl 40s linear infinite;
+  mask-image: radial-gradient(circle at center, white, transparent 60%);
+  -webkit-mask-image: radial-gradient(circle at center, white, transparent 60%);
+}
+@keyframes swirl {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Stone Archway Fake Frame */
+.stone-arch-frame {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 30px solid #333;
+  border-image: repeating-linear-gradient(45deg, #444, #444 15px, #222 15px, #222 30px) 30;
+  box-shadow: inset 0 0 40px rgba(0,0,0,1);
+  z-index: 1;
+}
+
