@@ -1,6 +1,0 @@
-{
-  "name": "Bloodmage 1995",
-  "description": "Action-RPG / Boomer Shooter Isométrico 2.5D com estética gótica 16-bit estilo Diablo II e Blood, combat twin-stick e hordas necromânticas.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
