@@ -448,11 +448,47 @@ export class GameScene extends Phaser.Scene {
   }
 
   private triggerBloodNova() {
-    this.executeNovaEffect();
+    const now = this.time.now;
+    if (now < this.lastNovaTime + this.NOVA_COOLDOWN) return;
+
+    this.lastNovaTime = now;
+    this.cameras.main.flash(200, 200, 0, 0);
+    this.cameras.main.shake(300, 0.02);
+    soundEngine.playLevelUp(); // Temporary sound for nova
+
+    // Circular blast logic
+    const blastRadius = 180;
+    const damage = 60;
+
+    this.enemiesGroup.getChildren().forEach((obj: any) => {
+      const enemy = obj as Enemy;
+      const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
+      if (dist <= blastRadius) {
+        if (this.bloodEmitter) {
+          this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 15);
+        }
+        enemy.takeDamage(damage);
+      }
+    });
+
+    // Visual circle effect
+    const circle = this.add.circle(this.player.x, this.player.y, 10, 0xff0000, 0.5);
+    this.tweens.add({
+      targets: circle,
+      radius: blastRadius,
+      alpha: 0,
+      duration: 400,
+      onComplete: () => circle.destroy()
+    });
   }
 
   update(time: number, delta: number) {
     if (this.isPaused) return;
+
+    // Sync enemy count to SoundEngine for dynamic BGM transition
+    if (this.enemiesGroup) {
+      soundEngine.setEnemyCount(this.enemiesGroup.countActive());
+    }
 
     // ISO Y-SORTING DEPTH SYSTEM
     this.depthGroup.getChildren().forEach((gameObject: any) => {
