@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Play, Settings, BookOpen, Trophy, Volume2, VolumeX, ShieldAlert } from 'lucide-react';
 import { motion } from 'motion/react';
 import { soundEngine } from '../utils/soundEngine';
+import Phaser from 'phaser';
+import { TitleScene, BASE_W, BASE_H } from '../game/scenes/TitleScene';
 
 interface MainMenuProps {
   onStartGame: () => void;
@@ -20,28 +22,70 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   isMuted,
   onToggleMute,
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const gameRef = useRef<Phaser.Game | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // Create animated Phaser title scene canvas
+    const game = new Phaser.Game({
+      type: Phaser.AUTO,
+      parent: containerRef.current,
+      width: BASE_W,
+      height: BASE_H,
+      backgroundColor: "#0b0a09",
+      pixelArt: true,
+      roundPixels: true,
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+      },
+      scene: [TitleScene],
+    });
+
+    game.registry.set("onStartGame", onStartGame);
+    game.registry.set("onOpenSettings", onOpenSettings);
+    game.registry.set("onOpenBestiary", onOpenBestiary);
+    game.registry.set("onOpenHighScores", onOpenHighScores);
+
+    gameRef.current = game;
+
+    return () => {
+      game.destroy(true);
+      gameRef.current = null;
+    };
+  }, [onStartGame, onOpenSettings, onOpenBestiary, onOpenHighScores]);
+
+  // Update registry callbacks if props change
+  useEffect(() => {
+    if (gameRef.current) {
+      gameRef.current.registry.set("onStartGame", onStartGame);
+      gameRef.current.registry.set("onOpenSettings", onOpenSettings);
+      gameRef.current.registry.set("onOpenBestiary", onOpenBestiary);
+      gameRef.current.registry.set("onOpenHighScores", onOpenHighScores);
+    }
+  }, [onStartGame, onOpenSettings, onOpenBestiary, onOpenHighScores]);
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 1.2, ease: "easeOut" }}
-      className="relative w-full h-full min-h-screen flex flex-col items-center justify-center overflow-hidden select-none"
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      className="relative w-full h-full min-h-screen bg-[#0b0a09] flex flex-col items-center justify-center overflow-hidden select-none"
     >
-      {/* Background Portal Swirl */}
-      <div className="portal-swirl" />
-      
-      {/* Stone Arch Frame */}
-      <div className="stone-arch-frame hidden md:block" />
+      {/* 1. Animated Phaser Title Scene Background & Frame */}
+      <div 
+        ref={containerRef}
+        className="absolute inset-0 w-full h-full flex items-center justify-center [&_canvas]:!max-w-full [&_canvas]:!max-h-full [&_canvas]:!w-auto [&_canvas]:!h-auto pointer-events-auto z-0"
+      />
 
-      {/* Floating Blood Embers */}
-      <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#dc2626_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none animate-pulse z-0" />
-
-      {/* Top Header Controls (Mute / Info) */}
+      {/* 2. Top Header Controls (Mute & PWA Version) */}
       <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-start pointer-events-none">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2 bg-black/80 px-3 py-1.5 rounded border border-gray-800 shadow-black">
             <ShieldAlert className="w-4 h-4 text-red-500 animate-pulse" />
-            <span className="text-xs font-pixel text-gray-400">PWA 1.0.0</span>
+            <span className="text-xs font-pixel text-gray-400">BLOODMAGE 1995</span>
           </div>
         </div>
 
@@ -50,85 +94,60 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             soundEngine.playButtonClick();
             onToggleMute();
           }}
-          className="p-3 stone-btn rounded cursor-pointer pointer-events-auto"
-          title="Toggle Audio"
+          className="p-3 stone-btn rounded cursor-pointer pointer-events-auto shadow-lg hover:scale-105 transition-transform"
+          title="Alternar Áudio"
         >
-          {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5 text-[#d4af37]" />}
+          {isMuted ? <VolumeX className="w-5 h-5 text-red-400" /> : <Volume2 className="w-5 h-5 text-[#d4af37]" />}
         </button>
       </div>
 
-      {/* Center Hero Area */}
-      <motion.div 
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-        className="relative z-10 flex flex-col items-center text-center space-y-12 max-w-3xl w-full px-4 mt-8 md:mt-0"
-      >
-        {/* Title Logo */}
-        <div className="space-y-4">
-          <h1 className="text-5xl md:text-8xl font-gothic text-red-700 tracking-widest drop-shadow-[0_10px_20px_rgba(0,0,0,1)] text-shadow-sm shadow-black relative inline-block">
-            <span className="absolute inset-0 text-red-900 translate-y-1 z-[-1] blur-[2px]">BLOODMAGE</span>
-            BLOODMAGE<br/>
-            <span className="text-4xl md:text-6xl text-red-800">1995</span>
-          </h1>
-        </div>
-
-        {/* Action Buttons Altar Area */}
-        <div className="w-full flex flex-col items-center gap-4 bg-black/40 p-6 md:p-8 rounded-xl border border-gray-900/50 backdrop-blur-sm max-w-md mx-auto">
+      {/* 3. Center Action Buttons Overlay */}
+      <div className="absolute bottom-6 z-20 w-full max-w-xl px-4 flex flex-col items-center pointer-events-none">
+        <div className="w-full flex flex-wrap justify-center items-center gap-3 bg-black/75 p-3 md:p-4 rounded-xl border border-amber-900/60 backdrop-blur-md shadow-2xl pointer-events-auto">
           <button
             onClick={() => {
               soundEngine.playButtonClick();
               onStartGame();
             }}
-            className="w-full py-4 stone-btn font-pixel text-sm md:text-base cursor-pointer pointer-events-auto flex items-center justify-center gap-3 relative overflow-hidden group"
+            className="flex-1 min-w-[140px] py-3 px-4 stone-btn font-pixel text-xs md:text-sm cursor-pointer flex items-center justify-center gap-2 relative overflow-hidden group hover:border-red-600 transition-colors"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-900/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-            <Play className="w-5 h-5 text-red-500" />
-            <span>START GAME</span>
+            <Play className="w-4 h-4 text-red-500 fill-red-500" />
+            <span className="text-amber-200">JOGAR</span>
           </button>
 
-          <div className="flex w-full gap-3">
-            <button
-              onClick={() => {
-                soundEngine.playButtonClick();
-                onOpenBestiary();
-              }}
-              className="flex-1 py-3 stone-btn font-pixel text-[10px] md:text-xs cursor-pointer pointer-events-auto flex flex-col items-center justify-center gap-2"
-            >
-              <BookOpen className="w-4 h-4 text-amber-600" />
-              <span>LORE</span>
-            </button>
+          <button
+            onClick={() => {
+              soundEngine.playButtonClick();
+              onOpenBestiary();
+            }}
+            className="py-3 px-4 stone-btn font-pixel text-xs cursor-pointer flex items-center justify-center gap-2 hover:border-amber-600 transition-colors"
+          >
+            <BookOpen className="w-4 h-4 text-amber-500" />
+            <span>LORE</span>
+          </button>
 
-            <button
-              onClick={() => {
-                soundEngine.playButtonClick();
-                onOpenHighScores();
-              }}
-              className="flex-1 py-3 stone-btn font-pixel text-[10px] md:text-xs cursor-pointer pointer-events-auto flex flex-col items-center justify-center gap-2"
-            >
-              <Trophy className="w-4 h-4 text-[#d4af37]" />
-              <span>SCORES</span>
-            </button>
+          <button
+            onClick={() => {
+              soundEngine.playButtonClick();
+              onOpenHighScores();
+            }}
+            className="py-3 px-4 stone-btn font-pixel text-xs cursor-pointer flex items-center justify-center gap-2 hover:border-yellow-600 transition-colors"
+          >
+            <Trophy className="w-4 h-4 text-[#d4af37]" />
+            <span>RECORDES</span>
+          </button>
 
-            <button
-              onClick={() => {
-                soundEngine.playButtonClick();
-                onOpenSettings();
-              }}
-              className="flex-1 py-3 stone-btn font-pixel text-[10px] md:text-xs cursor-pointer pointer-events-auto flex flex-col items-center justify-center gap-2"
-            >
-              <Settings className="w-4 h-4 text-gray-400" />
-              <span>OPTIONS</span>
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              soundEngine.playButtonClick();
+              onOpenSettings();
+            }}
+            className="py-3 px-4 stone-btn font-pixel text-xs cursor-pointer flex items-center justify-center gap-2 hover:border-gray-500 transition-colors"
+          >
+            <Settings className="w-4 h-4 text-gray-300" />
+            <span>OPÇÕES</span>
+          </button>
         </div>
-      </motion.div>
-
-      {/* Footer Instructions */}
-      <div className="absolute bottom-4 z-10 w-full text-center px-4">
-        <p className="text-[10px] md:text-xs font-retro text-gray-500 tracking-widest uppercase">
-          L CLICK - ATTACK &nbsp;|&nbsp; WASD - MOVE &nbsp;|&nbsp; ESC - MENU
-        </p>
       </div>
     </motion.div>
   );
