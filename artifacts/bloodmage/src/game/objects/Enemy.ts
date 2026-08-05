@@ -171,8 +171,17 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (this.isDodging || (this.config.dodgeChance || 0) <= 0) return;
     if (time < this.lastDodgeTime + 2000) return;
 
-    const dist = Phaser.Math.Distance.Between(this.x, this.y, projX, projY);
-    if (dist > 180 || dist < 30) return;
+    const dx = this.x - projX;
+    // Fast horizontal boundary pruning
+    if (Math.abs(dx) > 180) return;
+
+    const dy = this.y - projY;
+    // Fast vertical boundary pruning
+    if (Math.abs(dy) > 180) return;
+
+    // Avoid expensive Math.sqrt by checking squared distance
+    const distSq = dx * dx + dy * dy;
+    if (distSq > 32400 || distSq < 900) return; // 180^2 = 32400, 30^2 = 900
 
     // Check probability
     if (Math.random() <= (this.config.dodgeChance || 0)) {
@@ -513,7 +522,13 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         const other = nearbyEnemies[i];
         if (other !== this && other.active && other.body) {
           const dx = this.x - other.x;
+          // Fast horizontal boundary pruning: skip if coordinate distance is >= 34px
+          if (Math.abs(dx) >= 34) continue;
+
           const dy = this.y - other.y;
+          // Fast vertical boundary pruning
+          if (Math.abs(dy) >= 34) continue;
+
           const distSq = dx * dx + dy * dy;
           if (distSq > 0 && distSq < 1156) { // Within 34px radius
             const dist = Math.sqrt(distSq);
