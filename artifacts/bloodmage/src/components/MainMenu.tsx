@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Play, Settings, BookOpen, Trophy, Volume2, VolumeX, ShieldAlert } from 'lucide-react';
+import { Play, Settings, Trophy, Volume2, VolumeX, ShieldAlert } from 'lucide-react';
 import { motion } from 'motion/react';
 import { soundEngine } from '../utils/soundEngine';
 import Phaser from 'phaser';
@@ -7,6 +7,7 @@ import { TitleScene, BASE_W, BASE_H } from '../game/scenes/TitleScene';
 
 interface MainMenuProps {
   onStartGame: () => void;
+  onContinueGame: () => void;
   onOpenSettings: () => void;
   onOpenHighScores: () => void;
   isMuted: boolean;
@@ -15,6 +16,7 @@ interface MainMenuProps {
 
 export const MainMenu: React.FC<MainMenuProps> = ({
   onStartGame,
+  onContinueGame,
   onOpenSettings,
   onOpenHighScores,
   isMuted,
@@ -43,6 +45,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
     });
 
     game.registry.set("onStartGame", onStartGame);
+    game.registry.set("onContinueGame", onContinueGame);
     game.registry.set("onOpenSettings", onOpenSettings);
     game.registry.set("onOpenHighScores", onOpenHighScores);
 
@@ -58,20 +61,21 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   useEffect(() => {
     if (gameRef.current) {
       gameRef.current.registry.set("onStartGame", onStartGame);
+      gameRef.current.registry.set("onContinueGame", onContinueGame);
       gameRef.current.registry.set("onOpenSettings", onOpenSettings);
       gameRef.current.registry.set("onOpenHighScores", onOpenHighScores);
     }
-  }, [onStartGame, onOpenSettings, onOpenHighScores]);
+  }, [onStartGame, onContinueGame, onOpenSettings, onOpenHighScores]);
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
       className="relative w-full h-full min-h-screen bg-[#0b0a09] flex flex-col items-center justify-center overflow-hidden select-none"
     >
       {/* 1. Animated Phaser Title Scene Background & Frame */}
-      <div 
+      <div
         ref={containerRef}
         className="absolute inset-0 w-full h-full flex items-center justify-center [&_canvas]:!max-w-full [&_canvas]:!max-h-full [&_canvas]:!w-auto [&_canvas]:!h-auto pointer-events-auto z-0"
       />
@@ -95,44 +99,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         >
           {isMuted ? <VolumeX className="w-5 h-5 text-red-400" /> : <Volume2 className="w-5 h-5 text-[#d4af37]" />}
         </button>
-      </div>
-
-      {/* 3. Center Action Buttons Overlay */}
-      <div className="absolute bottom-6 z-20 w-full max-w-xl px-4 flex flex-col items-center pointer-events-none">
-        <div className="w-full flex flex-wrap justify-center items-center gap-3 bg-black/75 p-3 md:p-4 rounded-xl border border-amber-900/60 backdrop-blur-md shadow-2xl pointer-events-auto">
-          <button
-            onClick={() => {
-              soundEngine.playButtonClick();
-              onStartGame();
-            }}
-            className="flex-1 min-w-[140px] py-3 px-4 stone-btn font-pixel text-xs md:text-sm cursor-pointer flex items-center justify-center gap-2 relative overflow-hidden group hover:border-red-600 transition-colors"
-          >
-            <Play className="w-4 h-4 text-red-500 fill-red-500" />
-            <span className="text-amber-200">JOGAR</span>
-          </button>
-
-          <button
-            onClick={() => {
-              soundEngine.playButtonClick();
-              onOpenHighScores();
-            }}
-            className="py-3 px-4 stone-btn font-pixel text-xs cursor-pointer flex items-center justify-center gap-2 hover:border-yellow-600 transition-colors"
-          >
-            <Trophy className="w-4 h-4 text-[#d4af37]" />
-            <span>RECORDES</span>
-          </button>
-
-          <button
-            onClick={() => {
-              soundEngine.playButtonClick();
-              onOpenSettings();
-            }}
-            className="py-3 px-4 stone-btn font-pixel text-xs cursor-pointer flex items-center justify-center gap-2 hover:border-gray-500 transition-colors"
-          >
-            <Settings className="w-4 h-4 text-gray-300" />
-            <span>OPÇÕES</span>
-          </button>
-        </div>
       </div>
     </motion.div>
   );

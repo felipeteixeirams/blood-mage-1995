@@ -73,6 +73,11 @@ export default function App() {
     telemetry.trackEvent('game_start');
   };
 
+  const handleContinueGame = () => {
+    setGameState('playing');
+    telemetry.trackEvent('game_continue');
+  };
+
   const handleSelectUpgrade = (option: UpgradeOption) => {
     if (gameSceneRef.current) {
       gameSceneRef.current.applyUpgradeChoice(option);
@@ -118,11 +123,12 @@ export default function App() {
       )}
 
       {isBooting && <SplashScreen onComplete={() => setIsBooting(false)} />}
-      
+
       {/* 1. Main Menu Overlay */}
       {!isBooting && gameState === 'menu' && !gameOverStats && (
         <MainMenu
           onStartGame={handleStartGame}
+          onContinueGame={handleContinueGame}
           onOpenSettings={() => setSettingsOpen(true)}
           onOpenHighScores={() => setHighScoresOpen(true)}
           isMuted={isMuted}

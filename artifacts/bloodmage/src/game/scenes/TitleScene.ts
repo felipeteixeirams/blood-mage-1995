@@ -40,6 +40,22 @@ type Torch = {
 
 type Tintable = { setTint: (c: number) => unknown };
 
+/** Small 16-bit golden chalice drawn with primitives. */
+function drawTitleTrophy(g: Phaser.GameObjects.Graphics, x: number, y: number, s: number) {
+  g.fillStyle(0x7a5312, 1);
+  g.fillRect(x - 9 * s, y + 9 * s, 18 * s, 3 * s);
+  g.fillRect(x - 6 * s, y + 6 * s, 12 * s, 3 * s);
+  g.fillStyle(0xe0b34a, 1);
+  g.fillRect(x - 2 * s, y + 1 * s, 4 * s, 6 * s);
+  g.fillRect(x - 8 * s, y - 10 * s, 16 * s, 7 * s);
+  g.fillRect(x - 6 * s, y - 3 * s, 12 * s, 3 * s);
+  g.fillRect(x - 4 * s, y, 8 * s, 2 * s);
+  g.fillRect(x - 12 * s, y - 9 * s, 3 * s, 6 * s);
+  g.fillRect(x + 9 * s, y - 9 * s, 3 * s, 6 * s);
+  g.fillStyle(0xffe9a8, 1);
+  g.fillRect(x - 6 * s, y - 9 * s, 3 * s, 5 * s);
+}
+
 /** Blend two warm stone colours by a 0..1 light level. */
 function warmTint(dark: number, bright: number, level: number) {
   const d = Phaser.Display.Color.IntegerToRGB(dark);
@@ -61,6 +77,7 @@ export class TitleScene extends Phaser.Scene {
   private logoGlow!: Phaser.GameObjects.Image;
   private torches: Torch[] = [];
   private prompt!: Phaser.GameObjects.Text;
+  private trophyGlow?: Phaser.GameObjects.Image;
   private litProps: Phaser.GameObjects.Image[] = [];
   private sideLit: Tintable[][] = [];
 
@@ -193,10 +210,10 @@ export class TitleScene extends Phaser.Scene {
     g.fillRect(0, BASE_H - t, BASE_W, t);
     g.fillRect(0, 0, t, BASE_H);
     g.fillRect(BASE_W - t, 0, t, BASE_H);
-    
+
     g.lineStyle(3, 0x9a968c, 1).strokeRect(4, 4, BASE_W - 8, BASE_H - 8);
     g.lineStyle(3, 0x2e2c29, 1).strokeRect(t, t, BASE_W - t * 2, BASE_H - t * 2);
-    
+
     g.fillStyle(0x3a3833, 1);
     for (let x = 16; x < BASE_W; x += 48) {
       g.fillCircle(x, 13, 3);
@@ -206,7 +223,7 @@ export class TitleScene extends Phaser.Scene {
       g.fillCircle(13, y, 3);
       g.fillCircle(BASE_W - 13, y, 3);
     }
-    
+
     g.fillStyle(0x9a6a2f, 1);
     const corner = (cx: number, cy: number, sx: number, sy: number) => {
       g.fillTriangle(cx, cy, cx + 78 * sx, cy, cx, cy + 78 * sy);
@@ -340,23 +357,59 @@ export class TitleScene extends Phaser.Scene {
     };
 
     // Bottom badges for HUD options
-    mkBadge(210, BASE_H - 52, "P", "JOGAR", () => {
+    mkBadge(168, BASE_H - 62, "C", "CONTINUAR", () => {
+      const fn = this.registry.get("onContinueGame") as (() => void) | undefined;
+      if (fn) fn();
+    });
+    mkBadge(BASE_W / 2, BASE_H - 62, "P", "JOGAR", () => {
       const fn = this.registry.get("onStartGame") as (() => void) | undefined;
       if (fn) fn();
     });
-    mkBadge(510, BASE_H - 52, "R", "RECORDES", () => {
-      const fn = this.registry.get("onOpenHighScores") as (() => void) | undefined;
-      if (fn) fn();
-    });
-    mkBadge(810, BASE_H - 52, "C", "OPÇÕES", () => {
+    mkBadge(BASE_W - 168, BASE_H - 62, "O", "OPÇÕES", () => {
       const fn = this.registry.get("onOpenSettings") as (() => void) | undefined;
       if (fn) fn();
     });
 
+    const trophyButton = this.add.container(BASE_W - 76, 76).setDepth(31);
+    const plate = this.add.graphics();
+    const drawPlate = (hover: boolean) => {
+      plate.clear();
+      plate.fillStyle(hover ? 0x241f17 : 0x14120f, 0.92).fillRoundedRect(-28, -28, 56, 56, 10);
+      plate.lineStyle(2, hover ? 0xe0c25a : 0x8c8578, 1).strokeRoundedRect(-28, -28, 56, 56, 10);
+    };
+    drawPlate(false);
+    const cup = this.add.graphics();
+    drawTitleTrophy(cup, 0, 2, 1.35);
+    const glow = this.add
+      .image(0, 0, "torchGlow")
+      .setDisplaySize(120, 120)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setAlpha(0.25);
+    trophyButton.add([glow, plate, cup]);
+    trophyButton.setSize(56, 56)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerover", () => drawPlate(true))
+      .on("pointerout", () => drawPlate(false))
+      .on("pointerdown", () => {
+        const fn = this.registry.get("onOpenHighScores") as (() => void) | undefined;
+        if (fn) fn();
+      });
+
+    this.add
+      .text(BASE_W - 76, 110, "RECORDES", {
+        fontFamily: "monospace",
+        fontSize: "12px",
+        color: "#d9c79a",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setShadow(0, 2, "#000000", 3)
+      .setDepth(31);
+
     this.prompt = this.add
       .text(BASE_W / 2, BASE_H - 110, "PRESSIONE PARA INICIAR", {
         fontFamily: "monospace",
-        fontSize: "20px",
+        fontSize: "22px",
         color: "#f0d8a8",
         fontStyle: "bold",
       })
