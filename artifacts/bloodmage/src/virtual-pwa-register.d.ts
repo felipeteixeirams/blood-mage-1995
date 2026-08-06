@@ -8,7 +8,7 @@ declare module 'virtual:pwa-register' {
 
   export function registerSW(options?: RegisterSWOptions): (
     reloadPage?: boolean,
-  ) => Promise<void> | undefined;
+  ) => Promise<void>;
 
   const _default: typeof registerSW;
   export default _default;
