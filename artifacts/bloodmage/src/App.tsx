@@ -124,7 +124,6 @@ export default function App() {
         <MainMenu
           onStartGame={handleStartGame}
           onOpenSettings={() => setSettingsOpen(true)}
-          onOpenBestiary={() => setBestiaryOpen(true)}
           onOpenHighScores={() => setHighScoresOpen(true)}
           isMuted={isMuted}
           onToggleMute={toggleMute}

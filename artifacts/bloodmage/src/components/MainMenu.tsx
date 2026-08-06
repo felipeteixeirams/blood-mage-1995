@@ -8,7 +8,6 @@ import { TitleScene, BASE_W, BASE_H } from '../game/scenes/TitleScene';
 interface MainMenuProps {
   onStartGame: () => void;
   onOpenSettings: () => void;
-  onOpenBestiary: () => void;
   onOpenHighScores: () => void;
   isMuted: boolean;
   onToggleMute: () => void;
@@ -17,7 +16,6 @@ interface MainMenuProps {
 export const MainMenu: React.FC<MainMenuProps> = ({
   onStartGame,
   onOpenSettings,
-  onOpenBestiary,
   onOpenHighScores,
   isMuted,
   onToggleMute,
@@ -46,7 +44,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({
 
     game.registry.set("onStartGame", onStartGame);
     game.registry.set("onOpenSettings", onOpenSettings);
-    game.registry.set("onOpenBestiary", onOpenBestiary);
     game.registry.set("onOpenHighScores", onOpenHighScores);
 
     gameRef.current = game;
@@ -55,17 +52,16 @@ export const MainMenu: React.FC<MainMenuProps> = ({
       game.destroy(true);
       gameRef.current = null;
     };
-  }, [onStartGame, onOpenSettings, onOpenBestiary, onOpenHighScores]);
+  }, [onStartGame, onOpenSettings, onOpenHighScores]);
 
   // Update registry callbacks if props change
   useEffect(() => {
     if (gameRef.current) {
       gameRef.current.registry.set("onStartGame", onStartGame);
       gameRef.current.registry.set("onOpenSettings", onOpenSettings);
-      gameRef.current.registry.set("onOpenBestiary", onOpenBestiary);
       gameRef.current.registry.set("onOpenHighScores", onOpenHighScores);
     }
-  }, [onStartGame, onOpenSettings, onOpenBestiary, onOpenHighScores]);
+  }, [onStartGame, onOpenSettings, onOpenHighScores]);
 
   return (
     <motion.div 
@@ -113,17 +109,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({
           >
             <Play className="w-4 h-4 text-red-500 fill-red-500" />
             <span className="text-amber-200">JOGAR</span>
-          </button>
-
-          <button
-            onClick={() => {
-              soundEngine.playButtonClick();
-              onOpenBestiary();
-            }}
-            className="py-3 px-4 stone-btn font-pixel text-xs cursor-pointer flex items-center justify-center gap-2 hover:border-amber-600 transition-colors"
-          >
-            <BookOpen className="w-4 h-4 text-amber-500" />
-            <span>LORE</span>
           </button>
 
           <button

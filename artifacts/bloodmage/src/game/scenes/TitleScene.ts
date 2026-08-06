@@ -340,19 +340,15 @@ export class TitleScene extends Phaser.Scene {
     };
 
     // Bottom badges for HUD options
-    mkBadge(120, BASE_H - 52, "P", "JOGAR", () => {
+    mkBadge(210, BASE_H - 52, "P", "JOGAR", () => {
       const fn = this.registry.get("onStartGame") as (() => void) | undefined;
       if (fn) fn();
     });
-    mkBadge(330, BASE_H - 52, "L", "LORE", () => {
-      const fn = this.registry.get("onOpenBestiary") as (() => void) | undefined;
-      if (fn) fn();
-    });
-    mkBadge(630, BASE_H - 52, "R", "RECORDES", () => {
+    mkBadge(510, BASE_H - 52, "R", "RECORDES", () => {
       const fn = this.registry.get("onOpenHighScores") as (() => void) | undefined;
       if (fn) fn();
     });
-    mkBadge(840, BASE_H - 52, "C", "OPÇÕES", () => {
+    mkBadge(810, BASE_H - 52, "C", "OPÇÕES", () => {
       const fn = this.registry.get("onOpenSettings") as (() => void) | undefined;
       if (fn) fn();
     });
