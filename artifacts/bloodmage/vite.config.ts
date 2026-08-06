@@ -2,6 +2,7 @@ import path from 'path';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
 
@@ -14,6 +15,28 @@ export default defineConfig({
     react(),
     tailwindcss(),
     runtimeErrorOverlay(),
+    VitePWA({
+      registerType: 'prompt',
+      includeAssets: ['favicon.svg', 'icon-512.png'],
+      manifest: {
+        name: 'Bloodmage 1995',
+        short_name: 'Bloodmage',
+        description: 'Bloodmage 1995 - Action-RPG / boomer shooter isométrico de fantasia sombria.',
+        theme_color: '#0d0709',
+        background_color: '#0d0709',
+        display: 'standalone',
+        orientation: 'landscape',
+        start_url: '/',
+        categories: ['game', 'action', 'role-playing'],
+        icons: [
+          {
+            src: 'icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+        ],
+      },
+    }),
     ...(process.env.NODE_ENV !== 'production' &&
     process.env.REPL_ID !== undefined
       ? [

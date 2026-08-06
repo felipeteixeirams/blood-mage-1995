@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence } from 'motion/react';
+import { registerSW } from 'virtual:pwa-register';
 import { SplashScreen } from './components/SplashScreen';
 import { MainMenu } from './components/MainMenu';
 import { GameplayHUD } from './components/GameplayHUD';
@@ -21,6 +22,8 @@ import { telemetry } from './utils/telemetry';
 
 export default function App() {
   const [isBooting, setIsBooting] = useState(true);
+  const [isUpdateReady, setIsUpdateReady] = useState(false);
+  const updateSWRef = useRef<((reloadPage?: boolean) => Promise<void>) | null>(null);
 
   const {
     gameState, setGameState,
@@ -42,6 +45,17 @@ export default function App() {
   useEffect(() => {
     soundEngine.setVolumes(settings.sfxVolume, settings.bgmVolume);
   }, [settings]);
+
+  useEffect(() => {
+    updateSWRef.current = registerSW({
+      onNeedRefresh() {
+        setIsUpdateReady(true);
+      },
+      onOfflineReady() {
+        console.log('PWA offline ready');
+      },
+    });
+  }, []);
 
   // Keyboard hotkeys for modals
   useEffect(() => {
@@ -112,6 +126,12 @@ export default function App() {
     return 0;
   };
 
+  const handleUpdateApp = async () => {
+    if (updateSWRef.current) {
+      await updateSWRef.current(true);
+    }
+  };
+
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
       {/* Orientation lock overlay — forces landscape mode */}
@@ -123,6 +143,31 @@ export default function App() {
       )}
 
       {isBooting && <SplashScreen onComplete={() => setIsBooting(false)} />}
+
+      {isUpdateReady && (
+        <div className="fixed inset-x-4 bottom-4 z-[130] rounded-xl border border-amber-700 bg-black/95 p-4 text-white shadow-[0_0_30px_rgba(255,190,0,0.25)] backdrop-blur-sm">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <p className="font-pixel text-sm uppercase text-amber-200">Atualização disponível</p>
+              <p className="text-xs text-gray-300">Uma nova versão do jogo está pronta. Atualize agora para carregar a versão mais recente.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleUpdateApp}
+                className="rounded-full bg-amber-500 px-4 py-2 text-xs font-pixel uppercase tracking-[0.18em] text-black shadow-lg hover:bg-amber-400 transition"
+              >
+                Atualizar agora
+              </button>
+              <button
+                onClick={() => setIsUpdateReady(false)}
+                className="rounded-full border border-gray-600 bg-black/90 px-4 py-2 text-xs font-pixel uppercase tracking-[0.18em] text-gray-200 hover:border-amber-500 hover:text-amber-200 transition"
+              >
+                Depois
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 1. Main Menu Overlay */}
       {!isBooting && gameState === 'menu' && !gameOverStats && (
