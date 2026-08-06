@@ -55,7 +55,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
       game.destroy(true);
       gameRef.current = null;
     };
-  }, [onStartGame, onOpenSettings, onOpenHighScores]);
+  }, [onStartGame, onContinueGame, onOpenSettings, onOpenHighScores]);
 
   // Update registry callbacks if props change
   useEffect(() => {
@@ -98,6 +98,21 @@ export const MainMenu: React.FC<MainMenuProps> = ({
           title="Alternar Áudio"
         >
           {isMuted ? <VolumeX className="w-5 h-5 text-red-400" /> : <Volume2 className="w-5 h-5 text-[#d4af37]" />}
+        </button>
+      </div>
+
+      {/* 3. High Scores Button */}
+      <div className="absolute bottom-8 left-1/2 z-20 transform -translate-x-1/2 pointer-events-auto">
+        <button
+          onClick={() => {
+            soundEngine.playButtonClick();
+            onOpenHighScores();
+          }}
+          className="inline-flex items-center gap-2 px-4 py-3 rounded-full border-2 border-amber-700 bg-black/80 text-white font-pixel text-sm uppercase tracking-[0.22em] shadow-[0_0_20px_rgba(232,179,56,0.15)] hover:border-amber-400 hover:text-amber-200 transition"
+          title="Ver Recordes"
+        >
+          <Trophy className="w-4 h-4 text-amber-300" />
+          RECORDES
         </button>
       </div>
     </motion.div>
