@@ -1,6 +1,8 @@
 # Documento de Discovery: Evolução de Dinâmica de Jogo (Dungeon Siege 1, Diablo 2 & Dead Frontier 2)
 ## Bloodmage 1995 — Direcionamento de Produto e Arquitetura de Design
 
+> **Atenção (Instruções para Engenharia de IA):** Este documento é a especificação mestre de design e arquitetura técnica. Ele foi meticulosamente desenhado para servir de guia inequívoco para agentes de desenvolvimento (humanos ou IA). Para evitar regressões de funcionalidades existentes, quebras de performance ou corrupção de estado, siga rigorosamente as diretrizes de implementação mapeadas na **Seção 8 (Guia Anti-Regressão e Engenharia Sólida)**.
+
 ---
 
 ## 1. Visão Geral e Objetivos do Produto
@@ -267,6 +269,35 @@ updateEnemyAI(player: Player) {
 4.  **Fase 4: Mundo Contínuo e NPCs**
     *   Unificar as salas procedurais geradas pelo `DungeonGenerator.ts` em rotas contínuas de exploração.
     *   Criar as zonas seguras (Vilas) com NPCs interativos cenográficos.
+
+---
+
+## 8. Guia Anti-Regressão e Engenharia Sólida
+
+Esta seção é um manual restrito para o desenvolvedor ou IA encarregado de implementar as alterações descritas neste discovery. O objetivo é blindar o código legado e garantir que os sistemas complexos de física, IA, colisão e gerenciamento de estado permaneçam 100% íntegros.
+
+### 8.1. Arquivos Críticos Legados e Mapeamento de Modificações
+
+| Módulo/Arquivo | Responsabilidade Crítica Atual | Como Alterar Sem Causar Regressões |
+|---|---|---|
+| `artifacts/bloodmage/src/game/objects/Player.ts` | Movimento baseado em aceleração gradual (estilo Dungeon Siege 1), disparos automáticos, frames de invulnerabilidade (`invulnerableTimer` / `isInvulnerable`). | **NÃO altere** a equação do motor de aceleração (`ACCELERATION`, `DECELERATION`) nem os cálculos de delta de tempo. Ao injetar o estado `isUnconscious`, garanta que a velocidade física seja zerada (`setVelocity(0,0)`) e a entrada do jogador seja completamente bloqueada. Mantenha os timers de cooldown decrementando normalmente mesmo quando inconsciente. |
+| `artifacts/bloodmage/src/game/objects/Enemy.ts` | FSM da Inteligência Artificial complexa (idle, patrol, investigating, combat, frenzy, flee), algoritmos de audição sonora e desvios de projéteis. | **NÃO mude** a lógica principal de transição dos estados existentes. Adicione um interceptador no início do `updateEnemy()`: se o player estiver desmaiado, force a IA para retornar à patrulha ou afastar-se radialmente. Os cálculos de AABB e otimização de raycasting contra paredes (`hasLineOfSight`) **devem ser preservados intactos** para não reintroduzir gargalos de CPU em processadores mobile. |
+| `artifacts/bloodmage/src/game/scenes/GameScene.ts` | Loop principal de atualização do jogo, detecção de colisões físicas complexas, renderização procedural do calabouço e sistemas de iluminação/fog. | **NÃO remova nem modifique** os blocos de colisão do Arcade Physics (`physics.add.collider`, `physics.add.overlap`). O tratamento da colisão de inimigos tocando o player deve ignorar o dano caso o player esteja inconsciente. O gerador procedural de masmorra (`DungeonGenerator.ts`) deve ser mantido exatamente como está, alterando-se apenas a lógica que distribui portais e conexões na transição de andares. |
+| `artifacts/bloodmage/src/store/gameStore.ts` | Gerenciamento de estado global com Zustand, persistência em localStorage e sincronização com a HUD React. | **PRESERVE** todos os esquemas Zod de sanitização de dados no arquivo utilitário `localStorage.ts`. O novo esquema JSON de save deve ser uma extensão backward-compatible. Se um save antigo do navegador não contiver os novos campos, injete valores default seguros usando o Zod safe-parse para mitigar falhas de carregamento e crashes de runtime. |
+
+### 8.2. Princípios de Performance e Otimização para Phaser 3
+1.  **Sem Alocação de Memória em High-Frequency Loops:** Durante a atualização do estado de inconsciência ou do cálculo de afastamento dos inimigos na função `update()`, **NÃO** instancie novas estruturas geométricas (como `new Phaser.Geom.Line` ou `new Phaser.Geom.Point`). Reutilize instâncias estáticas ou de escopo de classe pré-alocadas para anular o coletor de lixo (Garbage Collector stutters).
+2.  **AABB Pruning para o Afastamento de Inimigos:** Ao fazer com que 20+ monstros se afastem do corpo do jogador caído, use comparações de distância ao quadrado (`dx * dx + dy * dy`) contra limites pré-computados, evitando o cálculo caro de raiz quadrada (`Math.sqrt` ou `Phaser.Math.Distance.Between`).
+3.  **Zero Assets Externos:** Toda e qualquer UI adicionada para o desmaio (como a barra de progresso de reanimação ou a vinheta de morte gótica) deve ser renderizada de forma puramente procedural usando objetos `Phaser.GameObjects.Graphics` ou componentes JSX do React estilizados com Tailwind CSS. Não dependa de arquivos PNG ou SFX adicionais que não sejam gerados programaticamente.
+
+### 8.3. Pipeline de Validação e Teste do Desenvolvedor IA
+Qualquer alteração realizada no escopo deste discovery deve passar pelos seguintes gates obrigatórios de qualidade antes do merge:
+*   **Typecheck estrito:** Executar `pnpm run typecheck` na raiz do repositório para garantir que não há erros de tipagem no TypeScript.
+*   **Preservação de Colisão:** Confirmar por testes manuais (ou automáticos usando Playwright no localhost) que os projéteis e inimigos de fato colidem com as paredes criadas pelo gerador procedural, sem atravessar obstáculos (wall-hacking).
+*   **Teste de Estresse de Estado:** Iniciar uma partida, forçar o desmaio do personagem 3 vezes consecutivas e validar que:
+    1. Nas duas primeiras vezes, os monstros de fato param de atacar, se dispersam e o jogador regenera vida e levanta normalmente sem corromper o HUD React.
+    2. Na terceira vez, a tela "Você está morto" surge de forma imediata com todo o visual grimdark.
+    3. Ao fechar a aba do navegador na tela de morte e reabrir, o jogo recarrega exatamente na tela de morte travada.
 
 ---
 
