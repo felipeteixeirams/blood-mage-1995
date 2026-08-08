@@ -75,6 +75,9 @@ export function saveTalentLevels(talents: Record<string, number>): void {
 }
 
 export const defaultSettings: GameSettings = {
+  minimapVisible: true,
+  minimapAlpha: 0.65,
+  animatedPortrait: true,
   crtFilter: true,
   sfxVolume: 0.8,
   bgmVolume: 0.5,
@@ -85,6 +88,9 @@ export const defaultSettings: GameSettings = {
 
 // Schema for Settings validation
 const SettingsSchema = z.object({
+  minimapVisible: z.boolean().catch(true),
+  minimapAlpha: z.number().min(0).max(1).catch(0.65),
+  animatedPortrait: z.boolean().catch(true),
   crtFilter: z.boolean().catch(true),
   sfxVolume: z.number().min(0).max(1).catch(0.8),
   bgmVolume: z.number().min(0).max(1).catch(0.5),

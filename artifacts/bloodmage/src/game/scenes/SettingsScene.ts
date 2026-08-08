@@ -73,6 +73,9 @@ export class SettingsScene extends Phaser.Scene {
 
   create() {
     const initialSettings = (this.registry.get("settings") as GameSettings) || {
+      minimapVisible: true,
+      minimapAlpha: 0.65,
+      animatedPortrait: true,
       sfxVolume: 1.0,
       bgmVolume: 1.0,
       virtualControlsOpacity: 0.5,
@@ -336,6 +339,9 @@ export class SettingsScene extends Phaser.Scene {
         label: "RESTAURAR",
         run: () => {
           const defaults: GameSettings = {
+            minimapVisible: true,
+            minimapAlpha: 0.65,
+            animatedPortrait: true,
             sfxVolume: 1.0,
             bgmVolume: 1.0,
             virtualControlsOpacity: 0.5,
