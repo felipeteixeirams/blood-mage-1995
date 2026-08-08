@@ -149,6 +149,9 @@ export interface WaveConfig {
 }
 
 export interface GameSettings {
+  minimapVisible: boolean;
+  minimapAlpha: number;
+  animatedPortrait: boolean;
   crtFilter: boolean;
   sfxVolume: number; // 0 to 1
   bgmVolume: number; // 0 to 1
