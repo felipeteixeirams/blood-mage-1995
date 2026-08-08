@@ -4,6 +4,7 @@ import { GameStats } from './hud/GameStats';
 import { ActionButtons } from './hud/ActionButtons';
 import { LootLog } from './hud/LootLog';
 import { SkillsOverlay } from './hud/SkillsOverlay';
+import { RecordsDisplay } from './hud/RecordsDisplay';
 import { useFloatingJoystick } from '../hooks/useFloatingJoystick';
 import { soundEngine } from '../utils/soundEngine';
 import { useGameStore } from '../store/gameStore';
@@ -102,6 +103,8 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
     updateSettings,
     isInventoryOpen,
     setInventoryOpen,
+    isRecordsOpen,
+    setRecordsOpen,
   } = useGameStore();
 
   const [splatters, setSplatters] = useState<BloodSplatter[]>([]);
@@ -294,7 +297,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
         {/* Trophy Button — Records Hall */}
         <button
           className="bg-[#181211]/95 border-2 border-[#e8c76a] p-2 text-[#e8c76a] hover:bg-[#2f2827] hover:border-[#ffdf9a] shadow-[2px_2px_0px_#000000] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center"
-          onClick={() => { soundEngine.playButtonClick(); setPauseOpen(true); setGameState('paused'); }}
+          onClick={() => { soundEngine.playButtonClick(); setPauseOpen(true); setRecordsOpen(true); setGameState('paused'); }}
           title="Salão dos Recordes"
         >
           {/* Pixel-art trophy icon */}
@@ -672,6 +675,12 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
         state={aimJoystick.state}
         variant="aim"
         opacity={settings.virtualControlsOpacity}
+      />
+
+      {/* Records Modal */}
+      <RecordsDisplay
+        isOpen={isRecordsOpen}
+        onClose={() => setRecordsOpen(false)}
       />
     </div>
   );
