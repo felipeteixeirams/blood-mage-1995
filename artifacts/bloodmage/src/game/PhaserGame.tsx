@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import { BootScene } from './scenes/BootScene';
 import { GameScene } from './scenes/GameScene';
+import { RecordsScene } from './scenes/RecordsScene';
 import { useGameStore } from '../store/gameStore';
 import { PlayerStats, UpgradeOption } from '../types/game';
 

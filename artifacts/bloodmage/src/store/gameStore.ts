@@ -35,6 +35,8 @@ interface GameStore {
   setInventoryOpen: (isOpen: boolean) => void;
   isObservabilityOpen: boolean;
   setObservabilityOpen: (isOpen: boolean) => void;
+  isRecordsOpen: boolean;
+  setRecordsOpen: (isOpen: boolean) => void;
 
   // Metagame Currency & Talents
   bloodCrystals: number;
@@ -121,6 +123,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setInventoryOpen: (isOpen) => set({ isInventoryOpen: isOpen }),
   isObservabilityOpen: false,
   setObservabilityOpen: (isOpen) => set({ isObservabilityOpen: isOpen }),
+  isRecordsOpen: false,
+  setRecordsOpen: (isOpen) => set({ isRecordsOpen: isOpen }),
 
   bloodCrystals: loadBloodCrystals(),
   addBloodCrystals: (amount) => {
