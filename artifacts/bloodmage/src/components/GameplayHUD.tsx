@@ -4,6 +4,9 @@ import { GameStats } from './hud/GameStats';
 import { ActionButtons } from './hud/ActionButtons';
 import { LootLog } from './hud/LootLog';
 import { SkillsOverlay } from './hud/SkillsOverlay';
+import { ContractHUD } from './hud/ContractHUD';
+import { RecordsDisplay } from './hud/RecordsDisplay';
+import palettesData from '../data/palettes.json';
 import { useFloatingJoystick } from '../hooks/useFloatingJoystick';
 import { soundEngine } from '../utils/soundEngine';
 import { useGameStore } from '../store/gameStore';
@@ -102,6 +105,21 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
     updateSettings,
     isInventoryOpen,
     setInventoryOpen,
+    isEditingHUD,
+    setEditingHUD,
+    gamepadConnected,
+    activeTip,
+    setActiveTip,
+    isRecordsOpen,
+    setRecordsOpen,
+    activeNPC,
+    setActiveNPC,
+    closestNPCType,
+    setClosestNPCType,
+    buyCurative,
+    bloodCrystals,
+    addBloodCrystals,
+    setStatusCondition,
   } = useGameStore();
 
   const [splatters, setSplatters] = useState<BloodSplatter[]>([]);
@@ -291,6 +309,29 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       {/* ── TOP RIGHT PANEL: Adaptive Minimap & Actions ── */}
       <div className="absolute top-3 right-3 flex flex-col items-end gap-2.5 z-30 pointer-events-auto">
 
+        {/* Trophy Button — Records Hall */}
+        <button
+          className="bg-[#181211]/95 border-2 border-[#e8c76a] p-2 text-[#e8c76a] hover:bg-[#2f2827] hover:border-[#ffdf9a] shadow-[2px_2px_0px_#000000] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center"
+          onClick={() => { soundEngine.playButtonClick(); setPauseOpen(true); setRecordsOpen(true); setGameState('paused'); }}
+          title="Salão dos Recordes"
+        >
+          {/* Pixel-art trophy icon */}
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Base */}
+            <rect x="2" y="13" width="12" height="1" fill="currentColor" />
+            {/* Stem */}
+            <rect x="7" y="9" width="2" height="4" fill="currentColor" />
+            {/* Cup body */}
+            <rect x="4" y="5" width="8" height="4" fill="currentColor" opacity="0.8" />
+            {/* Cup shine */}
+            <rect x="5" y="6" width="1" height="2" fill="currentColor" opacity="0.4" />
+            {/* Left handle */}
+            <rect x="2" y="6" width="2" height="3" fill="currentColor" opacity="0.6" />
+            {/* Right handle */}
+            <rect x="12" y="6" width="2" height="3" fill="currentColor" opacity="0.6" />
+          </svg>
+        </button>
+
         {/* Quick action buttons column */}
         <div className="flex gap-2">
           <button
@@ -385,6 +426,9 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
             </div>
           </div>
         )}
+
+        {/* Run contracts panel */}
+        <ContractHUD />
       </div>
 
       {/* ── INVENTORY MODAL OVERLAY (Gothic Stone Slab) ── */}
@@ -518,6 +562,85 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
               </button>
             </div>
 
+            {/* Toggle Screen Shake */}
+            <div className="flex items-center justify-between py-1 border-b border-[#524341]">
+              <span className="text-[10px] text-gray-300 uppercase">TREMOR DE TELA</span>
+              <button
+                onClick={() => updateSettings({ ...settings, screenShakeEnabled: !settings.screenShakeEnabled })}
+                className="text-amber-500 cursor-pointer"
+              >
+                {settings.screenShakeEnabled !== false ? <CheckSquare size={16} /> : <Square size={16} />}
+              </button>
+            </div>
+
+            {/* Toggle Flashes */}
+            <div className="flex items-center justify-between py-1 border-b border-[#524341]">
+              <span className="text-[10px] text-gray-300 uppercase">FLASHES DE DANO</span>
+              <button
+                onClick={() => updateSettings({ ...settings, flashesEnabled: !settings.flashesEnabled })}
+                className="text-amber-500 cursor-pointer"
+              >
+                {settings.flashesEnabled !== false ? <CheckSquare size={16} /> : <Square size={16} />}
+              </button>
+            </div>
+
+            {/* Toggle High Contrast Texts */}
+            <div className="flex items-center justify-between py-1 border-b border-[#524341]">
+              <span className="text-[10px] text-gray-300 uppercase">DANOS ALTO CONTRASTE</span>
+              <button
+                onClick={() => updateSettings({ ...settings, highContrastDamageTexts: !settings.highContrastDamageTexts })}
+                className="text-amber-500 cursor-pointer"
+              >
+                {settings.highContrastDamageTexts ? <CheckSquare size={16} /> : <Square size={16} />}
+              </button>
+            </div>
+
+            {/* HUD Edit Button */}
+            <div className="flex items-center justify-between py-2 border-b border-[#524341]">
+              <span className="text-[10px] text-gray-300 uppercase">LAYOUT DE BOTÕES</span>
+              <button
+                onClick={() => {
+                  soundEngine.playButtonClick();
+                  setQuickSettingsOpen(false); // Close quick settings
+                  setEditingHUD(true); // Open edit mode
+                }}
+                className="px-2.5 py-1 bg-amber-900 border border-amber-500 text-amber-100 hover:bg-amber-800 text-[8px] uppercase font-pixel tracking-wide flex items-center gap-1 cursor-pointer animate-pulse"
+              >
+                EDITAR
+              </button>
+            </div>
+
+            {/* Cosmetic Palettes */}
+            <div className="flex flex-col gap-1 py-1.5 border-b border-[#524341]">
+              <span className="text-[10px] text-gray-300 uppercase">PALETA DE SANGUE</span>
+              <div className="grid grid-cols-4 gap-1.5 mt-1 text-[7px] text-center font-bold">
+                {palettesData.map((p) => {
+                  const active = settings.activePaletteId === p.id || (!settings.activePaletteId && p.id === 'crimson');
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        soundEngine.playButtonClick();
+                        updateSettings({
+                          ...settings,
+                          activePaletteId: p.id
+                        });
+                        window.dispatchEvent(new CustomEvent('update-cosmetic-tint'));
+                      }}
+                      className={`py-1 border transition cursor-pointer ${
+                        active
+                          ? 'border-amber-500 text-amber-300 bg-amber-950/40'
+                          : 'border-gray-800 text-gray-500 bg-black/40 hover:border-gray-700'
+                      }`}
+                      style={{ color: p.color !== '#ffffff' ? p.color : undefined }}
+                    >
+                      {p.name.replace('Sangue ', '')}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Virtual Controls HUD Opacity Slider */}
             <div className="flex flex-col gap-1 py-1">
               <div className="flex justify-between text-[10px] text-gray-300">
@@ -595,25 +718,51 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
           Right side (47%) handles aiming gestures.
          ══════════════════════════════════════════════════════════ */}
 
-      {/* MOVE zone (left) */}
-      <div
-        className="absolute left-0 bottom-0 touch-none z-10"
-        style={{ width: '47%', height: '65%' }}
-        onPointerDown={moveJoystick.onPointerDown}
-        onPointerMove={moveJoystick.onPointerMove}
-        onPointerUp={moveJoystick.onPointerUp}
-        onPointerCancel={moveJoystick.onPointerCancel}
-      />
+      {/* ══════════════════════════════════════════════════════════
+          TOUCH ZONES — pointer-active overlay zones.
+          Left side (47%) regulates the movement Analog Joystick.
+          Right side (47%) handles aiming gestures.
+         ══════════════════════════════════════════════════════════ */}
 
-      {/* AIM zone (right) */}
-      <div
-        className="absolute right-0 bottom-0 touch-none"
-        style={{ width: '47%', height: '65%', zIndex: 10 }}
-        onPointerDown={aimJoystick.onPointerDown}
-        onPointerMove={aimJoystick.onPointerMove}
-        onPointerUp={aimJoystick.onPointerUp}
-        onPointerCancel={aimJoystick.onPointerCancel}
-      />
+      {!gamepadConnected && (
+        <>
+          {/* MOVE zone (left) */}
+          <div
+            className="absolute left-0 bottom-0 touch-none z-10"
+            style={{ width: '47%', height: '65%' }}
+            onPointerDown={moveJoystick.onPointerDown}
+            onPointerMove={moveJoystick.onPointerMove}
+            onPointerUp={moveJoystick.onPointerUp}
+            onPointerCancel={moveJoystick.onPointerCancel}
+          />
+
+          {/* AIM zone (right) */}
+          <div
+            className="absolute right-0 bottom-0 touch-none"
+            style={{ width: '47%', height: '65%', zIndex: 10 }}
+            onPointerDown={aimJoystick.onPointerDown}
+            onPointerMove={aimJoystick.onPointerMove}
+            onPointerUp={aimJoystick.onPointerUp}
+            onPointerCancel={aimJoystick.onPointerCancel}
+          />
+        </>
+      )}
+
+      {/* ── Onboarding / Tutorial Tip Overlay ── */}
+      {activeTip && (
+        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-[110] max-w-sm w-full bg-[#181211]/95 border-2 border-amber-600 shadow-[0_0_15px_rgba(217,119,6,0.3)] p-3 text-center pointer-events-auto rounded-lg animate-bounce">
+          <span className="text-amber-400 font-bold uppercase text-[9px] block tracking-wider mb-1">📖 APRENDA O RITUAL</span>
+          <span className="text-[8px] text-gray-200 block leading-normal font-sans">
+            {activeTip}
+          </span>
+          <button
+            onClick={() => setActiveTip(null)}
+            className="absolute top-1.5 right-1.5 text-[8px] text-gray-500 hover:text-red-400 cursor-pointer w-4 h-4 flex items-center justify-center font-sans text-xs"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {/* ── SKILLS PANEL — bottom-right corner ── */}
       <div
@@ -628,7 +777,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       </div>
 
       {/* ── MOVE Joystick hint label ── */}
-      {!moveJoystick.state.active && (
+      {!gamepadConnected && !moveJoystick.state.active && (
         <div
           className="absolute left-6 bottom-6 pointer-events-none"
           style={{ opacity: settings.virtualControlsOpacity * 0.55 }}
@@ -640,15 +789,275 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       )}
 
       {/* ── Virtual joystick visual indicators ── */}
-      <JoystickVisual
-        state={moveJoystick.state}
-        variant="move"
-        opacity={settings.virtualControlsOpacity}
-      />
-      <JoystickVisual
-        state={aimJoystick.state}
-        variant="aim"
-        opacity={settings.virtualControlsOpacity}
+      {!gamepadConnected && (
+        <>
+          <JoystickVisual
+            state={moveJoystick.state}
+            variant="move"
+            opacity={settings.virtualControlsOpacity}
+          />
+          <JoystickVisual
+            state={aimJoystick.state}
+            variant="aim"
+            opacity={settings.virtualControlsOpacity}
+          />
+        </>
+      )}
+
+      {/* ── HUD Edit Mode Banner ── */}
+      {isEditingHUD && (
+        <div className="fixed top-20 inset-x-0 mx-auto max-w-lg bg-[#181211] border-4 border-amber-500 shadow-[4px_4px_0px_#000000] p-4 text-center z-50 flex flex-col gap-2 text-white font-pixel text-xs pointer-events-auto">
+          <span className="text-amber-400 font-bold uppercase tracking-wider block">✍️ MODO DE EDIÇÃO DE HUD</span>
+          <span className="text-[10px] text-gray-300 block font-sans leading-normal">
+            Arraste os botões de skill para qualquer posição da tela. Clique nos botões S/M/L sobre cada habilidade para mudar o tamanho dos botões.
+          </span>
+          <div className="flex gap-2.5 justify-center mt-1">
+            <button
+              onClick={() => {
+                soundEngine.playButtonClick();
+                setEditingHUD(false);
+              }}
+              className="px-4 py-2 bg-emerald-900 border border-emerald-500 text-emerald-100 uppercase hover:bg-emerald-800 text-[10px] cursor-pointer"
+            >
+              SALVAR LAYOUT
+            </button>
+            <button
+              onClick={() => {
+                soundEngine.playButtonClick();
+                updateSettings({
+                  ...settings,
+                  hudLayout: undefined
+                });
+              }}
+              className="px-4 py-2 bg-black border border-gray-600 text-gray-300 uppercase hover:bg-gray-900 text-[10px] cursor-pointer"
+            >
+              RESTAURAR PADRÃO
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── NPC Interaction Prompt ── */}
+      {closestNPCType && !activeNPC && (
+        <div className="fixed bottom-1/4 inset-x-0 mx-auto max-w-xs bg-[#171309] border-2 border-sky-500 shadow-[4px_4px_0px_rgba(0,0,0,0.8)] p-2.5 text-center z-40 flex flex-col items-center gap-1.5 text-[#E3DAC9] pointer-events-auto select-none animate-bounce">
+          <span className="text-sky-400 text-xs font-bold uppercase tracking-wider block">
+            👤 {closestNPCType === 'cleric' ? 'CLÉRIGO' : closestNPCType === 'alchemist' ? 'ALQUIMISTA' : closestNPCType === 'blacksmith' ? 'FERREIRO' : 'ANCIÃO'} ESTÁ PRÓXIMO
+          </span>
+          <span className="text-[10px] text-gray-400 font-sans block leading-none">
+            Aproxime-se e pressione <span className="text-amber-500 font-bold">[E]</span> para falar.
+          </span>
+          <button
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              soundEngine.playButtonClick();
+              setActiveNPC(closestNPCType);
+            }}
+            className="mt-1 px-3 py-1 bg-sky-950 border border-sky-600 text-sky-100 hover:bg-sky-900 active:scale-95 text-[10px] font-bold uppercase cursor-pointer"
+          >
+            FALAR COM NPC
+          </button>
+        </div>
+      )}
+
+      {/* ── NPC Dialogue Modal ── */}
+      {activeNPC && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
+          <div className="bg-[#171309] border-4 border-[#B8860B] rounded-none p-5 max-w-md w-full text-[#E3DAC9] shadow-[0_0_30px_rgba(184,134,11,0.4)]">
+
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-[#B8860B]/40 pb-3 mb-4">
+              <span className="text-sm font-pixel text-[#B8860B] uppercase font-bold tracking-wider">
+                {activeNPC === 'cleric' ? 'Clérigo Curandeiro' : activeNPC === 'alchemist' ? 'Alquimista de Fronteira' : activeNPC === 'blacksmith' ? 'Ferreiro Necromântico' : 'Ancião da Vila'}
+              </span>
+              <button
+                onClick={() => {
+                  soundEngine.playButtonClick();
+                  setActiveNPC(null);
+                }}
+                className="p-1 text-red-400 hover:bg-red-950/40 border border-red-900/60 rounded-none cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content / Dialog Text */}
+            <p className="text-xs font-gothic leading-relaxed mb-5 italic border-l-2 border-amber-600 pl-3 py-1 text-gray-300">
+              {activeNPC === 'cleric' && '"Que a benção do Sangue Purificador te guarde, Mestre do Sangue. Deseja curar suas chagas ou purificar a infecção?"'}
+              {activeNPC === 'alchemist' && '"Frascos, elixires e ataduras para aplacar os males do abismo... Que desejas comprar, Bloodmage?"'}
+              {activeNPC === 'blacksmith' && '"O metal clama por sacrifício. Posso aprimorar sua foice ou sua couraça de ossos em troca de cristais de sangue."'}
+              {activeNPC === 'elder' && '"Nossas paliçadas resistem sob as sombras, mas os monstros lá fora estão cada vez mais agressivos. Se puderes deter o Mini-Chefe das Catacumbas, nosso caminho estará livre para avançar..."'}
+            </p>
+
+            {/* Action Buttons */}
+            <div className="space-y-3 font-pixel text-[11px]">
+
+              {/* Cleric actions */}
+              {activeNPC === 'cleric' && (
+                <>
+                  <button
+                    onClick={() => {
+                      soundEngine.playButtonClick();
+                      // Full Heal HP/Mana
+                      setPlayerStats({
+                        ...stats,
+                        hp: stats.maxHp,
+                        mana: stats.maxMana
+                      });
+                      soundEngine.playNova(); // special trigger sound
+                    }}
+                    className="w-full text-left p-2.5 bg-sky-950/40 border border-sky-600 hover:bg-sky-900/50 uppercase transition-colors font-bold cursor-pointer"
+                  >
+                    💖 Restaurar HP & Mana (Gratuito)
+                  </button>
+                  <button
+                    disabled={!stats.statusConditions?.infection || bloodCrystals < 15}
+                    onClick={() => {
+                      soundEngine.playButtonClick();
+                      addBloodCrystals(-15);
+                      setStatusCondition('infection', false);
+                      soundEngine.playNova();
+                    }}
+                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
+                      stats.statusConditions?.infection && bloodCrystals >= 15
+                        ? 'bg-emerald-950/40 border-emerald-500 hover:bg-emerald-900/50 text-emerald-100 cursor-pointer'
+                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    🧪 Purificar Infecção (Custo: 15 Cristais)
+                  </button>
+                </>
+              )}
+
+              {/* Alchemist actions */}
+              {activeNPC === 'alchemist' && (
+                <>
+                  <button
+                    disabled={bloodCrystals < 15}
+                    onClick={() => {
+                      buyCurative('bandages', 15);
+                    }}
+                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
+                      bloodCrystals >= 15
+                        ? 'bg-red-950/40 border-red-600 hover:bg-red-900/50 text-red-200 cursor-pointer'
+                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    🩸 Comprar Atadura (Sangramento) - 15 Cristais [Possui: {stats.curatives?.bandages || 0}]
+                  </button>
+                  <button
+                    disabled={bloodCrystals < 20}
+                    onClick={() => {
+                      buyCurative('antidotes', 20);
+                    }}
+                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
+                      bloodCrystals >= 20
+                        ? 'bg-purple-950/40 border-purple-600 hover:bg-purple-900/50 text-purple-200 cursor-pointer'
+                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    🍇 Comprar Antídoto (Veneno) - 20 Cristais [Possui: {stats.curatives?.antidotes || 0}]
+                  </button>
+                  <button
+                    disabled={bloodCrystals < 35}
+                    onClick={() => {
+                      buyCurative('antibiotics', 35);
+                    }}
+                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
+                      bloodCrystals >= 35
+                        ? 'bg-emerald-950/40 border-emerald-600 hover:bg-emerald-900/50 text-emerald-200 cursor-pointer'
+                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    🧪 Comprar Antibiótico (Infecção) - 35 Cristais [Possui: {stats.curatives?.antibiotics || 0}]
+                  </button>
+                </>
+              )}
+
+              {/* Blacksmith actions */}
+              {activeNPC === 'blacksmith' && (
+                <>
+                  <button
+                    disabled={bloodCrystals < 50}
+                    onClick={() => {
+                      if (bloodCrystals >= 50) {
+                        soundEngine.playButtonClick();
+                        addBloodCrystals(-50);
+                        setPlayerStats({
+                          ...stats,
+                          damageMultiplier: stats.damageMultiplier + 0.10
+                        });
+                        soundEngine.playEquipLoot();
+                      }
+                    }}
+                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
+                      bloodCrystals >= 50
+                        ? 'bg-amber-950/40 border-[#B8860B] hover:bg-amber-900/50 text-amber-200 cursor-pointer'
+                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    ⚔️ Upgrade de Arma (+10% Dano) - 50 Cristais [Atual: +{Math.round((stats.damageMultiplier - 1)*100)}%]
+                  </button>
+                  <button
+                    disabled={bloodCrystals < 50}
+                    onClick={() => {
+                      if (bloodCrystals >= 50) {
+                        soundEngine.playButtonClick();
+                        addBloodCrystals(-50);
+                        setPlayerStats({
+                          ...stats,
+                          maxHp: stats.maxHp + 20,
+                          hp: stats.hp + 20
+                        });
+                        soundEngine.playEquipLoot();
+                      }
+                    }}
+                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
+                      bloodCrystals >= 50
+                        ? 'bg-amber-950/40 border-[#B8860B] hover:bg-amber-900/50 text-amber-200 cursor-pointer'
+                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    🛡️ Upgrade de Armadura (+20 HP Máx) - 50 Cristais [Atual: {stats.maxHp} HP]
+                  </button>
+                </>
+              )}
+
+              {/* Elder actions */}
+              {activeNPC === 'elder' && (
+                <button
+                  onClick={() => {
+                    soundEngine.playButtonClick();
+                    // Quest acceptance: give them 100 crystals as startup aid!
+                    addBloodCrystals(100);
+                    soundEngine.playNova();
+                    setActiveNPC(null);
+                  }}
+                  className="w-full text-left p-2.5 bg-amber-950/40 border border-[#B8860B] hover:bg-amber-900/50 text-amber-200 font-bold uppercase cursor-pointer"
+                >
+                  📜 Aceitar Clamor de Auxílio (+100 Cristais de Sangue)
+                </button>
+              )}
+
+              {/* Close Button */}
+              <button
+                onClick={() => {
+                  soundEngine.playButtonClick();
+                  setActiveNPC(null);
+                }}
+                className="w-full text-center p-2.5 bg-black border border-gray-700 text-gray-400 uppercase font-bold hover:bg-gray-950 cursor-pointer"
+              >
+                ENCERRAR DIÁLOGO
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Records Modal */}
+      <RecordsDisplay
+        isOpen={isRecordsOpen}
+        onClose={() => setRecordsOpen(false)}
       />
     </div>
   );

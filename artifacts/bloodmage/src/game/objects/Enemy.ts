@@ -2,12 +2,14 @@ import Phaser from 'phaser';
 import { MonsterConfig, AIState } from '../../types/game';
 import monstersData from '../../data/monsters.json';
 import { soundEngine } from '../../utils/soundEngine';
+import { useGameStore } from '../../store/gameStore';
 
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
   public config: MonsterConfig;
   public hp: number;
   public maxHp: number;
   public aiState: AIState = 'idle';
+  private isAngered: boolean = false;
 
   private lastAttackTime: number = 0;
   private facingAngle: number = 0; // Radians
@@ -28,6 +30,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private lastDodgeTime: number = 0;
   private isDodging: boolean = false;
   private dodgeVector: Phaser.Math.Vector2 = new Phaser.Math.Vector2(0, 0);
+
+  // Flee / Reinforcements
+  private fleeStartTime: number = 0;
+  private reinforcementsCalled: boolean = false;
 
   // Status Emote Icon
   private emoteSprite?: Phaser.GameObjects.Image;
@@ -79,10 +85,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.currentPatrolTarget = this.patrolP2;
 
     // Start in IDLE or PATROL state
-    this.aiState = Math.random() < 0.6 ? 'patrol' : 'idle';
-
-    // Base color tinting
-    this.applyBaseTint();
+    const hasFuryPit = useGameStore.getState().activeModifiers.includes('fury_pit');
+    if (hasFuryPit) {
+      this.aiState = 'frenzy';
+      this.setTint(0xff3333);
+    } else {
+      this.aiState = Math.random() < 0.6 ? 'patrol' : 'idle';
+      this.applyBaseTint();
+    }
   }
 
   private applyBaseTint() {
@@ -99,10 +109,26 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
    * Evaluates vision distance, vision cone angle, and line-of-sight obstacle wall obstruction
    */
   public canSeePlayer(playerX: number, playerY: number, hasWallBetween: boolean): boolean {
+    const isPlayerUnconsciousOrDead = useGameStore.getState().playerStats.isUnconscious || useGameStore.getState().playerStats.isDefinitivelyDead;
+    if (isPlayerUnconsciousOrDead) return false;
+
+    if (this.config.temperament === 'totally_passive') {
+      return false;
+    }
+    if (this.config.temperament === 'defensive' && !this.isAngered) {
+      return false;
+    }
+
     if (hasWallBetween) return false;
 
     const distance = Phaser.Math.Distance.Between(this.x, this.y, playerX, playerY);
-    const maxDist = this.config.visionDistance || 320;
+    let maxDist = this.config.visionDistance || 320;
+    if (this.config.temperament === 'highly_aggressive') {
+      maxDist *= 1.5;
+    } else if (this.config.temperament === 'territorial') {
+      maxDist = Math.min(maxDist, 120);
+    }
+
     if (distance > maxDist) return false;
 
     // Check vision cone angle
@@ -121,13 +147,23 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (this.aiState === 'combat' || this.aiState === 'frenzy' || this.aiState === 'flee') return;
 
     const dist = Phaser.Math.Distance.Between(this.x, this.y, noiseX, noiseY);
-    const effectiveRadius = loudness * (this.config.hearingSensitivity || 1.0) * (hasWallBetween ? 0.4 : 1.0);
+    let multiplier = 1.0;
+    if (this.config.temperament === 'highly_aggressive') {
+      multiplier = 1.5;
+    }
+    const effectiveRadius = loudness * (this.config.hearingSensitivity || 1.0) * multiplier * (hasWallBetween ? 0.4 : 1.0);
 
     if (dist <= effectiveRadius) {
-      this.aiState = 'investigating';
-      this.investigatePoint = { x: noiseX, y: noiseY };
-      this.investigateTimer = this.scene.time.now + 3500;
-      this.showEmote('icon_suspicious');
+      if (this.config.temperament === 'totally_passive') {
+        this.aiState = 'flee';
+        this.fleeStartTime = this.scene.time.now;
+        this.showEmote('icon_flee');
+      } else {
+        this.aiState = 'investigating';
+        this.investigatePoint = { x: noiseX, y: noiseY };
+        this.investigateTimer = this.scene.time.now + 3500;
+        this.showEmote('icon_suspicious');
+      }
     }
   }
 
@@ -135,6 +171,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
    * Force alert to combat state (e.g., seen or damaged)
    */
   public alertToCombat() {
+    if (this.config.temperament === 'totally_passive') {
+      if (this.aiState !== 'flee') {
+        this.aiState = 'flee';
+        this.fleeStartTime = this.scene.time.now;
+        this.showEmote('icon_flee');
+      }
+      return;
+    }
     if (this.aiState === 'flee') return;
     if (this.aiState !== 'combat' && this.aiState !== 'frenzy') {
       this.aiState = 'combat';
@@ -215,8 +259,27 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   ): { attack: boolean; damage: number; attackType?: 'melee' | 'ranged'; dodged?: boolean } {
     if (!this.active) return { attack: false, damage: 0 };
 
+    const isPlayerUnconsciousOrDead = useGameStore.getState().playerStats.isUnconscious || useGameStore.getState().playerStats.isDefinitivelyDead;
+    if (isPlayerUnconsciousOrDead) {
+      if (this.aiState === 'combat' || this.aiState === 'frenzy' || this.aiState === 'investigating' || this.aiState === 'flee') {
+        this.aiState = 'patrol';
+        this.attackPhase = 'none';
+        this.setScale(this.baseScale);
+        this.setRotation(0);
+        this.applyBaseTint();
+      }
+    }
+
     const distanceToPlayer = Phaser.Math.Distance.Between(this.x, this.y, playerX, playerY);
     const angleToPlayer = Phaser.Math.Angle.Between(this.x, this.y, playerX, playerY);
+
+    if (this.config.temperament === 'totally_passive' && !isPlayerUnconsciousOrDead) {
+      if (distanceToPlayer <= 100 && this.aiState !== 'flee') {
+        this.aiState = 'flee';
+        this.fleeStartTime = time;
+        this.showEmote('icon_flee');
+      }
+    }
 
     // Keep emote centered
     if (this.emoteSprite && this.emoteSprite.active) {
@@ -237,6 +300,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       hpRatio < (this.config.courage || 0.35)
     ) {
       this.aiState = 'flee';
+      this.fleeStartTime = time;
+      this.reinforcementsCalled = false;
       this.showEmote('icon_flee');
     }
 
@@ -396,6 +461,20 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       }
 
       case 'flee': {
+        // Check reinforcements call after 5 seconds
+        if (time >= this.fleeStartTime + 5000 && !this.reinforcementsCalled) {
+          this.reinforcementsCalled = true;
+          this.showEmote('icon_alert');
+          soundEngine.playHowl(); // distinctive howling call for help!
+
+          if (this.scene && (this.scene as any).emitSound) {
+            (this.scene as any).emitSound(this.x, this.y, 660); // 3x radius (220 * 3) sound emission
+            if ((this.scene as any).spawnFloatingText) {
+              (this.scene as any).spawnFloatingText(this.x, this.y - 12, 'CHAMOU REFORÇOS!', '#ef4444', true);
+            }
+          }
+        }
+
         // Run directly away from player
         const fleeAngle = angleToPlayer + Math.PI;
         this.facingAngle = fleeAngle;
@@ -599,6 +678,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   public takeDamage(amount: number): boolean {
     this.hp -= amount;
+    this.isAngered = true;
 
     // Visual: blood burst particles
     if (this.active) {

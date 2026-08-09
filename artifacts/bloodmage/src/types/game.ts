@@ -51,7 +51,16 @@ export interface TalentNode {
 
 export type MonsterBehavior = 'chaser' | 'ranged' | 'charger' | 'swarmer' | 'boss';
 
-export type MonsterTemperament = 'aggressive' | 'tactical' | 'timid' | 'relentless';
+export type MonsterTemperament = 'aggressive' | 'tactical' | 'timid' | 'relentless' | 'highly_aggressive' | 'territorial' | 'defensive' | 'totally_passive';
+
+export interface DroppedCorpse {
+  hasDroppedCorpse: boolean;
+  zone: string;
+  x: number;
+  y: number;
+  droppedTimestamp: number;
+  itemsInside: { id: string; quantity: number }[];
+}
 
 export type MonsterGait = 'quadruped' | 'biped_fast' | 'biped_slow' | 'ethereal' | 'heavy';
 
@@ -79,6 +88,9 @@ export interface MonsterConfig {
   color: string;
   scale: number;
   scoreValue: number;
+  executionFragments?: number;
+  executionImpulse?: number;
+  executionBloodScale?: number;
 }
 
 export interface SpellConfig {
@@ -137,6 +149,20 @@ export interface PlayerStats {
   timeSurvivedSeconds: number;
   unlockedSpells: string[]; // spell IDs
   pendingStatPoints: number; // unspent talent/skill points
+  knockoutCount: number;
+  isUnconscious: boolean;
+  isDefinitivelyDead: boolean;
+  statusConditions: {
+    bleeding: boolean;
+    poison: boolean;
+    infection: boolean;
+  };
+  curatives: {
+    bandages: number;
+    antidotes: number;
+    antibiotics: number;
+  };
+  droppedCorpse: DroppedCorpse;
 }
 
 export interface WaveConfig {
@@ -158,6 +184,12 @@ export interface GameSettings {
   touchSensitivity: number; // 0.5 to 2.0
   virtualControlsOpacity: number; // 0.2 to 1.0
   controlsMode: 'auto' | 'touch' | 'keyboard';
+  screenShakeEnabled?: boolean;
+  flashesEnabled?: boolean;
+  lowPerformanceParticles?: boolean;
+  highContrastDamageTexts?: boolean;
+  hudLayout?: Record<string, { x: number, y: number, size: 'small' | 'medium' | 'large' }>;
+  activePaletteId?: string;
 }
 
 export interface HighScoreRecord {
