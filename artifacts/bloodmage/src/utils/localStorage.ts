@@ -35,19 +35,29 @@ export function saveBloodCrystals(amount: number): void {
 
 const defaultTalents: Record<string, number> = {
   hemomancy_power: 0,
+  vampirismo_profundo: 0,
+  execucoes_em_area: 0,
   martyr_vitality: 0,
-  vampiric_thirst: 0,
+  escudo_ossos_aprimorado: 0,
+  aura_de_medo: 0,
   abyssal_haste: 0,
-  sacrifice_mastery: 0,
+  sobrecarga_runica: 0,
+  tempestade_continua: 0,
 };
 
 // Schema for Talent levels validation
 const TalentLevelsSchema = z.object({
   hemomancy_power: z.number().int().nonnegative().max(100).catch(0),
+  vampirismo_profundo: z.number().int().nonnegative().max(100).catch(0),
+  execucoes_em_area: z.number().int().nonnegative().max(100).catch(0),
   martyr_vitality: z.number().int().nonnegative().max(100).catch(0),
-  vampiric_thirst: z.number().int().nonnegative().max(100).catch(0),
+  escudo_ossos_aprimorado: z.number().int().nonnegative().max(100).catch(0),
+  aura_de_medo: z.number().int().nonnegative().max(100).catch(0),
   abyssal_haste: z.number().int().nonnegative().max(100).catch(0),
-  sacrifice_mastery: z.number().int().nonnegative().max(100).catch(0),
+  sobrecarga_runica: z.number().int().nonnegative().max(100).catch(0),
+  tempestade_continua: z.number().int().nonnegative().max(100).catch(0),
+  vampiric_thirst: z.number().int().nonnegative().max(100).catch(0).optional(),
+  sacrifice_mastery: z.number().int().nonnegative().max(100).catch(0).optional(),
 }).strict(); // strict() prevents prototype pollution and extra keys
 
 export function loadTalentLevels(): Record<string, number> {
@@ -84,6 +94,10 @@ export const defaultSettings: GameSettings = {
   touchSensitivity: 1.0,
   virtualControlsOpacity: 0.7,
   controlsMode: 'auto',
+  screenShakeEnabled: true,
+  flashesEnabled: true,
+  lowPerformanceParticles: false,
+  highContrastDamageTexts: false,
 };
 
 // Schema for Settings validation
@@ -97,6 +111,16 @@ const SettingsSchema = z.object({
   touchSensitivity: z.number().min(0.5).max(2.0).catch(1.0),
   virtualControlsOpacity: z.number().min(0.2).max(1.0).catch(0.7),
   controlsMode: z.enum(['auto', 'touch', 'keyboard']).catch('auto'),
+  screenShakeEnabled: z.boolean().catch(true),
+  flashesEnabled: z.boolean().catch(true),
+  lowPerformanceParticles: z.boolean().catch(false),
+  highContrastDamageTexts: z.boolean().catch(false),
+  hudLayout: z.record(z.object({
+    x: z.number(),
+    y: z.number(),
+    size: z.enum(['small', 'medium', 'large'])
+  })).optional(),
+  activePaletteId: z.string().catch('crimson').optional(),
 }).strict(); // strict() prevents prototype pollution and extra keys
 
 export function loadSettings(): GameSettings {
@@ -191,4 +215,42 @@ export function saveHighScore(newRecord: Omit<HighScoreRecord, 'id' | 'date'>): 
     console.warn('Failed to save highscore', e);
   }
   return updated;
+}
+
+const ONBOARDING_KEY = 'bloodmage_1995_onboarding';
+
+const OnboardingSchema = z.object({
+  firstKillDone: z.boolean().catch(false),
+  firstLevelUpDone: z.boolean().catch(false),
+  firstEquipDone: z.boolean().catch(false),
+  firstBossSeen: z.boolean().catch(false),
+  firstSkillCast: z.boolean().catch(false),
+}).strict();
+
+export function loadOnboarding() {
+  try {
+    const raw = localStorage.getItem(ONBOARDING_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const validated = OnboardingSchema.safeParse(parsed);
+      if (validated.success) return validated.data;
+    }
+  } catch (e) {
+    console.warn('Failed to load onboarding', e);
+  }
+  return {
+    firstKillDone: false,
+    firstLevelUpDone: false,
+    firstEquipDone: false,
+    firstBossSeen: false,
+    firstSkillCast: false
+  };
+}
+
+export function saveOnboarding(state: any): void {
+  try {
+    localStorage.setItem(ONBOARDING_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.warn('Failed to save onboarding', e);
+  }
 }
