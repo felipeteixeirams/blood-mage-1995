@@ -79,6 +79,9 @@ export interface MonsterConfig {
   color: string;
   scale: number;
   scoreValue: number;
+  executionFragments?: number;
+  executionImpulse?: number;
+  executionBloodScale?: number;
 }
 
 export interface SpellConfig {
@@ -158,6 +161,12 @@ export interface GameSettings {
   touchSensitivity: number; // 0.5 to 2.0
   virtualControlsOpacity: number; // 0.2 to 1.0
   controlsMode: 'auto' | 'touch' | 'keyboard';
+  screenShakeEnabled?: boolean;
+  flashesEnabled?: boolean;
+  lowPerformanceParticles?: boolean;
+  highContrastDamageTexts?: boolean;
+  hudLayout?: Record<string, { x: number, y: number, size: 'small' | 'medium' | 'large' }>;
+  activePaletteId?: string;
 }
 
 export interface HighScoreRecord {

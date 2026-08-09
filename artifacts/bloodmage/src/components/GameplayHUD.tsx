@@ -4,7 +4,9 @@ import { GameStats } from './hud/GameStats';
 import { ActionButtons } from './hud/ActionButtons';
 import { LootLog } from './hud/LootLog';
 import { SkillsOverlay } from './hud/SkillsOverlay';
+import { ContractHUD } from './hud/ContractHUD';
 import { RecordsDisplay } from './hud/RecordsDisplay';
+import palettesData from '../data/palettes.json';
 import { useFloatingJoystick } from '../hooks/useFloatingJoystick';
 import { soundEngine } from '../utils/soundEngine';
 import { useGameStore } from '../store/gameStore';
@@ -103,6 +105,11 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
     updateSettings,
     isInventoryOpen,
     setInventoryOpen,
+    isEditingHUD,
+    setEditingHUD,
+    gamepadConnected,
+    activeTip,
+    setActiveTip,
     isRecordsOpen,
     setRecordsOpen,
   } = useGameStore();
@@ -411,6 +418,9 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
             </div>
           </div>
         )}
+
+        {/* Run contracts panel */}
+        <ContractHUD />
       </div>
 
       {/* ── INVENTORY MODAL OVERLAY (Gothic Stone Slab) ── */}
@@ -544,6 +554,85 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
               </button>
             </div>
 
+            {/* Toggle Screen Shake */}
+            <div className="flex items-center justify-between py-1 border-b border-[#524341]">
+              <span className="text-[10px] text-gray-300 uppercase">TREMOR DE TELA</span>
+              <button
+                onClick={() => updateSettings({ ...settings, screenShakeEnabled: !settings.screenShakeEnabled })}
+                className="text-amber-500 cursor-pointer"
+              >
+                {settings.screenShakeEnabled !== false ? <CheckSquare size={16} /> : <Square size={16} />}
+              </button>
+            </div>
+
+            {/* Toggle Flashes */}
+            <div className="flex items-center justify-between py-1 border-b border-[#524341]">
+              <span className="text-[10px] text-gray-300 uppercase">FLASHES DE DANO</span>
+              <button
+                onClick={() => updateSettings({ ...settings, flashesEnabled: !settings.flashesEnabled })}
+                className="text-amber-500 cursor-pointer"
+              >
+                {settings.flashesEnabled !== false ? <CheckSquare size={16} /> : <Square size={16} />}
+              </button>
+            </div>
+
+            {/* Toggle High Contrast Texts */}
+            <div className="flex items-center justify-between py-1 border-b border-[#524341]">
+              <span className="text-[10px] text-gray-300 uppercase">DANOS ALTO CONTRASTE</span>
+              <button
+                onClick={() => updateSettings({ ...settings, highContrastDamageTexts: !settings.highContrastDamageTexts })}
+                className="text-amber-500 cursor-pointer"
+              >
+                {settings.highContrastDamageTexts ? <CheckSquare size={16} /> : <Square size={16} />}
+              </button>
+            </div>
+
+            {/* HUD Edit Button */}
+            <div className="flex items-center justify-between py-2 border-b border-[#524341]">
+              <span className="text-[10px] text-gray-300 uppercase">LAYOUT DE BOTÕES</span>
+              <button
+                onClick={() => {
+                  soundEngine.playButtonClick();
+                  setQuickSettingsOpen(false); // Close quick settings
+                  setEditingHUD(true); // Open edit mode
+                }}
+                className="px-2.5 py-1 bg-amber-900 border border-amber-500 text-amber-100 hover:bg-amber-800 text-[8px] uppercase font-pixel tracking-wide flex items-center gap-1 cursor-pointer animate-pulse"
+              >
+                EDITAR
+              </button>
+            </div>
+
+            {/* Cosmetic Palettes */}
+            <div className="flex flex-col gap-1 py-1.5 border-b border-[#524341]">
+              <span className="text-[10px] text-gray-300 uppercase">PALETA DE SANGUE</span>
+              <div className="grid grid-cols-4 gap-1.5 mt-1 text-[7px] text-center font-bold">
+                {palettesData.map((p) => {
+                  const active = settings.activePaletteId === p.id || (!settings.activePaletteId && p.id === 'crimson');
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        soundEngine.playButtonClick();
+                        updateSettings({
+                          ...settings,
+                          activePaletteId: p.id
+                        });
+                        window.dispatchEvent(new CustomEvent('update-cosmetic-tint'));
+                      }}
+                      className={`py-1 border transition cursor-pointer ${
+                        active
+                          ? 'border-amber-500 text-amber-300 bg-amber-950/40'
+                          : 'border-gray-800 text-gray-500 bg-black/40 hover:border-gray-700'
+                      }`}
+                      style={{ color: p.color !== '#ffffff' ? p.color : undefined }}
+                    >
+                      {p.name.replace('Sangue ', '')}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Virtual Controls HUD Opacity Slider */}
             <div className="flex flex-col gap-1 py-1">
               <div className="flex justify-between text-[10px] text-gray-300">
@@ -621,25 +710,51 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
           Right side (47%) handles aiming gestures.
          ══════════════════════════════════════════════════════════ */}
 
-      {/* MOVE zone (left) */}
-      <div
-        className="absolute left-0 bottom-0 touch-none z-10"
-        style={{ width: '47%', height: '65%' }}
-        onPointerDown={moveJoystick.onPointerDown}
-        onPointerMove={moveJoystick.onPointerMove}
-        onPointerUp={moveJoystick.onPointerUp}
-        onPointerCancel={moveJoystick.onPointerCancel}
-      />
+      {/* ══════════════════════════════════════════════════════════
+          TOUCH ZONES — pointer-active overlay zones.
+          Left side (47%) regulates the movement Analog Joystick.
+          Right side (47%) handles aiming gestures.
+         ══════════════════════════════════════════════════════════ */}
 
-      {/* AIM zone (right) */}
-      <div
-        className="absolute right-0 bottom-0 touch-none"
-        style={{ width: '47%', height: '65%', zIndex: 10 }}
-        onPointerDown={aimJoystick.onPointerDown}
-        onPointerMove={aimJoystick.onPointerMove}
-        onPointerUp={aimJoystick.onPointerUp}
-        onPointerCancel={aimJoystick.onPointerCancel}
-      />
+      {!gamepadConnected && (
+        <>
+          {/* MOVE zone (left) */}
+          <div
+            className="absolute left-0 bottom-0 touch-none z-10"
+            style={{ width: '47%', height: '65%' }}
+            onPointerDown={moveJoystick.onPointerDown}
+            onPointerMove={moveJoystick.onPointerMove}
+            onPointerUp={moveJoystick.onPointerUp}
+            onPointerCancel={moveJoystick.onPointerCancel}
+          />
+
+          {/* AIM zone (right) */}
+          <div
+            className="absolute right-0 bottom-0 touch-none"
+            style={{ width: '47%', height: '65%', zIndex: 10 }}
+            onPointerDown={aimJoystick.onPointerDown}
+            onPointerMove={aimJoystick.onPointerMove}
+            onPointerUp={aimJoystick.onPointerUp}
+            onPointerCancel={aimJoystick.onPointerCancel}
+          />
+        </>
+      )}
+
+      {/* ── Onboarding / Tutorial Tip Overlay ── */}
+      {activeTip && (
+        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-[110] max-w-sm w-full bg-[#181211]/95 border-2 border-amber-600 shadow-[0_0_15px_rgba(217,119,6,0.3)] p-3 text-center pointer-events-auto rounded-lg animate-bounce">
+          <span className="text-amber-400 font-bold uppercase text-[9px] block tracking-wider mb-1">📖 APRENDA O RITUAL</span>
+          <span className="text-[8px] text-gray-200 block leading-normal font-sans">
+            {activeTip}
+          </span>
+          <button
+            onClick={() => setActiveTip(null)}
+            className="absolute top-1.5 right-1.5 text-[8px] text-gray-500 hover:text-red-400 cursor-pointer w-4 h-4 flex items-center justify-center font-sans text-xs"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {/* ── SKILLS PANEL — bottom-right corner ── */}
       <div
@@ -654,7 +769,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       </div>
 
       {/* ── MOVE Joystick hint label ── */}
-      {!moveJoystick.state.active && (
+      {!gamepadConnected && !moveJoystick.state.active && (
         <div
           className="absolute left-6 bottom-6 pointer-events-none"
           style={{ opacity: settings.virtualControlsOpacity * 0.55 }}
@@ -666,15 +781,58 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       )}
 
       {/* ── Virtual joystick visual indicators ── */}
-      <JoystickVisual
-        state={moveJoystick.state}
-        variant="move"
-        opacity={settings.virtualControlsOpacity}
-      />
-      <JoystickVisual
-        state={aimJoystick.state}
-        variant="aim"
-        opacity={settings.virtualControlsOpacity}
+      {!gamepadConnected && (
+        <>
+          <JoystickVisual
+            state={moveJoystick.state}
+            variant="move"
+            opacity={settings.virtualControlsOpacity}
+          />
+          <JoystickVisual
+            state={aimJoystick.state}
+            variant="aim"
+            opacity={settings.virtualControlsOpacity}
+          />
+        </>
+      )}
+
+      {/* ── HUD Edit Mode Banner ── */}
+      {isEditingHUD && (
+        <div className="fixed top-20 inset-x-0 mx-auto max-w-lg bg-[#181211] border-4 border-amber-500 shadow-[4px_4px_0px_#000000] p-4 text-center z-50 flex flex-col gap-2 text-white font-pixel text-xs pointer-events-auto">
+          <span className="text-amber-400 font-bold uppercase tracking-wider block">✍️ MODO DE EDIÇÃO DE HUD</span>
+          <span className="text-[10px] text-gray-300 block font-sans leading-normal">
+            Arraste os botões de skill para qualquer posição da tela. Clique nos botões S/M/L sobre cada habilidade para mudar o tamanho dos botões.
+          </span>
+          <div className="flex gap-2.5 justify-center mt-1">
+            <button
+              onClick={() => {
+                soundEngine.playButtonClick();
+                setEditingHUD(false);
+              }}
+              className="px-4 py-2 bg-emerald-900 border border-emerald-500 text-emerald-100 uppercase hover:bg-emerald-800 text-[10px] cursor-pointer"
+            >
+              SALVAR LAYOUT
+            </button>
+            <button
+              onClick={() => {
+                soundEngine.playButtonClick();
+                updateSettings({
+                  ...settings,
+                  hudLayout: undefined
+                });
+              }}
+              className="px-4 py-2 bg-black border border-gray-600 text-gray-300 uppercase hover:bg-gray-900 text-[10px] cursor-pointer"
+            >
+              RESTAURAR PADRÃO
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Records Modal */}
+      <RecordsDisplay
+        isOpen={isRecordsOpen}
+        onClose={() => setRecordsOpen(false)}
       />
 
       {/* Records Modal */}

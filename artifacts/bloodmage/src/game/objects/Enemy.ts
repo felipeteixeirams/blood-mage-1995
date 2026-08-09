@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { MonsterConfig, AIState } from '../../types/game';
 import monstersData from '../../data/monsters.json';
 import { soundEngine } from '../../utils/soundEngine';
+import { useGameStore } from '../../store/gameStore';
 
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
   public config: MonsterConfig;
@@ -28,6 +29,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private lastDodgeTime: number = 0;
   private isDodging: boolean = false;
   private dodgeVector: Phaser.Math.Vector2 = new Phaser.Math.Vector2(0, 0);
+
+  // Flee / Reinforcements
+  private fleeStartTime: number = 0;
+  private reinforcementsCalled: boolean = false;
 
   // Status Emote Icon
   private emoteSprite?: Phaser.GameObjects.Image;
@@ -79,10 +84,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.currentPatrolTarget = this.patrolP2;
 
     // Start in IDLE or PATROL state
-    this.aiState = Math.random() < 0.6 ? 'patrol' : 'idle';
-
-    // Base color tinting
-    this.applyBaseTint();
+    const hasFuryPit = useGameStore.getState().activeModifiers.includes('fury_pit');
+    if (hasFuryPit) {
+      this.aiState = 'frenzy';
+      this.setTint(0xff3333);
+    } else {
+      this.aiState = Math.random() < 0.6 ? 'patrol' : 'idle';
+      this.applyBaseTint();
+    }
   }
 
   private applyBaseTint() {
@@ -237,6 +246,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       hpRatio < (this.config.courage || 0.35)
     ) {
       this.aiState = 'flee';
+      this.fleeStartTime = time;
+      this.reinforcementsCalled = false;
       this.showEmote('icon_flee');
     }
 
@@ -396,6 +407,20 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       }
 
       case 'flee': {
+        // Check reinforcements call after 5 seconds
+        if (time >= this.fleeStartTime + 5000 && !this.reinforcementsCalled) {
+          this.reinforcementsCalled = true;
+          this.showEmote('icon_alert');
+          soundEngine.playHowl(); // distinctive howling call for help!
+
+          if (this.scene && (this.scene as any).emitSound) {
+            (this.scene as any).emitSound(this.x, this.y, 660); // 3x radius (220 * 3) sound emission
+            if ((this.scene as any).spawnFloatingText) {
+              (this.scene as any).spawnFloatingText(this.x, this.y - 12, 'CHAMOU REFORÇOS!', '#ef4444', true);
+            }
+          }
+        }
+
         // Run directly away from player
         const fleeAngle = angleToPlayer + Math.PI;
         this.facingAngle = fleeAngle;

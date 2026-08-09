@@ -1,13 +1,25 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Flame, Heart, Droplet, Zap, Shield, Sparkles, X, PlusCircle } from 'lucide-react';
+import { Flame, Heart, Droplet, Zap, Shield, Sparkles, X, PlusCircle, Lock } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import talentsData from '../data/talents.json';
-import { TalentNode } from '../types/game';
 import { soundEngine } from '../utils/soundEngine';
 
 interface TalentsModalProps {
   onClose: () => void;
+}
+
+interface ExtendedTalentNode {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: 'offense' | 'defense' | 'utility';
+  maxLevel: number;
+  costPerLevel: number;
+  statKey: string;
+  bonusPerLevel: number;
+  exclusive_with?: string[];
 }
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -16,12 +28,32 @@ const ICON_MAP: Record<string, React.ElementType> = {
   droplet: Droplet,
   zap: Zap,
   shield: Shield,
+  sparkles: Sparkles,
 };
 
 export const TalentsModal: React.FC<TalentsModalProps> = ({ onClose }) => {
   const { bloodCrystals, talentLevels, upgradeTalent } = useGameStore();
 
-  const handleUpgradeNode = (node: TalentNode) => {
+  const isExclusiveBlocked = (node: ExtendedTalentNode): boolean => {
+    if (!node.exclusive_with) return false;
+    return node.exclusive_with.some((otherId: string) => {
+      const otherLvl = talentLevels[otherId] || 0;
+      return otherLvl > 0;
+    });
+  };
+
+  const getBlockedByName = (node: ExtendedTalentNode): string => {
+    if (!node.exclusive_with) return '';
+    const otherId = node.exclusive_with[0];
+    const otherNode = (talentsData as any[]).find(t => t.id === otherId);
+    return otherNode ? otherNode.name : 'Outro Talento';
+  };
+
+  const handleUpgradeNode = (node: ExtendedTalentNode) => {
+    if (isExclusiveBlocked(node)) {
+      soundEngine.playButtonClick();
+      return;
+    }
     const currentLvl = talentLevels[node.id] || 0;
     if (currentLvl >= node.maxLevel) return;
 
@@ -39,7 +71,7 @@ export const TalentsModal: React.FC<TalentsModalProps> = ({ onClose }) => {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 pointer-events-auto"
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 pointer-events-auto select-none"
     >
       <div className="bg-[#120a0e] border-4 border-red-900 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto text-gray-100 shadow-[0_0_35px_rgba(220,38,38,0.35)]">
         {/* Header */}
@@ -72,11 +104,12 @@ export const TalentsModal: React.FC<TalentsModalProps> = ({ onClose }) => {
 
         {/* Talent Nodes Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {(talentsData as TalentNode[]).map((node) => {
+          {(talentsData as ExtendedTalentNode[]).map((node) => {
             const currentLvl = talentLevels[node.id] || 0;
             const isMax = currentLvl >= node.maxLevel;
+            const blocked = isExclusiveBlocked(node);
             const cost = node.costPerLevel * (currentLvl + 1);
-            const canAfford = bloodCrystals >= cost && !isMax;
+            const canAfford = bloodCrystals >= cost && !isMax && !blocked;
             const IconComp = ICON_MAP[node.icon] || Sparkles;
 
             return (
@@ -85,6 +118,8 @@ export const TalentsModal: React.FC<TalentsModalProps> = ({ onClose }) => {
                 className={`p-4 rounded-lg border-2 transition-all flex flex-col justify-between ${
                   isMax
                     ? 'bg-amber-950/40 border-amber-600'
+                    : blocked
+                    ? 'bg-gray-950/20 border-gray-800 opacity-50'
                     : canAfford
                     ? 'bg-red-950/30 border-red-600 hover:border-red-400'
                     : 'bg-black/60 border-gray-800 opacity-80'
@@ -110,17 +145,19 @@ export const TalentsModal: React.FC<TalentsModalProps> = ({ onClose }) => {
                 <div className="space-y-2 pt-2 border-t border-gray-800">
                   <div className="w-full bg-black/80 h-2 rounded-full overflow-hidden border border-gray-800">
                     <div
-                      className="bg-red-600 h-full transition-all duration-300"
+                      className={`h-full transition-all duration-300 ${blocked ? 'bg-gray-700' : 'bg-red-600'}`}
                       style={{ width: `${(currentLvl / node.maxLevel) * 100}%` }}
                     />
                   </div>
 
                   <button
                     onClick={() => handleUpgradeNode(node)}
-                    disabled={!canAfford || isMax}
+                    disabled={!canAfford || isMax || blocked}
                     className={`w-full py-2 px-3 rounded font-pixel text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       isMax
                         ? 'bg-amber-950/80 border border-amber-600 text-amber-300 opacity-90 cursor-default'
+                        : blocked
+                        ? 'bg-gray-900 border border-gray-850 text-gray-500 cursor-not-allowed'
                         : canAfford
                         ? 'bg-red-700 hover:bg-red-600 border border-red-500 text-white shadow-[0_0_10px_rgba(239,68,68,0.5)]'
                         : 'bg-gray-900 border border-gray-800 text-gray-600 cursor-not-allowed'
@@ -128,6 +165,10 @@ export const TalentsModal: React.FC<TalentsModalProps> = ({ onClose }) => {
                   >
                     {isMax ? (
                       'NÍVEL MÁXIMO ALCANÇADO'
+                    ) : blocked ? (
+                      <span className="flex items-center gap-1.5 text-gray-500 font-sans text-[10px] uppercase font-bold">
+                        <Lock className="w-3.5 h-3.5" /> BLOQUEADO POR {getBlockedByName(node)}
+                      </span>
                     ) : (
                       <>
                         <PlusCircle className="w-4 h-4" /> EVOLUIR ({cost} 💎)
