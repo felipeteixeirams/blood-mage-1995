@@ -6,6 +6,7 @@ import { LootLog } from './hud/LootLog';
 import { SkillsOverlay } from './hud/SkillsOverlay';
 import { ContractHUD } from './hud/ContractHUD';
 import palettesData from '../data/palettes.json';
+import { RecordsDisplay } from './hud/RecordsDisplay';
 import { useFloatingJoystick } from '../hooks/useFloatingJoystick';
 import { soundEngine } from '../utils/soundEngine';
 import { useGameStore } from '../store/gameStore';
@@ -109,6 +110,8 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
     gamepadConnected,
     activeTip,
     setActiveTip,
+    isRecordsOpen,
+    setRecordsOpen,
   } = useGameStore();
 
   const [splatters, setSplatters] = useState<BloodSplatter[]>([]);
@@ -297,6 +300,29 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
 
       {/* ── TOP RIGHT PANEL: Adaptive Minimap & Actions ── */}
       <div className="absolute top-3 right-3 flex flex-col items-end gap-2.5 z-30 pointer-events-auto">
+
+        {/* Trophy Button — Records Hall */}
+        <button
+          className="bg-[#181211]/95 border-2 border-[#e8c76a] p-2 text-[#e8c76a] hover:bg-[#2f2827] hover:border-[#ffdf9a] shadow-[2px_2px_0px_#000000] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center"
+          onClick={() => { soundEngine.playButtonClick(); setPauseOpen(true); setRecordsOpen(true); setGameState('paused'); }}
+          title="Salão dos Recordes"
+        >
+          {/* Pixel-art trophy icon */}
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Base */}
+            <rect x="2" y="13" width="12" height="1" fill="currentColor" />
+            {/* Stem */}
+            <rect x="7" y="9" width="2" height="4" fill="currentColor" />
+            {/* Cup body */}
+            <rect x="4" y="5" width="8" height="4" fill="currentColor" opacity="0.8" />
+            {/* Cup shine */}
+            <rect x="5" y="6" width="1" height="2" fill="currentColor" opacity="0.4" />
+            {/* Left handle */}
+            <rect x="2" y="6" width="2" height="3" fill="currentColor" opacity="0.6" />
+            {/* Right handle */}
+            <rect x="12" y="6" width="2" height="3" fill="currentColor" opacity="0.6" />
+          </svg>
+        </button>
 
         {/* Quick action buttons column */}
         <div className="flex gap-2">
@@ -802,6 +828,12 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
           </div>
         </div>
       )}
+
+      {/* Records Modal */}
+      <RecordsDisplay
+        isOpen={isRecordsOpen}
+        onClose={() => setRecordsOpen(false)}
+      />
     </div>
   );
 };

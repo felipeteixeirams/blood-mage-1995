@@ -8,3 +8,8 @@
   ➜  Local:   http://localhost:3000/
   ➜  Network: http://192.168.0.2:3000/
 1:13:13 AM [vite] (client) hmr update /src/components/MainMenu.tsx, /src/index.css
+2:30:49 AM [vite] (client) hmr update /src/components/GameplayHUD.tsx, /src/index.css
+2:30:49 AM [vite] (client) hmr update /src/game/PhaserGame.tsx, /src/index.css
+2:30:49 AM [vite] (client) hmr update /src/App.tsx, /src/components/MainMenu.tsx, /src/components/TalentsModal.tsx, /src/components/SettingsModal.tsx, /src/components/LevelUpModal.tsx, /src/components/BestiaryModal.tsx, /src/components/GameOverModal.tsx, /src/components/HighScoresModal.tsx, /src/components/GameplayHUD.tsx, /src/game/PhaserGame.tsx, /src/components/hud/SkillsOverlay.tsx, /src/components/hud/SkillPresetEditor.tsx, /src/components/InventoryModal.tsx, /src/components/hud/GameStats.tsx, /src/components/hud/ContractHUD.tsx, /src/components/hud/PlayerStatus.tsx, /src/index.css
+2:53:50 AM [vite] (client) hmr update /src/components/GameplayHUD.tsx, /src/index.css
+2:57:44 AM [vite] (client) hmr update /src/App.tsx, /src/components/MainMenu.tsx, /src/components/TalentsModal.tsx, /src/components/SettingsModal.tsx, /src/components/LevelUpModal.tsx, /src/components/BestiaryModal.tsx, /src/components/GameOverModal.tsx, /src/components/HighScoresModal.tsx, /src/components/GameplayHUD.tsx, /src/game/PhaserGame.tsx, /src/components/hud/SkillsOverlay.tsx, /src/components/hud/SkillPresetEditor.tsx, /src/components/InventoryModal.tsx, /src/components/hud/GameStats.tsx, /src/components/hud/ContractHUD.tsx, /src/components/hud/PlayerStatus.tsx, /src/index.css

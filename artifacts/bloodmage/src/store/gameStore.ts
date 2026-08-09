@@ -56,6 +56,8 @@ interface GameStore {
   triggerOnboardingEvent: (key: 'firstKillDone' | 'firstLevelUpDone' | 'firstEquipDone' | 'firstBossSeen' | 'firstSkillCast', tipText: string) => void;
   activeTip: string | null;
   setActiveTip: (tip: string | null) => void;
+  isRecordsOpen: boolean;
+  setRecordsOpen: (isOpen: boolean) => void;
 
   // Metagame Currency & Talents
   bloodCrystals: number;
@@ -193,6 +195,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
     set({ activeContracts: updated });
   },
+  isRecordsOpen: false,
+  setRecordsOpen: (isOpen) => set({ isRecordsOpen: isOpen }),
 
   bloodCrystals: loadBloodCrystals(),
   addBloodCrystals: (amount) => {
