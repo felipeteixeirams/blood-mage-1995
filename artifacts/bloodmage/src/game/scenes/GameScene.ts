@@ -12,6 +12,8 @@ import spellsData from '../../data/spells.json';
 import { soundEngine } from '../../utils/soundEngine';
 import { useGameStore } from '../../store/gameStore';
 import { telemetry } from '../../utils/telemetry';
+import { CombatFeel } from '../systems/CombatFeel';
+import { ContractSystem } from '../systems/ContractSystem';
 
 export interface GameSceneCallbacks {
   onStatsUpdate: (stats: PlayerStats) => void;
@@ -63,6 +65,18 @@ export class GameScene extends Phaser.Scene {
 
   // Noise Emission Timer
   private lastFootstepNoiseTime: number = 0;
+
+  // Spawn queue for density throttling
+  private pendingEnemySpawns: { x: number; y: number; monsterId: string; room: RoomData }[] = [];
+
+  // Drag-to-Aim States
+  private activeDragAimSpellId: string | null = null;
+  private dragAimVector = new Phaser.Math.Vector2(0, 0);
+  private dragAimGraphics!: Phaser.GameObjects.Graphics;
+  private threatIndicatorGraphics!: Phaser.GameObjects.Graphics;
+
+  // Gamepad States
+  private lastGamepadButtonStates: boolean[] = [];
 
   // Bone shield visuals
   private boneShieldVisuals: Phaser.GameObjects.Sprite[] = [];
@@ -150,7 +164,9 @@ export class GameScene extends Phaser.Scene {
     this.buildDungeonMap(mapW, mapH, this.currentFloorDepth);
 
     // --- VISUAL: Darkness overlay + Lighting ---
-    this.darknessOverlay = this.add.graphics().setDepth(1990);
+    this.dragAimGraphics = this.add.graphics().setDepth(2050);
+    this.threatIndicatorGraphics = this.add.graphics().setDepth(2100).setScrollFactor(0);
+    this.darknessOverlay = this.add.graphics().setDepth(1990).setScrollFactor(0);
     this.darknessOverlay.fillStyle(0x050510, 0.35);
     this.darknessOverlay.fillRect(0, 0, mapW, mapH);
 
@@ -235,7 +251,7 @@ export class GameScene extends Phaser.Scene {
 
     // 4. Keyboard Controls
     if (this.input.keyboard) {
-      this.keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,Q,E,SPACE,R,SHIFT,F,ONE,TWO,THREE,FOUR,FIVE,SIX') as Record<string, Phaser.Input.Keyboard.Key>;
+      this.keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,Q,E,SPACE,R,SHIFT,F,C,ONE,TWO,THREE,FOUR,FIVE,SIX') as Record<string, Phaser.Input.Keyboard.Key>;
     }
 
     // Mouse Aim
@@ -289,12 +305,37 @@ export class GameScene extends Phaser.Scene {
     // Listen for Blood Nova event from UI
     const handleNovaEvent = () => this.triggerBloodNova();
     window.addEventListener('trigger-blood-nova', handleNovaEvent);
+
+    // Drag-to-Aim Event Listeners
+    this.handleDragAimStart = this.handleDragAimStart.bind(this);
+    this.handleDragAimMove = this.handleDragAimMove.bind(this);
+    this.handleDragAimEnd = this.handleDragAimEnd.bind(this);
+
+    window.addEventListener('drag-aim-start', this.handleDragAimStart as any);
+    window.addEventListener('drag-aim-move', this.handleDragAimMove as any);
+    window.addEventListener('drag-aim-end', this.handleDragAimEnd as any);
+
+    const handleCosmeticTint = () => {
+      if (this.player) {
+        this.player.applyCosmeticTint();
+      }
+    };
+    window.addEventListener('update-cosmetic-tint', handleCosmeticTint);
+
     this.events.once('shutdown', () => {
       window.removeEventListener('trigger-blood-nova', handleNovaEvent);
+      window.removeEventListener('drag-aim-start', this.handleDragAimStart as any);
+      window.removeEventListener('drag-aim-move', this.handleDragAimMove as any);
+      window.removeEventListener('drag-aim-end', this.handleDragAimEnd as any);
+      window.removeEventListener('update-cosmetic-tint', handleCosmeticTint);
       if (this.flickerTimer) this.flickerTimer.destroy();
     });
     this.events.once('destroy', () => {
       window.removeEventListener('trigger-blood-nova', handleNovaEvent);
+      window.removeEventListener('drag-aim-start', this.handleDragAimStart as any);
+      window.removeEventListener('drag-aim-move', this.handleDragAimMove as any);
+      window.removeEventListener('drag-aim-end', this.handleDragAimEnd as any);
+      window.removeEventListener('update-cosmetic-tint', handleCosmeticTint);
       if (this.flickerTimer) this.flickerTimer.destroy();
     });
 
@@ -345,10 +386,41 @@ export class GameScene extends Phaser.Scene {
     soundEngine.startGothicAmbientBGM();
   }
 
+  private getActiveEnemyCap(): number {
+    const depth = this.currentFloorDepth;
+    if (depth >= 5) return 30;
+    if (depth === 4) return 24;
+    return 18;
+  }
+
+  private checkAndSpawnPendingEnemies() {
+    const cap = this.getActiveEnemyCap();
+    while (this.enemiesGroup.countActive(true) < cap && this.pendingEnemySpawns.length > 0) {
+      const pending = this.pendingEnemySpawns.shift();
+      if (pending) {
+        const enemy = new Enemy(this, pending.x, pending.y, pending.monsterId);
+        // Set room patrol boundaries
+        enemy.patrolP1 = { x: pending.room.x + 40, y: pending.room.y + 40 };
+        enemy.patrolP2 = { x: pending.room.x + pending.room.width - 40, y: pending.room.y + pending.room.height - 40 };
+
+        this.enemiesGroup.add(enemy);
+        this.depthGroup.add(enemy);
+      }
+    }
+  }
+
   /**
    * Builds procedural 3x3 interconnected Dungeon Map with Rooms, Corridors, Walls, Chests & Enemies
    */
   private buildDungeonMap(mapW: number, mapH: number, floorDepth: number) {
+    // Clear pending spawns
+    this.pendingEnemySpawns = [];
+
+    // Initialize contracts on first floor
+    if (floorDepth === 1) {
+      ContractSystem.initRunContracts();
+    }
+
     // Determine Biome based on Floor Depth
     let biome: BiomeType = 'fosso_chagas';
     if (floorDepth >= 5) {
@@ -391,32 +463,41 @@ export class GameScene extends Phaser.Scene {
         this.depthGroup.add(boss);
         this.totalFloorMonsters++;
 
-        // Add 2 Elite Bodyguards
-        for (let i = 0; i < 2; i++) {
-          const guard = new Enemy(this, room.centerX + (i === 0 ? -90 : 90), room.centerY + 50, 'cultist_acolyte');
+        if (bossId === 'necro_lord_boss' || bossId.includes('boss')) {
+          useGameStore.getState().triggerOnboardingEvent('firstBossSeen', 'CUIDADO: O Senhor das Chagas despertou! Ele entrará em fúria se ferido!');
+        }
+
+        // Add Elite Bodyguards scaled by blood_tide
+        const hasBloodTide = useGameStore.getState().activeModifiers.includes('blood_tide');
+        const spawnMultiplier = hasBloodTide ? 1.4 : 1.0;
+        const bodyguardCount = Math.round(2 * spawnMultiplier);
+        for (let i = 0; i < bodyguardCount; i++) {
+          const offset = i === 0 ? -90 : (i === 1 ? 90 : (i === 2 ? -140 : 140));
+          const guard = new Enemy(this, room.centerX + offset, room.centerY + 50, 'cultist_acolyte');
           this.enemiesGroup.add(guard);
           this.depthGroup.add(guard);
           this.totalFloorMonsters++;
         }
       } else {
-        // Standard Chamber: 2 to 4 enemies in patrol/guard positions
-        const monsterCount = 2 + Math.floor(Math.random() * 2) + Math.min(2, floorDepth - 1);
+        // Standard Chamber: 2 to 4 enemies in patrol/guard positions scaled by blood_tide
+        const hasBloodTide = useGameStore.getState().activeModifiers.includes('blood_tide');
+        const spawnMultiplier = hasBloodTide ? 1.4 : 1.0;
+        let monsterCount = 2 + Math.floor(Math.random() * 2) + Math.min(2, floorDepth - 1);
+        monsterCount = Math.round(monsterCount * spawnMultiplier);
+
         for (let i = 0; i < monsterCount; i++) {
           const monsterId = Phaser.Utils.Array.GetRandom(currentWave.monsterPool);
           const spawnX = room.x + 50 + Math.random() * (room.width - 100);
           const spawnY = room.y + 50 + Math.random() * (room.height - 100);
 
-          const enemy = new Enemy(this, spawnX, spawnY, monsterId);
-          // Set room patrol boundaries
-          enemy.patrolP1 = { x: room.x + 40, y: room.y + 40 };
-          enemy.patrolP2 = { x: room.x + room.width - 40, y: room.y + room.height - 40 };
-
-          this.enemiesGroup.add(enemy);
-          this.depthGroup.add(enemy);
+          this.pendingEnemySpawns.push({ x: spawnX, y: spawnY, monsterId, room });
           this.totalFloorMonsters++;
         }
       }
     });
+
+    // Initial spawn push up to cap
+    this.checkAndSpawnPendingEnemies();
 
     // Floor Announcement Banner
     this.showFloorBanner(floorDepth);
@@ -511,24 +592,41 @@ export class GameScene extends Phaser.Scene {
   public triggerSkill(skillKey: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam') {
     if (this.isPaused) return;
 
+    let success = false;
     if (skillKey === 'nova' && this.player.castNova()) {
       this.executeNovaEffect();
       this.emitSound(this.player.x, this.player.y, 500); // Massive spell noise!
+      ContractSystem.onSpellCasted('hellfire_nova', this);
+      success = true;
     } else if (skillKey === 'syphon' && this.player.castSyphon()) {
       this.executeSyphonEffect();
       this.emitSound(this.player.x, this.player.y, 420);
+      ContractSystem.onSpellCasted('syphon_soul', this);
+      success = true;
     } else if (skillKey === 'bone_shield' && this.player.castBoneShield()) {
       this.executeBoneShieldEffect();
       this.emitSound(this.player.x, this.player.y, 350);
+      ContractSystem.onSpellCasted('bone_shield', this);
+      success = true;
     } else if (skillKey === 'crimson_scythe' && this.player.castCrimsonScythe()) {
       this.executeCrimsonScytheEffect();
       this.emitSound(this.player.x, this.player.y, 450);
+      ContractSystem.onSpellCasted('crimson_scythe', this);
+      success = true;
     } else if (skillKey === 'blood_ritual_circle' && this.player.castRitualCircle()) {
       this.executeRitualCircleEffect();
       this.emitSound(this.player.x, this.player.y, 400);
+      ContractSystem.onSpellCasted('blood_ritual_circle', this);
+      success = true;
     } else if (skillKey === 'hemomancy_beam' && this.player.castHemomancyBeam()) {
       this.executeHemomancyBeamEffect();
       this.emitSound(this.player.x, this.player.y, 520);
+      ContractSystem.onSpellCasted('hemomancy_beam', this);
+      success = true;
+    }
+
+    if (success) {
+      useGameStore.getState().triggerOnboardingEvent('firstSkillCast', 'DICA: Acompanhe o indicador de cooldown piscante sobre cada habilidade!');
     }
   }
 
@@ -568,6 +666,13 @@ export class GameScene extends Phaser.Scene {
   update(time: number, delta: number) {
     if (this.isPaused) return;
 
+    // Process gamepad inputs if connected
+    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+    const gp = gamepads.find(g => g !== null);
+    if (gp) {
+      this.handleGamepadInput(gp);
+    }
+
     // --- Fog / mist slow drift ---
     if (this.fogOverlay?.active) {
       this.fogOverlay.tilePositionX += 0.12;
@@ -604,7 +709,10 @@ export class GameScene extends Phaser.Scene {
       if (Phaser.Input.Keyboard.JustDown(this.keys.R) || Phaser.Input.Keyboard.JustDown(this.keys.FOUR)) {
         this.triggerSkill('crimson_scythe');
       }
-      if (Phaser.Input.Keyboard.JustDown(this.keys.SHIFT) || Phaser.Input.Keyboard.JustDown(this.keys.FIVE)) {
+      if (Phaser.Input.Keyboard.JustDown(this.keys.SHIFT)) {
+        this.player.triggerDash();
+      }
+      if (Phaser.Input.Keyboard.JustDown(this.keys.C) || Phaser.Input.Keyboard.JustDown(this.keys.FIVE)) {
         this.triggerSkill('blood_ritual_circle');
       }
       if (Phaser.Input.Keyboard.JustDown(this.keys.F) || Phaser.Input.Keyboard.JustDown(this.keys.SIX)) {
@@ -726,6 +834,299 @@ export class GameScene extends Phaser.Scene {
         soundEngine.getActiveVoices()
       );
     }
+
+    // Clear and redraw Drag-to-Aim previews
+    if (this.dragAimGraphics) {
+      this.dragAimGraphics.clear();
+
+      if (this.activeDragAimSpellId) {
+        const aimAngle = this.player.getAimAngle();
+        const startX = this.player.x;
+        const startY = this.player.y;
+
+        this.dragAimGraphics.lineStyle(2, 0xef4444, 0.85);
+        this.dragAimGraphics.fillStyle(0xef4444, 0.22);
+
+        if (this.activeDragAimSpellId === 'crimson_scythe') {
+          // Arc of 120° in aim direction (radius 95px)
+          const radius = 95;
+          const startRad = aimAngle - Math.PI / 3;
+          const endRad = aimAngle + Math.PI / 3;
+
+          this.dragAimGraphics.beginPath();
+          this.dragAimGraphics.moveTo(startX, startY);
+          this.dragAimGraphics.arc(startX, startY, radius, startRad, endRad, false);
+          this.dragAimGraphics.closePath();
+          this.dragAimGraphics.strokePath();
+          this.dragAimGraphics.fillPath();
+        } else if (this.activeDragAimSpellId === 'hemomancy_beam') {
+          // Beam preview of length 480px and width 16px
+          const beamLength = 480;
+          const width = 16;
+
+          this.dragAimGraphics.beginPath();
+          const dx = Math.cos(aimAngle);
+          const dy = Math.sin(aimAngle);
+          const px = -dy * (width / 2);
+          const py = dx * (width / 2);
+
+          this.dragAimGraphics.moveTo(startX + px, startY + py);
+          this.dragAimGraphics.lineTo(startX - px, startY - py);
+          this.dragAimGraphics.lineTo(startX - px + dx * beamLength, startY - py + dy * beamLength);
+          this.dragAimGraphics.lineTo(startX + px + dx * beamLength, startY + py + dy * beamLength);
+          this.dragAimGraphics.closePath();
+          this.dragAimGraphics.strokePath();
+          this.dragAimGraphics.fillPath();
+        } else if (this.activeDragAimSpellId === 'blood_ritual_circle') {
+          // Circle target at player.x + aimVec * 120, radius 80px
+          const aimVec = this.player.getAimVector();
+          const targetX = Phaser.Math.Clamp(this.player.x + aimVec.x * 120, 40, this.physics.world.bounds.width - 40);
+          const targetY = Phaser.Math.Clamp(this.player.y + aimVec.y * 120, 40, this.physics.world.bounds.height - 40);
+
+          this.dragAimGraphics.strokeCircle(targetX, targetY, 80);
+          this.dragAimGraphics.fillCircle(targetX, targetY, 80);
+
+          this.dragAimGraphics.lineStyle(1.5, 0xef4444, 0.4);
+          this.dragAimGraphics.lineBetween(startX, startY, targetX, targetY);
+        } else if (this.activeDragAimSpellId === 'hellfire_nova') {
+          // Circle around player with radius 200px
+          this.dragAimGraphics.strokeCircle(startX, startY, 200);
+          this.dragAimGraphics.fillCircle(startX, startY, 200);
+        }
+      }
+    }
+
+    // Offscreen Threat Indicator (Silent Hill-style edge chevrons)
+    if (this.threatIndicatorGraphics) {
+      this.threatIndicatorGraphics.clear();
+
+      const viewW = this.cameras.main.width || window.innerWidth;
+      const viewH = this.cameras.main.height || window.innerHeight;
+      const cx = viewW / 2;
+      const cy = viewH / 2;
+
+      let closestOffscreenEnemy: Enemy | null = null;
+      let minOffscreenDistance = Infinity;
+      let alertCount = 0;
+
+      this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
+        const enemy = enemyObj as Enemy;
+        if (enemy.active) {
+          const isThreat = enemy.aiState === 'combat' || enemy.aiState === 'frenzy' || enemy.aiState === 'investigating';
+          if (isThreat) {
+            if (enemy.aiState === 'combat' || enemy.aiState === 'frenzy') {
+              alertCount++;
+            }
+
+            // Check if offscreen
+            const screenX = (enemy.x - this.cameras.main.scrollX) * this.cameras.main.zoom;
+            const screenY = (enemy.y - this.cameras.main.scrollY) * this.cameras.main.zoom;
+            const isOffscreen = screenX < 0 || screenX > viewW || screenY < 0 || screenY > viewH;
+
+            if (isOffscreen) {
+              const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
+              if (dist < minOffscreenDistance) {
+                minOffscreenDistance = dist;
+                closestOffscreenEnemy = enemy;
+              }
+            }
+          }
+        }
+      });
+
+      if (closestOffscreenEnemy) {
+        const enemy = closestOffscreenEnemy as Enemy;
+        const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, enemy.x, enemy.y);
+
+        // Project onto border
+        const edgeX = cx + Math.cos(angle) * (cx - 25);
+        const edgeY = cy + Math.sin(angle) * (cy - 25);
+
+        const indicatorX = Phaser.Math.Clamp(edgeX, 25, viewW - 25);
+        const indicatorY = Phaser.Math.Clamp(edgeY, 25, viewH - 25);
+
+        const pulse = 0.4 + 0.3 * Math.sin(time * 0.008);
+        const finalAlpha = Phaser.Math.Clamp(pulse + (alertCount * 0.03), 0.3, 0.95);
+        const color = (enemy.aiState === 'combat' || enemy.aiState === 'frenzy') ? 0xef4444 : 0xf59e0b;
+
+        this.threatIndicatorGraphics.lineStyle(2, color, finalAlpha);
+        this.threatIndicatorGraphics.fillStyle(color, finalAlpha * 0.4);
+
+        const size = 16;
+        const px = Math.cos(angle) * size;
+        const py = Math.sin(angle) * size;
+        const tx = -Math.sin(angle) * (size * 0.6);
+        const ty = Math.cos(angle) * (size * 0.6);
+
+        this.threatIndicatorGraphics.beginPath();
+        this.threatIndicatorGraphics.moveTo(indicatorX + px, indicatorY + py);
+        this.threatIndicatorGraphics.lineTo(indicatorX - px + tx, indicatorY - py + ty);
+        this.threatIndicatorGraphics.lineTo(indicatorX - px - tx, indicatorY - py - ty);
+        this.threatIndicatorGraphics.closePath();
+        this.threatIndicatorGraphics.fillPath();
+        this.threatIndicatorGraphics.strokePath();
+
+        // 4.2 — Distorção de Áudio Direcional (Silent Hill Radio Static)
+        const dx = enemy.x - this.player.x;
+        const dy = enemy.y - this.player.y;
+        const dist = Math.hypot(dx, dy);
+        const relativeX = dist > 0 ? dx / dist : 0;
+        const isCombatThreat = enemy.aiState === 'combat' || enemy.aiState === 'frenzy';
+        soundEngine.updateSpatialThreat(relativeX, 0, isCombatThreat);
+      } else {
+        soundEngine.updateSpatialThreat(0, 0, false);
+      }
+
+      // 4.3 & 4.4 — Vinheta Pulsante & Iluminação Dinâmica (Blood Aura)
+      if (this.darknessOverlay) {
+        this.darknessOverlay.clear();
+
+        const isBoss = this.isBossActive();
+        const baseColor = (alertCount > 10 || isBoss) ? 0x2d0208 : 0x050510;
+        const maxOverlayAlpha = (alertCount > 10 || isBoss)
+          ? (0.55 + 0.25 * Math.sin(time * 0.012)) // Rapid high danger pulse
+          : (alertCount > 3 ? (0.45 + 0.1 * Math.sin(time * 0.003)) : 0.35); // Slow or static pulse
+
+        const playerHpRatio = this.player.stats.hp / this.player.stats.maxHp;
+        const targetRadius = playerHpRatio < 0.3 ? 140 : 200;
+
+        // Draw concentric rings from center to create smooth radial light hole
+        const numRings = 10;
+        for (let r = 0; r < numRings; r++) {
+          const innerRadius = (r / numRings) * targetRadius;
+          const outerRadius = ((r + 1) / numRings) * targetRadius;
+          const ringAlpha = (r / numRings) * maxOverlayAlpha;
+
+          this.darknessOverlay.fillStyle(baseColor, ringAlpha);
+          this.darknessOverlay.fillCircle(cx, cy, outerRadius);
+        }
+
+        // Fill rest of the screen
+        this.darknessOverlay.lineStyle(viewW, baseColor, maxOverlayAlpha);
+        this.darknessOverlay.strokeCircle(cx, cy, targetRadius + viewW / 2);
+      }
+    }
+  }
+
+  private isBossActive(): boolean {
+    return this.enemiesGroup.getChildren().some((enemyObj: any) => {
+      const enemy = enemyObj as Enemy;
+      return enemy.active && enemy.config.behavior === 'boss';
+    });
+  }
+
+  private handleDragAimStart(e: CustomEvent<{ spellId: string }>) {
+    this.activeDragAimSpellId = e.detail.spellId;
+    this.dragAimVector.set(0, 0);
+  }
+
+  private handleDragAimMove(e: CustomEvent<{ spellId: string, dx: number, dy: number }>) {
+    if (this.activeDragAimSpellId !== e.detail.spellId) return;
+    this.dragAimVector.set(e.detail.dx, e.detail.dy);
+
+    // Rotate player to face dragging direction
+    if (e.detail.dx !== 0 || e.detail.dy !== 0) {
+      this.player.setAimInput(e.detail.dx, e.detail.dy);
+    }
+  }
+
+  private handleDragAimEnd(e: CustomEvent<{ spellId: string, dx: number, dy: number, isDrag: boolean }>) {
+    if (this.activeDragAimSpellId !== e.detail.spellId) return;
+
+    const wasDrag = e.detail.isDrag;
+    this.activeDragAimSpellId = null;
+    this.dragAimGraphics.clear();
+
+    if (wasDrag) {
+      // Cast the skill in the dragged direction
+      if (e.detail.dx !== 0 || e.detail.dy !== 0) {
+        this.player.setAimInput(e.detail.dx, e.detail.dy);
+      }
+
+      const skillKey = this.getSkillKeyFromSpellId(e.detail.spellId);
+      if (skillKey) {
+        this.triggerSkill(skillKey);
+      }
+    }
+  }
+
+  private getSkillKeyFromSpellId(spellId: string): 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | null {
+    switch (spellId) {
+      case 'hellfire_nova': return 'nova';
+      case 'syphon_soul': return 'syphon';
+      case 'bone_shield': return 'bone_shield';
+      case 'crimson_scythe': return 'crimson_scythe';
+      case 'blood_ritual_circle': return 'blood_ritual_circle';
+      case 'hemomancy_beam': return 'hemomancy_beam';
+      default: return null;
+    }
+  }
+
+  private handleGamepadInput(gp: Gamepad) {
+    if (this.isPaused) return;
+
+    // 1. Move Inputs (Left Stick: axes 0 and 1)
+    let mx = gp.axes[0];
+    let my = gp.axes[1];
+    // Apply circular deadzone of 0.15
+    const moveLen = Math.hypot(mx, my);
+    if (moveLen < 0.15) {
+      mx = 0;
+      my = 0;
+    } else {
+      mx /= moveLen;
+      my /= moveLen;
+    }
+    this.player.setMoveInput(mx, my);
+
+    // 2. Aim Inputs (Right Stick: axes 2 and 3)
+    let ax = gp.axes[2];
+    let ay = gp.axes[3];
+    const aimLen = Math.hypot(ax, ay);
+    if (aimLen >= 0.15) {
+      this.player.setAimInput(ax, ay);
+    }
+
+    // 3. Button presses (just-down edge detection)
+    const currentStates = gp.buttons.map(b => b.pressed);
+
+    const justPressed = (idx: number) => {
+      const prev = this.lastGamepadButtonStates[idx] || false;
+      const curr = currentStates[idx] || false;
+      return curr && !prev;
+    };
+
+    // Button A (0) -> Dash
+    if (justPressed(0)) {
+      this.player.triggerDash();
+    }
+    // Button X (2) -> hellfire_nova
+    if (justPressed(2)) {
+      this.triggerSkill('nova');
+    }
+    // Button Y (3) -> syphon_soul
+    if (justPressed(3)) {
+      this.triggerSkill('syphon');
+    }
+    // Button B (1) -> bone_shield
+    if (justPressed(1)) {
+      this.triggerSkill('bone_shield');
+    }
+    // Shoulder Left (4) -> crimson_scythe
+    if (justPressed(4)) {
+      this.triggerSkill('crimson_scythe');
+    }
+    // Shoulder Right (5) -> blood_ritual_circle
+    if (justPressed(5)) {
+      this.triggerSkill('blood_ritual_circle');
+    }
+    // Trigger Right (7) -> hemomancy_beam
+    if (justPressed(7)) {
+      this.triggerSkill('hemomancy_beam');
+    }
+
+    // Save state
+    this.lastGamepadButtonStates = currentStates;
   }
 
   private firePlayerBloodBolt() {
@@ -776,14 +1177,18 @@ export class GameScene extends Phaser.Scene {
           if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 15);
           const novaDmgCfg = (spellsData as Record<string, SpellConfig>)['hellfire_nova'].baseDamage;
           const novaDamage = Math.round(novaDmgCfg * this.player.stats.damageMultiplier);
+
+          const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
           const isDead = enemy.takeDamage(novaDamage);
+          CombatFeel.handleHitImpact(this, novaDamage, false, true, enemy.hp / enemy.maxHp);
+
           this.spawnFloatingText(enemy.x, enemy.y, `${novaDamage}!`, '#f97316', true);
           const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, enemy.x, enemy.y);
           enemy.x += Math.cos(angle) * 40;
           enemy.y += Math.sin(angle) * 40;
 
           if (isDead) {
-            this.handleEnemyDeath(enemy);
+            this.handleEnemyDeath(enemy, 'hellfire_nova', wasLowHp);
           }
         }
       }
@@ -808,11 +1213,15 @@ export class GameScene extends Phaser.Scene {
           if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 8);
           const syphonDmgCfg = (spellsData as Record<string, SpellConfig>)['syphon_soul'].baseDamage;
           const syphonDmg = Math.round(syphonDmgCfg * this.player.stats.damageMultiplier);
+
+          const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
           const isDead = enemy.takeDamage(syphonDmg);
+          CombatFeel.handleHitImpact(this, syphonDmg, false, true, enemy.hp / enemy.maxHp);
+
           this.spawnFloatingText(enemy.x, enemy.y, syphonDmg.toString(), '#a855f7', false);
           totalStolenHp += 8;
           if (isDead) {
-            this.handleEnemyDeath(enemy);
+            this.handleEnemyDeath(enemy, 'syphon_soul', wasLowHp);
           }
         }
       }
@@ -851,8 +1260,11 @@ export class GameScene extends Phaser.Scene {
             if (enemy.active) {
               const dist = Phaser.Math.Distance.Between(bone.x, bone.y, enemy.x, enemy.y);
               if (dist < 25) {
-                const isDead = enemy.takeDamage(12 * this.player.stats.damageMultiplier);
-                if (isDead) this.handleEnemyDeath(enemy);
+                const boneDmg = Math.round(12 * this.player.stats.damageMultiplier);
+                const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
+                const isDead = enemy.takeDamage(boneDmg);
+                CombatFeel.handleHitImpact(this, boneDmg, false, false, enemy.hp / enemy.maxHp);
+                if (isDead) this.handleEnemyDeath(enemy, 'bone_shield', wasLowHp);
               }
             }
           });
@@ -916,12 +1328,14 @@ export class GameScene extends Phaser.Scene {
           const enemyAngle = Phaser.Math.Angle.Between(this.player.x, this.player.y, enemy.x, enemy.y);
           const angleDiff = Phaser.Math.Angle.Wrap(enemyAngle - baseAngle);
           if (Math.abs(angleDiff) <= Math.PI / 2.5) {
+            const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
             const isDead = enemy.takeDamage(scytheDmg);
+            CombatFeel.handleHitImpact(this, scytheDmg, false, true, enemy.hp / enemy.maxHp);
             this.spawnFloatingText(enemy.x, enemy.y, `${scytheDmg}!`, '#dc2626', true);
             // Knockback
             enemy.x += Math.cos(enemyAngle) * 35;
             enemy.y += Math.sin(enemyAngle) * 35;
-            if (isDead) this.handleEnemyDeath(enemy);
+            if (isDead) this.handleEnemyDeath(enemy, 'crimson_scythe', wasLowHp);
           }
         }
       }
@@ -963,11 +1377,13 @@ export class GameScene extends Phaser.Scene {
 
               // Tick damage
               const tickDmg = Math.round(10 * this.player.stats.damageMultiplier);
+              const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
               const isDead = enemy.takeDamage(tickDmg);
+              CombatFeel.handleHitImpact(this, tickDmg, false, true, enemy.hp / enemy.maxHp);
               if (ticks % 2 === 0) {
                 this.spawnFloatingText(enemy.x, enemy.y, `${tickDmg}`, '#e11d48', false);
               }
-              if (isDead) this.handleEnemyDeath(enemy);
+              if (isDead) this.handleEnemyDeath(enemy, 'blood_ritual_circle', wasLowHp);
             }
           }
         });
@@ -1031,9 +1447,11 @@ export class GameScene extends Phaser.Scene {
         const enemyCircle = new Phaser.Geom.Circle(enemy.x, enemy.y, 22);
         if (Phaser.Geom.Intersects.LineToCircle(beamLine, enemyCircle)) {
           if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 10);
+          const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
           const isDead = enemy.takeDamage(beamDmg);
+          CombatFeel.handleHitImpact(this, beamDmg, false, true, enemy.hp / enemy.maxHp);
           this.spawnFloatingText(enemy.x, enemy.y, `${beamDmg}!`, '#f43f5e', true);
-          if (isDead) this.handleEnemyDeath(enemy);
+          if (isDead) this.handleEnemyDeath(enemy, 'hemomancy_beam', wasLowHp);
         }
       }
     });
@@ -1064,6 +1482,7 @@ export class GameScene extends Phaser.Scene {
     if (!chest.active) return;
 
     soundEngine.playChestOpen();
+    ContractSystem.onChestOpened(this);
 
     // Chest: guaranteed equipment loot + blood crystals (no XP/HP drops)
     // Grant some XP directly
@@ -1105,7 +1524,9 @@ export class GameScene extends Phaser.Scene {
     const isCrit = Math.random() < 0.15;
     const finalDamage = isCrit ? proj.damage * 1.75 : proj.damage;
 
+    const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
     const isDead = enemy.takeDamage(finalDamage);
+    CombatFeel.handleHitImpact(this, finalDamage, isCrit, false, enemy.hp / enemy.maxHp);
 
     // Floating damage numbers
     const dmgText = Math.round(finalDamage).toString();
@@ -1119,19 +1540,25 @@ export class GameScene extends Phaser.Scene {
     }
 
     if (isDead) {
-      this.handleEnemyDeath(enemy);
+      this.handleEnemyDeath(enemy, 'blood_bolt', wasLowHp);
     }
   }
 
   private playerHitByEnemy(damage: number) {
     const isDead = this.player.takeDamage(damage);
+    ContractSystem.onPlayerDamaged();
     
     // Floating damage number on player
     this.spawnFloatingText(this.player.x, this.player.y, `-${Math.round(damage)}`, '#ef4444', true);
 
     // Juice: Screen Shake and Red Flash on damage
-    this.cameras.main.shake(150, 0.015);
-    this.cameras.main.flash(100, 150, 0, 0, false);
+    const settings = useGameStore.getState().settings;
+    if (settings.screenShakeEnabled !== false) {
+      this.cameras.main.shake(150, 0.015);
+    }
+    if (settings.flashesEnabled !== false) {
+      this.cameras.main.flash(100, 150, 0, 0, false);
+    }
 
     if (isDead) {
       this.triggerGameOver();
@@ -1153,12 +1580,69 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private handleEnemyDeath(enemy: Enemy) {
+  private spawnProceduralGore(enemy: Enemy) {
+    const numFrags = enemy.config.executionFragments || 3;
+    const impulse = enemy.config.executionImpulse || 180;
+    const bloodScale = enemy.config.executionBloodScale || 3.0;
+
+    const w = enemy.width;
+    const h = enemy.height;
+    const stripHeight = h / numFrags;
+
+    CombatFeel.triggerHitStop(this, 140);
+    CombatFeel.triggerVibration('execution');
+    soundEngine.playExecutionGore();
+
+    if (this.bloodEmitter) {
+      this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 25 * bloodScale);
+    }
+
+    for (let i = 0; i < numFrags; i++) {
+      const cropX = 0;
+      const cropY = i * stripHeight;
+      const cropW = w;
+      const cropH = stripHeight;
+
+      const fragX = enemy.x;
+      const fragY = enemy.y - (h / 2) + (i * stripHeight) + (stripHeight / 2);
+
+      const frag = this.physics.add.image(fragX, fragY, enemy.texture.key);
+      frag.setCrop(cropX, cropY, cropW, cropH);
+      frag.setScale(enemy.scaleX, enemy.scaleY);
+      if (enemy.isTinted) {
+        frag.setTint(enemy.tintTopLeft);
+      }
+
+      const body = frag.body as Phaser.Physics.Arcade.Body;
+      if (body) {
+        body.setGravityY(400);
+        body.setCollideWorldBounds(true);
+
+        const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.5;
+        const speed = impulse * (0.8 + Math.random() * 0.4);
+        body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
+        body.setAngularVelocity(Phaser.Math.Between(-300, 300));
+      }
+
+      this.tweens.add({
+        targets: frag,
+        alpha: 0,
+        duration: 1000 + Math.random() * 500,
+        onComplete: () => frag.destroy()
+      });
+    }
+  }
+
+  private handleEnemyDeath(enemy: Enemy, killerSpellId?: string, wasLowHp: boolean = false) {
     // 1. Stats
     this.player.stats.kills++;
     this.player.stats.score += enemy.config.scoreValue;
     this.floorMonstersKilled++;
     this.registerKillCombo(enemy.x, enemy.y);
+    ContractSystem.onEnemyKilled(enemy, this);
+
+    // Onboarding trigger
+    useGameStore.getState().triggerOnboardingEvent('firstKillDone', 'DICA: Colete o loot no chão antes de continuar!');
 
     // 2. Gore Effect: Blood Stain on Floor
     const isAbomination = enemy.config.id === 'gore_abomination';
@@ -1203,34 +1687,44 @@ export class GameScene extends Phaser.Scene {
       this.spawnFloatingText(enemy.x, enemy.y - 12, 'MORCEGOS LIBERTADOS!', '#a855f7', false);
     }
 
-    // 3. Particle Splatter
-    for (let i = 0; i < 8; i++) {
-      const particle = this.add.image(enemy.x, enemy.y, 'particle_blood_red');
-      particle.setTint(enemy.config.goreEffect === 'bone_dust' ? 0xdcd3c1 : 0xb91c1c);
-      particle.setDepth(1600);
+    const isSacrificial = ['crimson_scythe', 'hellfire_nova', 'blood_ritual_circle', 'hemomancy_beam'].includes(killerSpellId || '');
+    if (isSacrificial && wasLowHp) {
+      this.spawnProceduralGore(enemy);
+      ContractSystem.onExecutionDone(this);
+    } else {
+      // 3. Particle Splatter
+      for (let i = 0; i < 8; i++) {
+        const particle = this.add.image(enemy.x, enemy.y, 'particle_blood_red');
+        particle.setTint(enemy.config.goreEffect === 'bone_dust' ? 0xdcd3c1 : 0xb91c1c);
+        particle.setDepth(1600);
 
-      const targetX = enemy.x + (Math.random() - 0.5) * 80;
-      const targetY = enemy.y + (Math.random() - 0.5) * 80;
+        const targetX = enemy.x + (Math.random() - 0.5) * 80;
+        const targetY = enemy.y + (Math.random() - 0.5) * 80;
 
-      this.tweens.add({
-        targets: particle,
-        x: targetX,
-        y: targetY,
-        alpha: 0,
-        duration: 450 + Math.random() * 300,
-        onComplete: () => particle.destroy(),
-      });
+        this.tweens.add({
+          targets: particle,
+          x: targetX,
+          y: targetY,
+          alpha: 0,
+          duration: 450 + Math.random() * 300,
+          onComplete: () => particle.destroy(),
+        });
+      }
     }
 
     // 4. Grant XP directly to player (no gems to collect)
-    const leveledUp = this.player.addXp(enemy.config.xpDrop);
-    this.spawnFloatingText(enemy.x, enemy.y - 30, `+${enemy.config.xpDrop} XP`, '#3b82f6', false);
+    const hasFuryPit = useGameStore.getState().activeModifiers.includes('fury_pit');
+    const xpDrop = hasFuryPit ? Math.round(enemy.config.xpDrop * 1.5) : enemy.config.xpDrop;
+    const leveledUp = this.player.addXp(xpDrop);
+    this.spawnFloatingText(enemy.x, enemy.y - 30, `+${xpDrop} XP`, '#3b82f6', false);
     if (leveledUp) {
       this.triggerLevelUp();
     }
 
     // 5. Check Loot Drop
-    if (LootSystem.rollLootChance()) {
+    const hasBloodTide = useGameStore.getState().activeModifiers.includes('blood_tide');
+    const rolled = hasBloodTide ? (Math.random() < 0.325) : LootSystem.rollLootChance();
+    if (rolled) {
       const lootData = LootSystem.generateLoot(this.currentFloorDepth);
       const loot = new LootSprite(this, enemy.x + (Math.random() - 0.5) * 30, enemy.y + (Math.random() - 0.5) * 30, lootData);
       this.lootGroup.add(loot);
@@ -1238,8 +1732,11 @@ export class GameScene extends Phaser.Scene {
 
     enemy.destroy();
 
+    // Fill screen up to cap if more are waiting
+    this.checkAndSpawnPendingEnemies();
+
     // Check if Floor Cleared -> Reveal Portal
-    if (this.enemiesGroup.countActive() === 0 && !this.isPortalActive) {
+    if (this.enemiesGroup.countActive() === 0 && this.pendingEnemySpawns.length === 0 && !this.isPortalActive) {
       this.revealDescentPortal(enemy.x, enemy.y);
     }
   }
@@ -1286,6 +1783,9 @@ export class GameScene extends Phaser.Scene {
       this.portalSprite.destroy();
       this.portalSprite = undefined;
     }
+
+    const hpRatio = this.player.stats.hp / this.player.stats.maxHp;
+    ContractSystem.onFloorCompleted(this.currentFloorDepth, hpRatio, this);
 
     this.currentFloorDepth++;
     this.player.heal(35); // Reward floor clear with HP restore
@@ -1348,6 +1848,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   private triggerLevelUp() {
+    // Onboarding trigger
+    useGameStore.getState().triggerOnboardingEvent('firstLevelUpDone', 'DICA: Toque na Árvore de Talentos (T) para evoluir permanente!');
+
     // Just store pending data — player distributes later via talent tree (T key)
     if (this.callbacks?.onLevelUp) {
       const shuffled = [...upgradesData].sort(() => 0.5 - Math.random());
@@ -1374,8 +1877,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   public spawnFloatingText(x: number, y: number, text: string, color: string = '#f87171', isCrit: boolean = false) {
-    const fontSize = isCrit ? '14px' : '11px';
-    const strokeColor = isCrit ? '#000000' : '#0f172a';
+    const highContrast = useGameStore.getState().settings.highContrastDamageTexts;
+    const fontSize = highContrast
+      ? (isCrit ? '22px' : '16px')
+      : (isCrit ? '14px' : '11px');
+    const strokeColor = '#000000';
+    const strokeThickness = highContrast ? 6 : (isCrit ? 4 : 3);
 
     const jitterX = (Math.random() - 0.5) * 16;
     const txt = this.add.text(x + jitterX, y - 10, text, {
@@ -1383,7 +1890,7 @@ export class GameScene extends Phaser.Scene {
       fontFamily: '"Press Start 2P", monospace',
       color,
       stroke: strokeColor,
-      strokeThickness: isCrit ? 4 : 3,
+      strokeThickness,
     }).setOrigin(0.5).setDepth(2100);
 
     if (isCrit) {

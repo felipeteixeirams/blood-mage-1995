@@ -46,6 +46,34 @@ export default function App() {
     soundEngine.setVolumes(settings.sfxVolume, settings.bgmVolume);
   }, [settings]);
 
+  // Gamepad connection listeners
+  useEffect(() => {
+    const handleConnected = () => {
+      useGameStore.getState().setGamepadConnected(true);
+    };
+    const handleDisconnected = () => {
+      const gps = navigator.getGamepads ? navigator.getGamepads() : [];
+      const anyConnected = Array.from(gps).some(g => g !== null);
+      useGameStore.getState().setGamepadConnected(anyConnected);
+    };
+
+    window.addEventListener('gamepadconnected', handleConnected);
+    window.addEventListener('gamepaddisconnected', handleDisconnected);
+
+    // Initial check
+    if (navigator.getGamepads) {
+      const gps = navigator.getGamepads();
+      if (Array.from(gps).some(g => g !== null)) {
+        handleConnected();
+      }
+    }
+
+    return () => {
+      window.removeEventListener('gamepadconnected', handleConnected);
+      window.removeEventListener('gamepaddisconnected', handleDisconnected);
+    };
+  }, []);
+
   useEffect(() => {
     updateSWRef.current = registerSW({
       onNeedRefresh() {

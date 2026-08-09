@@ -1,0 +1,10 @@
+
+> @workspace/bloodmage@0.0.0 dev /app/artifacts/bloodmage
+> vite --config vite.config.ts --host 0.0.0.0
+
+
+  VITE v7.3.6  ready in 363 ms
+
+  ➜  Local:   http://localhost:3000/
+  ➜  Network: http://192.168.0.2:3000/
+1:13:13 AM [vite] (client) hmr update /src/components/MainMenu.tsx, /src/index.css

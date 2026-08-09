@@ -48,8 +48,26 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
   onSkillClick,
   getCooldownRemaining,
 }) => {
-  const { skillPreset } = useGameStore();
+  const { skillPreset, isEditingHUD, settings, updateSettings } = useGameStore();
   const typedSpells = spellsData as Record<string, SpellConfig>;
+
+  const dragStateRef = React.useRef({
+    spellId: '',
+    startX: 0,
+    startY: 0,
+    currentX: 0,
+    currentY: 0,
+    active: false,
+    hasDragged: false
+  });
+
+  // HUD layout edit drag reference
+  const editDragRef = React.useRef({
+    spellId: '',
+    offsetX: 0,
+    offsetY: 0,
+    active: false
+  });
 
   const checkCanCast = (spellId: string): boolean => {
     const spell = typedSpells[spellId];
@@ -58,6 +76,63 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
     if (stats.mana < spell.manaCost) return false;
     if (spell.hpCost && stats.hp <= spell.hpCost) return false;
     return true;
+  };
+
+  const setButtonSize = (spellId: string, size: 'small' | 'medium' | 'large') => {
+    const currentLayout = settings.hudLayout || {};
+    const currentItem = currentLayout[spellId] || { x: window.innerWidth - 120, y: window.innerHeight - 120, size: 'medium' };
+    updateSettings({
+      ...settings,
+      hudLayout: {
+        ...currentLayout,
+        [spellId]: {
+          ...currentItem,
+          size
+        }
+      }
+    });
+  };
+
+  const handleEditPointerDown = (e: React.PointerEvent<HTMLButtonElement>, spellId: string) => {
+    e.stopPropagation();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const rect = e.currentTarget.getBoundingClientRect();
+    editDragRef.current = {
+      spellId,
+      offsetX: e.clientX - rect.left,
+      offsetY: e.clientY - rect.top,
+      active: true
+    };
+  };
+
+  const handleEditPointerMove = (e: React.PointerEvent<HTMLButtonElement>, spellId: string) => {
+    const d = editDragRef.current;
+    if (!d.active || d.spellId !== spellId) return;
+
+    const x = e.clientX - d.offsetX;
+    const y = e.clientY - d.offsetY;
+
+    const currentLayout = settings.hudLayout || {};
+    const currentItem = currentLayout[spellId] || { x, y, size: 'medium' };
+
+    updateSettings({
+      ...settings,
+      hudLayout: {
+        ...currentLayout,
+        [spellId]: {
+          ...currentItem,
+          x,
+          y
+        }
+      }
+    });
+  };
+
+  const handleEditPointerUp = (e: React.PointerEvent<HTMLButtonElement>, spellId: string) => {
+    const d = editDragRef.current;
+    if (!d.active || d.spellId !== spellId) return;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    d.active = false;
   };
 
   const renderSkill = (spellId: string) => {
@@ -72,29 +147,137 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
     const Icon = ICON_MAP[spell.icon] || Flame;
     const activeCls = COLOR_ACTIVE[spellId] || 'bg-gray-900/90 border-gray-500 text-gray-300';
 
-    // Cooldown arc as border-based progress using conic-gradient
     const cdMax = spell.cooldownMs;
     const cdPct = cd > 0 ? Math.min(1, cd / cdMax) : 0;
+
+    // Layout values
+    const layout = settings.hudLayout?.[spellId];
+    const size = layout?.size || 'medium';
+
+    let sizeClasses = 'w-14 h-14 md:w-16 md:h-16 text-[10px]';
+    let iconSize = 'w-5 h-5 md:w-6 md:h-6';
+    if (size === 'small') {
+      sizeClasses = 'w-11 h-11 md:w-12 md:h-12 text-[8px]';
+      iconSize = 'w-4 h-4 md:w-5 md:h-5';
+    } else if (size === 'large') {
+      sizeClasses = 'w-16 h-16 md:w-20 md:h-20 text-xs';
+      iconSize = 'w-6 h-6 md:w-7 md:h-7';
+    }
+
+    if (isEditingHUD) {
+      return (
+        <button
+          key={spellId}
+          onPointerDown={(e) => handleEditPointerDown(e, spellId)}
+          onPointerMove={(e) => handleEditPointerMove(e, spellId)}
+          onPointerUp={(e) => handleEditPointerUp(e, spellId)}
+          className={`relative border-2 border-dashed border-amber-500 bg-amber-950/70 text-amber-200 flex flex-col items-center justify-center gap-0.5 select-none cursor-move ${sizeClasses}`}
+          style={layout ? { position: 'fixed', left: layout.x, top: layout.y, zIndex: 100 } : undefined}
+        >
+          <Icon className={iconSize} />
+          <span className="text-[6px] font-pixel block font-sans">ARRASTAR</span>
+
+          {/* Size picker */}
+          <div className="absolute -top-7 left-1/2 -translate-x-1/2 flex gap-1 bg-black/90 border border-amber-500 p-0.5 rounded shadow z-50 pointer-events-auto">
+            <span
+              onClick={(e) => { e.stopPropagation(); setButtonSize(spellId, 'small'); }}
+              className={`px-1 text-[8px] cursor-pointer hover:text-amber-400 ${size === 'small' ? 'text-amber-400 font-bold' : 'text-gray-400'}`}
+            >
+              S
+            </span>
+            <span
+              onClick={(e) => { e.stopPropagation(); setButtonSize(spellId, 'medium'); }}
+              className={`px-1 text-[8px] cursor-pointer hover:text-amber-400 ${size === 'medium' ? 'text-amber-400 font-bold' : 'text-gray-400'}`}
+            >
+              M
+            </span>
+            <span
+              onClick={(e) => { e.stopPropagation(); setButtonSize(spellId, 'large'); }}
+              className={`px-1 text-[8px] cursor-pointer hover:text-amber-400 ${size === 'large' ? 'text-amber-400 font-bold' : 'text-gray-400'}`}
+            >
+              L
+            </span>
+          </div>
+        </button>
+      );
+    }
 
     return (
       <button
         key={spellId}
-        onClick={() => {
-          if (canCast) {
+        onPointerDown={(e) => {
+          if (!canCast) return;
+          e.currentTarget.setPointerCapture(e.pointerId);
+          dragStateRef.current = {
+            spellId,
+            startX: e.clientX,
+            startY: e.clientY,
+            currentX: e.clientX,
+            currentY: e.clientY,
+            active: true,
+            hasDragged: false
+          };
+          window.dispatchEvent(new CustomEvent('drag-aim-start', { detail: { spellId } }));
+        }}
+        onPointerMove={(e) => {
+          const d = dragStateRef.current;
+          if (!d.active || d.spellId !== spellId) return;
+          const dx = e.clientX - d.startX;
+          const dy = e.clientY - d.startY;
+          if (Math.hypot(dx, dy) > 15) {
+            d.hasDragged = true;
+          }
+          d.currentX = e.clientX;
+          d.currentY = e.clientY;
+          window.dispatchEvent(new CustomEvent('drag-aim-move', { detail: { spellId, dx, dy } }));
+        }}
+        onPointerUp={(e) => {
+          const d = dragStateRef.current;
+          if (!d.active || d.spellId !== spellId) return;
+          e.currentTarget.releasePointerCapture(e.pointerId);
+          d.active = false;
+          const dx = d.currentX - d.startX;
+          const dy = d.currentY - d.startY;
+
+          window.dispatchEvent(new CustomEvent('drag-aim-end', {
+            detail: {
+              spellId,
+              dx,
+              dy,
+              isDrag: d.hasDragged
+            }
+          }));
+
+          if (!d.hasDragged) {
             soundEngine.playButtonClick();
             onSkillClick(skillKey);
           }
         }}
-        className={`relative w-14 h-14 md:w-16 md:h-16 rounded-2xl border-2 flex flex-col items-center justify-center gap-0.5
+        onPointerCancel={(e) => {
+          const d = dragStateRef.current;
+          if (!d.active || d.spellId !== spellId) return;
+          e.currentTarget.releasePointerCapture(e.pointerId);
+          d.active = false;
+          window.dispatchEvent(new CustomEvent('drag-aim-end', {
+            detail: {
+              spellId,
+              dx: 0,
+              dy: 0,
+              isDrag: false
+            }
+          }));
+        }}
+        className={`relative rounded-2xl border-2 flex flex-col items-center justify-center gap-0.5
           transition-all active:scale-90 cursor-pointer touch-manipulation select-none
           ${!canCast
             ? 'bg-gray-950/90 border-gray-800 text-gray-600 opacity-60'
             : `${activeCls} hover:brightness-125`
-          }`}
+          } ${sizeClasses}`}
+        style={layout ? { position: 'fixed', left: layout.x, top: layout.y, zIndex: 100 } : undefined}
         title={`${spell.name}: ${spell.description}`}
         aria-label={spell.name}
       >
-        <Icon className="w-5 h-5 md:w-6 md:h-6" />
+        <Icon className={iconSize} />
 
         {/* HP cost badge */}
         {spell.hpCost ? (
@@ -108,7 +291,6 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
         {/* Cooldown overlay */}
         {cd > 0 && (
           <>
-            {/* Dimming sweep using conic-gradient */}
             <div
               className="absolute inset-0 rounded-2xl"
               style={{
@@ -124,13 +306,12 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
     );
   };
 
-  // Fill empty slots with ghost placeholders (always show 4 slots)
   const slots = [...skillPreset, ...Array(Math.max(0, 4 - skillPreset.length)).fill(null)];
 
   return (
     <div className="flex flex-col items-end gap-2 pointer-events-auto">
-      {/* Preset editor gear button */}
-      <SkillPresetEditor />
+      {/* Hide Preset Editor button in edit mode */}
+      {!isEditingHUD && <SkillPresetEditor />}
 
       {/* 2×2 skill grid */}
       <div className="grid grid-cols-2 gap-2">

@@ -3,6 +3,8 @@
  * Generates dark gothic retro sound effects (spell casts, blood squishes, demon roars) dynamically.
  */
 
+import { useGameStore } from '../store/gameStore';
+
 class SoundEngine {
   private ctx: AudioContext | null = null;
   private sfxVolume: number = 0.8;
@@ -13,6 +15,11 @@ class SoundEngine {
   private isBgmPlaying: boolean = false;
   private bgmIntervalTimer: ReturnType<typeof setInterval> | null = null;
   private activeVoicesCount: number = 0;
+
+  // Spatial static radio fields (Silent Hill-style)
+  private threatStaticSource: AudioBufferSourceNode | null = null;
+  private threatStaticGain: GainNode | null = null;
+  private threatPanner: StereoPannerNode | null = null;
 
   constructor() {
     // Lazy init audio context on first user interaction
@@ -56,6 +63,89 @@ class SoundEngine {
       this.bgmGain.gain.setValueAtTime(this.isMuted ? 0 : this.bgmVolume * 0.15, this.ctx?.currentTime || 0);
     }
     return this.isMuted;
+  }
+
+  private initThreatStatic() {
+    if (!this.ctx) return;
+    if (this.threatStaticSource) return; // Already initialized
+
+    const now = this.ctx.currentTime;
+
+    // Create 1-second white noise buffer
+    const bufferSize = this.ctx.sampleRate;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+
+    // Create source
+    const source = this.ctx.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+
+    // Create bandpass filter to make it sound like a static radio
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1000, now);
+    filter.Q.value = 1.0;
+
+    // Create gain
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0, now); // Start completely silent
+
+    // Create stereo panner
+    let panner: StereoPannerNode | null = null;
+    try {
+      if (this.ctx.createStereoPanner) {
+        panner = this.ctx.createStereoPanner();
+        panner.pan.setValueAtTime(0, now);
+      }
+    } catch (e) {
+      console.warn('StereoPanner not supported by browser');
+    }
+
+    // Chain: Source -> Filter -> Gain -> Panner -> Destination
+    source.connect(filter);
+    filter.connect(gain);
+    if (panner) {
+      gain.connect(panner);
+      panner.connect(this.ctx.destination);
+    } else {
+      gain.connect(this.ctx.destination);
+    }
+
+    source.start(now);
+
+    this.threatStaticSource = source;
+    this.threatStaticGain = gain;
+    this.threatPanner = panner;
+  }
+
+  public updateSpatialThreat(relativeX: number, relativeY: number, activeThreat: boolean) {
+    if (this.isMuted || this.sfxVolume <= 0) {
+      if (this.threatStaticGain) {
+        this.threatStaticGain.gain.setValueAtTime(0, this.ctx?.currentTime || 0);
+      }
+      return;
+    }
+
+    this.initCtx();
+    if (!this.ctx) return;
+    this.initThreatStatic();
+
+    const now = this.ctx.currentTime;
+    if (this.threatStaticGain) {
+      const targetGain = activeThreat ? this.sfxVolume * 0.12 : 0;
+      // Smooth linear ramp to avoid click sounds
+      this.threatStaticGain.gain.linearRampToValueAtTime(targetGain, now + 0.1);
+    }
+
+    if (this.threatPanner && activeThreat) {
+      // Clamp pan value between -1.0 (left) and 1.0 (right)
+      const targetPan = Math.max(-1.0, Math.min(1.0, relativeX));
+      this.threatPanner.pan.linearRampToValueAtTime(targetPan, now + 0.1);
+    }
   }
 
   public playBloodBolt() {
@@ -594,6 +684,99 @@ class SoundEngine {
     osc.stop(now + 0.4);
   }
 
+  public playContractComplete() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const notes = [392.00, 523.25, 659.25]; // G4, C5, E5
+
+    notes.forEach((freq, idx) => {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+
+      gain.gain.setValueAtTime(this.sfxVolume * 0.35, now + idx * 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.12 + 0.3);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now + idx * 0.12);
+      osc.stop(now + idx * 0.12 + 0.3);
+    });
+  }
+
+  public playExecutionGore() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    // Transient grave impact (sawtooth frequency sweep)
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.exponentialRampToValueAtTime(30, now + 0.3);
+
+    // Filter to make it heavy and muffled
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(250, now);
+
+    gain.gain.setValueAtTime(this.sfxVolume * 0.8, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.3);
+
+    // Squishy / tearing blood splash
+    this.playBloodSquish();
+    this.playGoreExplosion();
+  }
+
+  public playDash() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    // Whoosh (bandpass filtered white noise with descending frequency)
+    const bufferSize = this.ctx.sampleRate * 0.15;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1000, now);
+    filter.frequency.exponentialRampToValueAtTime(150, now + 0.15);
+    filter.Q.value = 2;
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(this.sfxVolume * 0.45, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    noise.start(now);
+  }
+
   public startGothicAmbientBGM() {
     if (this.isBgmPlaying) return;
     this.initCtx();
@@ -604,19 +787,34 @@ class SoundEngine {
     this.bgmGain.gain.setValueAtTime(this.isMuted ? 0 : this.bgmVolume * 0.15, this.ctx.currentTime);
     this.bgmGain.connect(this.ctx.destination);
 
-    // Dark Drone Oscillators (Bass Gothic Chords: D minor / F / A)
-    const baseFreqs = [73.42, 110.00, 146.83, 174.61]; // D2, A2, D3, F3
+    const biome = useGameStore.getState().currentBiome;
+
+    // Dark Drone Oscillators customized by Biome
+    let baseFreqs = [73.42, 110.00, 146.83, 174.61]; // D minor (Fosso das Chagas)
+    let filterFreq = 240;
+    let oscType: OscillatorType = 'sawtooth';
+
+    if (biome === 'catacumbas_martires') {
+      baseFreqs = [55.00, 82.41, 110.00, 130.81]; // A minor (Catacumbas)
+      filterFreq = 140;
+    } else if (biome === 'santuario_sangue') {
+      baseFreqs = [65.41, 98.00, 130.81, 155.56, 196.00]; // C minor chant
+      filterFreq = 300;
+      oscType = 'triangle'; // smoother choir-like harmonics
+    }
 
     baseFreqs.forEach((freq) => {
       if (!this.ctx || !this.bgmGain) return;
       const osc = this.ctx.createOscillator();
-      osc.type = 'sawtooth';
+      osc.type = oscType;
       osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
 
-      // Low pass filter for dark muffled drone sound
       const filter = this.ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(240, this.ctx.currentTime);
+      filter.type = biome === 'santuario_sangue' ? 'bandpass' : 'lowpass';
+      if (biome === 'santuario_sangue') {
+        filter.Q.setValueAtTime(3.0, this.ctx.currentTime);
+      }
+      filter.frequency.setValueAtTime(filterFreq, this.ctx.currentTime);
 
       osc.connect(filter);
       filter.connect(this.bgmGain);
@@ -646,6 +844,50 @@ class SoundEngine {
 
       osc.start(now);
       osc.stop(now + 0.3);
+
+      // Biomatic random ambient sound synthesis
+      const currentBiome = useGameStore.getState().currentBiome;
+      if (currentBiome === 'fosso_chagas' && Math.random() < 0.12) {
+        // Water Drip
+        const dripOsc = this.ctx.createOscillator();
+        const dripGain = this.ctx.createGain();
+        dripOsc.type = 'sine';
+        dripOsc.frequency.setValueAtTime(1200, now);
+        dripOsc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+        dripGain.gain.setValueAtTime(this.bgmVolume * 0.08, now);
+        dripGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        dripOsc.connect(dripGain);
+        dripGain.connect(this.bgmGain);
+        dripOsc.start(now);
+        dripOsc.stop(now + 0.05);
+      } else if (currentBiome === 'catacumbas_martires' && Math.random() < 0.08) {
+        // Deep Breathe
+        const breatheOsc = this.ctx.createOscillator();
+        const breatheGain = this.ctx.createGain();
+        breatheOsc.type = 'sine';
+        breatheOsc.frequency.setValueAtTime(80, now);
+        breatheOsc.frequency.linearRampToValueAtTime(110, now + 0.8);
+        breatheGain.gain.setValueAtTime(0, now);
+        breatheGain.gain.linearRampToValueAtTime(this.bgmVolume * 0.15, now + 0.4);
+        breatheGain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+        breatheOsc.connect(breatheGain);
+        breatheGain.connect(this.bgmGain);
+        breatheOsc.start(now);
+        breatheOsc.stop(now + 0.8);
+      } else if (currentBiome === 'santuario_sangue' && Math.random() < 0.15) {
+        // Gregorian Chant high resonance
+        const chantOsc = this.ctx.createOscillator();
+        const chantGain = this.ctx.createGain();
+        chantOsc.type = 'triangle';
+        chantOsc.frequency.setValueAtTime(659.25 + Math.random() * 200, now);
+        chantGain.gain.setValueAtTime(0, now);
+        chantGain.gain.linearRampToValueAtTime(this.bgmVolume * 0.08, now + 0.25);
+        chantGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+        chantOsc.connect(chantGain);
+        chantGain.connect(this.bgmGain);
+        chantOsc.start(now);
+        chantOsc.stop(now + 0.6);
+      }
     }, 450);
   }
 

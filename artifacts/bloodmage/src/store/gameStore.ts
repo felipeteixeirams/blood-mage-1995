@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, EquipmentSlots, BiomeType } from '../types/game';
-import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels } from '../utils/localStorage';
+import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding } from '../utils/localStorage';
 import { soundEngine } from '../utils/soundEngine';
 
 type GameStateStatus = 'menu' | 'playing' | 'paused';
@@ -35,6 +35,27 @@ interface GameStore {
   setInventoryOpen: (isOpen: boolean) => void;
   isObservabilityOpen: boolean;
   setObservabilityOpen: (isOpen: boolean) => void;
+  isEditingHUD: boolean;
+  setEditingHUD: (isEditing: boolean) => void;
+  gamepadConnected: boolean;
+  setGamepadConnected: (connected: boolean) => void;
+  activeContracts: { id: string; label: string; description: string; progress: number; target: number; completed: boolean }[];
+  setActiveContracts: (contracts: any[]) => void;
+  updateContractProgress: (id: string, progress: number) => void;
+  completeContract: (id: string) => void;
+  activeModifiers: string[];
+  toggleModifier: (id: string) => void;
+  clearModifiers: () => void;
+  onboarding: {
+    firstKillDone: boolean;
+    firstLevelUpDone: boolean;
+    firstEquipDone: boolean;
+    firstBossSeen: boolean;
+    firstSkillCast: boolean;
+  };
+  triggerOnboardingEvent: (key: 'firstKillDone' | 'firstLevelUpDone' | 'firstEquipDone' | 'firstBossSeen' | 'firstSkillCast', tipText: string) => void;
+  activeTip: string | null;
+  setActiveTip: (tip: string | null) => void;
 
   // Metagame Currency & Talents
   bloodCrystals: number;
@@ -121,6 +142,57 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setInventoryOpen: (isOpen) => set({ isInventoryOpen: isOpen }),
   isObservabilityOpen: false,
   setObservabilityOpen: (isOpen) => set({ isObservabilityOpen: isOpen }),
+  isEditingHUD: false,
+  setEditingHUD: (isEditing) => set({ isEditingHUD: isEditing }),
+  gamepadConnected: false,
+  setGamepadConnected: (connected) => set({ gamepadConnected: connected }),
+  activeModifiers: [],
+  toggleModifier: (id) => {
+    const current = get().activeModifiers;
+    const next = current.includes(id) ? current.filter(x => x !== id) : [...current, id];
+    set({ activeModifiers: next });
+  },
+  clearModifiers: () => set({ activeModifiers: [] }),
+  onboarding: loadOnboarding(),
+  activeTip: null,
+  setActiveTip: (tip) => set({ activeTip: tip }),
+  triggerOnboardingEvent: (key, tipText) => {
+    const current = get().onboarding;
+    if (current[key]) return; // Already triggered before
+
+    const updated = { ...current, [key]: true };
+    saveOnboarding(updated);
+    set({ onboarding: updated, activeTip: tipText });
+
+    // Auto-fade tip after 6 seconds
+    setTimeout(() => {
+      if (get().activeTip === tipText) {
+        set({ activeTip: null });
+      }
+    }, 6000);
+  },
+  activeContracts: [],
+  setActiveContracts: (contracts) => set({ activeContracts: contracts }),
+  updateContractProgress: (id, progress) => {
+    const current = get().activeContracts;
+    const updated = current.map((c) => {
+      if (c.id === id) {
+        return { ...c, progress: Math.min(c.target, progress) };
+      }
+      return c;
+    });
+    set({ activeContracts: updated });
+  },
+  completeContract: (id) => {
+    const current = get().activeContracts;
+    const updated = current.map((c) => {
+      if (c.id === id) {
+        return { ...c, completed: true, progress: c.target };
+      }
+      return c;
+    });
+    set({ activeContracts: updated });
+  },
 
   bloodCrystals: loadBloodCrystals(),
   addBloodCrystals: (amount) => {

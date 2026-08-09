@@ -3,6 +3,13 @@ import { Play, Settings, Trophy, Volume2, VolumeX, ShieldAlert } from 'lucide-re
 import { motion } from 'motion/react';
 import { soundEngine } from '../utils/soundEngine';
 import Phaser from 'phaser';
+import { useGameStore } from '../store/gameStore';
+
+const MODIFIERS = [
+  { id: 'blood_tide', name: 'Maré de Sangue', desc: '+40% monstros nas ondas, +30% chance de loot', color: 'border-red-800 bg-red-950/20 text-red-200' },
+  { id: 'rune_famine', name: 'Penúria Rúnica', desc: 'Skills custam 2x Mana, Cristais recebidos +100%', color: 'border-purple-800 bg-purple-950/20 text-purple-200' },
+  { id: 'fury_pit', name: 'Fúria do Fosso', desc: 'Inimigos nascem furiosos, XP concedida +50%', color: 'border-orange-800 bg-orange-950/20 text-orange-200' }
+];
 import { TitleScene, BASE_W, BASE_H } from '../game/scenes/TitleScene';
 
 interface MainMenuProps {
@@ -22,6 +29,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   isMuted,
   onToggleMute,
 }) => {
+  const { activeModifiers, toggleModifier } = useGameStore();
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
 
@@ -94,6 +102,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             soundEngine.playButtonClick();
             onToggleMute();
           }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            e.nativeEvent.stopImmediatePropagation();
+          }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            e.nativeEvent.stopImmediatePropagation();
+          }}
           className="p-3 stone-btn rounded cursor-pointer pointer-events-auto shadow-lg hover:scale-105 transition-transform"
           title="Alternar Áudio"
         >
@@ -108,12 +124,67 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             soundEngine.playButtonClick();
             onOpenHighScores();
           }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            e.nativeEvent.stopImmediatePropagation();
+          }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            e.nativeEvent.stopImmediatePropagation();
+          }}
           className="inline-flex items-center gap-2 px-4 py-3 rounded-full border-2 border-amber-700 bg-black/80 text-white font-pixel text-sm uppercase tracking-[0.22em] shadow-[0_0_20px_rgba(232,179,56,0.15)] hover:border-amber-400 hover:text-amber-200 transition"
           title="Ver Recordes"
         >
           <Trophy className="w-4 h-4 text-amber-300" />
           RECORDES
         </button>
+      </div>
+
+      {/* 4. Challenge Modifiers Widget */}
+      <div className="absolute left-8 bottom-24 z-20 w-64 md:w-72 bg-[#171309]/95 border-2 border-[#b8860b]/40 shadow-[4px_4px_12px_rgba(0,0,0,0.9)] p-4 flex flex-col gap-2.5 pointer-events-auto text-left rounded-xl select-none"
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          e.nativeEvent.stopImmediatePropagation();
+        }}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          e.nativeEvent.stopImmediatePropagation();
+        }}
+      >
+        <span className="text-[10px] text-[#e3dac9] font-bold tracking-widest border-b border-[#b8860b]/20 pb-1.5 uppercase flex items-center gap-1.5">
+          💀 Modificadores de Desafio
+        </span>
+        <div className="flex flex-col gap-2">
+          {MODIFIERS.map((m) => {
+            const active = activeModifiers.includes(m.id);
+            return (
+              <div
+                key={m.id}
+                onClick={() => {
+                  soundEngine.playButtonClick();
+                  toggleModifier(m.id);
+                }}
+                className={`p-2 border rounded cursor-pointer transition-all duration-200 flex flex-col gap-0.5 ${
+                  active
+                    ? `${m.color} border-[#b8860b] shadow-[0_0_10px_rgba(184,134,11,0.25)] scale-[1.02]`
+                    : 'border-gray-800/80 bg-black/45 text-gray-400 hover:border-gray-700'
+                }`}
+              >
+                <div className="flex justify-between items-center">
+                  <span className={`text-[9px] uppercase font-bold ${active ? 'text-amber-300' : 'text-gray-300'}`}>
+                    {m.name}
+                  </span>
+                  <span className="text-[8px] font-sans">
+                    {active ? 'ATIVO' : 'INATIVO'}
+                  </span>
+                </div>
+                <span className="text-[7px] font-sans text-gray-500 leading-snug">
+                  {m.desc}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </motion.div>
   );
