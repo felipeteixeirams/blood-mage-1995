@@ -5,8 +5,8 @@ import { ActionButtons } from './hud/ActionButtons';
 import { LootLog } from './hud/LootLog';
 import { SkillsOverlay } from './hud/SkillsOverlay';
 import { ContractHUD } from './hud/ContractHUD';
-import palettesData from '../data/palettes.json';
 import { RecordsDisplay } from './hud/RecordsDisplay';
+import palettesData from '../data/palettes.json';
 import { useFloatingJoystick } from '../hooks/useFloatingJoystick';
 import { soundEngine } from '../utils/soundEngine';
 import { useGameStore } from '../store/gameStore';
@@ -828,6 +828,12 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
           </div>
         </div>
       )}
+
+      {/* Records Modal */}
+      <RecordsDisplay
+        isOpen={isRecordsOpen}
+        onClose={() => setRecordsOpen(false)}
+      />
 
       {/* Records Modal */}
       <RecordsDisplay
