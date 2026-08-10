@@ -1,11 +1,11 @@
 ---
-status: ANDAMENTO
+status: CONCLUIDO
 phase: 2/4
 priority: P1
 start_date: 2026-08-10
-eta: 2026-09-05
+completion_date: 2026-08-10
 responsible: Jules (Google AI)
-progress: 10% (Spec criada)
+progress: 100% (Implementado e Validado)
 agent_context: backend, frontend, game designer
 target_module: artifacts/bloodmage/src/game
 last_updated: 2026-08-10
@@ -14,7 +14,7 @@ tags: [specs, phase-2, death-screen, corpse-retrieval, gore]
 
 # 🔴 Fase 2: Tela de Morte, Resgate de Cadáver (Corpse Retrieval) e Gore
 
-> **Status:** Em Andamento / Planejada | **Prioridade:** P1 (Alta)
+> **Status:** Concluído | **Prioridade:** P1 (Alta)
 
 ---
 
@@ -30,14 +30,14 @@ tags: [specs, phase-2, death-screen, corpse-retrieval, gore]
 
 ### Must Have (MVP)
 
-- [ ] **Morte Definitiva**: Após o 3º desmaio (da Fase 1), o jogador sofre morte definitiva.
-- [ ] **Instanciação de Cadáver (`Corpse`)**: Instanciar um objeto interativo no local exato da morte guardando o inventário/loot perdido.
-- [ ] **Marcação no Mapa**: Exibir ícone de lápide no minimapa e bússola indicando a localização do cadáver.
-- [ ] **Mecânica de Resgate**: Interagir com o cadáver na run seguinte recupera 100% do inventário perdido.
-- [ ] **Perda Permanente**: Se o jogador morrer novamente antes de resgatar o cadáver antigo, o cadáver é destruído permanentemente.
-- [ ] **Tela de Morte (Death Screen)**: Menu de Game Over estilizado com resumo da run, estats, e botão de tentar novamente / retornar ao menu.
-- [ ] **Hit-Stop & Screen Shake**: Pausa de 40–80ms em golpes fortes/críticos e tremor de câmera escalável.
-- [ ] **Sistema de Execução & Gore Procedural**: Desmembramento de monstros em fragmentos ao serem finalizados com HP ≤ 15% por habilidades sacrificiais.
+- [x] **Morte Definitiva**: Após o 3º desmaio (da Fase 1), o jogador sofre morte definitiva.
+- [x] **Instanciação de Cadáver (`Corpse`)**: Instanciar um objeto interativo no local exato da morte guardando o inventário/loot perdido.
+- [x] **Marcação no Mapa**: Exibir ícone de lápide no minimapa e bússola indicando a localização do cadáver.
+- [x] **Mecânica de Resgate**: Interagir com o cadáver na run seguinte recupera 100% do inventário perdido.
+- [x] **Perda Permanente**: Se o jogador morrer novamente antes de resgatar o cadáver antigo, o cadáver é destruído permanentemente.
+- [x] **Tela de Morte (Death Screen)**: Menu de Game Over estilizado com resumo da run, estats, e botão de tentar novamente / retornar ao menu.
+- [x] **Hit-Stop & Screen Shake**: Pausa de 40–80ms em golpes fortes/críticos e tremor de câmera escalável.
+- [x] **Sistema de Execução & Gore Procedural**: Desmembramento de monstros em fragmentos ao serem finalizados com HP ≤ 15% por habilidades sacrificiais.
 
 ### Nice to Have
 
