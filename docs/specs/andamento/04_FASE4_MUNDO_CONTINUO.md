@@ -5,11 +5,11 @@ priority: P2
 start_date: 2026-08-10
 eta: 2026-09-30
 responsible: Jules (Google AI)
-progress: 60% (WorldManager, iluminação adaptativa e áudio implementados)
+progress: 80% (WorldManager, iluminação adaptativa, áudio, Safe Town com NPCs, corpos persistentes e marcas de sangue implementados)
 agent_context: backend, frontend, game designer
 target_module: artifacts/bloodmage/src/game
-last_updated: 2026-08-10
-tags: [specs, phase-4, continuous-world, safe-town, dynamic-lighting, soundscapes]
+last_updated: 2026-08-11
+tags: [specs, phase-4, continuous-world, safe-town, dynamic-lighting, soundscapes, persistent-corpses]
 ---
 
 # 🗺️ Fase 4: Mundo Contínuo, Vilarejos Seguros e Iluminação/Áudio Dinâmico por Bioma
@@ -30,15 +30,15 @@ tags: [specs, phase-4, continuous-world, safe-town, dynamic-lighting, soundscape
 
 ### Must Have (MVP)
 
-- [ ] **Room 0 (Safe Town)**:
+- [x] **Room 0 (Safe Town)**:
   - Zona neutra e protegida onde o combate é desativado e inimigos não nascem.
   - Ponto de spawn inicial ao iniciar a jornada.
-- [ ] **NPCs Interativos na Safe Town**:
+- [x] **NPCs Interativos na Safe Town**:
   - **Clérigo**: Oferece bênçãos e cura espiritual.
   - **Alquimista**: Vende remédios, antídotos e poções.
   - **Ferreiro**: Repara e aprimora equipamentos básicos.
   - **Ancião**: Concede dicas de lore e abre portais para zonas de perigo.
-- [ ] **Biomas e Transições Lineares**:
+- [x] **Biomas e Transições Lineares**:
   - Conexão contínua entre biomas (Fosso das Chagas -> Catacumbas -> Santuário de Sangue) via portais/passagens de transição.
 - [x] **Iluminação Adaptativa por Bioma (Pupil Light Adaptation)**:
   - **Ambiente Fechado/Caverna**: Visão reduzida (`darknessOverlay` fechado a 130–170px, cor escura `0x050510`, névoa densa).
@@ -47,6 +47,10 @@ tags: [specs, phase-4, continuous-world, safe-town, dynamic-lighting, soundscape
   - Ajuste dinâmico do `soundEngine`: Reverb e eco acentuado em cavernas e ambientes fechados; áudio ambiente com vento e sussurros em espaços abertos.
 - [x] **Gerenciador de Mundo/Zonas**:
   - `WorldManager.ts` para controle de carregamento procedural, transições visuais/sonoras e persistência de estado entre zonas.
+- [x] **Corpos e Marcas Persistentes (Ecossistema Vivo)**:
+  - Corpos de monstros ficam no chão por ~90s com fade gradual após a morte.
+  - Manchas de sangue persistem por ~60s no chão e ~30s nas paredes.
+  - Todos gerenciados pelo `bloodStainsGroup` para limpeza correta na transição de andares.
 
 ### Nice to Have
 

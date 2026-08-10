@@ -1762,6 +1762,24 @@ export class GameScene extends Phaser.Scene {
     const proj = projObj as Projectile;
     if (!proj.active) return;
 
+    // Wall blood splatter mark (persistent small stain at impact point)
+    if (!proj.isEnemyProjectile) {
+      const wallMark = this.add.image(proj.x, proj.y, 'blood_pool_stain')
+        .setDepth(4)
+        .setScale(0.25 + Math.random() * 0.2)
+        .setAlpha(0.7)
+        .setRotation(Math.random() * Math.PI * 2);
+      this.bloodStainsGroup.add(wallMark);
+      // Wall marks fade slowly (~30s)
+      this.tweens.add({
+        targets: wallMark,
+        alpha: 0,
+        delay: 20000,
+        duration: 10000,
+        onComplete: () => { this.bloodStainsGroup.remove(wallMark, true, true); },
+      });
+    }
+
     // Create wall spark / dust impact effect
     for (let i = 0; i < 4; i++) {
       const spark = this.add.image(proj.x, proj.y, 'particle_blood_red').setTint(0xfacc15).setDepth(1700).setScale(0.8);
@@ -2092,6 +2110,32 @@ export class GameScene extends Phaser.Scene {
     const stain = this.add.image(enemy.x, enemy.y, 'blood_pool_stain').setDepth(2).setScale(stainScale);
     stain.setRotation(Math.random() * Math.PI);
     stain.setAlpha(0.85);
+    this.bloodStainsGroup.add(stain);
+    // Fade out blood stain slowly over ~60 seconds (living ecosystem)
+    this.tweens.add({
+      targets: stain,
+      alpha: 0,
+      delay: 45000,
+      duration: 15000,
+      onComplete: () => { this.bloodStainsGroup.remove(stain, true, true); },
+    });
+
+    // Persistent Monster Corpse — sprite lying on the floor for environmental storytelling
+    const corpseDecal = this.add.image(enemy.x, enemy.y, enemy.texture.key)
+      .setDepth(3)
+      .setScale(enemy.scaleX * 1.1, enemy.scaleY * 0.55) // flattened/squashed = lying down
+      .setTint(isAbomination ? 0x1a4a1a : 0x3a0a0a)       // dark tint: dead flesh
+      .setAlpha(0.9)
+      .setRotation(Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2); // fallen sideways
+    this.bloodStainsGroup.add(corpseDecal);
+    // Corpse also fades out slowly after ~90 seconds
+    this.tweens.add({
+      targets: corpseDecal,
+      alpha: 0,
+      delay: 75000,
+      duration: 20000,
+      onComplete: () => { this.bloodStainsGroup.remove(corpseDecal, true, true); },
+    });
 
     // Gore Abomination Explosion Effect
     if (isAbomination) {
