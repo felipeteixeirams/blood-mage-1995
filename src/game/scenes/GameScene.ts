@@ -15,6 +15,7 @@ import { useGameStore } from '../../store/gameStore';
 import { telemetry } from '../../utils/telemetry';
 import { CombatFeel } from '../systems/CombatFeel';
 import { worldManager } from '../systems/WorldManager';
+import { ContractSystem } from '../systems/ContractSystem';
 
 export interface GameSceneCallbacks {
   onStatsUpdate: (stats: PlayerStats) => void;
