@@ -141,6 +141,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.currentVx = 0;
       this.currentVy = 0;
       this.setAlpha(0.6);
+      this.setTint(0x550000);
 
       // Regenerate passive HP while unconscious (2% of Max HP per second)
       const regenAmount = (0.02 * this.stats.maxHp * delta) / 1000;
@@ -153,6 +154,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.isInvulnerable = true;
         this.invulnerableTimer = 1500; // 1.5s wake-up invulnerability
         this.setAlpha(1.0);
+        this.clearTint();
 
         useGameStore.getState().setUnconscious(false);
         useGameStore.getState().setPlayerStats({ ...this.stats });
