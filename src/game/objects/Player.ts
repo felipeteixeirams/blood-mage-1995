@@ -14,6 +14,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private invulnerableTimer: number = 0;
   public equippedLoot: LootItem[] = [];
 
+  // Status condition DoT timers
+  private bleedTimer: number = 0;
+  private poisonTimer: number = 0;
+  private infectionTimer: number = 0;
+
   // Dash mechanics
   public isDashing: boolean = false;
   private dashTimer: number = 0;
@@ -224,9 +229,67 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.setFlipX(this.moveVector.x < 0);
     }
 
-    // Mana Regeneration (+4 MP/sec)
+    // Sync status conditions & curatives from Zustand store
+    const storeStats = useGameStore.getState().playerStats;
+    if (storeStats) {
+      this.stats.statusConditions = storeStats.statusConditions || this.stats.statusConditions;
+      this.stats.curatives = storeStats.curatives || this.stats.curatives;
+    }
+
+    // Process Status Conditions DoT (Bleeding, Poison, Infection)
+    if (!this.stats.isUnconscious && !this.stats.isDefinitivelyDead) {
+      this.bleedTimer += delta;
+      this.poisonTimer += delta;
+      this.infectionTimer += delta;
+
+      if (this.stats.statusConditions?.bleeding) {
+        if (this.bleedTimer >= 1500) {
+          this.bleedTimer = 0;
+          this.takeDamage(3);
+          if (this.scene && 'spawnFloatingText' in this.scene) {
+            (this.scene as any).spawnFloatingText(this.x, this.y - 12, '-3 SANGRAMENTO', '#ef4444', false);
+          }
+        }
+      }
+
+      if (this.stats.statusConditions?.poison) {
+        if (this.poisonTimer >= 2000) {
+          this.poisonTimer = 0;
+          this.takeDamage(4);
+          if (this.scene && 'spawnFloatingText' in this.scene) {
+            (this.scene as any).spawnFloatingText(this.x, this.y - 12, '-4 VENENO', '#22c55e', false);
+          }
+        }
+      }
+
+      if (this.stats.statusConditions?.infection) {
+        if (this.infectionTimer >= 3000) {
+          this.infectionTimer = 0;
+          this.takeDamage(2);
+          if (this.scene && 'spawnFloatingText' in this.scene) {
+            (this.scene as any).spawnFloatingText(this.x, this.y - 12, '-2 INFECÇÃO', '#a855f7', false);
+          }
+        }
+      }
+
+      // Visual Status Tints
+      if (!this.isInvulnerable) {
+        if (this.stats.statusConditions?.poison) {
+          this.setTint(0x4ade80); // Green
+        } else if (this.stats.statusConditions?.infection) {
+          this.setTint(0xc084fc); // Purple
+        } else if (this.stats.statusConditions?.bleeding) {
+          this.setTint(0xf87171); // Deep Red
+        } else {
+          this.applyCosmeticTint();
+        }
+      }
+    }
+
+    // Mana Regeneration (+4 MP/sec, reduced by 50% if poisoned)
+    const manaRegenRate = this.stats.statusConditions?.poison ? 2 : 4;
     if (this.stats.mana < this.stats.maxMana) {
-      this.stats.mana = Math.min(this.stats.maxMana, this.stats.mana + (4 * delta) / 1000);
+      this.stats.mana = Math.min(this.stats.maxMana, this.stats.mana + (manaRegenRate * delta) / 1000);
     }
 
     // Invulnerability Flashing
@@ -410,6 +473,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public takeDamage(amount: number): boolean {
     if (this.isInvulnerable || this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
+
+    // Infection increases damage taken by 20%
+    if (this.stats.statusConditions?.infection) {
+      amount *= 1.2;
+    }
 
     this.stats.hp = Math.max(0, this.stats.hp - amount);
 
