@@ -209,7 +209,7 @@ export class GameScene extends Phaser.Scene {
           }
         });
 
-        // Save current equipment to the corpse in the store and clear it from player
+        // Save current equipment to the corpse in the store
         store.setDroppedCorpse({
           hasDroppedCorpse: true,
           zone: 'calabouco',
@@ -219,7 +219,16 @@ export class GameScene extends Phaser.Scene {
           equipment: store.equipment,
           curatives: this.player.stats.curatives
         });
+
+        // Clear death screens
+        store.setDefinitivelyDead(false);
+        store.setGameOverStats(null);
+        
+        // Push stats to store, then clear inventory (which updates the store's stats again)
+        store.setPlayerStats({ ...this.player.stats });
         store.clearInventoryOnDeath();
+        // Update local reference to match the cleared store
+        this.player.stats.curatives = { bandages: 0, antidotes: 0, antibiotics: 0 };
 
         // Spawn a lost corpse scavengeable at the death spot!
         const lostCorpse = new Scavengeable(this, deathX, deathY, 'player_corpse');
@@ -228,11 +237,6 @@ export class GameScene extends Phaser.Scene {
 
         // Print atmospheric message
         store.addLootLog("Você sente que a terra consome seus restos... olhos carniceiros espreitam seus pertences perdidos. Apresse-se, Bloodmage.");
-
-        // Clear death screens
-        store.setDefinitivelyDead(false);
-        store.setGameOverStats(null);
-        store.setPlayerStats({ ...this.player.stats });
       }
     });
 
