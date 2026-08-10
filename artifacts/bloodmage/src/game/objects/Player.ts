@@ -61,27 +61,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       timeSurvivedSeconds: 0,
       unlockedSpells: ['blood_bolt', 'hellfire_nova', 'syphon_soul', 'bone_shield', 'crimson_scythe', 'blood_ritual_circle', 'hemomancy_beam'],
       pendingStatPoints: 0,
-      knockoutCount: 0,
       isUnconscious: false,
+      knockoutCount: 0,
       isDefinitivelyDead: false,
-      statusConditions: {
-        bleeding: false,
-        poison: false,
-        infection: false,
-      },
-      curatives: {
-        bandages: 1,
-        antidotes: 1,
-        antibiotics: 0,
-      },
-      droppedCorpse: {
-        hasDroppedCorpse: false,
-        zone: '',
-        x: 0,
-        y: 0,
-        droppedTimestamp: 0,
-        itemsInside: [],
-      },
+      statusConditions: { bleeding: false, poison: false, infection: false },
     };
 
     // Init skill cooldowns
@@ -110,10 +93,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public setMoveInput(x: number, y: number) {
-    if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) {
-      this.moveVector.set(0, 0);
-      return;
-    }
     this.moveVector.set(x, y);
     if (this.moveVector.length() > 1) {
       this.moveVector.normalize();
@@ -121,51 +100,53 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public setAimInput(x: number, y: number) {
-    if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) {
-      return;
-    }
     if (x !== 0 || y !== 0) {
       this.aimVector.set(x, y).normalize();
     }
   }
 
   public updatePlayer(time: number, delta: number) {
+    if (this.stats.isUnconscious) {
+      // Regenerate passive HP during unconsciousness:
+      // Regenerate 2% of maxHp per second, until we reach exactly 5% of maxHp.
+      const regenAmount = (this.stats.maxHp * 0.02 * delta) / 1000;
+      this.stats.hp = Math.min(this.stats.maxHp * 0.05, this.stats.hp + regenAmount);
+
+      this.setVelocity(0, 0);
+      this.setAlpha(0.5); // visual cue for unconsciousness
+
+      if (this.stats.hp >= this.stats.maxHp * 0.05) {
+        this.stats.isUnconscious = false;
+        this.stats.hp = Math.floor(this.stats.maxHp * 0.05);
+        this.isInvulnerable = true;
+        this.invulnerableTimer = 2000; // 2 seconds invul frames upon waking up
+        this.setAlpha(1.0);
+        soundEngine.playLevelUp(); // play wake up audio cue!
+
+        useGameStore.getState().setPlayerStats({ ...this.stats });
+      }
+      return;
+    }
+
+    // Process Status Conditions (Survival)
+    if (this.stats.statusConditions) {
+      const conds = this.stats.statusConditions;
+      const isMoving = this.currentVx !== 0 || this.currentVy !== 0;
+
+      // 1. Bleeding (Sangramento): drena HP a cada passo (quando se move)
+      if (conds.bleeding && isMoving) {
+        this.stats.hp = Math.max(1, this.stats.hp - (2.5 * delta) / 1000); // 2.5 HP/s
+      }
+
+      // 2. Poison (Envenenamento): drena HP constantemente
+      if (conds.poison) {
+        this.stats.hp = Math.max(1, this.stats.hp - (1.2 * delta) / 1000); // 1.2 HP/s
+      }
+    }
+
     // Cooldown timers
     if (this.dashCooldownTimer > 0) {
       this.dashCooldownTimer -= delta;
-    }
-
-    if (this.stats.isUnconscious) {
-      this.setVelocity(0, 0);
-      this.currentVx = 0;
-      this.currentVy = 0;
-      this.setAlpha(0.6);
-
-      // Regenerate passive HP while unconscious (2% of Max HP per second)
-      const regenAmount = (0.02 * this.stats.maxHp * delta) / 1000;
-      this.stats.hp = Math.min(this.stats.maxHp, this.stats.hp + regenAmount);
-
-      const threshold = 0.05 * this.stats.maxHp;
-      if (this.stats.hp >= threshold) {
-        this.stats.isUnconscious = false;
-        this.stats.hp = Math.ceil(threshold);
-        this.isInvulnerable = true;
-        this.invulnerableTimer = 1500; // 1.5s wake-up invulnerability
-        this.setAlpha(1.0);
-
-        useGameStore.getState().setUnconscious(false);
-        useGameStore.getState().setPlayerStats({ ...this.stats });
-      } else {
-        useGameStore.getState().setPlayerStats({ ...this.stats });
-      }
-
-      // Update skill cooldowns
-      Object.keys(this.skillCooldowns).forEach((key) => {
-        if (this.skillCooldowns[key] > 0) {
-          this.skillCooldowns[key] -= delta;
-        }
-      });
-      return;
     }
 
     if (this.isDashing) {
@@ -222,8 +203,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.setFlipX(this.moveVector.x < 0);
     }
 
-    // Mana Regeneration (+4 MP/sec)
-    if (this.stats.mana < this.stats.maxMana) {
+    // Mana Regeneration (+4 MP/sec) — blocked if infected
+    const isInfected = this.stats.statusConditions?.infection || false;
+    if (!isInfected && this.stats.mana < this.stats.maxMana) {
       this.stats.mana = Math.min(this.stats.maxMana, this.stats.mana + (4 * delta) / 1000);
     }
 
@@ -269,7 +251,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public triggerDash(): boolean {
-    if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
     if (this.isDashing || this.dashCooldownTimer > 0) return false;
 
     this.isDashing = true;
@@ -295,7 +276,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public castBloodBolt(time: number): boolean {
-    if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
     const spell = (spellsData as Record<string, SpellConfig>)['blood_bolt'];
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const cost = hasRuneFamine ? spell.manaCost * 2 : spell.manaCost;
@@ -308,7 +288,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public castNova(): boolean {
-    if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
     const spell = (spellsData as Record<string, SpellConfig>)['hellfire_nova'];
     if (this.getCooldownRemaining('hellfire_nova') > 0) return false;
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
@@ -323,7 +302,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public castSyphon(): boolean {
-    if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
     const spell = (spellsData as Record<string, SpellConfig>)['syphon_soul'];
     if (this.getCooldownRemaining('syphon_soul') > 0) return false;
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
@@ -338,7 +316,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public castBoneShield(): boolean {
-    if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
     const spell = (spellsData as Record<string, SpellConfig>)['bone_shield'];
     if (this.getCooldownRemaining('bone_shield') > 0) return false;
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
@@ -353,7 +330,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public castCrimsonScythe(): boolean {
-    if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
     const spell = (spellsData as Record<string, SpellConfig>)['crimson_scythe'];
     if (this.getCooldownRemaining('crimson_scythe') > 0) return false;
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
@@ -371,7 +347,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public castRitualCircle(): boolean {
-    if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
     const spell = (spellsData as Record<string, SpellConfig>)['blood_ritual_circle'];
     if (this.getCooldownRemaining('blood_ritual_circle') > 0) return false;
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
@@ -389,7 +364,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public castHemomancyBeam(): boolean {
-    if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
     const spell = (spellsData as Record<string, SpellConfig>)['hemomancy_beam'];
     if (this.getCooldownRemaining('hemomancy_beam') > 0) return false;
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
@@ -410,38 +384,34 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.isInvulnerable || this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
 
     this.stats.hp = Math.max(0, this.stats.hp - amount);
-
-    // Sync HP immediately to state
-    useGameStore.getState().setPlayerStats({ ...this.stats });
-
-    if (this.stats.hp <= 0) {
-      if (this.stats.knockoutCount < 2) {
-        // Enter Unconscious state!
-        this.stats.isUnconscious = true;
-        this.stats.knockoutCount += 1;
-        this.setVelocity(0, 0);
-        this.currentVx = 0;
-        this.currentVy = 0;
-
-        useGameStore.getState().setUnconscious(true);
-        useGameStore.getState().setPlayerStats({ ...this.stats });
-
-        soundEngine.playPlayerHurt();
-        return false; // Not definitively dead yet
-      } else {
-        // 3rd knock down -> Definitive Death!
-        this.stats.isDefinitivelyDead = true;
-        useGameStore.getState().setDefinitivelyDead(true);
-        useGameStore.getState().setPlayerStats({ ...this.stats });
-        soundEngine.playPlayerHurt();
-        return true; // Definitive Death triggered!
-      }
-    }
-
     this.isInvulnerable = true;
     this.invulnerableTimer = 800; // 0.8s invulnerability frame
     soundEngine.playPlayerHurt();
 
+    if (this.stats.hp <= 0) {
+      this.stats.knockoutCount = (this.stats.knockoutCount || 0) + 1;
+      if (this.stats.knockoutCount < 3) {
+        this.stats.isUnconscious = true;
+        this.stats.hp = 0;
+        this.setVelocity(0, 0);
+        this.currentVx = 0;
+        this.currentVy = 0;
+        this.isDashing = false;
+        // invulnerable during unconsciousness
+        this.isInvulnerable = true;
+        this.invulnerableTimer = 9999999; // indefinitely until revived
+
+        // Notify useGameStore
+        useGameStore.getState().setPlayerStats({ ...this.stats });
+        return false; // not definitively dead yet!
+      } else {
+        this.stats.isDefinitivelyDead = true;
+        useGameStore.getState().setPlayerStats({ ...this.stats });
+        return true; // Is definitively dead!
+      }
+    }
+
+    useGameStore.getState().setPlayerStats({ ...this.stats });
     return false;
   }
 

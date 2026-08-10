@@ -51,16 +51,7 @@ export interface TalentNode {
 
 export type MonsterBehavior = 'chaser' | 'ranged' | 'charger' | 'swarmer' | 'boss';
 
-export type MonsterTemperament = 'aggressive' | 'tactical' | 'timid' | 'relentless' | 'highly_aggressive' | 'territorial' | 'defensive' | 'totally_passive';
-
-export interface DroppedCorpse {
-  hasDroppedCorpse: boolean;
-  zone: string;
-  x: number;
-  y: number;
-  droppedTimestamp: number;
-  itemsInside: { id: string; quantity: number }[];
-}
+export type MonsterTemperament = 'aggressive' | 'tactical' | 'timid' | 'relentless' | 'highly_aggressive' | 'territorial' | 'defensive' | 'passive';
 
 export type MonsterGait = 'quadruped' | 'biped_fast' | 'biped_slow' | 'ethereal' | 'heavy';
 
@@ -128,6 +119,12 @@ export interface UpgradeOption {
   };
 }
 
+export interface StatusConditions {
+  bleeding: boolean;
+  poison: boolean;
+  infection: boolean;
+}
+
 export interface PlayerStats {
   hp: number;
   maxHp: number;
@@ -149,20 +146,18 @@ export interface PlayerStats {
   timeSurvivedSeconds: number;
   unlockedSpells: string[]; // spell IDs
   pendingStatPoints: number; // unspent talent/skill points
-  knockoutCount: number;
-  isUnconscious: boolean;
-  isDefinitivelyDead: boolean;
-  statusConditions: {
-    bleeding: boolean;
-    poison: boolean;
-    infection: boolean;
-  };
-  curatives: {
-    bandages: number;
-    antidotes: number;
-    antibiotics: number;
-  };
-  droppedCorpse: DroppedCorpse;
+  isUnconscious?: boolean;
+  knockoutCount?: number;
+  isDefinitivelyDead?: boolean;
+  statusConditions?: StatusConditions;
+}
+
+export interface DroppedCorpse {
+  hasDroppedCorpse: boolean;
+  zone: string;
+  x: number;
+  y: number;
+  itemsInside: LootItem[];
 }
 
 export interface WaveConfig {
