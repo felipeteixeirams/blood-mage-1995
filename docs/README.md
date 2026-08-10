@@ -1,3 +1,11 @@
+---
+agent_context: all agents
+target_module: docs
+priority: high
+status: active
+last_updated: 2026-08-10
+tags: [docs, index, navigation]
+---
 # 📚 Bloodmage 1995 — Graph Documentation
 
 > **Para Agentes de IA:** Esta é a entrada principal. Use este índice para navegar pelo contexto específico que sua tarefa requer. Não leia documentação além do necessário para economizar tokens.
@@ -8,57 +16,75 @@
 
 ```
 docs/
-├── README.md (este arquivo)
-├── CONTEXT/ (contextos por role/agente)
+├── AGENTS.md (bootstrap para agentes de IA)
+├── README.md (índice master - este arquivo)
+├── context/ (contextos por role/agente)
 │   ├── FRONTEND_DEVELOPER.md
 │   ├── BACKEND_DEVELOPER.md
 │   ├── GAME_DESIGNER.md
 │   ├── QA_ENGINEER.md
 │   └── PRODUCT_MANAGER.md
-├── ARCHITECTURE/ (decisões técnicas)
+├── architecture/ (decisões técnicas)
 │   ├── 00_OVERVIEW.md
 │   ├── 01_TECH_STACK.md
 │   ├── 02_CODE_ORGANIZATION.md
 │   ├── 03_PHASER_PATTERNS.md
 │   └── 04_STATE_MANAGEMENT.md
-├── DESIGN/ (especificações de design)
+├── design/ (especificações de design)
 │   ├── 00_DESIGN_PHILOSOPHY.md
 │   ├── 01_VISUAL_IDENTITY.md
 │   ├── 02_UI_PATTERNS.md
 │   └── 03_ACCESSIBILITY.md
-├── GAMEPLAY/ (mecânicas e features)
+├── gameplay/ (mecânicas e features)
 │   ├── 00_CORE_MECHANICS.md
 │   ├── 01_INCONSCIOUSNESS_SYSTEM.md
 │   ├── 02_COMBAT_FEEL.md
 │   ├── 03_SKILL_SYSTEM.md
 │   ├── 04_LOOT_SYSTEM.md
 │   └── 05_RECORDS_SYSTEM.md
-├── FEATURES/ (features em desenvolvimento)
+├── features/ (features em desenvolvimento)
 │   ├── 00_DUNGEON_SIEGE_EVOLUTION.md
 │   ├── 01_INCONSCIOUSNESS_PHASE1.md
 │   ├── 02_DEATH_SCREEN_PHASE2.md
 │   ├── 03_STATUS_CONDITIONS_PHASE3.md
 │   └── 04_CONTINUOUS_WORLD_PHASE4.md
-├── CRITICAL/ (anti-regressão e performance)
+├── critical/ (anti-regressão e performance)
 │   ├── 00_ANTI_REGRESSION_GUIDE.md
 │   ├── 01_CRITICAL_FILES.md
 │   ├── 02_PERFORMANCE_OPTIMIZATION.md
 │   ├── 03_TESTING_GATES.md
 │   └── 04_PERFORMANCE_METRICS.md
-├── INTEGRATION/ (third-party + tools)
+├── integration/ (third-party + tools)
 │   ├── 00_LOVABLE_INTEGRATION.md
 │   ├── 01_VERCEL_DEPLOYMENT.md
 │   ├── 02_MCP_SERVERS.md
 │   └── 03_AI_AGENT_SETUP.md
-├── REFERENCE/ (dados e referência rápida)
+├── reference/ (dados e referência rápida)
 │   ├── 00_QUICK_REFERENCE.md
 │   ├── 01_FILE_STRUCTURE.md
 │   ├── 02_KEY_TYPES.md
 │   ├── 03_API_ENDPOINTS.md
-│   └── 04_COMMON_TASKS.md
-└── DISCOVERY/ (histórico de descobertas)
+│   ├── 04_COMMON_TASKS.md
+│   └── docs-documental-base-guia.md (guia base de documentação)
+├── specs/ (specs por estágio de desenvolvimento)
+│   ├── README.md (índice de status)
+│   ├── propostas/ (ideias em backlog)
+│   ├── andamento/ (em desenvolvimento ativo)
+│   │   ├── 01_FASE1_INCONSCIENCIA.md
+│   │   ├── PHASE_1_UNCONSCIOUSNESS_SPEC.md
+│   │   ├── SPECS_EVOLUCAO.md
+│   │   └── SPEC_DUNGEON_SIEGE_EVOLUTION.md
+│   └── finalizadas/ (concluído e testado)
+│       └── 01_RECORDS_DISPLAY.md
+├── reviews/ (auditorias e validações)
+│   ├── AUDIT_REPORT_QUALIDADE_2026.md
+│   └── VALIDATION_DUNGEON_SIEGE_2026_08_10.md
+├── decisions/ (decisões de arquitetura - ADRs)
+├── templates/ (modelos padronizados, incl. frontmatter)
+├── wip/ (documentos em andamento)
+└── legacy/ (histórico descontinuado)
     ├── DISCOVERY_DUNGEON_SIEGE_EVOLUTION.md
-    └── SPECS_EVOLUCAO.md
+    └── Bloodmage1995_Discovery_Evolucao.docx
 ```
 
 ---
@@ -68,17 +94,17 @@ docs/
 ### Para Agentes de IA (Automático)
 
 **Passo 1:** Identifique seu contexto (role/tarefa)
-- **Frontend Dev?** → Leia [[CONTEXT/FRONTEND_DEVELOPER.md]]
-- **Backend Dev?** → Leia [[CONTEXT/BACKEND_DEVELOPER.md]]
-- **Game Designer?** → Leia [[CONTEXT/GAME_DESIGNER.md]]
-- **QA?** → Leia [[CONTEXT/QA_ENGINEER.md]]
-- **Product?** → Leia [[CONTEXT/PRODUCT_MANAGER.md]]
+- **Frontend Dev?** → Leia [[context/FRONTEND_DEVELOPER.md]]
+- **Backend Dev?** → Leia [[context/BACKEND_DEVELOPER.md]]
+- **Game Designer?** → Leia [[context/GAME_DESIGNER.md]]
+- **QA?** → Leia [[context/QA_ENGINEER.md]]
+- **Product?** → Leia [[context/PRODUCT_MANAGER.md]]
 
 **Passo 2:** Acesse documentação específica de sua tarefa
-- Arquitetura? → [[ARCHITECTURE/00_OVERVIEW.md]]
-- Mecânica de jogo? → [[GAMEPLAY/00_CORE_MECHANICS.md]]
-- Feature nova? → [[FEATURES/00_DUNGEON_SIEGE_EVOLUTION.md]]
-- Performance? → [[CRITICAL/02_PERFORMANCE_OPTIMIZATION.md]]
+- Arquitetura? → [[architecture/00_OVERVIEW.md]]
+- Mecânica de jogo? → [[gameplay/00_CORE_MECHANICS.md]]
+- Feature nova? → [[features/00_DUNGEON_SIEGE_EVOLUTION.md]]
+- Performance? → [[critical/02_PERFORMANCE_OPTIMIZATION.md]]
 
 **Passo 3:** Use referências cruzadas (wiki-links)
 - Clique em `[[documento]]` para mais contexto
@@ -97,11 +123,11 @@ docs/
 
 | Tarefa | Role | Documentos Essenciais | Opcionais |
 |--------|------|----------------------|-----------|
-| **Implementar tela Records** | Frontend | [[CONTEXT/FRONTEND_DEVELOPER.md]], [[GAMEPLAY/05_RECORDS_SYSTEM.md]], [[DESIGN/02_UI_PATTERNS.md]] | [[ARCHITECTURE/04_STATE_MANAGEMENT.md]] |
-| **Implementar Fase 1 (Inconsciência)** | Backend | [[CONTEXT/BACKEND_DEVELOPER.md]], [[GAMEPLAY/01_INCONSCIOUSNESS_SYSTEM.md]], [[CRITICAL/01_CRITICAL_FILES.md]] | [[GAMEPLAY/00_CORE_MECHANICS.md]] |
-| **Balancear Fase 3 (Status)** | Game Designer | [[CONTEXT/GAME_DESIGNER.md]], [[FEATURES/03_STATUS_CONDITIONS_PHASE3.md]], [[GAMEPLAY/03_SKILL_SYSTEM.md]] | [[DISCOVERY/DISCOVERY_DUNGEON_SIEGE_EVOLUTION.md]] |
-| **QA da Inconsciência** | QA | [[CONTEXT/QA_ENGINEER.md]], [[CRITICAL/03_TESTING_GATES.md]], [[GAMEPLAY/01_INCONSCIOUSNESS_SYSTEM.md]] | [[CRITICAL/02_PERFORMANCE_OPTIMIZATION.md]] |
-| **Setup agente de IA** | DevOps | [[INTEGRATION/02_MCP_SERVERS.md]], [[INTEGRATION/03_AI_AGENT_SETUP.md]] | Tudo relacionado a MCP |
+| **Implementar tela Records** | Frontend | [[context/FRONTEND_DEVELOPER.md]], [[gameplay/05_RECORDS_SYSTEM.md]], [[design/02_UI_PATTERNS.md]] | [[architecture/04_STATE_MANAGEMENT.md]] |
+| **Implementar Fase 1 (Inconsciência)** | Backend | [[context/BACKEND_DEVELOPER.md]], [[gameplay/01_INCONSCIOUSNESS_SYSTEM.md]], [[critical/01_CRITICAL_FILES.md]] | [[gameplay/00_CORE_MECHANICS.md]] |
+| **Balancear Fase 3 (Status)** | Game Designer | [[context/GAME_DESIGNER.md]], [[features/03_STATUS_CONDITIONS_PHASE3.md]], [[gameplay/03_SKILL_SYSTEM.md]] | [[legacy/DISCOVERY_DUNGEON_SIEGE_EVOLUTION.md]] |
+| **QA da Inconsciência** | QA | [[context/QA_ENGINEER.md]], [[critical/03_TESTING_GATES.md]], [[gameplay/01_INCONSCIOUSNESS_SYSTEM.md]] | [[critical/02_PERFORMANCE_OPTIMIZATION.md]] |
+| **Setup agente de IA** | DevOps | [[integration/02_MCP_SERVERS.md]], [[integration/03_AI_AGENT_SETUP.md]] | Tudo relacionado a MCP |
 
 ---
 
@@ -109,15 +135,17 @@ docs/
 
 ```
 README (você está aqui)
-├── → CONTEXT/* (contexts específicos por role)
-├── → ARCHITECTURE/* (fundamentals técnicos)
-├── → GAMEPLAY/* (mecânicas do jogo)
-├── → FEATURES/* (roadmap de desenvolvimento)
-├── → CRITICAL/* (anti-regressão)
-├── → DESIGN/* (visual/UX)
-├── → INTEGRATION/* (ferramentas externas)
-├── → REFERENCE/* (consulta rápida)
-└── → DISCOVERY/* (histórico e specs)
+├── → context/* (contexts específicos por role)
+├── → architecture/* (fundamentals técnicos)
+├── → gameplay/* (mecânicas do jogo)
+├── → features/* (roadmap de desenvolvimento)
+├── → critical/* (anti-regressão)
+├── → design/* (visual/UX)
+├── → integration/* (ferramentas externas)
+├── → reference/* (consulta rápida)
+├── → specs/* (specs por estágio)
+├── → reviews/* (auditorias/validações)
+└── → legacy/* (histórico descontinuado)
 ```
 
 ---
@@ -130,10 +158,10 @@ README (você está aqui)
 # Instruções para Google Jules
 
 1. Você trabalha em features de gameplay/design visual do Bloodmage 1995
-2. Antes de implementar: Leia [[CONTEXT/GAME_DESIGNER.md]]
-3. Para qualquer mudança: Consulte [[CRITICAL/01_CRITICAL_FILES.md]]
-4. Se tiver dúvida sobre mecânica: Consulte [[GAMEPLAY/00_CORE_MECHANICS.md]]
-5. Após implementar: Valide contra [[CRITICAL/03_TESTING_GATES.md]]
+2. Antes de implementar: Leia [[context/GAME_DESIGNER.md]]
+3. Para qualquer mudança: Consulte [[critical/01_CRITICAL_FILES.md]]
+4. Se tiver dúvida sobre mecânica: Consulte [[gameplay/00_CORE_MECHANICS.md]]
+5. Após implementar: Valide contra [[critical/03_TESTING_GATES.md]]
 
 NÃO leia código-fonte sem necessidade. Use documentação.
 ```
@@ -144,9 +172,9 @@ NÃO leia código-fonte sem necessidade. Use documentação.
 # Instruções para Google AI Studio
 
 1. Você trabalha em documentação e análise de features
-2. Use contexto: [[CONTEXT/PRODUCT_MANAGER.md]]
-3. Para design: Consulte [[DESIGN/00_DESIGN_PHILOSOPHY.md]]
-4. Para gameplay: Consulte [[GAMEPLAY/00_CORE_MECHANICS.md]]
+2. Use contexto: [[context/PRODUCT_MANAGER.md]]
+3. Para design: Consulte [[design/00_DESIGN_PHILOSOPHY.md]]
+4. Para gameplay: Consulte [[gameplay/00_CORE_MECHANICS.md]]
 5. Referências cruzadas: Siga wiki-links `[[arquivo.md]]`
 
 Objetivo: Manter documentação atualizada e coerente.
@@ -158,10 +186,10 @@ Objetivo: Manter documentação atualizada e coerente.
 # Instruções para GitHub Copilot Chat
 
 1. Context: Você é um assistente de codificação para Bloodmage 1995
-2. Ao sugerir código: Valide contra [[CRITICAL/02_PERFORMANCE_OPTIMIZATION.md]]
-3. Para tipos TypeScript: Consulte [[REFERENCE/02_KEY_TYPES.md]]
-4. Para padrões: Consulte [[ARCHITECTURE/03_PHASER_PATTERNS.md]]
-5. Após sugestão: Mencione [[CRITICAL/01_CRITICAL_FILES.md]] se relevante
+2. Ao sugerir código: Valide contra [[critical/02_PERFORMANCE_OPTIMIZATION.md]]
+3. Para tipos TypeScript: Consulte [[reference/02_KEY_TYPES.md]]
+4. Para padrões: Consulte [[architecture/03_PHASER_PATTERNS.md]]
+5. Após sugestão: Mencione [[critical/01_CRITICAL_FILES.md]] se relevante
 
 Nunca sugira mudanças em CRITICAL FILES sem aviso.
 ```
@@ -172,9 +200,9 @@ Nunca sugira mudanças em CRITICAL FILES sem aviso.
 # Instruções para IA Local Auto-Hospedada
 
 Contexto mínimo (economizar tokens):
-- Seu papel: [[CONTEXT/ROLE_AQUI.md]]
-- Arquitetura básica: [[ARCHITECTURE/00_OVERVIEW.md]]
-- Arquivos críticos: [[CRITICAL/01_CRITICAL_FILES.md]]
+- Seu papel: [[context/ROLE_AQUI.md]]
+- Arquitetura básica: [[architecture/00_OVERVIEW.md]]
+- Arquivos críticos: [[critical/01_CRITICAL_FILES.md]]
 
 NÃO leia:
 - Código-fonte completo (use referências)
@@ -192,10 +220,10 @@ Fluxo: Questão → Contexto mínimo → Referência → Resposta
 
 ```markdown
 # Usar isto:
-Consulte [[GAMEPLAY/01_INCONSCIOUSNESS_SYSTEM.md]] para detalhes.
+Consulte [[gameplay/01_INCONSCIOUSNESS_SYSTEM.md]] para detalhes.
 
 # NÃO usar isto:
-Consulte /docs/GAMEPLAY/01_INCONSCIOUSNESS_SYSTEM.md...
+Consulte /docs/gameplay/01_INCONSCIOUSNESS_SYSTEM.md...
 ```
 
 ### Estrutura de Cabeçalhos
@@ -214,8 +242,8 @@ Consulte /docs/GAMEPLAY/01_INCONSCIOUSNESS_SYSTEM.md...
 role: Frontend Developer
 complexity: Medium
 tokens_est: 2000
-depends_on: [[ARCHITECTURE/04_STATE_MANAGEMENT.md]]
-related: [[DESIGN/02_UI_PATTERNS.md]]
+depends_on: [[architecture/04_STATE_MANAGEMENT.md]]
+related: [[design/02_UI_PATTERNS.md]]
 ---
 ```
 
@@ -225,24 +253,26 @@ related: [[DESIGN/02_UI_PATTERNS.md]]
 
 | Área | Status | Última Atualização | Responsável |
 |------|--------|-------------------|-------------|
-| CONTEXT | ✅ Draft | 2026-08-09 | Felipe + Claude |
-| ARCHITECTURE | ✅ Draft | 2026-08-09 | Claude |
-| DESIGN | 🔲 TODO | - | Jules |
-| GAMEPLAY | ✅ Partial | 2026-08-09 | Felipe |
-| FEATURES | ✅ Partial | 2026-08-09 | Felipe |
-| CRITICAL | ✅ Complete | 2026-08-09 | Claude |
-| INTEGRATION | ✅ Draft | 2026-08-09 | Claude |
-| REFERENCE | 🔲 TODO | - | Claude |
-| DISCOVERY | ✅ Complete | 2026-08-09 | Felipe |
+| context/ | ✅ Draft | 2026-08-09 | Felipe + Claude |
+| architecture/ | ✅ Draft | 2026-08-09 | Claude |
+| design/ | 🔲 TODO | - | Jules |
+| gameplay/ | ✅ Partial | 2026-08-09 | Felipe |
+| features/ | ✅ Partial | 2026-08-09 | Felipe |
+| critical/ | ✅ Complete | 2026-08-09 | Claude |
+| integration/ | ✅ Draft | 2026-08-09 | Claude |
+| reference/ | 🔲 TODO | - | Claude |
+| reviews/ | ✅ Complete | 2026-08-10 | Felipe |
+| specs/ | ✅ Partial | 2026-08-10 | Felipe |
+| legacy/ | ✅ Complete | 2026-08-09 | Felipe |
 
 ---
 
 ## 🔄 Fluxo de Atualização de Docs
 
-1. **Feature nova:** Crie arquivo em FEATURES/
+1. **Feature nova:** Crie arquivo em features/
 2. **Merge para main:** Atualize wiki-links em README
-3. **QA validar:** Use [[CRITICAL/03_TESTING_GATES.md]]
-4. **Docs completas:** Archive no DISCOVERY/
+3. **QA validar:** Use [[critical/03_TESTING_GATES.md]]
+4. **Docs completas:** Archive no legacy/
 5. **Agentes acessam:** Consultem contexto relevante
 
 ---
@@ -253,22 +283,22 @@ related: [[DESIGN/02_UI_PATTERNS.md]]
 
 ```
 # Contexto necessário (tokens mínimos):
-1. [[CONTEXT/FRONTEND_DEVELOPER.md]] (role)
-2. [[GAMEPLAY/05_RECORDS_SYSTEM.md]] (spec)
-3. [[DESIGN/02_UI_PATTERNS.md]] (padrões UI)
-4. [[REFERENCE/02_KEY_TYPES.md]] (types)
+1. [[context/FRONTEND_DEVELOPER.md]] (role)
+2. [[gameplay/05_RECORDS_SYSTEM.md]] (spec)
+3. [[design/02_UI_PATTERNS.md]] (padrões UI)
+4. [[reference/02_KEY_TYPES.md]] (types)
 
-# NÃO leia: código-fonte completo, DISCOVERY
+# NÃO leia: código-fonte completo, DISCOVERY/legacy
 ```
 
 ### Cenário 2: Jules recebe task "Implementar Fase 1 (Inconsciência)"
 
 ```
 # Contexto necessário:
-1. [[FEATURES/01_INCONSCIOUSNESS_PHASE1.md]] (spec)
-2. [[GAMEPLAY/01_INCONSCIOUSNESS_SYSTEM.md]] (mecânica)
-3. [[CRITICAL/01_CRITICAL_FILES.md]] (arquivos não tocar)
-4. [[CRITICAL/03_TESTING_GATES.md]] (validação)
+1. [[features/01_INCONSCIOUSNESS_PHASE1.md]] (spec)
+2. [[gameplay/01_INCONSCIOUSNESS_SYSTEM.md]] (mecânica)
+3. [[critical/01_CRITICAL_FILES.md]] (arquivos não tocar)
+4. [[critical/03_TESTING_GATES.md]] (validação)
 
 # NÃO leia: design visual, specs de outras fases
 ```
@@ -277,10 +307,10 @@ related: [[DESIGN/02_UI_PATTERNS.md]]
 
 ```
 # Contexto necessário:
-1. [[CONTEXT/QA_ENGINEER.md]] (checklist)
-2. [[GAMEPLAY/05_RECORDS_SYSTEM.md]] (specs)
-3. [[CRITICAL/03_TESTING_GATES.md]] (gates)
-4. [[CRITICAL/02_PERFORMANCE_OPTIMIZATION.md]] (perf)
+1. [[context/QA_ENGINEER.md]] (checklist)
+2. [[gameplay/05_RECORDS_SYSTEM.md]] (specs)
+3. [[critical/03_TESTING_GATES.md]] (gates)
+4. [[critical/02_PERFORMANCE_OPTIMIZATION.md]] (perf)
 
 # NÃO leia: código backend, design gráfico
 ```
@@ -289,10 +319,10 @@ related: [[DESIGN/02_UI_PATTERNS.md]]
 
 ## 🚀 Próximos Passos
 
-- [ ] Criar CONTEXT/* (personalizados por role)
-- [ ] Criar ARCHITECTURE/* (detailed)
-- [ ] Criar DESIGN/* (visual standards)
-- [ ] Criar REFERENCE/* (quick lookup)
+- [ ] Criar context/* (personalizados por role)
+- [ ] Criar architecture/* (detailed)
+- [ ] Criar design/* (visual standards)
+- [ ] Criar reference/* (quick lookup)
 - [ ] Testar com cada agente de IA
 - [ ] Medir economia de tokens
 - [ ] Atualizar meta-prompts baseado em feedback
@@ -303,4 +333,4 @@ related: [[DESIGN/02_UI_PATTERNS.md]]
 **Última revisão:** 2026-08-09  
 **Versão:** 1.0 (Graph Documentation)
 
-[[CONTEXT/FRONTEND_DEVELOPER.md]] | [[CONTEXT/BACKEND_DEVELOPER.md]] | [[CONTEXT/GAME_DESIGNER.md]] | [[CONTEXT/QA_ENGINEER.md]] | [[CONTEXT/PRODUCT_MANAGER.md]]
+[[context/FRONTEND_DEVELOPER.md]] | [[context/BACKEND_DEVELOPER.md]] | [[context/GAME_DESIGNER.md]] | [[context/QA_ENGINEER.md]] | [[context/PRODUCT_MANAGER.md]]

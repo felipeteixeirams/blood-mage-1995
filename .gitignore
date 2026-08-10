@@ -8,3 +8,4 @@ out-tsc
 *.log
 .env*
 !.env.example
+temp_lovable/
