@@ -14,7 +14,7 @@ import { soundEngine } from '../../utils/soundEngine';
 import { useGameStore } from '../../store/gameStore';
 import { telemetry } from '../../utils/telemetry';
 import { CombatFeel } from '../systems/CombatFeel';
-import { ContractSystem } from '../systems/ContractSystem';
+import { worldManager } from '../systems/WorldManager';
 
 export interface GameSceneCallbacks {
   onStatsUpdate: (stats: PlayerStats) => void;
@@ -543,6 +543,22 @@ export class GameScene extends Phaser.Scene {
     }
 
     useGameStore.getState().setCurrentBiome(biome);
+
+    // Apply WorldManager environmental biome changes (Lighting & Audio transitions)
+    const { isTransitionIndoorOutdoor, previousIndoorState } = worldManager.setBiome(biome);
+    const envConfig = worldManager.getCurrentConfig();
+    soundEngine.updateEnvironmentAudio(envConfig.isIndoor, envConfig.reverbLevel);
+
+    // Efeito de Adaptação de Pupila (Pupil Light Adaptation): Flash ao mudar de caverna/ambiente fechado para espaço aberto
+    if (isTransitionIndoorOutdoor) {
+      if (!envConfig.isIndoor) {
+        // Entrando em ambiente aberto ensolarado/iluminado: Flash brilhante de adaptação
+        this.cameras.main.flash(350, 255, 255, 240);
+      } else {
+        // Entrando em subterrâneo/caverna fechada: Flash escuro de íris dilantando
+        this.cameras.main.flash(300, 20, 10, 15);
+      }
+    }
 
     const rooms = this.dungeonGenerator.generate(mapW, mapH, biome);
     this.rooms = rooms;
@@ -1259,23 +1275,26 @@ export class GameScene extends Phaser.Scene {
         soundEngine.updateSpatialThreat(0, 0, false);
       }
 
-      // 4.3 & 4.4 — Vinheta Pulsante & Iluminação Dinâmica (Blood Aura)
+      // 4.3 & 4.4 — Vinheta Pulsante & Iluminação Dinâmica (WorldManager)
       if (this.darknessOverlay) {
         this.darknessOverlay.clear();
 
+        worldManager.updateLighting(delta);
+        const envConfig = worldManager.getCurrentConfig();
+
         const isBoss = this.isBossActive();
-        const baseColor = (alertCount > 10 || isBoss) ? 0x2d0208 : 0x050510;
+        const baseColor = (alertCount > 10 || isBoss) ? 0x2d0208 : envConfig.darknessColor;
         const maxOverlayAlpha = (alertCount > 10 || isBoss)
           ? (0.55 + 0.25 * Math.sin(time * 0.012)) // Rapid high danger pulse
-          : (alertCount > 3 ? (0.45 + 0.1 * Math.sin(time * 0.003)) : 0.35); // Slow or static pulse
+          : (alertCount > 3 ? (envConfig.darknessAlpha + 0.1 * Math.sin(time * 0.003)) : envConfig.darknessAlpha);
 
         const playerHpRatio = this.player.stats.hp / this.player.stats.maxHp;
-        const targetRadius = playerHpRatio < 0.3 ? 140 : 200;
+        const hpMultiplier = playerHpRatio < 0.3 ? 0.75 : 1.0;
+        const targetRadius = worldManager.currentLightRadius * hpMultiplier;
 
         // Draw concentric rings from center to create smooth radial light hole
         const numRings = 10;
         for (let r = 0; r < numRings; r++) {
-          const innerRadius = (r / numRings) * targetRadius;
           const outerRadius = ((r + 1) / numRings) * targetRadius;
           const ringAlpha = (r / numRings) * maxOverlayAlpha;
 

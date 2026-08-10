@@ -5,7 +5,7 @@ priority: P2
 start_date: 2026-08-10
 eta: 2026-09-30
 responsible: Jules (Google AI)
-progress: 15% (Spec refinada com iluminação e áudio dinâmicos)
+progress: 60% (WorldManager, iluminação adaptativa e áudio implementados)
 agent_context: backend, frontend, game designer
 target_module: artifacts/bloodmage/src/game
 last_updated: 2026-08-10
@@ -40,12 +40,12 @@ tags: [specs, phase-4, continuous-world, safe-town, dynamic-lighting, soundscape
   - **Ancião**: Concede dicas de lore e abre portais para zonas de perigo.
 - [ ] **Biomas e Transições Lineares**:
   - Conexão contínua entre biomas (Fosso das Chagas -> Catacumbas -> Santuário de Sangue) via portais/passagens de transição.
-- [ ] **Iluminação Adaptativa por Bioma (Pupil Light Adaptation)**:
-  - **Ambiente Fechado/Caverna**: Visão reduzida (`darknessOverlay` fechado a 140px, cor escura `0x050510`, névoa densa).
-  - **Ambiente Aberto/Santuário**: Transição com flash suave de iluminação, expansão do raio de luz (`darknessOverlay` aberto a 350px) e feixes visuais de luz ambiente.
-- [ ] **Paisagem Sonora e Reverb Reativo (Ambient Audio & Reverb)**:
+- [x] **Iluminação Adaptativa por Bioma (Pupil Light Adaptation)**:
+  - **Ambiente Fechado/Caverna**: Visão reduzida (`darknessOverlay` fechado a 130–170px, cor escura `0x050510`, névoa densa).
+  - **Ambiente Aberto/Santuário**: Transição com flash suave de iluminação, expansão do raio de luz (`darknessOverlay` aberto a 320px) e feixes visuais de luz ambiente.
+- [x] **Paisagem Sonora e Reverb Reativo (Ambient Audio & Reverb)**:
   - Ajuste dinâmico do `soundEngine`: Reverb e eco acentuado em cavernas e ambientes fechados; áudio ambiente com vento e sussurros em espaços abertos.
-- [ ] **Gerenciador de Mundo/Zonas**:
+- [x] **Gerenciador de Mundo/Zonas**:
   - `WorldManager.ts` para controle de carregamento procedural, transições visuais/sonoras e persistência de estado entre zonas.
 
 ### Nice to Have

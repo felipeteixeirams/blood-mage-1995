@@ -891,6 +891,14 @@ class SoundEngine {
     }, 450);
   }
 
+  public updateEnvironmentAudio(isIndoor: boolean, reverbLevel: number) {
+    if (!this.ctx || !this.bgmGain) return;
+    const now = this.ctx.currentTime;
+    // Adjust BGM gain dynamics based on indoor cave vs outdoor sanctuary
+    const targetGain = this.isMuted ? 0 : (isIndoor ? this.bgmVolume * 0.12 : this.bgmVolume * 0.20);
+    this.bgmGain.gain.setTargetAtTime(targetGain, now, 0.5);
+  }
+
   public stopBGM() {
     if (this.bgmIntervalTimer) {
       clearInterval(this.bgmIntervalTimer);
