@@ -477,35 +477,6 @@ export function generateGameTextures(scene: Phaser.Scene) {
   });
   addTexture('spr_chest', chestCanvas);
 
-  // 19b. Skeleton Remains (Bones)
-  const bonesCanvas = createPixelCanvas(24, 18, (ctx) => {
-    ctx.fillStyle = '#e3dac9'; // Bone white
-    // Draw skull
-    ctx.fillRect(8, 2, 8, 8);
-    ctx.fillStyle = '#111111'; // Eye sockets
-    ctx.fillRect(10, 4, 2, 2);
-    ctx.fillRect(13, 4, 2, 2);
-    // Draw crossbones
-    ctx.fillStyle = '#e3dac9';
-    ctx.fillRect(2, 11, 20, 2);
-    ctx.fillRect(4, 8, 2, 8);
-    ctx.fillRect(18, 8, 2, 8);
-  });
-  addTexture('spr_skeleton_remains', bonesCanvas);
-
-  // 19c. Dead Soldier
-  const corpseCanvas = createPixelCanvas(28, 16, (ctx) => {
-    ctx.fillStyle = '#475569'; // Steel armor body
-    ctx.fillRect(4, 4, 18, 8);
-    ctx.fillStyle = '#991b1b'; // Dried blood
-    ctx.fillRect(12, 5, 4, 4);
-    ctx.fillStyle = '#e2e8f0'; // Helmet
-    ctx.fillRect(2, 4, 4, 6);
-    ctx.fillStyle = '#1e293b'; // Boots/gloves
-    ctx.fillRect(22, 5, 4, 5);
-  });
-  addTexture('spr_dead_soldier', corpseCanvas);
-
   // 20. AI Alert Icon "!" (12x18)
   const alertCanvas = createPixelCanvas(12, 18, (ctx) => {
     ctx.fillStyle = '#ef4444';

@@ -5,8 +5,8 @@ import { ActionButtons } from './hud/ActionButtons';
 import { LootLog } from './hud/LootLog';
 import { SkillsOverlay } from './hud/SkillsOverlay';
 import { ContractHUD } from './hud/ContractHUD';
-import { RecordsDisplay } from './hud/RecordsDisplay';
 import palettesData from '../data/palettes.json';
+import { RecordsDisplay } from './hud/RecordsDisplay';
 import { useFloatingJoystick } from '../hooks/useFloatingJoystick';
 import { soundEngine } from '../utils/soundEngine';
 import { useGameStore } from '../store/gameStore';
@@ -112,15 +112,24 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
     setActiveTip,
     isRecordsOpen,
     setRecordsOpen,
-    activeNPC,
-    setActiveNPC,
-    closestNPCType,
-    setClosestNPCType,
-    buyCurative,
-    bloodCrystals,
-    addBloodCrystals,
-    setStatusCondition,
+    addLootLog,
   } = useGameStore();
+
+  const cureCondition = (key: 'bleeding' | 'poison' | 'infection', itemName: string) => {
+    soundEngine.playLevelUp(); // play healing sound
+
+    const nextConditions = {
+      ...(stats.statusConditions || { bleeding: false, poison: false, infection: false }),
+      [key]: false
+    };
+
+    setPlayerStats({
+      ...stats,
+      statusConditions: nextConditions
+    });
+
+    addLootLog(`Usou ${itemName}: Curou ${key.toUpperCase()}!`);
+  };
 
   const [splatters, setSplatters] = useState<BloodSplatter[]>([]);
   const [exploredRatio, setExploredPercentage] = useState<number>(18); // Reveal map progress
@@ -500,22 +509,70 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
               </div>
             ) : (
               <div className="flex flex-col gap-2 bg-[#110e05]/60 p-2.5 border border-[#524341] max-h-48 overflow-y-auto">
-                {/* Scroll item 1 */}
-                <div className="flex gap-2.5 p-2 bg-[#181211] border border-[#5b403c] rounded-none">
-                  <Scroll className="text-amber-500 w-8 h-8 shrink-0" />
-                  <div className="flex flex-col text-left">
-                    <span className="text-[10px] text-amber-200 uppercase font-bold">Pergaminho de Hemomancia</span>
-                    <span className="text-[8px] text-gray-400 leading-normal">Casta instantaneamente a habilidade Blood Nova causando 250% de dano base sacrificando vitalidade.</span>
+                {/* Bandagem para Sangramento */}
+                <div className="flex gap-2.5 p-2 bg-[#181211] border border-[#5b403c] rounded-none items-center justify-between">
+                  <div className="flex gap-2.5 items-center">
+                    <Scroll className="text-amber-500 w-8 h-8 shrink-0" />
+                    <div className="flex flex-col text-left">
+                      <span className="text-[10px] text-amber-200 uppercase font-bold">Bandagem</span>
+                      <span className="text-[8px] text-gray-400 leading-normal">Cura o status de Sangramento (Bleeding) ativo.</span>
+                    </div>
                   </div>
+                  <button
+                    disabled={!stats.statusConditions?.bleeding}
+                    onClick={() => cureCondition('bleeding', 'Bandagem')}
+                    className={`px-3 py-1 font-pixel text-[8px] uppercase tracking-wider text-black font-bold cursor-pointer transition ${
+                      stats.statusConditions?.bleeding
+                        ? 'bg-amber-500 hover:bg-amber-400 animate-pulse pointer-events-auto'
+                        : 'bg-zinc-700 opacity-50 cursor-not-allowed text-zinc-500'
+                    }`}
+                  >
+                    USAR
+                  </button>
                 </div>
 
-                {/* Scroll item 2 */}
-                <div className="flex gap-2.5 p-2 bg-[#181211] border border-[#5b403c] rounded-none">
-                  <Shield className="text-purple-400 w-8 h-8 shrink-0" />
-                  <div className="flex flex-col text-left">
-                    <span className="text-[10px] text-purple-300 uppercase font-bold">Elixir de Almas</span>
-                    <span className="text-[8px] text-gray-400 leading-normal">Restaura 50% de Mana instantaneamente e concede imunidade a fadiga por 10 segundos.</span>
+                {/* Antidoto para Envenenamento */}
+                <div className="flex gap-2.5 p-2 bg-[#181211] border border-[#5b403c] rounded-none items-center justify-between">
+                  <div className="flex gap-2.5 items-center">
+                    <Shield className="text-emerald-500 w-8 h-8 shrink-0" />
+                    <div className="flex flex-col text-left">
+                      <span className="text-[10px] text-emerald-300 uppercase font-bold">Antídoto Alquímico</span>
+                      <span className="text-[8px] text-gray-400 leading-normal">Cura o status de Envenenamento (Poison) ativo.</span>
+                    </div>
                   </div>
+                  <button
+                    disabled={!stats.statusConditions?.poison}
+                    onClick={() => cureCondition('poison', 'Antídoto Alquímico')}
+                    className={`px-3 py-1 font-pixel text-[8px] uppercase tracking-wider text-black font-bold cursor-pointer transition ${
+                      stats.statusConditions?.poison
+                        ? 'bg-emerald-500 hover:bg-emerald-400 animate-pulse pointer-events-auto'
+                        : 'bg-zinc-700 opacity-50 cursor-not-allowed text-zinc-500'
+                    }`}
+                  >
+                    USAR
+                  </button>
+                </div>
+
+                {/* Antibiotico para Infeccao */}
+                <div className="flex gap-2.5 p-2 bg-[#181211] border border-[#5b403c] rounded-none items-center justify-between">
+                  <div className="flex gap-2.5 items-center">
+                    <Shield className="text-purple-400 w-8 h-8 shrink-0" />
+                    <div className="flex flex-col text-left">
+                      <span className="text-[10px] text-purple-300 uppercase font-bold">Antibiótico Raro</span>
+                      <span className="text-[8px] text-gray-400 leading-normal">Cura o status de Infecção (Infection) ativo.</span>
+                    </div>
+                  </div>
+                  <button
+                    disabled={!stats.statusConditions?.infection}
+                    onClick={() => cureCondition('infection', 'Antibiótico Raro')}
+                    className={`px-3 py-1 font-pixel text-[8px] uppercase tracking-wider text-black font-bold cursor-pointer transition ${
+                      stats.statusConditions?.infection
+                        ? 'bg-purple-500 hover:bg-purple-400 animate-pulse pointer-events-auto'
+                        : 'bg-zinc-700 opacity-50 cursor-not-allowed text-zinc-500'
+                    }`}
+                  >
+                    USAR
+                  </button>
                 </div>
               </div>
             )}
@@ -833,223 +890,6 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
             >
               RESTAURAR PADRÃO
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── NPC Interaction Prompt ── */}
-      {closestNPCType && !activeNPC && (
-        <div className="fixed bottom-1/4 inset-x-0 mx-auto max-w-xs bg-[#171309] border-2 border-sky-500 shadow-[4px_4px_0px_rgba(0,0,0,0.8)] p-2.5 text-center z-40 flex flex-col items-center gap-1.5 text-[#E3DAC9] pointer-events-auto select-none animate-bounce">
-          <span className="text-sky-400 text-xs font-bold uppercase tracking-wider block">
-            👤 {closestNPCType === 'cleric' ? 'CLÉRIGO' : closestNPCType === 'alchemist' ? 'ALQUIMISTA' : closestNPCType === 'blacksmith' ? 'FERREIRO' : 'ANCIÃO'} ESTÁ PRÓXIMO
-          </span>
-          <span className="text-[10px] text-gray-400 font-sans block leading-none">
-            Aproxime-se e pressione <span className="text-amber-500 font-bold">[E]</span> para falar.
-          </span>
-          <button
-            onPointerDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              soundEngine.playButtonClick();
-              setActiveNPC(closestNPCType);
-            }}
-            className="mt-1 px-3 py-1 bg-sky-950 border border-sky-600 text-sky-100 hover:bg-sky-900 active:scale-95 text-[10px] font-bold uppercase cursor-pointer"
-          >
-            FALAR COM NPC
-          </button>
-        </div>
-      )}
-
-      {/* ── NPC Dialogue Modal ── */}
-      {activeNPC && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
-          <div className="bg-[#171309] border-4 border-[#B8860B] rounded-none p-5 max-w-md w-full text-[#E3DAC9] shadow-[0_0_30px_rgba(184,134,11,0.4)]">
-
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-[#B8860B]/40 pb-3 mb-4">
-              <span className="text-sm font-pixel text-[#B8860B] uppercase font-bold tracking-wider">
-                {activeNPC === 'cleric' ? 'Clérigo Curandeiro' : activeNPC === 'alchemist' ? 'Alquimista de Fronteira' : activeNPC === 'blacksmith' ? 'Ferreiro Necromântico' : 'Ancião da Vila'}
-              </span>
-              <button
-                onClick={() => {
-                  soundEngine.playButtonClick();
-                  setActiveNPC(null);
-                }}
-                className="p-1 text-red-400 hover:bg-red-950/40 border border-red-900/60 rounded-none cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Content / Dialog Text */}
-            <p className="text-xs font-gothic leading-relaxed mb-5 italic border-l-2 border-amber-600 pl-3 py-1 text-gray-300">
-              {activeNPC === 'cleric' && '"Que a benção do Sangue Purificador te guarde, Mestre do Sangue. Deseja curar suas chagas ou purificar a infecção?"'}
-              {activeNPC === 'alchemist' && '"Frascos, elixires e ataduras para aplacar os males do abismo... Que desejas comprar, Bloodmage?"'}
-              {activeNPC === 'blacksmith' && '"O metal clama por sacrifício. Posso aprimorar sua foice ou sua couraça de ossos em troca de cristais de sangue."'}
-              {activeNPC === 'elder' && '"Nossas paliçadas resistem sob as sombras, mas os monstros lá fora estão cada vez mais agressivos. Se puderes deter o Mini-Chefe das Catacumbas, nosso caminho estará livre para avançar..."'}
-            </p>
-
-            {/* Action Buttons */}
-            <div className="space-y-3 font-pixel text-[11px]">
-
-              {/* Cleric actions */}
-              {activeNPC === 'cleric' && (
-                <>
-                  <button
-                    onClick={() => {
-                      soundEngine.playButtonClick();
-                      // Full Heal HP/Mana
-                      setPlayerStats({
-                        ...stats,
-                        hp: stats.maxHp,
-                        mana: stats.maxMana
-                      });
-                      soundEngine.playNova(); // special trigger sound
-                    }}
-                    className="w-full text-left p-2.5 bg-sky-950/40 border border-sky-600 hover:bg-sky-900/50 uppercase transition-colors font-bold cursor-pointer"
-                  >
-                    💖 Restaurar HP & Mana (Gratuito)
-                  </button>
-                  <button
-                    disabled={!stats.statusConditions?.infection || bloodCrystals < 15}
-                    onClick={() => {
-                      soundEngine.playButtonClick();
-                      addBloodCrystals(-15);
-                      setStatusCondition('infection', false);
-                      soundEngine.playNova();
-                    }}
-                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
-                      stats.statusConditions?.infection && bloodCrystals >= 15
-                        ? 'bg-emerald-950/40 border-emerald-500 hover:bg-emerald-900/50 text-emerald-100 cursor-pointer'
-                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
-                    }`}
-                  >
-                    🧪 Purificar Infecção (Custo: 15 Cristais)
-                  </button>
-                </>
-              )}
-
-              {/* Alchemist actions */}
-              {activeNPC === 'alchemist' && (
-                <>
-                  <button
-                    disabled={bloodCrystals < 15}
-                    onClick={() => {
-                      buyCurative('bandages', 15);
-                    }}
-                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
-                      bloodCrystals >= 15
-                        ? 'bg-red-950/40 border-red-600 hover:bg-red-900/50 text-red-200 cursor-pointer'
-                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
-                    }`}
-                  >
-                    🩸 Comprar Atadura (Sangramento) - 15 Cristais [Possui: {stats.curatives?.bandages || 0}]
-                  </button>
-                  <button
-                    disabled={bloodCrystals < 20}
-                    onClick={() => {
-                      buyCurative('antidotes', 20);
-                    }}
-                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
-                      bloodCrystals >= 20
-                        ? 'bg-purple-950/40 border-purple-600 hover:bg-purple-900/50 text-purple-200 cursor-pointer'
-                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
-                    }`}
-                  >
-                    🍇 Comprar Antídoto (Veneno) - 20 Cristais [Possui: {stats.curatives?.antidotes || 0}]
-                  </button>
-                  <button
-                    disabled={bloodCrystals < 35}
-                    onClick={() => {
-                      buyCurative('antibiotics', 35);
-                    }}
-                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
-                      bloodCrystals >= 35
-                        ? 'bg-emerald-950/40 border-emerald-600 hover:bg-emerald-900/50 text-emerald-200 cursor-pointer'
-                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
-                    }`}
-                  >
-                    🧪 Comprar Antibiótico (Infecção) - 35 Cristais [Possui: {stats.curatives?.antibiotics || 0}]
-                  </button>
-                </>
-              )}
-
-              {/* Blacksmith actions */}
-              {activeNPC === 'blacksmith' && (
-                <>
-                  <button
-                    disabled={bloodCrystals < 50}
-                    onClick={() => {
-                      if (bloodCrystals >= 50) {
-                        soundEngine.playButtonClick();
-                        addBloodCrystals(-50);
-                        setPlayerStats({
-                          ...stats,
-                          damageMultiplier: stats.damageMultiplier + 0.10
-                        });
-                        soundEngine.playEquipLoot();
-                      }
-                    }}
-                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
-                      bloodCrystals >= 50
-                        ? 'bg-amber-950/40 border-[#B8860B] hover:bg-amber-900/50 text-amber-200 cursor-pointer'
-                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
-                    }`}
-                  >
-                    ⚔️ Upgrade de Arma (+10% Dano) - 50 Cristais [Atual: +{Math.round((stats.damageMultiplier - 1)*100)}%]
-                  </button>
-                  <button
-                    disabled={bloodCrystals < 50}
-                    onClick={() => {
-                      if (bloodCrystals >= 50) {
-                        soundEngine.playButtonClick();
-                        addBloodCrystals(-50);
-                        setPlayerStats({
-                          ...stats,
-                          maxHp: stats.maxHp + 20,
-                          hp: stats.hp + 20
-                        });
-                        soundEngine.playEquipLoot();
-                      }
-                    }}
-                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
-                      bloodCrystals >= 50
-                        ? 'bg-amber-950/40 border-[#B8860B] hover:bg-amber-900/50 text-amber-200 cursor-pointer'
-                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
-                    }`}
-                  >
-                    🛡️ Upgrade de Armadura (+20 HP Máx) - 50 Cristais [Atual: {stats.maxHp} HP]
-                  </button>
-                </>
-              )}
-
-              {/* Elder actions */}
-              {activeNPC === 'elder' && (
-                <button
-                  onClick={() => {
-                    soundEngine.playButtonClick();
-                    // Quest acceptance: give them 100 crystals as startup aid!
-                    addBloodCrystals(100);
-                    soundEngine.playNova();
-                    setActiveNPC(null);
-                  }}
-                  className="w-full text-left p-2.5 bg-amber-950/40 border border-[#B8860B] hover:bg-amber-900/50 text-amber-200 font-bold uppercase cursor-pointer"
-                >
-                  📜 Aceitar Clamor de Auxílio (+100 Cristais de Sangue)
-                </button>
-              )}
-
-              {/* Close Button */}
-              <button
-                onClick={() => {
-                  soundEngine.playButtonClick();
-                  setActiveNPC(null);
-                }}
-                className="w-full text-center p-2.5 bg-black border border-gray-700 text-gray-400 uppercase font-bold hover:bg-gray-950 cursor-pointer"
-              >
-                ENCERRAR DIÁLOGO
-              </button>
-            </div>
           </div>
         </div>
       )}

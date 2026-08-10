@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 import { Player } from '../objects/Player';
 import { Enemy } from '../objects/Enemy';
-import { Scavengeable, ScavengeableType } from '../objects/Scavengeable';
 import { Projectile } from '../objects/Projectile';
 import { Collectible } from '../objects/Collectible';
 import { LootSprite } from '../objects/Loot';
@@ -28,11 +27,6 @@ export class GameScene extends Phaser.Scene {
   public player!: Player;
   private depthGroup!: Phaser.GameObjects.Group;
   private enemiesGroup!: Phaser.Physics.Arcade.Group;
-  private scavengeablesGroup!: Phaser.Physics.Arcade.StaticGroup;
-  private npcsGroup!: Phaser.Physics.Arcade.StaticGroup;
-  private currentScavengeable: Scavengeable | null = null;
-  private scavengeTimeElapsed: number = 0;
-  private isScavenging: boolean = false;
   private playerProjectilesGroup!: Phaser.Physics.Arcade.Group;
   private enemyProjectilesGroup!: Phaser.Physics.Arcade.Group;
   private collectiblesGroup!: Phaser.Physics.Arcade.Group;
@@ -88,7 +82,22 @@ export class GameScene extends Phaser.Scene {
   private boneShieldVisuals: Phaser.GameObjects.Sprite[] = [];
 
   private bloodEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
+
+  // Tombstone/Corpse evolution
+  private tombstoneSprite?: Phaser.GameObjects.Sprite;
+  private tombstoneDespawnTimer: number = 0;
+  private tombstoneFrozen: boolean = false;
   private emberEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
+
+  // Scavenging evolution
+  private scavengeGroup!: Phaser.Physics.Arcade.StaticGroup;
+  private activeScavengeTarget?: Phaser.Physics.Arcade.Sprite;
+
+  // NPC Village evolution
+  private npcsGroup!: Phaser.Physics.Arcade.StaticGroup;
+  private scavengeProgress: number = 0; // ms accumulated
+  private scavengeDuration: number = 2000; // 2 seconds
+  private scavengeProgressText?: Phaser.GameObjects.Text;
 
   private comboKillCount: number = 0;
   private comboTimerEvent?: Phaser.Time.TimerEvent;
@@ -158,7 +167,7 @@ export class GameScene extends Phaser.Scene {
 
     this.wallsGroup = this.physics.add.staticGroup();
     this.chestsGroup = this.physics.add.staticGroup();
-    this.scavengeablesGroup = this.physics.add.staticGroup();
+    this.scavengeGroup = this.physics.add.staticGroup();
     this.npcsGroup = this.physics.add.staticGroup();
     this.enemiesGroup = this.physics.add.group({ runChildUpdate: false });
     this.playerProjectilesGroup = this.physics.add.group({ runChildUpdate: true });
@@ -170,68 +179,6 @@ export class GameScene extends Phaser.Scene {
 
     // 3. Generate Dungeon Map Layout
     this.buildDungeonMap(mapW, mapH, this.currentFloorDepth);
-
-    // Register event listener for NPC interaction
-    window.addEventListener('trigger-npc', (e: any) => {
-      const npcType = e.detail;
-      useGameStore.getState().setActiveNPC(npcType);
-    });
-
-    // Register event listener for player respawn
-    window.addEventListener('respawn-player', () => {
-      const spawnRoom = this.rooms[0];
-      if (spawnRoom && this.player) {
-        // Capture death spot coords
-        const deathX = this.player.x;
-        const deathY = this.player.y;
-
-        // Teleport to Safe Zone
-        this.player.setPosition(spawnRoom.centerX, spawnRoom.centerY);
-
-        // Reset stats & penalties
-        this.player.stats.isDefinitivelyDead = false;
-        this.player.stats.isUnconscious = false;
-        this.player.stats.knockoutCount = 0;
-        this.player.stats.hp = this.player.stats.maxHp;
-        this.player.stats.mana = this.player.stats.maxMana;
-        this.player.stats.currentXp = 0; // XP progress penalty
-        this.player.setAlpha(1.0);
-
-        // Spawn a lost corpse scavengeable at the death spot!
-        const lostCorpse = new Scavengeable(this, deathX, deathY, 'corpse');
-        this.scavengeablesGroup.add(lostCorpse);
-        this.depthGroup.add(lostCorpse);
-
-        // Print atmospheric message
-        const store = useGameStore.getState();
-        store.addLootLog("Você sente que a terra consome seus restos... olhos carniceiros espreitam seus pertences perdidos. Apresse-se, Bloodmage.");
-
-        // Clear death screens
-        store.setDefinitivelyDead(false);
-        store.setGameOverStats(null);
-        store.setPlayerStats({ ...this.player.stats });
-      }
-    });
-
-    // Register event listener for touch-scavenge button
-    window.addEventListener('trigger-scavenge', () => {
-      let closestScav: Scavengeable | null = null;
-      let closestDist = 48;
-      if (this.player && this.player.active && !this.player.stats.isUnconscious && !this.player.stats.isDefinitivelyDead) {
-        this.scavengeablesGroup.getChildren().forEach((scavObj) => {
-          const scav = scavObj as unknown as Scavengeable;
-          if (!scav.active || scav.isScavenged) return;
-          const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, scav.x, scav.y);
-          if (dist < closestDist) {
-            closestDist = dist;
-            closestScav = scav;
-          }
-        });
-      }
-      if (closestScav) {
-        this.startScavenging(closestScav);
-      }
-    });
 
     // --- VISUAL: Darkness overlay + Lighting ---
     this.dragAimGraphics = this.add.graphics().setDepth(2050);
@@ -504,6 +451,24 @@ export class GameScene extends Phaser.Scene {
     const rooms = this.dungeonGenerator.generate(mapW, mapH, biome);
     this.rooms = rooms;
 
+    // Populate Scavenge Containers in Chambers
+    this.scavengeGroup.clear(true, true);
+    rooms.forEach((room) => {
+      if (room.type === 'spawn') return;
+
+      // Spawn 1 or 2 scavengable bodies/piles per chamber
+      const scavengeCount = 1 + Math.floor(Math.random() * 2);
+      for (let i = 0; i < scavengeCount; i++) {
+        const sx = room.x + 50 + Math.random() * (room.width - 100);
+        const sy = room.y + 50 + Math.random() * (room.height - 100);
+        const container = this.scavengeGroup.create(sx, sy, 'spr_chest');
+        container.setTint(0x7a6650); // bone / old pile look
+        container.setScale(0.7);
+        container.setDepth(sy);
+        container.setData('scavenged', false);
+      }
+    });
+
     telemetry.trackEvent('floor_start', { floor: floorDepth, biome, rooms: rooms.length });
 
     // Create Player in Spawn Room 0
@@ -516,33 +481,30 @@ export class GameScene extends Phaser.Scene {
     }
     this.player.stats.floorDepth = floorDepth;
 
-    // Clear old NPCs
+    // Clear and spawn NPCs in safe Room 0 (acting as Safe Village Hub) on floor 1
     this.npcsGroup.clear(true, true);
+    if (floorDepth === 1) {
+      // 1. Cleric (Curandeiro / Clérigo)
+      const cleric = this.npcsGroup.create(spawnRoom.centerX - 70, spawnRoom.centerY - 50, 'spr_cultist');
+      cleric.setTint(0x22c55e); // green robe look
+      cleric.setScale(1.1);
+      cleric.setDepth(spawnRoom.centerY - 50);
+      cleric.setData('npc_role', 'cleric');
 
-    // Spawn Safe Village NPCs in Spawn Room (Room 0)
-    // 1. Cleric (Curandeiro)
-    const cleric = this.npcsGroup.create(spawnRoom.centerX - 120, spawnRoom.centerY - 80, 'spr_cultist');
-    cleric.setTint(0x38bdf8); // Blue glow
-    cleric.setData('npcType', 'cleric');
-    this.depthGroup.add(cleric);
+      // 2. Blacksmith (Ferreiro)
+      const blacksmith = this.npcsGroup.create(spawnRoom.centerX + 70, spawnRoom.centerY - 50, 'spr_cultist');
+      blacksmith.setTint(0xf97316); // orange look
+      blacksmith.setScale(1.1);
+      blacksmith.setDepth(spawnRoom.centerY - 50);
+      blacksmith.setData('npc_role', 'blacksmith');
 
-    // 2. Alchemist (Alquimista)
-    const alchemist = this.npcsGroup.create(spawnRoom.centerX + 120, spawnRoom.centerY - 80, 'spr_bloodmage');
-    alchemist.setTint(0xc084fc); // Purple glow
-    alchemist.setData('npcType', 'alchemist');
-    this.depthGroup.add(alchemist);
-
-    // 3. Blacksmith (Ferreiro)
-    const blacksmith = this.npcsGroup.create(spawnRoom.centerX - 120, spawnRoom.centerY + 80, 'spr_skeleton');
-    blacksmith.setTint(0xfacc15); // Golden glow
-    blacksmith.setData('npcType', 'blacksmith');
-    this.depthGroup.add(blacksmith);
-
-    // 4. Elder (Ancião)
-    const elder = this.npcsGroup.create(spawnRoom.centerX + 120, spawnRoom.centerY + 80, 'spr_boss');
-    elder.setTint(0xf87171); // Soft Red glow
-    elder.setData('npcType', 'elder');
-    this.depthGroup.add(elder);
+      // 3. Elder (Quest Giver / Ancião)
+      const elder = this.npcsGroup.create(spawnRoom.centerX, spawnRoom.centerY - 90, 'spr_cultist');
+      elder.setTint(0xfacc15); // golden yellow look
+      elder.setScale(1.15);
+      elder.setDepth(spawnRoom.centerY - 90);
+      elder.setData('npc_role', 'elder');
+    }
 
     // Populate Enemies across Chambers & Boss Room
     this.totalFloorMonsters = 0;
@@ -592,19 +554,6 @@ export class GameScene extends Phaser.Scene {
           this.totalFloorMonsters++;
         }
       }
-
-      // Spawn Scavengeables in non-spawn rooms
-      if (Math.random() < 0.75) {
-        const numScav = Math.random() < 0.5 ? 1 : 2;
-        for (let i = 0; i < numScav; i++) {
-          const sx = room.x + 50 + Math.random() * (room.width - 100);
-          const sy = room.y + 50 + Math.random() * (room.height - 100);
-          const stype = Phaser.Utils.Array.GetRandom(['skeleton', 'corpse', 'crate']) as any;
-          const scavObj = new Scavengeable(this, sx, sy, stype);
-          this.scavengeablesGroup.add(scavObj);
-          this.depthGroup.add(scavObj);
-        }
-      }
     });
 
     // Initial spawn push up to cap
@@ -638,6 +587,55 @@ export class GameScene extends Phaser.Scene {
       alpha: 0,
       duration: 3200,
       onComplete: () => text.destroy(),
+    });
+  }
+
+  public respawnInTown(respawnStats: PlayerStats) {
+    this.currentFloorDepth = 1; // Back to first floor (village)
+    this.player.stats = respawnStats;
+    this.isPaused = false;
+    this.physics.resume();
+
+    // Clear old map entities
+    this.wallsGroup.clear(true, true);
+    this.chestsGroup.clear(true, true);
+    this.collectiblesGroup.clear(true, true);
+    this.enemyProjectilesGroup.clear(true, true);
+    this.enemiesGroup.clear(true, true);
+
+    // Rebuild Dungeon Map for Next Floor Depth!
+    this.buildDungeonMap(1920, 1440, this.currentFloorDepth);
+
+    // Set camera to follow
+    this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+
+    // Check if there is a dropped corpse state and spawn the tombstone
+    const storeState = useGameStore.getState();
+    if (storeState.droppedCorpse?.hasDroppedCorpse) {
+      this.spawnTombstone(storeState.droppedCorpse.x, storeState.droppedCorpse.y);
+    }
+  }
+
+  private spawnTombstone(x: number, y: number) {
+    if (this.tombstoneSprite) {
+      this.tombstoneSprite.destroy();
+    }
+
+    // Spawn tombstone sprite
+    this.tombstoneSprite = this.add.sprite(x, y, 'spr_chest');
+    this.tombstoneSprite.setTint(0x555555); // gravestone look
+    this.tombstoneSprite.setScale(0.85);
+    this.tombstoneSprite.setDepth(y);
+    this.physics.add.existing(this.tombstoneSprite);
+    (this.tombstoneSprite.body as Phaser.Physics.Arcade.Body).setImmovable(true);
+
+    this.tombstoneDespawnTimer = 120000; // 120 seconds limit
+    this.tombstoneFrozen = false;
+
+    // Atmospheric message upon respawn
+    this.time.delayedCall(1000, () => {
+      this.spawnFloatingText(this.player.x, this.player.y - 120, 'ALMAS CARNICEIRAS ESPREITAM SEU TÚMULO...', '#ef4444', true);
+      useGameStore.getState().addLootLog('Você sente que a terra consome seus restos mortais... e que olhos carniceiros já espreitam seus pertences perdidos nas sombras. Apresse-se, Bloodmage.');
     });
   }
 
@@ -777,82 +775,176 @@ export class GameScene extends Phaser.Scene {
   update(time: number, delta: number) {
     if (this.isPaused) return;
 
-    // Find closest NPC in range
-    let closestNPC: Phaser.Physics.Arcade.Sprite | null = null;
-    let closestNPCDist = 50; // Interaction range of 50px
-    if (this.player && this.player.active && !this.player.stats.isUnconscious && !this.player.stats.isDefinitivelyDead) {
-      this.npcsGroup.getChildren().forEach((npcObj) => {
-        const npc = npcObj as unknown as Phaser.Physics.Arcade.Sprite;
-        const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, npc.x, npc.y);
-        if (dist < closestNPCDist) {
-          closestNPCDist = dist;
-          closestNPC = npc;
-        }
-      });
-    }
-
-    const store = useGameStore.getState();
-    if (closestNPC) {
-      const type = (closestNPC as Phaser.Physics.Arcade.Sprite).getData('npcType');
-      if (store.closestNPCType !== type) {
-        store.setClosestNPCType(type);
-      }
-    } else {
-      if (store.closestNPCType !== null) {
-        store.setClosestNPCType(null);
-      }
-    }
-
-    // Find closest scavengeable in range for HUD prompt
-    let closestScav: Scavengeable | null = null;
-    let closestDist = 48; // Max interaction distance
-    if (this.player && this.player.active && !this.player.stats.isUnconscious && !this.player.stats.isDefinitivelyDead) {
-      this.scavengeablesGroup.getChildren().forEach((scavObj) => {
-        const scav = scavObj as unknown as Scavengeable;
-        if (!scav.active || scav.isScavenged) return;
-        const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, scav.x, scav.y);
-        if (dist < closestDist) {
-          closestDist = dist;
-          closestScav = scav;
-        }
-      });
-    }
-    if (closestScav) {
-      const activeScav = closestScav as unknown as Scavengeable;
-      if (!store.activeScavengeable || store.activeScavengeable.id !== activeScav.scavengeType + '_' + activeScav.x) {
-        store.setActiveScavengeable({
-          id: activeScav.scavengeType + '_' + activeScav.x,
-          type: activeScav.scavengeType,
-          duration: activeScav.duration
-        });
-      }
-    } else {
-      if (store.activeScavengeable) {
-        store.setActiveScavengeable(null);
-        if (this.isScavenging) {
-          this.cancelScavenging();
-        }
-      }
-    }
-
-    // Process scavenging tick
-    if (this.isScavenging) {
-      if (this.player && this.player.active) {
-        this.player.setVelocity(0, 0);
-      }
-
-      // Cancel scavenging if trying to move
-      if (this.keys && (this.keys.W.isDown || this.keys.S.isDown || this.keys.A.isDown || this.keys.D.isDown || this.keys.UP.isDown || this.keys.DOWN.isDown || this.keys.LEFT.isDown || this.keys.RIGHT.isDown)) {
-        this.cancelScavenging();
+    // Tombstone update
+    if (this.tombstoneSprite && this.tombstoneSprite.active) {
+      // Collision with player
+      const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.tombstoneSprite.x, this.tombstoneSprite.y);
+      if (dist < 40) {
+        // Collect back loot!
+        soundEngine.playChestOpen();
+        this.spawnFloatingText(this.player.x, this.player.y - 15, 'TÚMULO RECUPERADO!', '#facc15', true);
+        useGameStore.getState().addBloodCrystals(200); // Recover some blood crystals/loot value
+        useGameStore.getState().addLootLog('Túmulo recuperado com sucesso!');
+        useGameStore.getState().setDroppedCorpse(null);
+        this.tombstoneSprite.destroy();
+        this.tombstoneSprite = undefined;
       } else {
-        this.scavengeTimeElapsed += delta;
-        const pct = Math.min(100, Math.round((this.scavengeTimeElapsed / this.currentScavengeable!.duration) * 100));
-        store.setScavengeProgress(pct);
+        // Progressive despawn timer
+        const cam = this.cameras.main;
+        const visible = cam.worldView.contains(this.tombstoneSprite.x, this.tombstoneSprite.y);
+        if (visible) {
+          this.tombstoneFrozen = true; // freeze timer permanently once seen!
+        }
 
-        if (this.scavengeTimeElapsed >= this.currentScavengeable!.duration) {
-          this.completeScavenging();
+        if (!this.tombstoneFrozen) {
+          this.tombstoneDespawnTimer -= delta;
+          if (this.tombstoneDespawnTimer <= 0) {
+            this.spawnFloatingText(this.player.x, this.player.y - 100, 'SEUS PERTENCES FORAM ROUBADOS!', '#ef4444', true);
+            useGameStore.getState().addLootLog('A terra consumiu seu túmulo nas sombras.');
+            useGameStore.getState().setDroppedCorpse(null);
+            this.tombstoneSprite.destroy();
+            this.tombstoneSprite = undefined;
+          }
         }
       }
+    }
+
+    // Scavenging (Vasculhar) update
+    let closestContainer: Phaser.Physics.Arcade.Sprite | null = null;
+    let minDist = 45;
+    if (this.scavengeGroup && this.scavengeGroup.active) {
+      this.scavengeGroup.getChildren().forEach((cObj: any) => {
+        const container = cObj as Phaser.Physics.Arcade.Sprite;
+        if (container.active && !container.getData('scavenged')) {
+          const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, container.x, container.y);
+          if (d < minDist) {
+            minDist = d;
+            closestContainer = container;
+          }
+        }
+      });
+    }
+
+    if (closestContainer) {
+      const container = closestContainer as Phaser.Physics.Arcade.Sprite;
+      const isMoving = this.player.body && this.player.body.velocity.length() >= 15;
+
+      if (!isMoving) {
+        this.scavengeProgress += delta;
+        const pct = Math.min(100, (this.scavengeProgress / this.scavengeDuration) * 100);
+        const bars = '='.repeat(Math.floor(pct / 10)) + ' '.repeat(10 - Math.floor(pct / 10));
+
+        if (!this.scavengeProgressText) {
+          this.scavengeProgressText = this.add.text(this.player.x, this.player.y - 45, '', {
+            fontSize: '8px',
+            fontFamily: '"Press Start 2P", monospace',
+            color: '#ffb4a8',
+            stroke: '#000000',
+            strokeThickness: 3
+          }).setOrigin(0.5).setDepth(2100);
+        }
+        this.scavengeProgressText.setText(`REVISTANDO [${bars}]`).setPosition(this.player.x, this.player.y - 45);
+
+        if (this.scavengeProgress >= this.scavengeDuration) {
+          // Finished scavenging!
+          container.setData('scavenged', true);
+          soundEngine.playChestOpen();
+          this.spawnFloatingText(this.player.x, this.player.y - 15, 'VASCULHADO!', '#22c55e', true);
+
+          const roll = Math.random();
+          if (roll < 0.35) {
+            const lootData = LootSystem.generateLoot(this.currentFloorDepth);
+            const loot = new LootSprite(this, container.x, container.y, lootData);
+            this.lootGroup.add(loot);
+            useGameStore.getState().addLootLog(`Achou: ${lootData.name}!`);
+          } else {
+            const crystals = 10 + Math.floor(Math.random() * 20);
+            useGameStore.getState().addBloodCrystals(crystals);
+            this.spawnFloatingText(container.x, container.y - 12, `+${crystals} CRISTAIS 💎`, '#f43f5e', false);
+          }
+
+          if (this.scavengeProgressText) {
+            this.scavengeProgressText.destroy();
+            this.scavengeProgressText = undefined;
+          }
+          this.scavengeProgress = 0;
+          container.destroy();
+        }
+      } else {
+        // Player is moving: reset progress and prompt to stand still next to it
+        this.scavengeProgress = 0;
+        if (!this.scavengeProgressText) {
+          this.scavengeProgressText = this.add.text(this.player.x, this.player.y - 45, '', {
+            fontSize: '8px',
+            fontFamily: '"Press Start 2P", monospace',
+            color: '#ffb4a8',
+            stroke: '#000000',
+            strokeThickness: 3
+          }).setOrigin(0.5).setDepth(2100);
+        }
+        this.scavengeProgressText.setText('REVISTAR (FICA PARADO)').setPosition(this.player.x, this.player.y - 45);
+      }
+    } else {
+      this.scavengeProgress = 0;
+      if (this.scavengeProgressText) {
+        this.scavengeProgressText.destroy();
+        this.scavengeProgressText = undefined;
+      }
+    }
+
+    // NPC interaction check
+    if (this.npcsGroup && this.npcsGroup.active && this.player) {
+      this.npcsGroup.getChildren().forEach((nObj: any) => {
+        const npc = nObj as Phaser.Physics.Arcade.Sprite;
+        const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, npc.x, npc.y);
+        if (d < 45) {
+          const role = npc.getData('npc_role');
+          const lastInteract = npc.getData('lastInteractTime') || 0;
+          if (time > lastInteract + 4000) { // 4 seconds cooldown per interact
+            npc.setData('lastInteractTime', time);
+            soundEngine.playLevelUp(); // click / interact feedback sound
+
+            if (role === 'cleric') {
+              // Cleric: Cures HP, Mana and removes Status Conditions
+              this.player.stats.hp = this.player.stats.maxHp;
+              this.player.stats.mana = this.player.stats.maxMana;
+              this.player.stats.statusConditions = { bleeding: false, poison: false, infection: false };
+              useGameStore.getState().setPlayerStats({ ...this.player.stats });
+              this.spawnFloatingText(npc.x, npc.y - 30, 'CURADO E PURIFICADO! ⛪', '#22c55e', true);
+              useGameStore.getState().addLootLog('Clérigo: Curou suas chagas e removeu todos os status.');
+            } else if (role === 'blacksmith') {
+              // Blacksmith: Reforça Arma +5% Dano de forma permanente
+              this.player.stats.damageMultiplier = (this.player.stats.damageMultiplier || 1.0) + 0.05;
+              useGameStore.getState().setPlayerStats({ ...this.player.stats });
+              this.spawnFloatingText(npc.x, npc.y - 30, 'ARMA REFORÇADA! +5% DANO ⚔️', '#f97316', true);
+              useGameStore.getState().addLootLog('Ferreiro: Reforçou sua arma (+5% Dano permanente!).');
+            } else if (role === 'elder') {
+              // Elder: Quest dialogue / context delivery
+              this.spawnFloatingText(npc.x, npc.y - 30, 'SANGUE PRIMORDIAL CLAMA... 🩸', '#facc15', true);
+              useGameStore.getState().addLootLog('Ancião: "Sinto o Sangue Primordial clamar por você, Bloodmage..."');
+            }
+          }
+        }
+      });
+    }
+
+    if (this.player && this.player.stats.isUnconscious) {
+      // In unconscious state, update player for regeneration logic, skip combat and movement inputs.
+      this.player.updatePlayer(time, delta);
+
+      // Update enemies so they lose aggro and scatter
+      const activeEnemiesList = this.enemiesGroup.getChildren() as Enemy[];
+      activeEnemiesList.forEach((enemy: Enemy) => {
+        if (enemy.active) {
+          enemy.updateEnemy(time, delta, this.player.x, this.player.y, true, activeEnemiesList);
+        }
+      });
+
+      // Sync HUD callback
+      if (this.callbacks?.onStatsUpdate) {
+        this.callbacks.onStatsUpdate({ ...this.player.stats });
+      }
+      return;
     }
 
     // Process gamepad inputs if connected
@@ -889,16 +981,7 @@ export class GameScene extends Phaser.Scene {
       if (Phaser.Input.Keyboard.JustDown(this.keys.Q) || Phaser.Input.Keyboard.JustDown(this.keys.ONE)) {
         this.triggerSkill('nova');
       }
-      if (Phaser.Input.Keyboard.JustDown(this.keys.E)) {
-        if (closestNPC) {
-          const type = (closestNPC as Phaser.Physics.Arcade.Sprite).getData('npcType');
-          store.setActiveNPC(type);
-        } else if (closestScav) {
-          this.startScavenging(closestScav);
-        } else {
-          this.triggerSkill('syphon');
-        }
-      } else if (Phaser.Input.Keyboard.JustDown(this.keys.TWO)) {
+      if (Phaser.Input.Keyboard.JustDown(this.keys.E) || Phaser.Input.Keyboard.JustDown(this.keys.TWO)) {
         this.triggerSkill('syphon');
       }
       if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE) || Phaser.Input.Keyboard.JustDown(this.keys.THREE)) {
@@ -996,7 +1079,7 @@ export class GameScene extends Phaser.Scene {
             this.enemyProjectilesGroup.add(proj);
           } else {
             // Melee hit player
-            this.playerHitByEnemy(updateResult.damage);
+            this.playerHitByEnemy(updateResult.damage, enemy.config.id);
             const attackAngle = Phaser.Math.Angle.Between(enemy.x, enemy.y, this.player.x, this.player.y);
             this.spawnMeleeSlashEffect(this.player.x, this.player.y, attackAngle);
           }
@@ -1742,69 +1825,53 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  public startScavenging(scav: Scavengeable) {
-    if (this.isScavenging) return;
-    this.isScavenging = true;
-    this.currentScavengeable = scav;
-    this.scavengeTimeElapsed = 0;
-    useGameStore.getState().setScavengeProgress(0);
-    soundEngine.playDash();
-  }
-
-  public cancelScavenging() {
-    this.isScavenging = false;
-    this.currentScavengeable = null;
-    this.scavengeTimeElapsed = 0;
-    useGameStore.getState().setScavengeProgress(0);
-  }
-
-  public completeScavenging() {
-    if (!this.isScavenging || !this.currentScavengeable) return;
-    const scav = this.currentScavengeable;
-    scav.isScavenged = true;
-    scav.setTint(0x333333);
-
-    soundEngine.playChestOpen();
-
-    const isCorpse = scav.scavengeType === 'corpse';
-    const isSkeleton = scav.scavengeType === 'skeleton';
-
-    const xpReward = isCorpse ? 25 : (isSkeleton ? 15 : 10);
-    this.player.addXp(xpReward);
-    this.spawnFloatingText(scav.x, scav.y - 12, `+${xpReward} XP`, '#3b82f6', false);
-
-    const crystals = Math.floor(10 + Math.random() * (isCorpse ? 30 : 15));
-    useGameStore.getState().addBloodCrystals(crystals);
-    this.spawnFloatingText(scav.x, scav.y - 25, `+${crystals} CRISTAIS 💎`, '#f43f5e', true);
-
-    const equipChance = isCorpse ? 0.25 : 0.10;
-    if (Math.random() < equipChance) {
-      const lootItem = LootSystem.generateLoot(this.currentFloorDepth, false);
-      const lootSprite = new LootSprite(this, scav.x + (Math.random() - 0.5) * 20, scav.y + (Math.random() - 0.5) * 20, lootItem);
-      this.lootGroup.add(lootSprite);
-      this.depthGroup.add(lootSprite);
-    }
-
-    this.cancelScavenging();
-  }
-
-  private playerHitByEnemy(damage: number) {
-    if (this.isScavenging) {
-      this.cancelScavenging();
-    }
-
-    // Check if player is inside Room 0 (Safe Town) to nullify damage
-    const spawnRoom = this.rooms[0];
-    if (spawnRoom && this.player.x >= spawnRoom.x && this.player.x <= spawnRoom.x + spawnRoom.width &&
-        this.player.y >= spawnRoom.y && this.player.y <= spawnRoom.y + spawnRoom.height) {
-      return; // Absolute damage protection inside Safe Town!
-    }
-
+  private playerHitByEnemy(damage: number, enemyId?: string) {
     const isDead = this.player.takeDamage(damage);
     ContractSystem.onPlayerDamaged();
     
+    // Reset scavenging if attacked
+    this.scavengeProgress = 0;
+    if (this.scavengeProgressText) {
+      this.scavengeProgressText.destroy();
+      this.scavengeProgressText = undefined;
+    }
+
     // Floating damage number on player
     this.spawnFloatingText(this.player.x, this.player.y, `-${Math.round(damage)}`, '#ef4444', true);
+
+    // Status condition application chance (25%) on hit
+    if (enemyId && Math.random() < 0.25) {
+      const conds = { ...(this.player.stats.statusConditions || { bleeding: false, poison: false, infection: false }) };
+      let applied = false;
+      let statusName = '';
+
+      if (enemyId === 'zombie_shambler' || enemyId === 'cultist_acolyte') {
+        if (!conds.infection) {
+          conds.infection = true;
+          applied = true;
+          statusName = 'INFECÇÃO';
+        }
+      } else if (enemyId === 'hell_hound' || enemyId === 'skeleton_warrior') {
+        if (!conds.bleeding) {
+          conds.bleeding = true;
+          applied = true;
+          statusName = 'SANGRAMENTO';
+        }
+      } else if (enemyId === 'blood_specter' || enemyId === 'gore_abomination') {
+        if (!conds.poison) {
+          conds.poison = true;
+          applied = true;
+          statusName = 'ENVENENAMENTO';
+        }
+      }
+
+      if (applied) {
+        this.player.stats.statusConditions = conds;
+        useGameStore.getState().setPlayerStats({ ...this.player.stats });
+        this.spawnFloatingText(this.player.x, this.player.y - 35, `STATUS: ${statusName}!`, '#a855f7', true);
+        useGameStore.getState().addLootLog(`Contraiu status: ${statusName}!`);
+      }
+    }
 
     // Juice: Screen Shake and Red Flash on damage
     const settings = useGameStore.getState().settings;
@@ -1823,7 +1890,7 @@ export class GameScene extends Phaser.Scene {
   private handleEnemyTouchPlayer(playerObj: any, enemyObj: any) {
     const enemy = enemyObj as Enemy;
     if (enemy.active) {
-      this.playerHitByEnemy(enemy.config.damage * 0.4);
+      this.playerHitByEnemy(enemy.config.damage * 0.4, enemy.config.id);
     }
   }
 
@@ -1831,7 +1898,7 @@ export class GameScene extends Phaser.Scene {
     const proj = projObj as Projectile;
     if (proj.active) {
       proj.destroy();
-      this.playerHitByEnemy(proj.damage);
+      this.playerHitByEnemy(proj.damage, 'cultist_acolyte');
     }
   }
 

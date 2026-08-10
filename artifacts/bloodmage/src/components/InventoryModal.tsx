@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Shield, Sword, Sparkles, X, Heart, Zap, Flame, Award } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import { LootItem, ItemRarity } from '../types/game';
+import { soundEngine } from '../utils/soundEngine';
 
 interface InventoryModalProps {
   onClose: () => void;
@@ -16,7 +17,23 @@ const RARITY_COLORS: Record<ItemRarity, { bg: string; border: string; text: stri
 };
 
 export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
-  const { equipment, playerStats, recentLootLog } = useGameStore();
+  const { equipment, playerStats, setPlayerStats, recentLootLog, addLootLog } = useGameStore();
+
+  const cureCondition = (key: 'bleeding' | 'poison' | 'infection', itemName: string) => {
+    soundEngine.playLevelUp(); // play healing sound
+
+    const nextConditions = {
+      ...(playerStats.statusConditions || { bleeding: false, poison: false, infection: false }),
+      [key]: false
+    };
+
+    setPlayerStats({
+      ...playerStats,
+      statusConditions: nextConditions
+    });
+
+    addLootLog(`Usou ${itemName}: Curou ${key.toUpperCase()}!`);
+  };
 
   const renderSlot = (title: string, item: LootItem | null, icon: React.ReactNode) => {
     const rarityConfig = item ? RARITY_COLORS[item.rarity] : { bg: 'bg-black/60', border: 'border-gray-800', text: 'text-gray-600' };

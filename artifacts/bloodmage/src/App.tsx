@@ -9,6 +9,7 @@ import { BestiaryModal } from './components/BestiaryModal';
 import { SettingsModal } from './components/SettingsModal';
 import { HighScoresModal } from './components/HighScoresModal';
 import { GameOverModal } from './components/GameOverModal';
+import { DeathScreen } from './components/DeathScreen';
 import { InventoryModal } from './components/InventoryModal';
 import { TalentsModal } from './components/TalentsModal';
 import { ObservabilityModal } from './components/ObservabilityModal';
@@ -24,6 +25,20 @@ export default function App() {
   const [isBooting, setIsBooting] = useState(true);
   const [isUpdateReady, setIsUpdateReady] = useState(false);
   const updateSWRef = useRef<((reloadPage?: boolean) => Promise<void>) | null>(null);
+
+  // Persistent death check on mount
+  useEffect(() => {
+    try {
+      const isDeadPersisted = localStorage.getItem('bloodmage_1995_is_dead_persistent');
+      const deadStatsRaw = localStorage.getItem('bloodmage_1995_dead_stats');
+      if (isDeadPersisted === 'true' && deadStatsRaw) {
+        const stats = JSON.parse(deadStatsRaw);
+        setGameOverStats(stats);
+      }
+    } catch (e) {
+      console.warn('Persistent death check failed', e);
+    }
+  }, []);
 
   const {
     gameState, setGameState,
@@ -126,6 +141,38 @@ export default function App() {
     }
     setLevelUpData(null);
     telemetry.trackEvent('upgrade_selected', { upgradeId: option.id });
+  };
+
+  const handleRespawn = () => {
+    if (gameOverStats) {
+      const respawnStats: PlayerStats = {
+        ...gameOverStats,
+        hp: gameOverStats.maxHp, // fully healed back in safe town
+        mana: gameOverStats.maxMana,
+        currentXp: 0, // lost progress towards next level
+        knockoutCount: 0, // reset desmaios
+        isUnconscious: false,
+        isDefinitivelyDead: false,
+        statusConditions: { bleeding: false, poison: false, infection: false },
+      };
+
+      const dropped = {
+        hasDroppedCorpse: true,
+        zone: `floor_${gameOverStats.floorDepth}`,
+        x: gameSceneRef.current?.player?.x || 400,
+        y: gameSceneRef.current?.player?.y || 400,
+        itemsInside: [] // drop inventory
+      };
+      useGameStore.getState().setDroppedCorpse(dropped);
+
+      setGameOverStats(null);
+      setGameState('playing');
+
+      // Move them back to town or reset their position
+      if (gameSceneRef.current) {
+        (gameSceneRef.current as any).respawnInTown(respawnStats);
+      }
+    }
   };
 
   const handleGameOver = (stats: PlayerStats) => {
@@ -261,13 +308,21 @@ export default function App() {
         />
       )}
 
-      {/* 5. Game Over Modal */}
+      {/* 5. Game Over Modal / Death Screen */}
       {gameOverStats && (
-        <GameOverModal
-          stats={gameOverStats}
-          onRestart={handleStartGame}
-          onGoHome={() => setGameOverStats(null)}
-        />
+        gameOverStats.isDefinitivelyDead ? (
+          <DeathScreen
+            stats={gameOverStats}
+            onRespawn={handleRespawn}
+            onGoHome={() => setGameOverStats(null)}
+          />
+        ) : (
+          <GameOverModal
+            stats={gameOverStats}
+            onRestart={handleStartGame}
+            onGoHome={() => setGameOverStats(null)}
+          />
+        )
       )}
 
       {/* 6. Aux Modals */}

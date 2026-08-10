@@ -84,12 +84,10 @@ interface GameStore {
   // Real-time Stats
   playerStats: PlayerStats;
   setPlayerStats: (stats: PlayerStats) => void;
-  setUnconscious: (unconscious: boolean) => void;
-  setStatusCondition: (condition: 'bleeding' | 'poison' | 'infection', active: boolean) => void;
-  setDefinitivelyDead: (isDead: boolean) => void;
-  setDroppedCorpse: (corpse: DroppedCorpse) => void;
-  useCurative: (type: 'bandages' | 'antidotes' | 'antibiotics') => boolean;
-  buyCurative: (type: 'bandages' | 'antidotes' | 'antibiotics', cost: number) => boolean;
+
+  // Corpse Drop / Evolution
+  droppedCorpse: DroppedCorpse | null;
+  setDroppedCorpse: (corpse: DroppedCorpse | null) => void;
 
   // Controls (Touch/Skills)
   touchMoveInput: { x: number; y: number };
@@ -102,16 +100,6 @@ interface GameStore {
   /** 4 spell IDs the player has pinned to the HUD skill bar */
   skillPreset: string[];
   setSkillPreset: (preset: string[]) => void;
-
-  activeScavengeable: { id: string; type: string; duration: number } | null;
-  setActiveScavengeable: (scav: { id: string; type: string; duration: number } | null) => void;
-  scavengeProgress: number;
-  setScavengeProgress: (prog: number) => void;
-
-  activeNPC: 'cleric' | 'alchemist' | 'blacksmith' | 'elder' | null;
-  setActiveNPC: (npc: 'cleric' | 'alchemist' | 'blacksmith' | 'elder' | null) => void;
-  closestNPCType: 'cleric' | 'alchemist' | 'blacksmith' | 'elder' | null;
-  setClosestNPCType: (type: 'cleric' | 'alchemist' | 'blacksmith' | 'elder' | null) => void;
 }
 
 const defaultPlayerStats: PlayerStats = {
@@ -123,27 +111,10 @@ const defaultPlayerStats: PlayerStats = {
   kills: 0, souls: 0, wave: 1, floorDepth: 1, score: 0, timeSurvivedSeconds: 0,
   unlockedSpells: ['blood_bolt', 'hellfire_nova', 'syphon_soul', 'bone_shield', 'crimson_scythe', 'blood_ritual_circle', 'hemomancy_beam'],
   pendingStatPoints: 0,
-  knockoutCount: 0,
   isUnconscious: false,
+  knockoutCount: 0,
   isDefinitivelyDead: false,
-  statusConditions: {
-    bleeding: false,
-    poison: false,
-    infection: false,
-  },
-  curatives: {
-    bandages: 1,
-    antidotes: 1,
-    antibiotics: 0,
-  },
-  droppedCorpse: {
-    hasDroppedCorpse: false,
-    zone: '',
-    x: 0,
-    y: 0,
-    droppedTimestamp: 0,
-    itemsInside: [],
-  },
+  statusConditions: { bleeding: false, poison: false, infection: false },
 };
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -302,71 +273,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   playerStats: { ...defaultPlayerStats },
   setPlayerStats: (stats) => set({ playerStats: stats }),
-  setUnconscious: (unconscious) => set((state) => ({
-    playerStats: { ...state.playerStats, isUnconscious: unconscious }
-  })),
-  setStatusCondition: (condition, active) => set((state) => ({
-    playerStats: {
-      ...state.playerStats,
-      statusConditions: {
-        ...state.playerStats.statusConditions,
-        [condition]: active
-      }
-    }
-  })),
-  setDefinitivelyDead: (isDead) => set((state) => ({
-    playerStats: { ...state.playerStats, isDefinitivelyDead: isDead }
-  })),
-  setDroppedCorpse: (corpse) => set((state) => ({
-    playerStats: { ...state.playerStats, droppedCorpse: corpse }
-  })),
-  useCurative: (type) => {
-    const { playerStats } = get();
-    if (playerStats.curatives[type] < 1) return false;
 
-    let condition: 'bleeding' | 'poison' | 'infection' | null = null;
-    if (type === 'bandages') condition = 'bleeding';
-    else if (type === 'antidotes') condition = 'poison';
-    else if (type === 'antibiotics') condition = 'infection';
-
-    if (!condition || !playerStats.statusConditions[condition]) return false;
-
-    soundEngine.playEquipLoot(); // Use sound
-    set((state) => ({
-      playerStats: {
-        ...state.playerStats,
-        statusConditions: {
-          ...state.playerStats.statusConditions,
-          [condition!]: false,
-        },
-        curatives: {
-          ...state.playerStats.curatives,
-          [type]: state.playerStats.curatives[type] - 1,
-        },
-      },
-    }));
-    return true;
-  },
-  buyCurative: (type, cost) => {
-    const { bloodCrystals, playerStats } = get();
-    if (bloodCrystals < cost) return false;
-
-    const nextCrystals = bloodCrystals - cost;
-    saveBloodCrystals(nextCrystals);
-
-    soundEngine.playEquipLoot(); // Shop use sound
-    set((state) => ({
-      bloodCrystals: nextCrystals,
-      playerStats: {
-        ...state.playerStats,
-        curatives: {
-          ...state.playerStats.curatives,
-          [type]: state.playerStats.curatives[type] + 1,
-        },
-      },
-    }));
-    return true;
-  },
+  droppedCorpse: null,
+  setDroppedCorpse: (corpse) => set({ droppedCorpse: corpse }),
 
   touchMoveInput: { x: 0, y: 0 },
   setTouchMoveInput: (x, y) => set({ touchMoveInput: { x, y } }),
@@ -379,14 +288,4 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   skillPreset: ['hellfire_nova', 'syphon_soul', 'bone_shield', 'crimson_scythe'],
   setSkillPreset: (preset) => set({ skillPreset: preset }),
-
-  activeScavengeable: null,
-  setActiveScavengeable: (scav) => set({ activeScavengeable: scav }),
-  scavengeProgress: 0,
-  setScavengeProgress: (prog) => set({ scavengeProgress: prog }),
-
-  activeNPC: null,
-  setActiveNPC: (npc) => set({ activeNPC: npc }),
-  closestNPCType: null,
-  setClosestNPCType: (type) => set({ closestNPCType: type }),
 }));
