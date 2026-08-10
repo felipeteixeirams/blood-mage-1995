@@ -50,6 +50,7 @@ docs/specs//
 | Feature | Fase | Responsável | ETA | Progresso |
 |---------|------|-------------|-----|-----------|
 | **Mundo Contínuo (Fase 4)** | 4/4 | Jules | 2026-09-30 | 🟡 80% |
+| **Polimento de Produção & PWA/Steam (Fase 5)** | 5/5 | Jules + Felipe | 2026-10-30 | 🟡 0% (Proposta) |
 
 **Documentação:** [[./andamento/]]
 
