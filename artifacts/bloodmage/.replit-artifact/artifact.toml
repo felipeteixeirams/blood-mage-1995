@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Bloodmage 1995"
+description = "An isometric 16-bit action RPG dungeon crawler built with Phaser and React. Players battle monsters, collect loot, cast spells, and progress through waves in a dark fantasy world. Built for fans of classic hack-and-slash games who want a browser-based dungeon experience."
+version = "1.0.0"
+id = "artifacts/bloodmage"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24502
+
+[services.development]
+run = "pnpm --filter @workspace/bloodmage run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/bloodmage", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/bloodmage/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24502"
+BASE_PATH = "/"

@@ -1,7 +1,9 @@
 node_modules/
 build/
 dist/
-coverage/
+tmp/
+out-tsc
+*.tsbuildinfo
 .DS_Store
 *.log
 .env*

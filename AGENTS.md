@@ -18,5 +18,5 @@ When requested by the user to commit and push changes to the remote GitHub repos
    ```bash
    git add .
    git commit -m "Your descriptive commit message here"
-   git push origin master
+   git push origin main
    ```
