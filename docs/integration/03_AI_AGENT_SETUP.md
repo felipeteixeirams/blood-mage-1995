@@ -40,7 +40,7 @@ tags: [integration, agents]
 # Bloodmage 1995 — Context Setup
 
 **Role:** [Escolha: Frontend Developer / Game Designer / QA Engineer]
-**Context File:** [[../context/YOUR_ROLE.md]]
+**Context File:** [[../context/FRONTEND_DEVELOPER.md]]
 **Critical Files:** [[../critical/01_CRITICAL_FILES.md]]
 
 Instruções:
@@ -470,7 +470,7 @@ with open(context_file) as f:
 → Consulte [[../README.md]]
 
 **Dúvida sobre seu role?**  
-→ Consulte [[../context/YOUR_ROLE.md]]
+→ Consulte [[../context/FRONTEND_DEVELOPER.md]]
 
 **Encontrou bug na documentação?**  
 → Crie issue com título: `docs: [descrição]`
