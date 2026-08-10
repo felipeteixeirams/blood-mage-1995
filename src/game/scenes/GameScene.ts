@@ -1944,9 +1944,6 @@ export class GameScene extends Phaser.Scene {
     this.cancelScavenging();
   }
 
-    this.cancelScavenging();
-  }
-
   public useCurativeItem(type: 'bandages' | 'antidotes' | 'antibiotics') {
     const store = useGameStore.getState();
     const success = store.useCurative(type);
