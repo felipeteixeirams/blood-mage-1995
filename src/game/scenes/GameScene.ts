@@ -56,6 +56,7 @@ export class GameScene extends Phaser.Scene {
   private floorMonstersKilled: number = 0;
   private portalSprite?: Phaser.GameObjects.Sprite;
   private isPortalActive: boolean = false;
+  private corpsePointer?: Phaser.GameObjects.Sprite;
 
   private currentWaveIndex: number = 0;
   private waveConfigs: WaveConfig[] = wavesData as WaveConfig[];
@@ -198,13 +199,34 @@ export class GameScene extends Phaser.Scene {
         this.player.setAlpha(1.0);
         this.player.clearTint();
 
+        const store = useGameStore.getState();
+
+        // Destroy previous player corpse if it exists
+        this.scavengeablesGroup.getChildren().forEach(scav => {
+          const s = scav as Scavengeable;
+          if (s.scavengeType === 'player_corpse') {
+            s.destroy();
+          }
+        });
+
+        // Save current equipment to the corpse in the store and clear it from player
+        store.setDroppedCorpse({
+          hasDroppedCorpse: true,
+          zone: 'calabouco',
+          x: deathX,
+          y: deathY,
+          droppedTimestamp: Date.now(),
+          equipment: store.equipment,
+          curatives: this.player.stats.curatives
+        });
+        store.clearInventoryOnDeath();
+
         // Spawn a lost corpse scavengeable at the death spot!
-        const lostCorpse = new Scavengeable(this, deathX, deathY, 'corpse');
+        const lostCorpse = new Scavengeable(this, deathX, deathY, 'player_corpse');
         this.scavengeablesGroup.add(lostCorpse);
         this.depthGroup.add(lostCorpse);
 
         // Print atmospheric message
-        const store = useGameStore.getState();
         store.addLootLog("Você sente que a terra consome seus restos... olhos carniceiros espreitam seus pertences perdidos. Apresse-se, Bloodmage.");
 
         // Clear death screens
@@ -312,6 +334,15 @@ export class GameScene extends Phaser.Scene {
     // Camera setup
     this.cameras.main.setBounds(0, 0, mapW, mapH);
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+    
+    // UI Pointer for Corpse
+    this.corpsePointer = this.add.sprite(0, 0, 'icon_skull')
+      .setScrollFactor(0)
+      .setDepth(3000)
+      .setScale(0.8)
+      .setTint(0xff0000)
+      .setVisible(false);
+
     // Zoom adaptativo: encaixa o jogo perfeitamente em qualquer tela landscape.
     // Usa o menor eixo (altura em landscape) como referência para não cortar verticalmente.
     const screenH = this.cameras.main.height || window.innerHeight;
@@ -777,6 +808,37 @@ export class GameScene extends Phaser.Scene {
 
   update(time: number, delta: number) {
     if (this.isPaused) return;
+
+    const store = useGameStore.getState();
+
+    // Handle corpse compass pointer
+    if (this.corpsePointer) {
+      const corpse = store.playerStats.droppedCorpse;
+      if (corpse.hasDroppedCorpse && this.player && this.player.active && !this.player.stats.isDefinitivelyDead) {
+        const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, corpse.x, corpse.y);
+        const cw = this.cameras.main.width;
+        const ch = this.cameras.main.height;
+        // Don't show if the corpse is visible on screen (approx half screen width/height)
+        if (dist > Math.min(cw, ch) / 2) {
+          this.corpsePointer.setVisible(true);
+          const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, corpse.x, corpse.y);
+          // Calculate edge position
+          const padding = 40;
+          let px = cw / 2 + Math.cos(angle) * (cw / 2 - padding);
+          let py = ch / 2 + Math.sin(angle) * (ch / 2 - padding);
+          // Keep it within screen bounds
+          px = Phaser.Math.Clamp(px, padding, cw - padding);
+          py = Phaser.Math.Clamp(py, padding, ch - padding);
+          this.corpsePointer.setPosition(px, py);
+          // Pulse scale
+          this.corpsePointer.setScale(0.8 + Math.sin(time * 0.005) * 0.1);
+        } else {
+          this.corpsePointer.setVisible(false);
+        }
+      } else {
+        this.corpsePointer.setVisible(false);
+      }
+    }
 
     // Find closest NPC in range
     let closestNPC: Phaser.Physics.Arcade.Sprite | null = null;
@@ -1767,6 +1829,13 @@ export class GameScene extends Phaser.Scene {
 
     soundEngine.playChestOpen();
 
+    if (scav.scavengeType === 'player_corpse') {
+      useGameStore.getState().retrieveCorpseLoot();
+      this.spawnFloatingText(scav.x, scav.y - 12, `EQUIPAMENTOS RECUPERADOS!`, '#f59e0b', true);
+      this.cancelScavenging();
+      return;
+    }
+
     const isCorpse = scav.scavengeType === 'corpse';
     const isSkeleton = scav.scavengeType === 'skeleton';
 
@@ -2056,6 +2125,19 @@ export class GameScene extends Phaser.Scene {
     this.chestsGroup.clear(true, true);
     this.collectiblesGroup.clear(true, true);
     this.enemyProjectilesGroup.clear(true, true);
+    this.scavengeablesGroup.clear(true, true);
+    this.lootGroup.clear(true, true);
+    this.bloodStainsGroup.clear(true, true);
+
+    // If player leaves floor without collecting corpse, it is lost
+    const store = useGameStore.getState();
+    if (store.playerStats.droppedCorpse.hasDroppedCorpse) {
+      store.setDroppedCorpse({
+        ...store.playerStats.droppedCorpse,
+        hasDroppedCorpse: false
+      });
+      store.addLootLog("O cadáver foi deixado para trás e perdido para sempre nas catacumbas...");
+    }
 
     // Rebuild Dungeon Map for Next Floor Depth!
     this.buildDungeonMap(1920, 1440, this.currentFloorDepth);

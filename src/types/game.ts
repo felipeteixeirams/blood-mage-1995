@@ -59,7 +59,12 @@ export interface DroppedCorpse {
   x: number;
   y: number;
   droppedTimestamp: number;
-  itemsInside: { id: string; quantity: number }[];
+  equipment: EquipmentSlots;
+  curatives: {
+    bandages: number;
+    antidotes: number;
+    antibiotics: number;
+  };
 }
 
 export type MonsterGait = 'quadruped' | 'biped_fast' | 'biped_slow' | 'ethereal' | 'heavy';
