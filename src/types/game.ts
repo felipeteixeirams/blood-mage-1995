@@ -64,7 +64,7 @@ export interface DroppedCorpse {
 
 export type MonsterGait = 'quadruped' | 'biped_fast' | 'biped_slow' | 'ethereal' | 'heavy';
 
-export type AIState = 'idle' | 'patrol' | 'patrol_away_from_player' | 'investigating' | 'combat' | 'flee' | 'frenzy';
+export type AIState = 'idle' | 'patrol' | 'investigating' | 'combat' | 'flee' | 'frenzy';
 
 export interface MonsterConfig {
   id: string;

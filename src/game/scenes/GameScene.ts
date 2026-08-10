@@ -196,7 +196,6 @@ export class GameScene extends Phaser.Scene {
         this.player.stats.mana = this.player.stats.maxMana;
         this.player.stats.currentXp = 0; // XP progress penalty
         this.player.setAlpha(1.0);
-        this.player.clearTint();
 
         // Spawn a lost corpse scavengeable at the death spot!
         const lostCorpse = new Scavengeable(this, deathX, deathY, 'corpse');
@@ -1790,10 +1789,6 @@ export class GameScene extends Phaser.Scene {
   }
 
   private playerHitByEnemy(damage: number) {
-    if (this.player.isInvulnerable || this.player.stats.isUnconscious || this.player.stats.isDefinitivelyDead) {
-      return;
-    }
-
     if (this.isScavenging) {
       this.cancelScavenging();
     }
