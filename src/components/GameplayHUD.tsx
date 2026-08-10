@@ -117,6 +117,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
     closestNPCType,
     setClosestNPCType,
     buyCurative,
+    useCurative,
     bloodCrystals,
     addBloodCrystals,
     setStatusCondition,
@@ -268,8 +269,51 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       </div>
 
       {/* ── TOP LEFT HUD: Segmented HP/MP & Portrait ── */}
-      <div className="absolute top-3 left-3 p-1 z-30 pointer-events-auto">
+      <div className="absolute top-3 left-3 p-1 z-30 pointer-events-auto flex flex-col gap-1.5">
         <PlayerStatus stats={stats} />
+        {(stats.statusConditions?.bleeding || stats.statusConditions?.poison || stats.statusConditions?.infection) && (
+          <div className="flex gap-1.5 pl-0.5">
+            {stats.statusConditions.bleeding && (
+              <button
+                onClick={() => useCurative('bandages')}
+                disabled={(stats.curatives?.bandages || 0) < 1}
+                className="flex items-center gap-1 bg-[#181211]/95 border border-red-700 px-1.5 py-0.5 shadow-[2px_2px_0px_#000000] disabled:opacity-50"
+                title="Sangramento — drena HP ao se mover. Clique para usar Atadura."
+              >
+                <span className="text-[10px]">🩸</span>
+                <span className="text-[8px] font-pixel text-red-300 uppercase font-bold">
+                  Sangrando ({stats.curatives?.bandages || 0})
+                </span>
+              </button>
+            )}
+            {stats.statusConditions.poison && (
+              <button
+                onClick={() => useCurative('antidotes')}
+                disabled={(stats.curatives?.antidotes || 0) < 1}
+                className="flex items-center gap-1 bg-[#181211]/95 border border-lime-700 px-1.5 py-0.5 shadow-[2px_2px_0px_#000000] disabled:opacity-50"
+                title="Envenenado — drena HP continuamente. Clique para usar Antídoto."
+              >
+                <span className="text-[10px]">🍇</span>
+                <span className="text-[8px] font-pixel text-lime-300 uppercase font-bold">
+                  Envenenado ({stats.curatives?.antidotes || 0})
+                </span>
+              </button>
+            )}
+            {stats.statusConditions.infection && (
+              <button
+                onClick={() => useCurative('antibiotics')}
+                disabled={(stats.curatives?.antibiotics || 0) < 1}
+                className="flex items-center gap-1 bg-[#181211]/95 border border-purple-700 px-1.5 py-0.5 shadow-[2px_2px_0px_#000000] disabled:opacity-50"
+                title="Infeccionado — reduz HP máximo e bloqueia regeneração. Clique para usar Antibiótico."
+              >
+                <span className="text-[10px]">🧪</span>
+                <span className="text-[8px] font-pixel text-purple-300 uppercase font-bold">
+                  Infeccionado ({stats.curatives?.antibiotics || 0})
+                </span>
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── TOP CENTER: Area Banner & Time SURVIVED ── */}

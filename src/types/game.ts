@@ -91,6 +91,10 @@ export interface MonsterConfig {
   executionFragments?: number;
   executionImpulse?: number;
   executionBloodScale?: number;
+  statusEffectOnHit?: {
+    type: 'bleeding' | 'poison' | 'infection';
+    chance: number; // 0.0 to 1.0
+  };
 }
 
 export interface SpellConfig {

@@ -142,8 +142,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.setAlpha(0.6);
 
       // Regenerate passive HP while unconscious (2% of Max HP per second)
-      const regenAmount = (0.02 * this.stats.maxHp * delta) / 1000;
-      this.stats.hp = Math.min(this.stats.maxHp, this.stats.hp + regenAmount);
+      // Infection blocks natural regeneration (Discovery Seção 2.4)
+      if (!this.stats.statusConditions.infection) {
+        const regenAmount = (0.02 * this.stats.maxHp * delta) / 1000;
+        this.stats.hp = Math.min(this.stats.maxHp, this.stats.hp + regenAmount);
+      }
 
       const threshold = 0.05 * this.stats.maxHp;
       if (this.stats.hp >= threshold) {
@@ -167,6 +170,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       });
       return;
     }
+
+    // Fase 3: Survival Status Conditions tick (Dead Frontier 2 style tension, non-lethal-to-invuln DoT)
+    this.updateStatusConditions(delta);
 
     if (this.isDashing) {
       this.dashTimer -= delta;
@@ -404,6 +410,66 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.skillCooldowns['hemomancy_beam'] = cd;
     soundEngine.playHemomancyBeam();
     return true;
+  }
+
+  /**
+   * Fase 3: Survival Status Conditions (Dead Frontier 2 style).
+   * Non-brutal, gradual tension damage. Never triggers invulnerability frames
+   * (status DoT should not shield the player from a real enemy hit landing
+   * in the same instant), but DOES respect the same knockout/death flow as
+   * takeDamage() so it never creates a second, inconsistent death path.
+   */
+  private updateStatusConditions(delta: number) {
+    const sc = this.stats.statusConditions;
+    if (!sc.bleeding && !sc.poison && !sc.infection) return;
+
+    // Bleeding: drains HP only while actively moving. Standing still stops it.
+    if (sc.bleeding && this.moveVector.length() > 0.05) {
+      const bleedDmg = (0.02 * this.stats.maxHp * delta) / 1000; // 2%/s while moving
+      this.applyStatusDamage(bleedDmg);
+    }
+
+    // Poison: continuous drain regardless of movement.
+    if (sc.poison) {
+      const poisonDmg = (0.015 * this.stats.maxHp * delta) / 1000; // 1.5%/s always
+      this.applyStatusDamage(poisonDmg);
+    }
+
+    // Infection: temporarily caps effective Max HP (does not mutate base maxHp,
+    // so curing it lets HP recover back up naturally / via potions).
+    if (sc.infection) {
+      const effectiveCap = this.stats.maxHp * 0.8;
+      if (this.stats.hp > effectiveCap) {
+        this.stats.hp = effectiveCap;
+        useGameStore.getState().setPlayerStats({ ...this.stats });
+      }
+    }
+  }
+
+  private applyStatusDamage(amount: number) {
+    if (amount <= 0 || this.stats.isUnconscious || this.stats.isDefinitivelyDead) return;
+
+    this.stats.hp = Math.max(0, this.stats.hp - amount);
+    useGameStore.getState().setPlayerStats({ ...this.stats });
+
+    if (this.stats.hp <= 0) {
+      if (this.stats.knockoutCount < 2) {
+        this.stats.isUnconscious = true;
+        this.stats.knockoutCount += 1;
+        this.setVelocity(0, 0);
+        this.currentVx = 0;
+        this.currentVy = 0;
+
+        useGameStore.getState().setUnconscious(true);
+        useGameStore.getState().setPlayerStats({ ...this.stats });
+        soundEngine.playPlayerHurt();
+      } else {
+        this.stats.isDefinitivelyDead = true;
+        useGameStore.getState().setDefinitivelyDead(true);
+        useGameStore.getState().setPlayerStats({ ...this.stats });
+        soundEngine.playPlayerHurt();
+      }
+    }
   }
 
   public takeDamage(amount: number): boolean {

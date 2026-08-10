@@ -23,7 +23,11 @@
     "scoreValue": 100,
     "executionFragments": 3,
     "executionImpulse": 150,
-    "executionBloodScale": 2.0
+    "executionBloodScale": 2.0,
+    "statusEffectOnHit": {
+      "type": "bleeding",
+      "chance": 0.15
+    }
   },
   "cultist_acolyte": {
     "id": "cultist_acolyte",
@@ -75,7 +79,11 @@
     "scoreValue": 200,
     "executionFragments": 4,
     "executionImpulse": 180,
-    "executionBloodScale": 3.0
+    "executionBloodScale": 3.0,
+    "statusEffectOnHit": {
+      "type": "bleeding",
+      "chance": 0.3
+    }
   },
   "flesh_golem": {
     "id": "flesh_golem",
@@ -101,7 +109,11 @@
     "scoreValue": 500,
     "executionFragments": 5,
     "executionImpulse": 200,
-    "executionBloodScale": 4.0
+    "executionBloodScale": 4.0,
+    "statusEffectOnHit": {
+      "type": "infection",
+      "chance": 0.2
+    }
   },
   "blood_specter": {
     "id": "blood_specter",
@@ -127,7 +139,11 @@
     "scoreValue": 300,
     "executionFragments": 3,
     "executionImpulse": 140,
-    "executionBloodScale": 1.5
+    "executionBloodScale": 1.5,
+    "statusEffectOnHit": {
+      "type": "poison",
+      "chance": 0.25
+    }
   },
   "zombie_shambler": {
     "id": "zombie_shambler",
@@ -153,7 +169,11 @@
     "scoreValue": 120,
     "executionFragments": 4,
     "executionImpulse": 170,
-    "executionBloodScale": 3.0
+    "executionBloodScale": 3.0,
+    "statusEffectOnHit": {
+      "type": "infection",
+      "chance": 0.3
+    }
   },
   "vampire_stalker": {
     "id": "vampire_stalker",
@@ -205,7 +225,11 @@
     "scoreValue": 450,
     "executionFragments": 4,
     "executionImpulse": 185,
-    "executionBloodScale": 3.5
+    "executionBloodScale": 3.5,
+    "statusEffectOnHit": {
+      "type": "bleeding",
+      "chance": 0.35
+    }
   },
   "bat_swarm": {
     "id": "bat_swarm",
@@ -257,7 +281,11 @@
     "scoreValue": 800,
     "executionFragments": 5,
     "executionImpulse": 220,
-    "executionBloodScale": 4.5
+    "executionBloodScale": 4.5,
+    "statusEffectOnHit": {
+      "type": "poison",
+      "chance": 0.3
+    }
   },
   "necro_lord_boss": {
     "id": "necro_lord_boss",

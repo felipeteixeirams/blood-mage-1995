@@ -941,6 +941,13 @@ export class GameScene extends Phaser.Scene {
       this.emitSound(this.player.x, this.player.y, 360); // Firing spell noise!
     }
 
+    // Status Condition DoT (bleeding/poison) can trigger Definitive Death on its own,
+    // outside the normal enemy-hit flow — catch that transition here.
+    if (this.player.stats.isDefinitivelyDead && !this.isPaused) {
+      this.triggerGameOver();
+      return;
+    }
+
     // Check Portal Collision to descend to next dungeon level
     if (this.isPortalActive && this.portalSprite) {
       const distToPortal = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.portalSprite.x, this.portalSprite.y);
@@ -992,11 +999,11 @@ export class GameScene extends Phaser.Scene {
             // Fire ranged energy bolt
             const proj = new Projectile(this, enemy.x, enemy.y, 'proj_energy_bolt');
             const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, this.player.x, this.player.y);
-            proj.fire(enemy.x, enemy.y, angle, 220, enemy.config.damage, true);
+            proj.fire(enemy.x, enemy.y, angle, 220, enemy.config.damage, true, enemy.config.statusEffectOnHit);
             this.enemyProjectilesGroup.add(proj);
           } else {
             // Melee hit player
-            this.playerHitByEnemy(updateResult.damage);
+            this.playerHitByEnemy(updateResult.damage, enemy.config.statusEffectOnHit);
             const attackAngle = Phaser.Math.Angle.Between(enemy.x, enemy.y, this.player.x, this.player.y);
             this.spawnMeleeSlashEffect(this.player.x, this.player.y, attackAngle);
           }
@@ -1788,7 +1795,10 @@ export class GameScene extends Phaser.Scene {
     this.cancelScavenging();
   }
 
-  private playerHitByEnemy(damage: number) {
+  private playerHitByEnemy(
+    damage: number,
+    statusEffectOnHit?: { type: 'bleeding' | 'poison' | 'infection'; chance: number }
+  ) {
     if (this.isScavenging) {
       this.cancelScavenging();
     }
@@ -1802,6 +1812,19 @@ export class GameScene extends Phaser.Scene {
 
     const isDead = this.player.takeDamage(damage);
     ContractSystem.onPlayerDamaged();
+
+    // Fase 3: Chance of inflicting a survival status condition (Dead Frontier 2 style)
+    if (statusEffectOnHit && !this.player.stats.isUnconscious && !this.player.stats.isDefinitivelyDead) {
+      if (Math.random() < statusEffectOnHit.chance) {
+        const store = useGameStore.getState();
+        if (!store.playerStats.statusConditions[statusEffectOnHit.type]) {
+          store.setStatusCondition(statusEffectOnHit.type, true);
+          const label = statusEffectOnHit.type === 'bleeding' ? 'Sangramento' : statusEffectOnHit.type === 'poison' ? 'Envenenamento' : 'Infecção';
+          this.spawnFloatingText(this.player.x, this.player.y - 24, label.toUpperCase(), '#84cc16', false);
+          store.addLootLog(`Você contraiu: ${label}. Use um curativo antes que piore.`);
+        }
+      }
+    }
     
     // Floating damage number on player
     this.spawnFloatingText(this.player.x, this.player.y, `-${Math.round(damage)}`, '#ef4444', true);
@@ -1823,15 +1846,16 @@ export class GameScene extends Phaser.Scene {
   private handleEnemyTouchPlayer(playerObj: any, enemyObj: any) {
     const enemy = enemyObj as Enemy;
     if (enemy.active) {
-      this.playerHitByEnemy(enemy.config.damage * 0.4);
+      this.playerHitByEnemy(enemy.config.damage * 0.4, enemy.config.statusEffectOnHit);
     }
   }
 
   private handleEnemyProjectileHitPlayer(playerObj: any, projObj: any) {
     const proj = projObj as Projectile;
     if (proj.active) {
+      const statusEffectOnHit = proj.statusEffectOnHit;
       proj.destroy();
-      this.playerHitByEnemy(proj.damage);
+      this.playerHitByEnemy(proj.damage, statusEffectOnHit);
     }
   }
 

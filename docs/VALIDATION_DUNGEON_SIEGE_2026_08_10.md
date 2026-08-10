@@ -12,6 +12,8 @@ build_source: src/ (root) — é o que o Vercel builda, NÃO artifacts/bloodmage
 
 ⚠️ **Nota:** Existia um relatório de validação anterior neste mesmo arquivo (criado em sessão anterior) que apontava **100% de conformidade em todas as seções**, citando funções como `moveAwayFromBody()`, `clearAggro()` e `wakeUp()`. Verifiquei o código-fonte e **essas funções não existem** — a implementação real usa outro approach (explicado abaixo). Esse relatório anterior estava incorreto e foi substituído por este.
 
+📌 **Atualização 2026-08-10 (mesmo dia, sessão seguinte):** A Seção 2.4 (Status de Sobrevivência), que estava em 15% no momento da validação original, foi implementada nesta sessão — gameplay loop completo (aplicação por inimigos, dreno de HP, bloqueio de regen, cura por consumível). Detalhes em [[./SPECS/ANDAMENTO/03_FASE3_STATUS_SOBREVIVENCIA.md]]. O restante da tabela abaixo (Seções 2.2, 2.3, 3.2, 3.3) reflete o estado no momento da validação original e ainda não foi reavaliado.
+
 ---
 
 ## 📊 Resultado Geral
@@ -20,7 +22,7 @@ build_source: src/ (root) — é o que o Vercel builda, NÃO artifacts/bloodmage
 Seção 2.1 (Inconsciência):        ✅ 95%  — Muito bem implementado
 Seção 2.2 (Morte & Drops):        🟡 70%  — Implementado, mas adaptado (sem inventário real)
 Seção 2.3 (Despawn do Corpo):     ❌ 0%   — Não implementado
-Seção 2.4 (Status de Sobrevivência): 🟡 15% — Apenas scaffolding, sem gameplay
+Seção 2.4 (Status de Sobrevivência): 🟡 75% — Gameplay loop completo (atualizado 2026-08-10, ver nota)
 Seção 3.1 (Vilas & NPCs):         ✅ 85%  — Muito bem implementado
 Seção 3.2 (Mundo Contínuo/Gates): 🟡 30%  — Estrutura de wave/andar, não jornada nômade
 Seção 3.3 (Narrativa/Lore):       ❌ 0%   — Não implementado
