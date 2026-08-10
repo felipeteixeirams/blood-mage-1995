@@ -37,6 +37,9 @@ docs/specs//
 | **Records Display** | ✅ Completo | Claude + Felipe | 2026-08-09 |
 | **Game Design Philosophy** | ✅ Completo | Felipe | 2026-08-09 |
 | **Core Combat Feel** | ✅ Completo | Jules | 2026-08-08 |
+| **Inconsciência — Fase 1** | ✅ Completo | Jules | 2026-08-10 |
+| **Tela de Morte & Cadáver — Fase 2** | ✅ Completo | Jules | 2026-08-10 |
+| **Condições de Status — Fase 3** | ✅ Completo | Jules | 2026-08-10 |
 
 **Documentação:** [[./finalizadas/]]
 
@@ -46,10 +49,7 @@ docs/specs//
 
 | Feature | Fase | Responsável | ETA | Progresso |
 |---------|------|-------------|-----|-----------|
-| **Inconsciência (Fase 1)** | Discovery | Jules | 2026-08-20 | 📝 Spec pronta |
-| **Menu de Morte (Fase 2)** | Discovery | Jules | 2026-09-10 | 📝 Spec pronta |
-| **Status Effects (Fase 3)** | Discovery | Jules | 2026-10-01 | 📝 Spec pronta |
-| **Mundo Contínuo (Fase 4)** | Discovery | Jules | 2026-11-01 | 📝 Spec pronta |
+| **Mundo Contínuo (Fase 4)** | 4/4 | Jules | 2026-09-30 | 🟡 80% |
 
 **Documentação:** [[./andamento/]]
 
@@ -338,13 +338,13 @@ Link para sua spec: [[../features/XX.md]]
 ### Gráfico de Progresso
 
 ```
-FINALIZADAS    ████░░░░░░  40% (2/5)
-ANDAMENTO      ████████░░  80% (4/5)
-PROPOSTAS      ░░░░░░░░░░   0% (0/5)
+FINALIZADAS    ██████████  100% (6/6)
+ANDAMENTO      ████████░░   80% (1/1)
+PROPOSTAS      ░░░░░░░░░░    0% (0/5)
 
-Total: 11 features
-Completado: 2
-Em progresso: 4
+Total: 12 features
+Completado: 6
+Em progresso: 1
 Backlog: 5
 ```
 
@@ -352,10 +352,10 @@ Backlog: 5
 
 ```
 Ago 2026 |█████████████|  Records (✅)
-         |█████████     |  Inconsciência (80%)
-         |████░░░░░░░   |  Menu Morte (40%)
-         |░░░░░░░░░░░   |  Status Effects (0%)
-Set 2026 |░░░░░░░░░░░   |  Mundo Contínuo (0%)
+         |█████████████|  Inconsciência (✅ 100%)
+         |█████████████|  Menu Morte (✅ 100%)
+         |█████████████|  Status Effects (✅ 100%)
+Set 2026 |████████░░░░░|  Mundo Contínuo (🟡 80%)
 ```
 
 ---
@@ -409,7 +409,7 @@ Set 2026 |░░░░░░░░░░░   |  Mundo Contínuo (0%)
 ---
 
 **Mantido por:** Felipe (Product Manager)  
-**Última atualização:** 2026-08-09  
-**Versão:** 1.0
+**Última atualização:** 2026-08-10  
+**Versão:** 1.1
 
 [[../README.md]] | [[./finalizadas/]] | [[./andamento/]] | [[./propostas/]]

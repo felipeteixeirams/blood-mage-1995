@@ -2,8 +2,10 @@
 agent_context: game designer, backend
 target_module: artifacts/bloodmage/src/game
 priority: medium
-status: draft
-last_updated: 2026-08-09
+status: complete
+completion_date: 2026-08-10
+last_updated: 2026-08-10
+source_of_truth: docs/specs/finalizadas/03_FASE3_CONDICOES_DE_SOBREVIVENCIA.md
 tags: [features, phase-3, status]
 ---
 # 🤢 Fase 3: Condições de Sobrevivência e Veneno

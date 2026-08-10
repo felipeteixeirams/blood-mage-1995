@@ -1,12 +1,19 @@
 ---
 agent_context: all agents
 target_module: root
-priority: high
-status: active
+priority: low
+status: historical
 last_updated: 2026-08-10
-tags: [specs, dungeon-siege]
+tags: [legacy, dungeon-siege, historical]
 ---
-# Especificação Técnica: Evolução de Dinâmica Dungeon Siege / ARPG
+
+> [!NOTE]
+> **Documento Histórico.** Esta é a especificação de discovery original que originou as Fases 1–4.
+> - Fases 1, 2 e 3 foram **concluídas**. Veja as specs em `docs/specs/finalizadas/`.
+> - Fase 4 está **80% concluída**. Veja a spec ativa em [`docs/specs/andamento/04_FASE4_MUNDO_CONTINUO.md`](../specs/andamento/04_FASE4_MUNDO_CONTINUO.md).
+> - Não use este documento para implementação — use as specs individuais por fase.
+
+# Especificação Técnica: Evolução de Dinâmica Dungeon Siege / ARPG (Histórico)
 
 ## 1. Objetivo Geral
 Transformar a dinâmica de "Wave Shooter" (morte instantânea e fim de partida) em um sistema de sobrevivência contínua com mecânicas de Inconsciência, penalidade tática na morte definitiva (perda de itens e corpo no chão), status de sobrevivência (Sangramento, Envenenamento) e transição para um mundo interconectado.

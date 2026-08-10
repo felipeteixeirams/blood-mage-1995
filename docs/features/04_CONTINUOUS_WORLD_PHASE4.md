@@ -2,8 +2,10 @@
 agent_context: game designer, backend
 target_module: artifacts/bloodmage/src/game
 priority: medium
-status: draft
-last_updated: 2026-08-09
+status: in-progress
+progress: 80%
+last_updated: 2026-08-10
+source_of_truth: docs/specs/andamento/04_FASE4_MUNDO_CONTINUO.md
 tags: [features, phase-4, world]
 ---
 # 🗺️ Fase 4: Mundo Contínuo e Safe Towns
