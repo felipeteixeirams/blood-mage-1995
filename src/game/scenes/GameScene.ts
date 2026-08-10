@@ -357,8 +357,15 @@ export class GameScene extends Phaser.Scene {
 
     // 4. Keyboard Controls
     if (this.input.keyboard) {
-      this.keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,Q,E,SPACE,R,SHIFT,F,C,ONE,TWO,THREE,FOUR,FIVE,SIX') as Record<string, Phaser.Input.Keyboard.Key>;
+      this.keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,Q,E,SPACE,R,SHIFT,F,C,Z,X,V,ONE,TWO,THREE,FOUR,FIVE,SIX') as Record<string, Phaser.Input.Keyboard.Key>;
     }
+
+    // Listen for curative UI clicks
+    window.addEventListener('use-curative', (e: any) => {
+      if (e.detail) {
+        this.useCurativeItem(e.detail);
+      }
+    });
 
     // Mouse Aim
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
@@ -858,7 +865,6 @@ export class GameScene extends Phaser.Scene {
       });
     }
 
-    const store = useGameStore.getState();
     if (closestNPC) {
       const type = (closestNPC as Phaser.Physics.Arcade.Sprite).getData('npcType');
       if (store.closestNPCType !== type) {
@@ -982,6 +988,17 @@ export class GameScene extends Phaser.Scene {
       }
       if (Phaser.Input.Keyboard.JustDown(this.keys.F) || Phaser.Input.Keyboard.JustDown(this.keys.SIX)) {
         this.triggerSkill('hemomancy_beam');
+      }
+
+      // Curatives hotkeys: Z (Bandages), X (Antidotes), V (Antibiotics)
+      if (Phaser.Input.Keyboard.JustDown(this.keys.Z)) {
+        this.useCurativeItem('bandages');
+      }
+      if (Phaser.Input.Keyboard.JustDown(this.keys.X)) {
+        this.useCurativeItem('antidotes');
+      }
+      if (Phaser.Input.Keyboard.JustDown(this.keys.V)) {
+        this.useCurativeItem('antibiotics');
       }
     }
 
@@ -1859,10 +1876,56 @@ export class GameScene extends Phaser.Scene {
       this.depthGroup.add(lootSprite);
     }
 
+    // Chance to scavenge curatives (Atadura, Antídoto, Antibiótico)
+    if (Math.random() < 0.35) {
+      const types: Array<'bandages' | 'antidotes' | 'antibiotics'> = ['bandages', 'antidotes', 'antibiotics'];
+      const picked = types[Math.floor(Math.random() * types.length)];
+      const names = { bandages: 'Atadura 🩸', antidotes: 'Antídoto 🍇', antibiotics: 'Antibiótico 🧪' };
+      const store = useGameStore.getState();
+      const currentCuratives = store.playerStats.curatives || { bandages: 0, antidotes: 0, antibiotics: 0 };
+      useGameStore.setState((state) => ({
+        playerStats: {
+          ...state.playerStats,
+          curatives: {
+            ...currentCuratives,
+            [picked]: currentCuratives[picked] + 1
+          }
+        }
+      }));
+      this.player.stats.curatives = useGameStore.getState().playerStats.curatives;
+      this.spawnFloatingText(scav.x, scav.y - 38, `+1 ${names[picked]}`, '#38bdf8', true);
+      store.addLootLog(`Saqueou curativo: ${names[picked]}`);
+    }
+
     this.cancelScavenging();
   }
 
-  private playerHitByEnemy(damage: number) {
+  public useCurativeItem(type: 'bandages' | 'antidotes' | 'antibiotics') {
+    const store = useGameStore.getState();
+    const success = store.useCurative(type);
+    if (success) {
+      this.player.stats.statusConditions = store.playerStats.statusConditions;
+      this.player.stats.curatives = store.playerStats.curatives;
+      const msgs = {
+        bandages: 'FERIDA ESTANCADA!',
+        antidotes: 'VENENO PURIFICADO!',
+        antibiotics: 'INFECÇÃO ERRADICADA!'
+      };
+      const colors = {
+        bandages: '#ef4444',
+        antidotes: '#22c55e',
+        antibiotics: '#a855f7'
+      };
+      this.spawnFloatingText(this.player.x, this.player.y - 18, msgs[type], colors[type], true);
+      store.addLootLog(`Atalho: Usou ${type}`);
+    } else {
+      if (store.playerStats.curatives[type] < 1) {
+        this.spawnFloatingText(this.player.x, this.player.y - 15, 'SEM CURATIVOS!', '#94a3b8', false);
+      }
+    }
+  }
+
+  private playerHitByEnemy(damage: number, hitType: 'physical' | 'ranged' | 'toxic' | 'heavy' = 'physical') {
     if (this.player.isInvulnerable || this.player.stats.isUnconscious || this.player.stats.isDefinitivelyDead) {
       return;
     }
@@ -1876,6 +1939,31 @@ export class GameScene extends Phaser.Scene {
     if (spawnRoom && this.player.x >= spawnRoom.x && this.player.x <= spawnRoom.x + spawnRoom.width &&
         this.player.y >= spawnRoom.y && this.player.y <= spawnRoom.y + spawnRoom.height) {
       return; // Absolute damage protection inside Safe Town!
+    }
+
+    // Roll status conditions on hit
+    const store = useGameStore.getState();
+    const conds = this.player.stats.statusConditions;
+
+    if (!conds.bleeding && hitType === 'physical' && Math.random() < 0.18) {
+      conds.bleeding = true;
+      store.setStatusCondition('bleeding', true);
+      this.spawnFloatingText(this.player.x, this.player.y - 22, '🩸 SANGRAMENTO!', '#ef4444', true);
+      store.addLootLog('SANGRAMENTO: Ferida aberta! Pressione Z para usar Atadura.');
+    }
+
+    if (!conds.poison && (hitType === 'ranged' || hitType === 'toxic' || Math.random() < 0.12)) {
+      conds.poison = true;
+      store.setStatusCondition('poison', true);
+      this.spawnFloatingText(this.player.x, this.player.y - 22, '🧪 VENENO!', '#22c55e', true);
+      store.addLootLog('VENENO: Sangue contaminado! Pressione X para usar Antídoto.');
+    }
+
+    if (!conds.infection && (hitType === 'heavy' || Math.random() < 0.10)) {
+      conds.infection = true;
+      store.setStatusCondition('infection', true);
+      this.spawnFloatingText(this.player.x, this.player.y - 22, '☣️ INFECÇÃO!', '#a855f7', true);
+      store.addLootLog('INFECÇÃO: Vulnerabilidade a dano! Pressione V para usar Antibiótico.');
     }
 
     const isDead = this.player.takeDamage(damage);
