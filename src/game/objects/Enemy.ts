@@ -262,11 +262,21 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     const isPlayerUnconsciousOrDead = useGameStore.getState().playerStats.isUnconscious || useGameStore.getState().playerStats.isDefinitivelyDead;
     if (isPlayerUnconsciousOrDead) {
       if (this.aiState === 'combat' || this.aiState === 'frenzy' || this.aiState === 'investigating' || this.aiState === 'flee') {
-        this.aiState = 'patrol';
+        this.aiState = 'patrol_away_from_player';
         this.attackPhase = 'none';
         this.setScale(this.baseScale);
         this.setRotation(0);
         this.applyBaseTint();
+        
+        // Calculate a patrol target away from the player
+        const dirX = this.x - playerX;
+        const dirY = this.y - playerY;
+        const len = Math.sqrt(dirX * dirX + dirY * dirY) || 1;
+        const awayDist = 200 + Math.random() * 100;
+        this.currentPatrolTarget = {
+          x: this.x + (dirX / len) * awayDist,
+          y: this.y + (dirY / len) * awayDist
+        };
       }
     }
 
@@ -421,12 +431,18 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.facingAngle += Math.sin(time * 0.002 + this.personalPhase) * 0.01;
         break;
 
+      case 'patrol_away_from_player':
       case 'patrol': {
         const distP = Phaser.Math.Distance.Between(this.x, this.y, this.currentPatrolTarget.x, this.currentPatrolTarget.y);
         if (distP < 15) {
           this.accelerateToward(0, 0, delta);
           if (time > this.patrolWaitTimer) {
-            this.currentPatrolTarget = this.currentPatrolTarget === this.patrolP1 ? this.patrolP2 : this.patrolP1;
+            // For normal patrol, swap targets. For walk-away, just idle after reaching it.
+            if (this.aiState === 'patrol_away_from_player') {
+              this.aiState = 'idle';
+            } else {
+              this.currentPatrolTarget = this.currentPatrolTarget === this.patrolP1 ? this.patrolP2 : this.patrolP1;
+            }
             this.patrolWaitTimer = time + 2000 + Math.random() * 2000;
           }
         } else {

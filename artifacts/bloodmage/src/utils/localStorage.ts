@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { GameSettings, HighScoreRecord } from '../types/game';
-import { logger } from './logger';
 
 const SETTINGS_KEY = 'bloodmage_1995_settings';
 const HIGHSCORES_KEY = 'bloodmage_1995_highscores';
@@ -16,13 +15,10 @@ export function loadBloodCrystals(): number {
     if (raw) {
       const parsed = parseInt(raw, 10);
       const validated = BloodCrystalsSchema.safeParse(Number.isNaN(parsed) ? 0 : parsed);
-      if (validated.success) {
-        logger.info('PERSISTENCE', `Blood crystals loaded successfully: ${validated.data}`);
-        return validated.data;
-      }
+      return validated.success ? validated.data : 0;
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load blood crystals', e);
+    console.warn('Failed to load blood crystals', e);
   }
   return 0;
 }
@@ -32,9 +28,8 @@ export function saveBloodCrystals(amount: number): void {
     const validated = BloodCrystalsSchema.safeParse(amount);
     const valueToSave = validated.success ? validated.data : 0;
     localStorage.setItem(BLOOD_CRYSTALS_KEY, valueToSave.toString());
-    logger.info('PERSISTENCE', `Blood crystals saved successfully: ${valueToSave}`);
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to save blood crystals', e);
+    console.warn('Failed to save blood crystals', e);
   }
 }
 
@@ -71,13 +66,10 @@ export function loadTalentLevels(): Record<string, number> {
     if (raw) {
       const parsed = JSON.parse(raw);
       const validated = TalentLevelsSchema.safeParse(parsed);
-      if (validated.success) {
-        logger.info('PERSISTENCE', 'Talents loaded successfully from localStorage');
-        return validated.data;
-      }
+      if (validated.success) return validated.data;
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load talents', e);
+    console.warn('Failed to load talents', e);
   }
   return { ...defaultTalents };
 }
@@ -87,9 +79,8 @@ export function saveTalentLevels(talents: Record<string, number>): void {
     const validated = TalentLevelsSchema.safeParse(talents);
     const valueToSave = validated.success ? validated.data : defaultTalents;
     localStorage.setItem(TALENTS_KEY, JSON.stringify(valueToSave));
-    logger.info('PERSISTENCE', 'Talents saved successfully to localStorage');
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to save talents', e);
+    console.warn('Failed to save talents', e);
   }
 }
 
@@ -138,13 +129,10 @@ export function loadSettings(): GameSettings {
     if (raw) {
       const parsed = JSON.parse(raw);
       const validated = SettingsSchema.safeParse(parsed);
-      if (validated.success) {
-        logger.info('PERSISTENCE', 'Game settings loaded successfully from localStorage');
-        return validated.data;
-      }
+      if (validated.success) return validated.data;
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load settings from localStorage', e);
+    console.warn('Failed to load settings from localStorage', e);
   }
   return defaultSettings;
 }
@@ -154,9 +142,8 @@ export function saveSettings(settings: GameSettings): void {
     const validated = SettingsSchema.safeParse(settings);
     const valueToSave = validated.success ? validated.data : defaultSettings;
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(valueToSave));
-    logger.info('PERSISTENCE', 'Game settings saved successfully to localStorage');
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to save settings to localStorage', e);
+    console.warn('Failed to save settings to localStorage', e);
   }
 }
 
@@ -200,13 +187,10 @@ export function loadHighScores(): HighScoreRecord[] {
     if (raw) {
       const parsed = JSON.parse(raw);
       const validated = HighScoresArraySchema.safeParse(parsed);
-      if (validated.success) {
-        logger.info('PERSISTENCE', 'High scores loaded successfully from localStorage');
-        return validated.data;
-      }
+      if (validated.success) return validated.data;
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load highscores', e);
+    console.warn('Failed to load highscores', e);
   }
   return defaultHighScores;
 }
@@ -227,9 +211,8 @@ export function saveHighScore(newRecord: Omit<HighScoreRecord, 'id' | 'date'>): 
     const validated = HighScoresArraySchema.safeParse(updated);
     const valueToSave = validated.success ? validated.data : defaultHighScores;
     localStorage.setItem(HIGHSCORES_KEY, JSON.stringify(valueToSave));
-    logger.info('PERSISTENCE', 'High score record saved successfully to localStorage');
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to save highscore', e);
+    console.warn('Failed to save highscore', e);
   }
   return updated;
 }
@@ -250,13 +233,10 @@ export function loadOnboarding() {
     if (raw) {
       const parsed = JSON.parse(raw);
       const validated = OnboardingSchema.safeParse(parsed);
-      if (validated.success) {
-        logger.info('PERSISTENCE', 'Onboarding loaded successfully');
-        return validated.data;
-      }
+      if (validated.success) return validated.data;
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load onboarding', e);
+    console.warn('Failed to load onboarding', e);
   }
   return {
     firstKillDone: false,
@@ -270,9 +250,8 @@ export function loadOnboarding() {
 export function saveOnboarding(state: any): void {
   try {
     localStorage.setItem(ONBOARDING_KEY, JSON.stringify(state));
-    logger.info('PERSISTENCE', 'Onboarding saved successfully');
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to save onboarding', e);
+    console.warn('Failed to save onboarding', e);
   }
 }
 
@@ -291,9 +270,8 @@ export function saveDeathState(isDead: boolean, stats?: any): void {
       gameOverStats: stats || null
     };
     localStorage.setItem(DEATH_STATE_KEY, JSON.stringify(data));
-    logger.info('PERSISTENCE', `Death state saved successfully: ${isDead}`);
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to save death state', e);
+    console.warn('Failed to save death state', e);
   }
 }
 
@@ -304,12 +282,11 @@ export function loadDeathState(): { isDefinitivelyDead: boolean; gameOverStats?:
       const parsed = JSON.parse(raw);
       const validated = DeathStateSchema.safeParse(parsed);
       if (validated.success) {
-        logger.info('PERSISTENCE', 'Death state loaded successfully');
         return validated.data;
       }
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load death state', e);
+    console.warn('Failed to load death state', e);
   }
   return { isDefinitivelyDead: false, gameOverStats: null };
 }
@@ -331,9 +308,8 @@ export function saveDroppedCorpseState(corpse: any): void {
     const validated = CorpseSchema.safeParse(corpse);
     const data = validated.success ? validated.data : corpse;
     localStorage.setItem(CORPSE_STATE_KEY, JSON.stringify(data));
-    logger.info('PERSISTENCE', 'Corpse state saved successfully');
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to save corpse state', e);
+    console.warn('Failed to save corpse state', e);
   }
 }
 
@@ -343,13 +319,10 @@ export function loadDroppedCorpseState(): any {
     if (raw) {
       const parsed = JSON.parse(raw);
       const validated = CorpseSchema.safeParse(parsed);
-      if (validated.success) {
-        logger.info('PERSISTENCE', 'Corpse state loaded successfully');
-        return validated.data;
-      }
+      if (validated.success) return validated.data;
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load corpse state', e);
+    console.warn('Failed to load corpse state', e);
   }
   return {
     hasDroppedCorpse: false,

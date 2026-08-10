@@ -274,7 +274,7 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
             : `${activeCls} hover:brightness-125`
           } ${sizeClasses}`}
         style={layout ? { position: 'fixed', left: layout.x, top: layout.y, zIndex: 100 } : undefined}
-        title={`${spell.name}: ${spell.description}`}
+        
         aria-label={spell.name}
       >
         <Icon className={iconSize} />
