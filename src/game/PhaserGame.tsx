@@ -43,9 +43,6 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
       height: containerRef.current.clientHeight || window.innerHeight,
       backgroundColor: '#0a0508',
       pixelArt: true,
-      loader: {
-        imageLoadType: 'HTMLImageElement',
-      },
       input: {
         activePointers: 3,
       },

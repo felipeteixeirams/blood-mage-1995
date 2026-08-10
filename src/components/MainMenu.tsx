@@ -45,9 +45,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({
       backgroundColor: "#0b0a09",
       pixelArt: true,
       roundPixels: true,
-      loader: {
-        imageLoadType: 'HTMLImageElement',
-      },
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,

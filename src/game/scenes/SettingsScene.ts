@@ -63,20 +63,6 @@ export class SettingsScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.imageLoadType = "HTMLImageElement";
-    this.load.on("loaderror", (fileObj: any) => {
-      const key = fileObj ? fileObj.key : "";
-      if (key && !this.textures.exists(key)) {
-        const canvas = this.textures.createCanvas(key, 64, 64);
-        if (canvas) {
-          const ctx = canvas.getContext();
-          ctx.fillStyle = "#1e1014";
-          ctx.fillRect(0, 0, 64, 64);
-          canvas.refresh();
-        }
-      }
-    });
-
     this.load.image("rockTile", rockTileUrl);
     this.load.image("stoneTile", stoneTileUrl);
     this.load.image("uiCorner", cornerUrl);
