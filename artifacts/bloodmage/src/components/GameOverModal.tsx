@@ -17,18 +17,21 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 select-none animate-blood-pulse">
-      <div className="w-full max-w-md bg-[#120a0e] border-4 border-red-900 rounded-xl p-6 shadow-[0_0_60px_rgba(220,38,38,0.7)] flex flex-col items-center space-y-6 text-center">
+    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-4 select-none animate-blood-pulse">
+      {/* Dark vignette border representing tunneling vision */}
+      <div className="absolute inset-0 bg-gradient-radial from-transparent to-black pointer-events-none z-10" />
+
+      <div className="w-full max-w-md bg-[#171309] border-4 border-[#B8860B] rounded-none p-6 shadow-[0_0_60px_rgba(153,0,0,0.85)] flex flex-col items-center space-y-6 text-center relative z-20">
         {/* Title Header */}
         <div className="space-y-2">
-          <div className="p-3 bg-red-950/80 rounded-full border border-red-700 mx-auto w-fit">
-            <Skull className="w-8 h-8 text-red-500 animate-pulse" />
+          <div className="p-3 bg-red-950/40 rounded-none border border-[#B8860B]/60 mx-auto w-fit">
+            <Skull className="w-8 h-8 text-red-600 animate-pulse" />
           </div>
-          <h2 className="text-3xl md:text-4xl font-gothic text-transparent bg-clip-text bg-gradient-to-b from-red-500 to-red-950">
-            SEU SANGUE FOI DERRAMADO
+          <h2 className="text-4xl font-gothic text-red-600 font-bold uppercase tracking-wide">
+            VOCÊ ESTÁ MORTO
           </h2>
-          <p className="font-retro text-sm text-gray-400">
-            O ritual chegou ao fim, mas sua alma permanece faminta por vingança.
+          <p className="font-retro text-xs text-gray-400">
+            A terra consome seus restos mortais... olhos carniceiros espreitam seus pertences perdidos.
           </p>
         </div>
 
@@ -72,12 +75,13 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
           <button
             onClick={() => {
               soundEngine.playButtonClick();
-              onRestart();
+              // Dispatch CustomEvent to let Phaser handle respawn
+              window.dispatchEvent(new CustomEvent('respawn-player'));
             }}
-            className="w-full py-4 bg-gradient-to-r from-red-950 via-red-800 to-red-950 hover:from-red-900 hover:to-red-700 text-red-100 font-pixel text-sm rounded border border-red-600/80 shadow-[0_0_20px_rgba(220,38,38,0.4)] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-4 bg-gradient-to-r from-red-950 via-red-900 to-red-950 hover:from-red-900 hover:to-red-800 text-red-100 font-pixel text-xs rounded-none border border-red-600 shadow-[0_0_20px_rgba(153,0,0,0.5)] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" />
-            <span>RENASCER (RETRY)</span>
+            <span>RENASCER NA VILA (PERDA DE XP)</span>
           </button>
 
           <button
@@ -85,10 +89,10 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
               soundEngine.playButtonClick();
               onGoHome();
             }}
-            className="w-full py-3 bg-black/80 hover:bg-gray-900 border border-gray-800 rounded text-gray-300 font-retro text-base flex items-center justify-center gap-2 hover:border-gray-600 transition-colors cursor-pointer"
+            className="w-full py-3 bg-black/80 hover:bg-gray-950 border border-gray-800 rounded-none text-gray-400 font-retro text-sm flex items-center justify-center gap-2 hover:border-gray-600 transition-colors cursor-pointer"
           >
             <Home className="w-4 h-4" />
-            <span>MENU PRINCIPAL</span>
+            <span>RETORNAR AO MENU</span>
           </button>
         </div>
       </div>

@@ -117,6 +117,28 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         </button>
       </div>
 
+      {/* 3. High Scores Button */}
+      <div className="absolute bottom-8 left-1/2 z-20 transform -translate-x-1/2 pointer-events-auto">
+        <button
+          onClick={() => {
+            soundEngine.playButtonClick();
+            onOpenHighScores();
+          }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            e.nativeEvent.stopImmediatePropagation();
+          }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            e.nativeEvent.stopImmediatePropagation();
+          }}
+          className="inline-flex items-center gap-2 px-4 py-3 rounded-full border-2 border-amber-700 bg-black/80 text-white font-pixel text-sm uppercase tracking-[0.22em] shadow-[0_0_20px_rgba(232,179,56,0.15)] hover:border-amber-400 hover:text-amber-200 transition"
+          title="Ver Recordes"
+        >
+          <Trophy className="w-4 h-4 text-amber-300" />
+          RECORDES
+        </button>
+      </div>
 
       {/* 4. Challenge Modifiers Widget */}
       <div className="absolute left-8 bottom-24 z-20 w-64 md:w-72 bg-[#171309]/95 border-2 border-[#b8860b]/40 shadow-[4px_4px_12px_rgba(0,0,0,0.9)] p-4 flex flex-col gap-2.5 pointer-events-auto text-left rounded-xl select-none"

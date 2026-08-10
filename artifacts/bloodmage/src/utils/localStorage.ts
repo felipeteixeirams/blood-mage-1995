@@ -121,13 +121,6 @@ const SettingsSchema = z.object({
     size: z.enum(['small', 'medium', 'large'])
   })).optional(),
   activePaletteId: z.string().catch('crimson').optional(),
-  knockoutCount: z.number().optional(),
-  isDefinitivelyDead: z.boolean().optional(),
-  statusConditions: z.object({
-    bleeding: z.boolean(),
-    poison: z.boolean(),
-    infection: z.boolean(),
-  }).optional(),
 }).strict(); // strict() prevents prototype pollution and extra keys
 
 export function loadSettings(): GameSettings {
@@ -260,4 +253,83 @@ export function saveOnboarding(state: any): void {
   } catch (e) {
     console.warn('Failed to save onboarding', e);
   }
+}
+
+const DEATH_STATE_KEY = 'bloodmage_1995_death_state';
+const CORPSE_STATE_KEY = 'bloodmage_1995_corpse_state';
+
+const DeathStateSchema = z.object({
+  isDefinitivelyDead: z.boolean().catch(false),
+  gameOverStats: z.any().nullable().optional(),
+});
+
+export function saveDeathState(isDead: boolean, stats?: any): void {
+  try {
+    const data = {
+      isDefinitivelyDead: isDead,
+      gameOverStats: stats || null
+    };
+    localStorage.setItem(DEATH_STATE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.warn('Failed to save death state', e);
+  }
+}
+
+export function loadDeathState(): { isDefinitivelyDead: boolean; gameOverStats?: any } {
+  try {
+    const raw = localStorage.getItem(DEATH_STATE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const validated = DeathStateSchema.safeParse(parsed);
+      if (validated.success) {
+        return validated.data;
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load death state', e);
+  }
+  return { isDefinitivelyDead: false, gameOverStats: null };
+}
+
+const CorpseSchema = z.object({
+  hasDroppedCorpse: z.boolean().catch(false),
+  zone: z.string().catch(''),
+  x: z.number().catch(0),
+  y: z.number().catch(0),
+  droppedTimestamp: z.number().catch(0),
+  itemsInside: z.array(z.object({
+    id: z.string(),
+    quantity: z.number()
+  })).catch([]),
+});
+
+export function saveDroppedCorpseState(corpse: any): void {
+  try {
+    const validated = CorpseSchema.safeParse(corpse);
+    const data = validated.success ? validated.data : corpse;
+    localStorage.setItem(CORPSE_STATE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.warn('Failed to save corpse state', e);
+  }
+}
+
+export function loadDroppedCorpseState(): any {
+  try {
+    const raw = localStorage.getItem(CORPSE_STATE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const validated = CorpseSchema.safeParse(parsed);
+      if (validated.success) return validated.data;
+    }
+  } catch (e) {
+    console.warn('Failed to load corpse state', e);
+  }
+  return {
+    hasDroppedCorpse: false,
+    zone: '',
+    x: 0,
+    y: 0,
+    droppedTimestamp: 0,
+    itemsInside: []
+  };
 }
