@@ -4,6 +4,7 @@
  */
 
 import { useGameStore } from '../store/gameStore';
+import { logger } from './logger';
 
 class SoundEngine {
   private ctx: AudioContext | null = null;
@@ -102,7 +103,7 @@ class SoundEngine {
         panner.pan.setValueAtTime(0, now);
       }
     } catch (e) {
-      console.warn('StereoPanner not supported by browser');
+      logger.warn('AUDIO', 'StereoPanner not supported by browser');
     }
 
     // Chain: Source -> Filter -> Gain -> Panner -> Destination
@@ -780,14 +781,18 @@ class SoundEngine {
   public startGothicAmbientBGM() {
     if (this.isBgmPlaying) return;
     this.initCtx();
-    if (!this.ctx) return;
+    if (!this.ctx) {
+      logger.warn('AUDIO', 'Could not initialize AudioContext to start BGM');
+      return;
+    }
+
+    const biome = useGameStore.getState().currentBiome;
+    logger.info('AUDIO', `Starting Gothic Ambient BGM for biome: ${biome}`);
 
     this.isBgmPlaying = true;
     this.bgmGain = this.ctx.createGain();
     this.bgmGain.gain.setValueAtTime(this.isMuted ? 0 : this.bgmVolume * 0.15, this.ctx.currentTime);
     this.bgmGain.connect(this.ctx.destination);
-
-    const biome = useGameStore.getState().currentBiome;
 
     // Dark Drone Oscillators customized by Biome
     let baseFreqs = [73.42, 110.00, 146.83, 174.61]; // D minor (Fosso das Chagas)
@@ -892,6 +897,7 @@ class SoundEngine {
   }
 
   public stopBGM() {
+    logger.info('AUDIO', 'Stopping BGM');
     if (this.bgmIntervalTimer) {
       clearInterval(this.bgmIntervalTimer);
       this.bgmIntervalTimer = null;

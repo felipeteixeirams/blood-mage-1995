@@ -3,6 +3,7 @@ import { PlayerStats, SpellConfig, LootItem } from '../../types/game';
 import spellsData from '../../data/spells.json';
 import { soundEngine } from '../../utils/soundEngine';
 import { useGameStore } from '../../store/gameStore';
+import { logger } from '../../utils/logger';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   public stats: PlayerStats;
@@ -140,6 +141,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.currentVx = 0;
       this.currentVy = 0;
       this.setAlpha(0.6);
+      this.setTint(0x550000);
 
       // Regenerate passive HP while unconscious (2% of Max HP per second)
       // Infection blocks natural regeneration (Discovery Seção 2.4)
@@ -155,6 +157,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.isInvulnerable = true;
         this.invulnerableTimer = 1500; // 1.5s wake-up invulnerability
         this.setAlpha(1.0);
+        this.clearTint();
 
         useGameStore.getState().setUnconscious(false);
         useGameStore.getState().setPlayerStats({ ...this.stats });
@@ -476,6 +479,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.isInvulnerable || this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
 
     this.stats.hp = Math.max(0, this.stats.hp - amount);
+    logger.info('PLAYER', `Player took ${amount} damage. Current HP: ${this.stats.hp}`);
 
     // Sync HP immediately to state
     useGameStore.getState().setPlayerStats({ ...this.stats });
@@ -489,6 +493,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.currentVx = 0;
         this.currentVy = 0;
 
+        logger.warn('PLAYER', `Player fell unconscious! Knockout count: ${this.stats.knockoutCount}`);
         useGameStore.getState().setUnconscious(true);
         useGameStore.getState().setPlayerStats({ ...this.stats });
 
@@ -497,6 +502,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       } else {
         // 3rd knock down -> Definitive Death!
         this.stats.isDefinitivelyDead = true;
+        logger.error('PLAYER', `Player is definitively dead! Knockout count reached maximum`);
         useGameStore.getState().setDefinitivelyDead(true);
         useGameStore.getState().setPlayerStats({ ...this.stats });
         soundEngine.playPlayerHurt();
