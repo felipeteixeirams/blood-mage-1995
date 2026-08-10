@@ -45,6 +45,9 @@ export const MainMenu: React.FC<MainMenuProps> = ({
       backgroundColor: "#0b0a09",
       pixelArt: true,
       roundPixels: true,
+      loader: {
+        imageLoadType: 'HTMLImageElement',
+      },
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -115,76 +118,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         >
           {isMuted ? <VolumeX className="w-5 h-5 text-red-400" /> : <Volume2 className="w-5 h-5 text-[#d4af37]" />}
         </button>
-      </div>
-
-      {/* 3. High Scores Button */}
-      <div className="absolute bottom-8 left-1/2 z-20 transform -translate-x-1/2 pointer-events-auto">
-        <button
-          onClick={() => {
-            soundEngine.playButtonClick();
-            onOpenHighScores();
-          }}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            e.nativeEvent.stopImmediatePropagation();
-          }}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            e.nativeEvent.stopImmediatePropagation();
-          }}
-          className="inline-flex items-center gap-2 px-4 py-3 rounded-full border-2 border-amber-700 bg-black/80 text-white font-pixel text-sm uppercase tracking-[0.22em] shadow-[0_0_20px_rgba(232,179,56,0.15)] hover:border-amber-400 hover:text-amber-200 transition"
-          title="Ver Recordes"
-        >
-          <Trophy className="w-4 h-4 text-amber-300" />
-          RECORDES
-        </button>
-      </div>
-
-      {/* 4. Challenge Modifiers Widget */}
-      <div className="absolute left-8 bottom-24 z-20 w-64 md:w-72 bg-[#171309]/95 border-2 border-[#b8860b]/40 shadow-[4px_4px_12px_rgba(0,0,0,0.9)] p-4 flex flex-col gap-2.5 pointer-events-auto text-left rounded-xl select-none"
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          e.nativeEvent.stopImmediatePropagation();
-        }}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-          e.nativeEvent.stopImmediatePropagation();
-        }}
-      >
-        <span className="text-[10px] text-[#e3dac9] font-bold tracking-widest border-b border-[#b8860b]/20 pb-1.5 uppercase flex items-center gap-1.5">
-          💀 Modificadores de Desafio
-        </span>
-        <div className="flex flex-col gap-2">
-          {MODIFIERS.map((m) => {
-            const active = activeModifiers.includes(m.id);
-            return (
-              <div
-                key={m.id}
-                onClick={() => {
-                  soundEngine.playButtonClick();
-                  toggleModifier(m.id);
-                }}
-                className={`p-2 border rounded cursor-pointer transition-all duration-200 flex flex-col gap-0.5 ${
-                  active
-                    ? `${m.color} border-[#b8860b] shadow-[0_0_10px_rgba(184,134,11,0.25)] scale-[1.02]`
-                    : 'border-gray-800/80 bg-black/45 text-gray-400 hover:border-gray-700'
-                }`}
-              >
-                <div className="flex justify-between items-center">
-                  <span className={`text-[9px] uppercase font-bold ${active ? 'text-amber-300' : 'text-gray-300'}`}>
-                    {m.name}
-                  </span>
-                  <span className="text-[8px] font-sans">
-                    {active ? 'ATIVO' : 'INATIVO'}
-                  </span>
-                </div>
-                <span className="text-[7px] font-sans text-gray-500 leading-snug">
-                  {m.desc}
-                </span>
-              </div>
-            );
-          })}
-        </div>
       </div>
     </motion.div>
   );

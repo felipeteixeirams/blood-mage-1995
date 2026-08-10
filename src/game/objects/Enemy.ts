@@ -3,7 +3,6 @@ import { MonsterConfig, AIState } from '../../types/game';
 import monstersData from '../../data/monsters.json';
 import { soundEngine } from '../../utils/soundEngine';
 import { useGameStore } from '../../store/gameStore';
-import { logger } from '../../utils/logger';
 
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
   public config: MonsterConfig;
@@ -176,7 +175,6 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       if (this.aiState !== 'flee') {
         this.aiState = 'flee';
         this.fleeStartTime = this.scene.time.now;
-        logger.info('ENEMY', `Passive enemy "${this.config.name}" fleeing from combat`);
         this.showEmote('icon_flee');
       }
       return;
@@ -184,7 +182,6 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (this.aiState === 'flee') return;
     if (this.aiState !== 'combat' && this.aiState !== 'frenzy') {
       this.aiState = 'combat';
-      logger.info('ENEMY', `Enemy "${this.config.name}" transitioned to combat state`);
       this.showEmote('icon_alert');
     }
   }

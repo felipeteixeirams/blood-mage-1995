@@ -68,6 +68,8 @@ interface GameStore {
   // Equipment & Loot
   equipment: EquipmentSlots;
   equipItem: (item: LootItem) => void;
+  clearInventoryOnDeath: () => void;
+  retrieveCorpseLoot: () => void;
   recentLootLog: string[];
   addLootLog: (msg: string) => void;
 
@@ -283,6 +285,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
     }
     set({ equipment: updated });
+  },
+  clearInventoryOnDeath: () => {
+    set((state) => ({
+      equipment: { weapon: null, armor: null, relics: [] },
+      playerStats: {
+        ...state.playerStats,
+        curatives: { bandages: 0, antidotes: 0, antibiotics: 0 }
+      }
+    }));
+  },
+  retrieveCorpseLoot: () => {
+    const state = get();
+    const corpse = state.playerStats.droppedCorpse;
+    if (corpse.hasDroppedCorpse) {
+      set({
+        equipment: corpse.equipment,
+        playerStats: {
+          ...state.playerStats,
+          curatives: corpse.curatives,
+          droppedCorpse: { ...corpse, hasDroppedCorpse: false }
+        }
+      });
+      state.addLootLog("Equipamentos e itens recuperados com sucesso!");
+    }
   },
 
   recentLootLog: [],

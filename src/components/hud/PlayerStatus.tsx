@@ -110,6 +110,54 @@ export const PlayerStatus: React.FC<PlayerStatusProps> = ({ stats }) => {
             />
           </div>
         </div>
+
+        {/* Status Conditions & Curatives Bar */}
+        <div className="flex items-center gap-1.5 pt-1 border-t border-[#3a2825]/80">
+          {/* Bleeding Indicator */}
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('use-curative', { detail: 'bandages' }))}
+            className={`flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-pixel border cursor-pointer transition ${
+              stats.statusConditions?.bleeding
+                ? 'bg-red-950/80 border-red-500 text-red-200 animate-pulse font-bold shadow-[0_0_8px_rgba(239,68,68,0.5)]'
+                : 'bg-black/40 border-[#3a2825] text-gray-400 hover:border-gray-600'
+            }`}
+            title="Sangramento: Pressione Z para usar Atadura"
+          >
+            <span>🩸</span>
+            <span className="hidden sm:inline">[Z]</span>
+            <span className="font-bold text-[#e8c76a]">{stats.curatives?.bandages || 0}</span>
+          </button>
+
+          {/* Poison Indicator */}
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('use-curative', { detail: 'antidotes' }))}
+            className={`flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-pixel border cursor-pointer transition ${
+              stats.statusConditions?.poison
+                ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200 animate-pulse font-bold shadow-[0_0_8px_rgba(34,197,94,0.5)]'
+                : 'bg-black/40 border-[#3a2825] text-gray-400 hover:border-gray-600'
+            }`}
+            title="Veneno: Pressione X para usar Antídoto"
+          >
+            <span>🍇</span>
+            <span className="hidden sm:inline">[X]</span>
+            <span className="font-bold text-[#e8c76a]">{stats.curatives?.antidotes || 0}</span>
+          </button>
+
+          {/* Infection Indicator */}
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('use-curative', { detail: 'antibiotics' }))}
+            className={`flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-pixel border cursor-pointer transition ${
+              stats.statusConditions?.infection
+                ? 'bg-purple-950/80 border-purple-500 text-purple-200 animate-pulse font-bold shadow-[0_0_8px_rgba(168,85,247,0.5)]'
+                : 'bg-black/40 border-[#3a2825] text-gray-400 hover:border-gray-600'
+            }`}
+            title="Infecção: Pressione V para usar Antibiótico"
+          >
+            <span>🧪</span>
+            <span className="hidden sm:inline">[V]</span>
+            <span className="font-bold text-[#e8c76a]">{stats.curatives?.antibiotics || 0}</span>
+          </button>
+        </div>
       </div>
     </div>
   );

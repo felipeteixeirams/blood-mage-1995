@@ -14,7 +14,7 @@ import { soundEngine } from '../../utils/soundEngine';
 import { useGameStore } from '../../store/gameStore';
 import { telemetry } from '../../utils/telemetry';
 import { CombatFeel } from '../systems/CombatFeel';
-import { ContractSystem } from '../systems/ContractSystem';
+import { worldManager } from '../systems/WorldManager';
 
 export interface GameSceneCallbacks {
   onStatsUpdate: (stats: PlayerStats) => void;
@@ -56,6 +56,7 @@ export class GameScene extends Phaser.Scene {
   private floorMonstersKilled: number = 0;
   private portalSprite?: Phaser.GameObjects.Sprite;
   private isPortalActive: boolean = false;
+  private corpsePointer?: Phaser.GameObjects.Sprite;
 
   private currentWaveIndex: number = 0;
   private waveConfigs: WaveConfig[] = wavesData as WaveConfig[];
@@ -198,19 +199,44 @@ export class GameScene extends Phaser.Scene {
         this.player.setAlpha(1.0);
         this.player.clearTint();
 
-        // Spawn a lost corpse scavengeable at the death spot!
-        const lostCorpse = new Scavengeable(this, deathX, deathY, 'corpse');
-        this.scavengeablesGroup.add(lostCorpse);
-        this.depthGroup.add(lostCorpse);
-
-        // Print atmospheric message
         const store = useGameStore.getState();
-        store.addLootLog("Você sente que a terra consome seus restos... olhos carniceiros espreitam seus pertences perdidos. Apresse-se, Bloodmage.");
+
+        // Destroy previous player corpse if it exists
+        this.scavengeablesGroup.getChildren().forEach(scav => {
+          const s = scav as Scavengeable;
+          if (s.scavengeType === 'player_corpse') {
+            s.destroy();
+          }
+        });
+
+        // Save current equipment to the corpse in the store
+        store.setDroppedCorpse({
+          hasDroppedCorpse: true,
+          zone: 'calabouco',
+          x: deathX,
+          y: deathY,
+          droppedTimestamp: Date.now(),
+          equipment: store.equipment,
+          curatives: this.player.stats.curatives
+        });
 
         // Clear death screens
         store.setDefinitivelyDead(false);
         store.setGameOverStats(null);
+        
+        // Push stats to store, then clear inventory (which updates the store's stats again)
         store.setPlayerStats({ ...this.player.stats });
+        store.clearInventoryOnDeath();
+        // Update local reference to match the cleared store
+        this.player.stats.curatives = { bandages: 0, antidotes: 0, antibiotics: 0 };
+
+        // Spawn a lost corpse scavengeable at the death spot!
+        const lostCorpse = new Scavengeable(this, deathX, deathY, 'player_corpse');
+        this.scavengeablesGroup.add(lostCorpse);
+        this.depthGroup.add(lostCorpse);
+
+        // Print atmospheric message
+        store.addLootLog("Você sente que a terra consome seus restos... olhos carniceiros espreitam seus pertences perdidos. Apresse-se, Bloodmage.");
       }
     });
 
@@ -312,6 +338,15 @@ export class GameScene extends Phaser.Scene {
     // Camera setup
     this.cameras.main.setBounds(0, 0, mapW, mapH);
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+    
+    // UI Pointer for Corpse
+    this.corpsePointer = this.add.sprite(0, 0, 'icon_skull')
+      .setScrollFactor(0)
+      .setDepth(3000)
+      .setScale(0.8)
+      .setTint(0xff0000)
+      .setVisible(false);
+
     // Zoom adaptativo: encaixa o jogo perfeitamente em qualquer tela landscape.
     // Usa o menor eixo (altura em landscape) como referência para não cortar verticalmente.
     const screenH = this.cameras.main.height || window.innerHeight;
@@ -322,8 +357,15 @@ export class GameScene extends Phaser.Scene {
 
     // 4. Keyboard Controls
     if (this.input.keyboard) {
-      this.keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,Q,E,SPACE,R,SHIFT,F,C,ONE,TWO,THREE,FOUR,FIVE,SIX') as Record<string, Phaser.Input.Keyboard.Key>;
+      this.keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,Q,E,SPACE,R,SHIFT,F,C,Z,X,V,ONE,TWO,THREE,FOUR,FIVE,SIX') as Record<string, Phaser.Input.Keyboard.Key>;
     }
+
+    // Listen for curative UI clicks
+    window.addEventListener('use-curative', (e: any) => {
+      if (e.detail) {
+        this.useCurativeItem(e.detail);
+      }
+    });
 
     // Mouse Aim
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
@@ -501,6 +543,22 @@ export class GameScene extends Phaser.Scene {
     }
 
     useGameStore.getState().setCurrentBiome(biome);
+
+    // Apply WorldManager environmental biome changes (Lighting & Audio transitions)
+    const { isTransitionIndoorOutdoor, previousIndoorState } = worldManager.setBiome(biome);
+    const envConfig = worldManager.getCurrentConfig();
+    soundEngine.updateEnvironmentAudio(envConfig.isIndoor, envConfig.reverbLevel);
+
+    // Efeito de Adaptação de Pupila (Pupil Light Adaptation): Flash ao mudar de caverna/ambiente fechado para espaço aberto
+    if (isTransitionIndoorOutdoor) {
+      if (!envConfig.isIndoor) {
+        // Entrando em ambiente aberto ensolarado/iluminado: Flash brilhante de adaptação
+        this.cameras.main.flash(350, 255, 255, 240);
+      } else {
+        // Entrando em subterrâneo/caverna fechada: Flash escuro de íris dilantando
+        this.cameras.main.flash(300, 20, 10, 15);
+      }
+    }
 
     const rooms = this.dungeonGenerator.generate(mapW, mapH, biome);
     this.rooms = rooms;
@@ -778,6 +836,37 @@ export class GameScene extends Phaser.Scene {
   update(time: number, delta: number) {
     if (this.isPaused) return;
 
+    const store = useGameStore.getState();
+
+    // Handle corpse compass pointer
+    if (this.corpsePointer) {
+      const corpse = store.playerStats.droppedCorpse;
+      if (corpse.hasDroppedCorpse && this.player && this.player.active && !this.player.stats.isDefinitivelyDead) {
+        const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, corpse.x, corpse.y);
+        const cw = this.cameras.main.width;
+        const ch = this.cameras.main.height;
+        // Don't show if the corpse is visible on screen (approx half screen width/height)
+        if (dist > Math.min(cw, ch) / 2) {
+          this.corpsePointer.setVisible(true);
+          const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, corpse.x, corpse.y);
+          // Calculate edge position
+          const padding = 40;
+          let px = cw / 2 + Math.cos(angle) * (cw / 2 - padding);
+          let py = ch / 2 + Math.sin(angle) * (ch / 2 - padding);
+          // Keep it within screen bounds
+          px = Phaser.Math.Clamp(px, padding, cw - padding);
+          py = Phaser.Math.Clamp(py, padding, ch - padding);
+          this.corpsePointer.setPosition(px, py);
+          // Pulse scale
+          this.corpsePointer.setScale(0.8 + Math.sin(time * 0.005) * 0.1);
+        } else {
+          this.corpsePointer.setVisible(false);
+        }
+      } else {
+        this.corpsePointer.setVisible(false);
+      }
+    }
+
     // Find closest NPC in range
     let closestNPC: Phaser.Physics.Arcade.Sprite | null = null;
     let closestNPCDist = 50; // Interaction range of 50px
@@ -792,7 +881,6 @@ export class GameScene extends Phaser.Scene {
       });
     }
 
-    const store = useGameStore.getState();
     if (closestNPC) {
       const type = (closestNPC as Phaser.Physics.Arcade.Sprite).getData('npcType');
       if (store.closestNPCType !== type) {
@@ -916,6 +1004,17 @@ export class GameScene extends Phaser.Scene {
       }
       if (Phaser.Input.Keyboard.JustDown(this.keys.F) || Phaser.Input.Keyboard.JustDown(this.keys.SIX)) {
         this.triggerSkill('hemomancy_beam');
+      }
+
+      // Curatives hotkeys: Z (Bandages), X (Antidotes), V (Antibiotics)
+      if (Phaser.Input.Keyboard.JustDown(this.keys.Z)) {
+        this.useCurativeItem('bandages');
+      }
+      if (Phaser.Input.Keyboard.JustDown(this.keys.X)) {
+        this.useCurativeItem('antidotes');
+      }
+      if (Phaser.Input.Keyboard.JustDown(this.keys.V)) {
+        this.useCurativeItem('antibiotics');
       }
     }
 
@@ -1183,23 +1282,26 @@ export class GameScene extends Phaser.Scene {
         soundEngine.updateSpatialThreat(0, 0, false);
       }
 
-      // 4.3 & 4.4 — Vinheta Pulsante & Iluminação Dinâmica (Blood Aura)
+      // 4.3 & 4.4 — Vinheta Pulsante & Iluminação Dinâmica (WorldManager)
       if (this.darknessOverlay) {
         this.darknessOverlay.clear();
 
+        worldManager.updateLighting(delta);
+        const envConfig = worldManager.getCurrentConfig();
+
         const isBoss = this.isBossActive();
-        const baseColor = (alertCount > 10 || isBoss) ? 0x2d0208 : 0x050510;
+        const baseColor = (alertCount > 10 || isBoss) ? 0x2d0208 : envConfig.darknessColor;
         const maxOverlayAlpha = (alertCount > 10 || isBoss)
           ? (0.55 + 0.25 * Math.sin(time * 0.012)) // Rapid high danger pulse
-          : (alertCount > 3 ? (0.45 + 0.1 * Math.sin(time * 0.003)) : 0.35); // Slow or static pulse
+          : (alertCount > 3 ? (envConfig.darknessAlpha + 0.1 * Math.sin(time * 0.003)) : envConfig.darknessAlpha);
 
         const playerHpRatio = this.player.stats.hp / this.player.stats.maxHp;
-        const targetRadius = playerHpRatio < 0.3 ? 140 : 200;
+        const hpMultiplier = playerHpRatio < 0.3 ? 0.75 : 1.0;
+        const targetRadius = worldManager.currentLightRadius * hpMultiplier;
 
         // Draw concentric rings from center to create smooth radial light hole
         const numRings = 10;
         for (let r = 0; r < numRings; r++) {
-          const innerRadius = (r / numRings) * targetRadius;
           const outerRadius = ((r + 1) / numRings) * targetRadius;
           const ringAlpha = (r / numRings) * maxOverlayAlpha;
 
@@ -1667,6 +1769,24 @@ export class GameScene extends Phaser.Scene {
     const proj = projObj as Projectile;
     if (!proj.active) return;
 
+    // Wall blood splatter mark (persistent small stain at impact point)
+    if (!proj.isEnemyProjectile) {
+      const wallMark = this.add.image(proj.x, proj.y, 'blood_pool_stain')
+        .setDepth(4)
+        .setScale(0.25 + Math.random() * 0.2)
+        .setAlpha(0.7)
+        .setRotation(Math.random() * Math.PI * 2);
+      this.bloodStainsGroup.add(wallMark);
+      // Wall marks fade slowly (~30s)
+      this.tweens.add({
+        targets: wallMark,
+        alpha: 0,
+        delay: 20000,
+        duration: 10000,
+        onComplete: () => { this.bloodStainsGroup.remove(wallMark, true, true); },
+      });
+    }
+
     // Create wall spark / dust impact effect
     for (let i = 0; i < 4; i++) {
       const spark = this.add.image(proj.x, proj.y, 'particle_blood_red').setTint(0xfacc15).setDepth(1700).setScale(0.8);
@@ -1774,6 +1894,13 @@ export class GameScene extends Phaser.Scene {
 
     soundEngine.playChestOpen();
 
+    if (scav.scavengeType === 'player_corpse') {
+      useGameStore.getState().retrieveCorpseLoot();
+      this.spawnFloatingText(scav.x, scav.y - 12, `EQUIPAMENTOS RECUPERADOS!`, '#f59e0b', true);
+      this.cancelScavenging();
+      return;
+    }
+
     const isCorpse = scav.scavengeType === 'corpse';
     const isSkeleton = scav.scavengeType === 'skeleton';
 
@@ -1793,12 +1920,62 @@ export class GameScene extends Phaser.Scene {
       this.depthGroup.add(lootSprite);
     }
 
+    // Chance to scavenge curatives (Atadura, Antídoto, Antibiótico)
+    if (Math.random() < 0.35) {
+      const types: Array<'bandages' | 'antidotes' | 'antibiotics'> = ['bandages', 'antidotes', 'antibiotics'];
+      const picked = types[Math.floor(Math.random() * types.length)];
+      const names = { bandages: 'Atadura 🩸', antidotes: 'Antídoto 🍇', antibiotics: 'Antibiótico 🧪' };
+      const store = useGameStore.getState();
+      const currentCuratives = store.playerStats.curatives || { bandages: 0, antidotes: 0, antibiotics: 0 };
+      useGameStore.setState((state) => ({
+        playerStats: {
+          ...state.playerStats,
+          curatives: {
+            ...currentCuratives,
+            [picked]: currentCuratives[picked] + 1
+          }
+        }
+      }));
+      this.player.stats.curatives = useGameStore.getState().playerStats.curatives;
+      this.spawnFloatingText(scav.x, scav.y - 38, `+1 ${names[picked]}`, '#38bdf8', true);
+      store.addLootLog(`Saqueou curativo: ${names[picked]}`);
+    }
+
     this.cancelScavenging();
+  }
+
+    this.cancelScavenging();
+  }
+
+  public useCurativeItem(type: 'bandages' | 'antidotes' | 'antibiotics') {
+    const store = useGameStore.getState();
+    const success = store.useCurative(type);
+    if (success) {
+      this.player.stats.statusConditions = store.playerStats.statusConditions;
+      this.player.stats.curatives = store.playerStats.curatives;
+      const msgs = {
+        bandages: 'FERIDA ESTANCADA!',
+        antidotes: 'VENENO PURIFICADO!',
+        antibiotics: 'INFECÇÃO ERRADICADA!'
+      };
+      const colors = {
+        bandages: '#ef4444',
+        antidotes: '#22c55e',
+        antibiotics: '#a855f7'
+      };
+      this.spawnFloatingText(this.player.x, this.player.y - 18, msgs[type], colors[type], true);
+      store.addLootLog(`Atalho: Usou ${type}`);
+    } else {
+      if (store.playerStats.curatives[type] < 1) {
+        this.spawnFloatingText(this.player.x, this.player.y - 15, 'SEM CURATIVOS!', '#94a3b8', false);
+      }
+    }
   }
 
   private playerHitByEnemy(
     damage: number,
-    statusEffectOnHit?: { type: 'bleeding' | 'poison' | 'infection'; chance: number }
+    statusEffectOnHit?: { type: 'bleeding' | 'poison' | 'infection'; chance: number },
+    hitType: 'physical' | 'ranged' | 'toxic' | 'heavy' = 'physical'
   ) {
     if (this.player.isInvulnerable || this.player.stats.isUnconscious || this.player.stats.isDefinitivelyDead) {
       return;
@@ -1813,6 +1990,31 @@ export class GameScene extends Phaser.Scene {
     if (spawnRoom && this.player.x >= spawnRoom.x && this.player.x <= spawnRoom.x + spawnRoom.width &&
         this.player.y >= spawnRoom.y && this.player.y <= spawnRoom.y + spawnRoom.height) {
       return; // Absolute damage protection inside Safe Town!
+    }
+
+    // Roll status conditions on hit
+    const store = useGameStore.getState();
+    const conds = this.player.stats.statusConditions;
+
+    if (!conds.bleeding && hitType === 'physical' && Math.random() < 0.18) {
+      conds.bleeding = true;
+      store.setStatusCondition('bleeding', true);
+      this.spawnFloatingText(this.player.x, this.player.y - 22, '🩸 SANGRAMENTO!', '#ef4444', true);
+      store.addLootLog('SANGRAMENTO: Ferida aberta! Pressione Z para usar Atadura.');
+    }
+
+    if (!conds.poison && (hitType === 'ranged' || hitType === 'toxic' || Math.random() < 0.12)) {
+      conds.poison = true;
+      store.setStatusCondition('poison', true);
+      this.spawnFloatingText(this.player.x, this.player.y - 22, '🧪 VENENO!', '#22c55e', true);
+      store.addLootLog('VENENO: Sangue contaminado! Pressione X para usar Antídoto.');
+    }
+
+    if (!conds.infection && (hitType === 'heavy' || Math.random() < 0.10)) {
+      conds.infection = true;
+      store.setStatusCondition('infection', true);
+      this.spawnFloatingText(this.player.x, this.player.y - 22, '☣️ INFECÇÃO!', '#a855f7', true);
+      store.addLootLog('INFECÇÃO: Vulnerabilidade a dano! Pressione V para usar Antibiótico.');
     }
 
     const isDead = this.player.takeDamage(damage);
@@ -1936,6 +2138,32 @@ export class GameScene extends Phaser.Scene {
     const stain = this.add.image(enemy.x, enemy.y, 'blood_pool_stain').setDepth(2).setScale(stainScale);
     stain.setRotation(Math.random() * Math.PI);
     stain.setAlpha(0.85);
+    this.bloodStainsGroup.add(stain);
+    // Fade out blood stain slowly over ~60 seconds (living ecosystem)
+    this.tweens.add({
+      targets: stain,
+      alpha: 0,
+      delay: 45000,
+      duration: 15000,
+      onComplete: () => { this.bloodStainsGroup.remove(stain, true, true); },
+    });
+
+    // Persistent Monster Corpse — sprite lying on the floor for environmental storytelling
+    const corpseDecal = this.add.image(enemy.x, enemy.y, enemy.texture.key)
+      .setDepth(3)
+      .setScale(enemy.scaleX * 1.1, enemy.scaleY * 0.55) // flattened/squashed = lying down
+      .setTint(isAbomination ? 0x1a4a1a : 0x3a0a0a)       // dark tint: dead flesh
+      .setAlpha(0.9)
+      .setRotation(Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2); // fallen sideways
+    this.bloodStainsGroup.add(corpseDecal);
+    // Corpse also fades out slowly after ~90 seconds
+    this.tweens.add({
+      targets: corpseDecal,
+      alpha: 0,
+      delay: 75000,
+      duration: 20000,
+      onComplete: () => { this.bloodStainsGroup.remove(corpseDecal, true, true); },
+    });
 
     // Gore Abomination Explosion Effect
     if (isAbomination) {
@@ -2080,6 +2308,19 @@ export class GameScene extends Phaser.Scene {
     this.chestsGroup.clear(true, true);
     this.collectiblesGroup.clear(true, true);
     this.enemyProjectilesGroup.clear(true, true);
+    this.scavengeablesGroup.clear(true, true);
+    this.lootGroup.clear(true, true);
+    this.bloodStainsGroup.clear(true, true);
+
+    // If player leaves floor without collecting corpse, it is lost
+    const store = useGameStore.getState();
+    if (store.playerStats.droppedCorpse.hasDroppedCorpse) {
+      store.setDroppedCorpse({
+        ...store.playerStats.droppedCorpse,
+        hasDroppedCorpse: false
+      });
+      store.addLootLog("O cadáver foi deixado para trás e perdido para sempre nas catacumbas...");
+    }
 
     // Rebuild Dungeon Map for Next Floor Depth!
     this.buildDungeonMap(1920, 1440, this.currentFloorDepth);

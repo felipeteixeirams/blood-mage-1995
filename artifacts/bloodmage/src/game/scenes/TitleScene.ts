@@ -14,6 +14,8 @@ import altarUrl from "../../assets/ui/altar.png";
 import runeArchUrl from "../../assets/ui/rune-arch.png";
 import stoneTileUrl from "../../assets/ui/stone-tile.jpg";
 import rockTileUrl from "../../assets/ui/rock-tile.jpg";
+import plaqueUrl from "../../assets/ui/ui-plaque.png";
+import gemUrl from "../../assets/ui/ui-gem.png";
 
 export const BASE_W = 960;
 export const BASE_H = 540;
@@ -94,6 +96,8 @@ export class TitleScene extends Phaser.Scene {
     this.load.image("runeArch", runeArchUrl);
     this.load.image("stoneTile", stoneTileUrl);
     this.load.image("rockTile", rockTileUrl);
+    this.load.image("uiPlaque", plaqueUrl);
+    this.load.image("uiGem", gemUrl);
   }
 
   create() {
@@ -407,7 +411,7 @@ export class TitleScene extends Phaser.Scene {
       .setDepth(31);
 
     this.prompt = this.add
-      .text(BASE_W / 2, BASE_H - 110, "PRESSIONE PARA INICIAR", {
+      .text(BASE_W / 2, BASE_H - 118, "PRESSIONE PARA INICIAR", {
         fontFamily: "monospace",
         fontSize: "22px",
         color: "#f0d8a8",

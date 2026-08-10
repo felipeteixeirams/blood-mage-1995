@@ -3,7 +3,6 @@ import { PlayerStats, SpellConfig, LootItem } from '../../types/game';
 import spellsData from '../../data/spells.json';
 import { soundEngine } from '../../utils/soundEngine';
 import { useGameStore } from '../../store/gameStore';
-import { logger } from '../../utils/logger';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   public stats: PlayerStats;
@@ -14,6 +13,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   public isInvulnerable: boolean = false;
   private invulnerableTimer: number = 0;
   public equippedLoot: LootItem[] = [];
+
+  // Status condition DoT timers
+  private bleedTimer: number = 0;
+  private poisonTimer: number = 0;
+  private infectionTimer: number = 0;
 
   // Dash mechanics
   public isDashing: boolean = false;
@@ -142,6 +146,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.currentVy = 0;
       this.setAlpha(0.6);
       this.setTint(0x550000);
+      this.setAngle(90); // Lying down fallen sprite posture
 
       // Regenerate passive HP while unconscious (2% of Max HP per second)
       // Infection blocks natural regeneration (Discovery Seção 2.4)
@@ -157,6 +162,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.isInvulnerable = true;
         this.invulnerableTimer = 1500; // 1.5s wake-up invulnerability
         this.setAlpha(1.0);
+        this.setAngle(0); // Stand back up
         this.clearTint();
 
         useGameStore.getState().setUnconscious(false);
@@ -231,9 +237,86 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.setFlipX(this.moveVector.x < 0);
     }
 
-    // Mana Regeneration (+4 MP/sec)
+    // Sync status conditions & curatives from Zustand store
+    const storeStats = useGameStore.getState().playerStats;
+    if (storeStats) {
+      this.stats.statusConditions = storeStats.statusConditions || this.stats.statusConditions;
+      this.stats.curatives = storeStats.curatives || this.stats.curatives;
+    }
+
+    // Process Status Conditions DoT (Bleeding, Poison, Infection)
+    if (!this.stats.isUnconscious && !this.stats.isDefinitivelyDead) {
+      this.bleedTimer += delta;
+      this.poisonTimer += delta;
+      this.infectionTimer += delta;
+
+      if (this.stats.statusConditions?.bleeding) {
+        // Bleeding reduces movement speed by 20%
+        speed *= 0.8;
+
+        if (this.bleedTimer >= 1500) {
+          this.bleedTimer = 0;
+          this.takeDamage(3);
+          if (this.scene && 'spawnFloatingText' in this.scene) {
+            (this.scene as any).spawnFloatingText(this.x, this.y - 12, '-3 SANGRAMENTO', '#ef4444', false);
+          }
+        }
+
+        // Leave blood droplets on the floor while walking with bleeding status
+        if ((this.moveVector.x !== 0 || this.moveVector.y !== 0) && Math.floor(time / 250) % 2 === 0) {
+          if (this.scene && this.scene.add) {
+            const drop = this.scene.add.image(this.x + (Math.random() - 0.5) * 8, this.y + 8, 'particle_blood_red');
+            drop.setTint(0x990000);
+            drop.setDepth(3);
+            drop.setScale(0.7);
+            this.scene.tweens.add({
+              targets: drop,
+              alpha: 0,
+              duration: 1800,
+              onComplete: () => drop.destroy()
+            });
+          }
+        }
+      }
+
+      if (this.stats.statusConditions?.poison) {
+        if (this.poisonTimer >= 2000) {
+          this.poisonTimer = 0;
+          this.takeDamage(4);
+          if (this.scene && 'spawnFloatingText' in this.scene) {
+            (this.scene as any).spawnFloatingText(this.x, this.y - 12, '-4 VENENO', '#22c55e', false);
+          }
+        }
+      }
+
+      if (this.stats.statusConditions?.infection) {
+        if (this.infectionTimer >= 3000) {
+          this.infectionTimer = 0;
+          this.takeDamage(2);
+          if (this.scene && 'spawnFloatingText' in this.scene) {
+            (this.scene as any).spawnFloatingText(this.x, this.y - 12, '-2 INFECÇÃO', '#a855f7', false);
+          }
+        }
+      }
+
+      // Visual Status Tints
+      if (!this.isInvulnerable) {
+        if (this.stats.statusConditions?.poison) {
+          this.setTint(0x4ade80); // Green
+        } else if (this.stats.statusConditions?.infection) {
+          this.setTint(0xc084fc); // Purple
+        } else if (this.stats.statusConditions?.bleeding) {
+          this.setTint(0xf87171); // Deep Red
+        } else {
+          this.applyCosmeticTint();
+        }
+      }
+    }
+
+    // Mana Regeneration (+4 MP/sec, reduced by 50% if poisoned)
+    const manaRegenRate = this.stats.statusConditions?.poison ? 2 : 4;
     if (this.stats.mana < this.stats.maxMana) {
-      this.stats.mana = Math.min(this.stats.maxMana, this.stats.mana + (4 * delta) / 1000);
+      this.stats.mana = Math.min(this.stats.maxMana, this.stats.mana + (manaRegenRate * delta) / 1000);
     }
 
     // Invulnerability Flashing
@@ -478,8 +561,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   public takeDamage(amount: number): boolean {
     if (this.isInvulnerable || this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
 
+    // Infection increases damage taken by 20%
+    if (this.stats.statusConditions?.infection) {
+      amount *= 1.2;
+    }
+
     this.stats.hp = Math.max(0, this.stats.hp - amount);
-    logger.info('PLAYER', `Player took ${amount} damage. Current HP: ${this.stats.hp}`);
 
     // Sync HP immediately to state
     useGameStore.getState().setPlayerStats({ ...this.stats });
@@ -493,7 +580,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.currentVx = 0;
         this.currentVy = 0;
 
-        logger.warn('PLAYER', `Player fell unconscious! Knockout count: ${this.stats.knockoutCount}`);
         useGameStore.getState().setUnconscious(true);
         useGameStore.getState().setPlayerStats({ ...this.stats });
 
@@ -502,7 +588,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       } else {
         // 3rd knock down -> Definitive Death!
         this.stats.isDefinitivelyDead = true;
-        logger.error('PLAYER', `Player is definitively dead! Knockout count reached maximum`);
         useGameStore.getState().setDefinitivelyDead(true);
         useGameStore.getState().setPlayerStats({ ...this.stats });
         soundEngine.playPlayerHurt();

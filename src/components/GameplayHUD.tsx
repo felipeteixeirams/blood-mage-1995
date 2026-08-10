@@ -155,7 +155,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
   const aimJoystick = useFloatingJoystick(onAimUpdate);
 
   // Spawn pixelated blood splatters on screen tap
-  const handleBackgroundTap = (e: React.PointerEvent<HTMLDivElement>) => {
+  const handleBackgroundTapRemoved = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.target !== e.currentTarget) return; // ignore clicks on actual buttons
 
     soundEngine.playGoreExplosion();
@@ -171,6 +171,8 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
 
     setSplatters(prev => [...prev.slice(-24), newSplatter]); // Limit maximum active splatters to 25
   };
+
+  const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 
   // Cooldown management loop
   useEffect(() => {
@@ -221,26 +223,48 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
     });
 
     onSkillClick(skillKey);
-
-    // Spawn splatter in center representing cast violence
-    const size = Math.floor(Math.random() * 40) + 30;
-    const newSplatter: BloodSplatter = {
-      id: `cast_${Date.now()}`,
-      x: window.innerWidth / 2 + (Math.random() * 100 - 50),
-      y: window.innerHeight / 2 + (Math.random() * 100 - 50),
-      size,
-      rotation: Math.floor(Math.random() * 360),
-    };
-    setSplatters(prev => [...prev.slice(-24), newSplatter]);
   };
 
   return (
     <div className="absolute inset-0 pointer-events-none z-20 select-none overflow-hidden font-pixel">
 
+      {/* ── Unconscious Tunnel Vision & Desaturation Overlay ── */}
+      {stats.isUnconscious && (
+        <div className="fixed inset-0 pointer-events-none z-[100] transition-all duration-700 animate-pulse">
+          {/* Tunnel vision dark radial gradient border */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_20%,_rgba(0,0,0,0.95)_80%)]" />
+          {/* Desaturation grayscale filter tint */}
+          <div className="absolute inset-0 bg-red-950/20 backdrop-grayscale backdrop-contrast-125" />
+          {/* Alert Badge Center-Top */}
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-red-950/90 border-2 border-red-600 px-4 py-2 shadow-[0_0_30px_rgba(239,68,68,0.8)] flex flex-col items-center animate-bounce">
+            <span className="font-pixel text-red-500 font-bold text-sm tracking-widest uppercase flex items-center gap-2">
+              <Skull className="w-5 h-5 animate-spin" /> INCONSCIENTE ({stats.knockoutCount}/2)
+            </span>
+            <span className="font-retro text-xs text-amber-200 mt-0.5">
+              Regenerando HP... Agarre o sopro de vida para se levantar!
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* ── Status Vignette Overlays (Poison Green, Bleeding Crimson, Infection Purple) ── */}
+      {!stats.isUnconscious && (
+        <>
+          {stats.statusConditions?.poison && (
+            <div className="fixed inset-0 pointer-events-none z-[80] bg-[radial-gradient(ellipse_at_center,_transparent_40%,_rgba(34,197,94,0.35)_100%)] animate-pulse" />
+          )}
+          {stats.statusConditions?.bleeding && (
+            <div className="fixed inset-0 pointer-events-none z-[80] bg-[radial-gradient(ellipse_at_center,_transparent_40%,_rgba(239,68,68,0.3)_100%)] animate-pulse" />
+          )}
+          {stats.statusConditions?.infection && (
+            <div className="fixed inset-0 pointer-events-none z-[80] bg-[radial-gradient(ellipse_at_center,_transparent_40%,_rgba(168,85,247,0.3)_100%)] animate-pulse" />
+          )}
+        </>
+      )}
+
       {/* ── Simulated Isometric Game Field and click area ── */}
       <div
-        className="absolute inset-0 pointer-events-auto bg-[#110e05]/85 cursor-crosshair active:scale-[0.99] transition-transform duration-100"
-        onPointerDown={handleBackgroundTap}
+        className="absolute inset-0 pointer-events-none"
         style={{ zIndex: 0 }}
       >
         {/* Draw subtle grid background to represent top-down isometric environment */}
@@ -276,25 +300,6 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
             backgroundImage: 'radial-gradient(circle at 30% 50%, rgba(24, 18, 17, 0.8) 0%, transparent 60%)',
           }}
         />
-
-        {/* Pixels Crimson Blood pools generated dynamically */}
-        {splatters.map(spl => (
-          <div
-            key={spl.id}
-            className="absolute bg-gradient-to-b from-[#990000] to-[#4d0000] rounded-full opacity-80 pointer-events-none transition-all duration-300 shadow-[0_4px_8px_rgba(0,0,0,0.6)]"
-            style={{
-              left: spl.x - spl.size / 2,
-              top: spl.y - spl.size / 2,
-              width: spl.size,
-              height: spl.size * 0.7,
-              transform: `rotate(${spl.rotation}deg)`,
-              border: '2px solid #330000',
-            }}
-          >
-            {/* Dark center of pool */}
-            <div className="w-2/3 h-2/3 m-auto bg-black/45 rounded-full mt-1" />
-          </div>
-        ))}
       </div>
 
       {/* ── TOP LEFT HUD: Segmented HP/MP & Portrait ── */}
@@ -357,7 +362,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
         <button
           className="bg-[#181211]/95 border-2 border-[#e8c76a] p-2 text-[#e8c76a] hover:bg-[#2f2827] hover:border-[#ffdf9a] shadow-[2px_2px_0px_#000000] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center"
           onClick={() => { soundEngine.playButtonClick(); setPauseOpen(true); setRecordsOpen(true); setGameState('paused'); }}
-          title="Salão dos Recordes"
+          
         >
           {/* Pixel-art trophy icon */}
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -381,7 +386,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
           <button
             className="bg-[#181211]/95 border-2 border-[#ab8983] p-2 text-[#e8c76a] hover:bg-[#2f2827] shadow-[2px_2px_0px_#000000] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center"
             onClick={() => { soundEngine.playButtonClick(); setInventoryOpen(true); }}
-            title="Inventário [I]"
+            
           >
             <Backpack size={16} />
           </button>
@@ -389,7 +394,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
           <button
             className="bg-[#181211]/95 border-2 border-[#ab8983] p-2 text-[#e8c76a] hover:bg-[#2f2827] shadow-[2px_2px_0px_#000000] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center"
             onClick={() => { soundEngine.playButtonClick(); setQuickSettingsOpen(!isQuickSettingsOpen); }}
-            title="Configurações Rápidas"
+            
           >
             <Settings size={16} />
           </button>
@@ -397,79 +402,11 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
           <button
             className="bg-[#181211]/95 border-2 border-[#ab8983] p-2 text-white hover:bg-[#2f2827] shadow-[2px_2px_0px_#000000] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center"
             onClick={handlePauseToggle}
-            title="Pausar"
+            
           >
             <Pause size={16} />
           </button>
         </div>
-
-        {/* Tactical Minimap */}
-        {settings.minimapVisible && (
-          <div
-            className="bg-[#181211]/95 border-2 border-[#5b403c] p-1.5 shadow-[4px_4px_0px_#000000] w-36 h-36 md:w-40 md:h-46 flex flex-col gap-1.5 relative"
-            style={{ opacity: settings.minimapAlpha }}
-          >
-            {/* Header / reveal badge */}
-            <div className="flex justify-between items-center px-0.5 border-b border-[#524341] pb-1 text-[8px] text-[#e4beb8]">
-              <span>EXPLORADO</span>
-              <span className="text-[#e8c76a] font-bold">{Math.round(exploredRatio)}%</span>
-            </div>
-
-            {/* Minimap Gold Paths Wireframe with Fog mask */}
-            <div className="flex-1 bg-black/90 relative border border-[#524341] overflow-hidden flex items-center justify-center">
-              <svg className="w-full h-full pointer-events-none p-2" viewBox="0 0 100 100">
-                {/* Simulated labyrinth corridors */}
-                <g stroke="#c9a227" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none">
-                  {/* Explored sections (Always visible at high ratio) */}
-                  <path d="M 10,50 L 90,50 M 50,10 L 50,90 M 25,30 L 25,70 M 75,30 L 75,70" opacity="0.9" />
-
-                  {/* Unexplored paths — slowly reveal based on exploration progress */}
-                  {exploredRatio > 30 && <path d="M 10,10 L 90,10" className="animate-fade-in" stroke="#96d3c0" opacity="0.6" />}
-                  {exploredRatio > 50 && <path d="M 10,90 L 90,90" className="animate-fade-in" stroke="#96d3c0" opacity="0.6" />}
-                  {exploredRatio > 75 && <path d="M 10,10 L 10,90 M 90,10 L 90,90" className="animate-fade-in" stroke="#e8c76a" opacity="0.8" />}
-                </g>
-
-                {/* Player Gold Arrow dot (Center) */}
-                <circle cx="50" cy="50" r="3.5" fill="#ffb4a8" className="animate-ping" style={{ animationDuration: '2s' }} />
-                <polygon points="50,47 47,52 53,52" fill="#c9a227" />
-
-                {/* Blinking hostile red markers */}
-                {exploredRatio > 25 && (
-                  <circle cx="25" cy="40" r="2.5" fill="#ff3333" className="animate-pulse" style={{ animationDuration: '1.2s' }} />
-                )}
-                {exploredRatio > 45 && (
-                  <circle cx="75" cy="65" r="2.5" fill="#ff3333" className="animate-pulse" style={{ animationDuration: '1s' }} />
-                )}
-              </svg>
-
-              {/* Fog overlay mask that thins out as explored ratio increases */}
-              <div
-                className="absolute inset-0 bg-black/60 pointer-events-none transition-all duration-300"
-                style={{ opacity: Math.max(0, 0.8 - (exploredRatio / 120)) }}
-              />
-            </div>
-
-            {/* Quick Minimap eye hide and Alpha slider */}
-            <div className="flex items-center gap-1.5 pt-0.5 border-t border-[#524341] text-[8px] text-[#8f8a76]">
-              <button
-                onClick={() => updateSettings({ ...settings, minimapVisible: false })}
-                className="hover:text-amber-400"
-              >
-                <EyeOff size={10} />
-              </button>
-              <span className="flex-1">OPACIDADE:</span>
-              <input
-                type="range"
-                min="0.2"
-                max="1.0"
-                step="0.05"
-                value={settings.minimapAlpha}
-                onChange={(e) => updateSettings({ ...settings, minimapAlpha: parseFloat(e.target.value) })}
-                className="w-12 h-1 bg-[#1a0f0d] accent-amber-500 rounded-none cursor-pointer"
-              />
-            </div>
-          </div>
-        )}
 
         {/* Run contracts panel */}
         <ContractHUD />
@@ -768,7 +705,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
           Right side (47%) handles aiming gestures.
          ══════════════════════════════════════════════════════════ */}
 
-      {!gamepadConnected && (
+      {!gamepadConnected && isTouchDevice && (
         <>
           {/* MOVE zone (left) */}
           <div
@@ -794,7 +731,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
 
       {/* ── Onboarding / Tutorial Tip Overlay ── */}
       {activeTip && (
-        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-[110] max-w-sm w-full bg-[#181211]/95 border-2 border-amber-600 shadow-[0_0_15px_rgba(217,119,6,0.3)] p-3 text-center pointer-events-auto rounded-lg animate-bounce">
+        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-[110] max-w-sm w-full bg-[#181211]/95 border-2 border-amber-600 shadow-[0_0_15px_rgba(217,119,6,0.3)] p-3 text-center pointer-events-auto rounded-lg">
           <span className="text-amber-400 font-bold uppercase text-[9px] block tracking-wider mb-1">📖 APRENDA O RITUAL</span>
           <span className="text-[8px] text-gray-200 block leading-normal font-sans">
             {activeTip}
@@ -821,7 +758,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       </div>
 
       {/* ── MOVE Joystick hint label ── */}
-      {!gamepadConnected && !moveJoystick.state.active && (
+      {!gamepadConnected && isTouchDevice && !moveJoystick.state.active && (
         <div
           className="absolute left-6 bottom-6 pointer-events-none"
           style={{ opacity: settings.virtualControlsOpacity * 0.55 }}
@@ -833,7 +770,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       )}
 
       {/* ── Virtual joystick visual indicators ── */}
-      {!gamepadConnected && (
+      {!gamepadConnected && isTouchDevice && (
         <>
           <JoystickVisual
             state={moveJoystick.state}
@@ -883,7 +820,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
 
       {/* ── NPC Interaction Prompt ── */}
       {closestNPCType && !activeNPC && (
-        <div className="fixed bottom-1/4 inset-x-0 mx-auto max-w-xs bg-[#171309] border-2 border-sky-500 shadow-[4px_4px_0px_rgba(0,0,0,0.8)] p-2.5 text-center z-40 flex flex-col items-center gap-1.5 text-[#E3DAC9] pointer-events-auto select-none animate-bounce">
+        <div className="fixed bottom-1/4 inset-x-0 mx-auto max-w-xs bg-[#171309] border-2 border-sky-500 shadow-[4px_4px_0px_rgba(0,0,0,0.8)] p-2.5 text-center z-40 flex flex-col items-center gap-1.5 text-[#E3DAC9] pointer-events-auto select-none">
           <span className="text-sky-400 text-xs font-bold uppercase tracking-wider block">
             👤 {closestNPCType === 'cleric' ? 'CLÉRIGO' : closestNPCType === 'alchemist' ? 'ALQUIMISTA' : closestNPCType === 'blacksmith' ? 'FERREIRO' : 'ANCIÃO'} ESTÁ PRÓXIMO
           </span>

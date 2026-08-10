@@ -31,8 +31,23 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
             VOCÊ ESTÁ MORTO
           </h2>
           <p className="font-retro text-xs text-gray-400">
-            A terra consome seus restos mortais... olhos carniceiros espreitam seus pertences perdidos.
+            A terra consome seus restos mortais... Olhos carniceiros espreitam seus pertences no cadáver.
           </p>
+        </div>
+
+        {/* Cause of Death & Items Lost Card */}
+        <div className="w-full bg-red-950/40 border border-red-900/80 p-3 text-left space-y-1 font-retro text-xs text-red-200">
+          <div className="flex items-center gap-1.5 text-red-400 font-bold font-pixel text-[10px]">
+            <Skull className="w-3.5 h-3.5" />
+            <span>GOLPE FATAL:</span>
+          </div>
+          <p className="text-gray-300">
+            Sucumbiu a lesões violentas em combate direto no calabouço.
+          </p>
+          <div className="pt-1.5 border-t border-red-900/50 flex items-center justify-between text-[10px] text-amber-300 font-pixel">
+            <span>PERTENCES PERDIDOS NO CADÁVER:</span>
+            <span className="text-white font-bold">{stats.curatives?.bandages || 0} Ataduras, {stats.curatives?.antidotes || 0} Antídotos</span>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -64,7 +79,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
           <div className="bg-black/80 border border-red-900/60 p-3 rounded flex flex-col items-center">
             <div className="flex items-center gap-1.5 text-blue-400 font-pixel text-xs mb-1">
               <Clock className="w-4 h-4 text-blue-400" />
-              <span>TEMPO</span>
+              <span>TEMPO SOBREVIVIDO</span>
             </div>
             <span className="text-base text-white">{formatTime(stats.timeSurvivedSeconds)}</span>
           </div>
