@@ -1,0 +1,227 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/cinzel.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('/fonts/cinzel.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/pressstart2p.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'UnifrakturMaguntia';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/unifrakturmaguntia.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'VT323';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/vt323.woff2') format('woff2');
+}
+
+/* ── Mobile-first global guardrails ── */
+html {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+body {
+  overscroll-behavior: none;
+  touch-action: manipulation;   /* elimina delay de 300ms em toques */
+  -webkit-tap-highlight-color: transparent; /* remove highlight azul ao tocar */
+}
+
+@layer utilities {
+  .font-gothic {
+    font-family: 'UnifrakturMaguntia', 'Cinzel', serif;
+  }
+  .font-pixel {
+    font-family: 'Press Start 2P', monospace;
+  }
+  .font-retro {
+    font-family: 'VT323', monospace;
+  }
+  .font-cinzel {
+    font-family: 'Cinzel', serif;
+  }
+  .rendering-pixelated {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* CRT Scanline Overlay */
+.crt-overlay {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.03),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.03)
+  );
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+}
+
+/* Gothic Stone & Blood Frame Borders */
+.gothic-border {
+  border: 4px solid #3a3238;
+  box-shadow: inset 0 0 10px #000, 0 0 15px rgba(0, 0, 0, 0.8), 0 0 2px #7a1c1c;
+}
+
+.blood-border {
+  border: 3px solid #8b0000;
+  box-shadow: 0 0 12px rgba(139, 0, 0, 0.6), inset 0 0 8px rgba(0,0,0,0.9);
+}
+
+.gold-gothic-border {
+  border: 3px solid #b8860b;
+  box-shadow: 0 0 10px rgba(184, 134, 11, 0.4), inset 0 0 6px #000;
+}
+
+/* Pulsing blood animation */
+@keyframes bloodPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(139, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(220, 20, 60, 0.8);
+  }
+}
+
+.animate-blood-pulse {
+  animation: bloodPulse 2s infinite ease-in-out;
+}
+
+/* Scrollbar retro styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #110b0e;
+}
+::-webkit-scrollbar-thumb {
+  background: #4a151b;
+  border: 1px solid #7a222a;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #7a222a;
+}
+
+/* Settings Button Stone Texture */
+.stone-btn {
+  background: linear-gradient(to bottom, #4a4a5a, #2a2a3a);
+  border: 4px solid #1a1a2a;
+  border-top-color: #5a5a6a;
+  border-left-color: #5a5a6a;
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.8), 0 4px 6px rgba(0,0,0,0.6);
+  color: #e0d0b0;
+  text-shadow: 2px 2px 0px black;
+  transition: all 0.1s ease;
+}
+
+.stone-btn:active {
+  border-top-color: #1a1a2a;
+  border-left-color: #1a1a2a;
+  border-bottom-color: #5a5a6a;
+  border-right-color: #5a5a6a;
+  transform: translateY(2px);
+  background: linear-gradient(to bottom, #2a2a3a, #1a1a2a);
+}
+
+/* Ruby Slider */
+.ruby-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+}
+.ruby-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 28px;
+  width: 28px;
+  background: radial-gradient(circle at 35% 35%, #ffb3b3, #d30000 40%, #5a0000 80%, #2a0000 100%);
+  border: 3px solid #d4af37; /* Gold border */
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.9), inset 0 0 6px rgba(255,255,255,0.7);
+  cursor: pointer;
+  margin-top: -11px;
+}
+.ruby-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8px;
+  cursor: pointer;
+  background: linear-gradient(to bottom, #5c4516, #d4af37, #5c4516);
+  border: 1px solid #111;
+  border-radius: 3px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.9), 0 1px 1px rgba(255,255,255,0.2);
+}
+
+/* Ornate Plate (Settings Background) */
+.ornate-plate {
+  background: #080c14; /* Deep dark blueish */
+  position: relative;
+  border: 12px solid transparent;
+  border-image: linear-gradient(to bottom right, #3a4b6b, #1a2233) 1;
+  box-shadow: inset 0 0 50px rgba(0,0,0,1), 0 0 30px rgba(0,0,0,0.8);
+}
+.ornate-plate::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 2px solid #556b99; /* Inner decorative border */
+  pointer-events: none;
+}
+
+
+/* Portal Swirl */
+.portal-swirl {
+  background: radial-gradient(circle at center, #1a1a2e 0%, #0d0d1a 40%, #000 80%);
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+.portal-swirl::after {
+  content: "";
+  position: absolute;
+  top: -50%; left: -50%; right: -50%; bottom: -50%;
+  background: repeating-conic-gradient(from 0deg, transparent 0deg 15deg, rgba(50, 30, 80, 0.15) 15deg 30deg);
+  animation: swirl 40s linear infinite;
+  mask-image: radial-gradient(circle at center, white, transparent 60%);
+  -webkit-mask-image: radial-gradient(circle at center, white, transparent 60%);
+}
+@keyframes swirl {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Stone Archway Fake Frame */
+.stone-arch-frame {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 30px solid #333;
+  border-image: repeating-linear-gradient(45deg, #444, #444 15px, #222 15px, #222 30px) 30;
+  box-shadow: inset 0 0 40px rgba(0,0,0,1);
+  z-index: 1;
+}
+

@@ -1,0 +1,6 @@
+{
+  "name": "Bloodmage 1995",
+  "description": "A browser-based isometric 16-bit action RPG dungeon crawler set in a dark gothic fantasy world.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,107 @@
+[
+  {
+    "id": "hemomancy_power",
+    "name": "Poder Hemomântico",
+    "description": "Aumenta o Dano de todos os projéteis e artes de sangue.",
+    "category": "offense",
+    "icon": "flame",
+    "maxLevel": 10,
+    "costPerLevel": 20,
+    "statKey": "damage",
+    "bonusPerLevel": 0.05
+  },
+  {
+    "id": "vampirismo_profundo",
+    "name": "Vampirismo Profundo",
+    "description": "Aumenta drasticamente o seu Vampirismo. Exclusivo com Execuções em Área.",
+    "category": "offense",
+    "icon": "droplet",
+    "maxLevel": 5,
+    "costPerLevel": 35,
+    "statKey": "lifesteal",
+    "bonusPerLevel": 0.04,
+    "exclusive_with": ["execucoes_em_area"]
+  },
+  {
+    "id": "execucoes_em_area",
+    "name": "Execuções em Área",
+    "description": "Aumenta o dano de todas as suas habilidades em 15%. Exclusivo com Vampirismo Profundo.",
+    "category": "offense",
+    "icon": "sword",
+    "maxLevel": 5,
+    "costPerLevel": 35,
+    "statKey": "damage",
+    "bonusPerLevel": 0.03,
+    "exclusive_with": ["vampirismo_profundo"]
+  },
+  {
+    "id": "martyr_vitality",
+    "name": "Vitalidade do Mártir",
+    "description": "Aumenta o HP Máximo e concede regeneração passiva de vida.",
+    "category": "defense",
+    "icon": "heart",
+    "maxLevel": 10,
+    "costPerLevel": 20,
+    "statKey": "maxHp",
+    "bonusPerLevel": 15
+  },
+  {
+    "id": "escudo_ossos_aprimorado",
+    "name": "Escudo de Ossos Aprimorado",
+    "description": "Reduz o dano recebido em 5% por nível. Exclusivo com Aura de Medo.",
+    "category": "defense",
+    "icon": "shield",
+    "maxLevel": 5,
+    "costPerLevel": 40,
+    "statKey": "sacrificeDiscount",
+    "bonusPerLevel": 0.05,
+    "exclusive_with": ["aura_de_medo"]
+  },
+  {
+    "id": "aura_de_medo",
+    "name": "Aura de Medo",
+    "description": "Aumenta seu HP Máximo em 25 pontos por nível. Exclusivo com Escudo de Ossos Aprimorado.",
+    "category": "defense",
+    "icon": "heart-pulse",
+    "maxLevel": 5,
+    "costPerLevel": 40,
+    "statKey": "maxHp",
+    "bonusPerLevel": 25,
+    "exclusive_with": ["escudo_ossos_aprimorado"]
+  },
+  {
+    "id": "abyssal_haste",
+    "name": "Vontade Abissal",
+    "description": "Reduz o Cooldown de todas as habilidades e aumenta a Velocidade de Movimento.",
+    "category": "utility",
+    "icon": "zap",
+    "maxLevel": 5,
+    "costPerLevel": 30,
+    "statKey": "cooldown",
+    "bonusPerLevel": 0.03
+  },
+  {
+    "id": "sobrecarga_runica",
+    "name": "Sobrecarga Rúnica",
+    "description": "Reduz o Cooldown global em 6% por nível. Exclusivo com Tempestade Contínua.",
+    "category": "utility",
+    "icon": "sparkles",
+    "maxLevel": 5,
+    "costPerLevel": 35,
+    "statKey": "cooldown",
+    "bonusPerLevel": 0.06,
+    "exclusive_with": ["tempestade_continua"]
+  },
+  {
+    "id": "tempestade_continua",
+    "name": "Tempestade Contínua",
+    "description": "Aumenta sua velocidade de movimento em 10% por nível. Exclusivo com Sobrecarga Rúnica.",
+    "category": "utility",
+    "icon": "zap",
+    "maxLevel": 5,
+    "costPerLevel": 35,
+    "statKey": "moveSpeed",
+    "bonusPerLevel": 16,
+    "exclusive_with": ["sobrecarga_runica"]
+  }
+]
