@@ -146,6 +146,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.currentVy = 0;
       this.setAlpha(0.6);
       this.setTint(0x550000);
+      this.setAngle(90); // Lying down fallen sprite posture
 
       // Regenerate passive HP while unconscious (2% of Max HP per second)
       const regenAmount = (0.02 * this.stats.maxHp * delta) / 1000;
@@ -158,6 +159,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.isInvulnerable = true;
         this.invulnerableTimer = 1500; // 1.5s wake-up invulnerability
         this.setAlpha(1.0);
+        this.setAngle(0); // Stand back up
         this.clearTint();
 
         useGameStore.getState().setUnconscious(false);
@@ -243,11 +245,30 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.infectionTimer += delta;
 
       if (this.stats.statusConditions?.bleeding) {
+        // Bleeding reduces movement speed by 20%
+        speed *= 0.8;
+
         if (this.bleedTimer >= 1500) {
           this.bleedTimer = 0;
           this.takeDamage(3);
           if (this.scene && 'spawnFloatingText' in this.scene) {
             (this.scene as any).spawnFloatingText(this.x, this.y - 12, '-3 SANGRAMENTO', '#ef4444', false);
+          }
+        }
+
+        // Leave blood droplets on the floor while walking with bleeding status
+        if ((this.moveVector.x !== 0 || this.moveVector.y !== 0) && Math.floor(time / 250) % 2 === 0) {
+          if (this.scene && this.scene.add) {
+            const drop = this.scene.add.image(this.x + (Math.random() - 0.5) * 8, this.y + 8, 'particle_blood_red');
+            drop.setTint(0x990000);
+            drop.setDepth(3);
+            drop.setScale(0.7);
+            this.scene.tweens.add({
+              targets: drop,
+              alpha: 0,
+              duration: 1800,
+              onComplete: () => drop.destroy()
+            });
           }
         }
       }

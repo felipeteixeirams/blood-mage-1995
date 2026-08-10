@@ -227,6 +227,40 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
   return (
     <div className="absolute inset-0 pointer-events-none z-20 select-none overflow-hidden font-pixel">
 
+      {/* ── Unconscious Tunnel Vision & Desaturation Overlay ── */}
+      {stats.isUnconscious && (
+        <div className="fixed inset-0 pointer-events-none z-[100] transition-all duration-700 animate-pulse">
+          {/* Tunnel vision dark radial gradient border */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_20%,_rgba(0,0,0,0.95)_80%)]" />
+          {/* Desaturation grayscale filter tint */}
+          <div className="absolute inset-0 bg-red-950/20 backdrop-grayscale backdrop-contrast-125" />
+          {/* Alert Badge Center-Top */}
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-red-950/90 border-2 border-red-600 px-4 py-2 shadow-[0_0_30px_rgba(239,68,68,0.8)] flex flex-col items-center animate-bounce">
+            <span className="font-pixel text-red-500 font-bold text-sm tracking-widest uppercase flex items-center gap-2">
+              <Skull className="w-5 h-5 animate-spin" /> INCONSCIENTE ({stats.knockoutCount}/2)
+            </span>
+            <span className="font-retro text-xs text-amber-200 mt-0.5">
+              Regenerando HP... Agarre o sopro de vida para se levantar!
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* ── Status Vignette Overlays (Poison Green, Bleeding Crimson, Infection Purple) ── */}
+      {!stats.isUnconscious && (
+        <>
+          {stats.statusConditions?.poison && (
+            <div className="fixed inset-0 pointer-events-none z-[80] bg-[radial-gradient(ellipse_at_center,_transparent_40%,_rgba(34,197,94,0.35)_100%)] animate-pulse" />
+          )}
+          {stats.statusConditions?.bleeding && (
+            <div className="fixed inset-0 pointer-events-none z-[80] bg-[radial-gradient(ellipse_at_center,_transparent_40%,_rgba(239,68,68,0.3)_100%)] animate-pulse" />
+          )}
+          {stats.statusConditions?.infection && (
+            <div className="fixed inset-0 pointer-events-none z-[80] bg-[radial-gradient(ellipse_at_center,_transparent_40%,_rgba(168,85,247,0.3)_100%)] animate-pulse" />
+          )}
+        </>
+      )}
+
       {/* ── Simulated Isometric Game Field and click area ── */}
       <div
         className="absolute inset-0 pointer-events-none"
