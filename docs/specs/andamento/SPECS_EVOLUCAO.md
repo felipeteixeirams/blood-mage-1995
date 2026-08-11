@@ -3,7 +3,7 @@ agent_context: all agents
 target_module: root
 priority: high
 status: active
-last_updated: 2026-08-10
+last_updated: 2026-08-11
 tags: [specs, evolution]
 ---
 # Bloodmage 1995 — Specs de Evolução por Contexto
@@ -226,12 +226,14 @@ Via `Vibration API`:
 | Botão de skill sem cooldown suficiente | `[10]` — um pulso fraco |
 
 ### Critérios de Aceite
-- [ ] Drag-to-aim funcionando nas 3 skills direcionais em touch e mouse
-- [ ] Preview de área aparece durante arraste e desaparece ao soltar
-- [ ] Botões de skill reposicionáveis e tamanho persistido em localStorage
-- [ ] Gamepad detectado e mapeado corretamente (testar com controle físico)
-- [ ] Vibração funciona em Android (iOS não suporta a API — não é blocker)
-- [ ] Dead zone e curva configuráveis nas settings avançadas
+- [x] Drag-to-aim funcionando nas 3 skills direcionais em touch e mouse
+- [x] Preview de área aparece durante arraste e desaparece ao soltar
+- [x] Botões de skill reposicionáveis e tamanho persistido em localStorage
+- [x] Gamepad detectado e mapeado corretamente (testar com controle físico)
+- [x] Vibração funciona em Android (iOS não suporta a API — não é blocker)
+- [x] Dead zone e curva configuráveis nas settings avançadas
+
+> **Status (2026-08-11):** Item 3 implementado. Curva não-linear + deadzone configurável aplicados em `useFloatingJoystick`/`useJoystick` via `src/utils/joystickResponse.ts`; sliders de deadzone/curva no painel de ajustes do HUD; haptics `dodge_success`/`level_up`/`cooldown_warning` wireados via `CombatFeel.triggerVibration`. Gate: 126 testes, coverage 88.31%, 7 e2e, build OK.
 
 ### Esforço Estimado
 - Drag-to-aim + preview: **Médio** (3–4 dias)

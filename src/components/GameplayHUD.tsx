@@ -150,9 +150,15 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       // Reveal the golden paths gradually on joystick drag
       setExploredPercentage(prev => Math.min(100, prev + 0.05));
     }
+  }, {
+    deadzone: settings.joystickDeadzone,
+    curve: settings.joystickCurve,
   });
 
-  const aimJoystick = useFloatingJoystick(onAimUpdate);
+  const aimJoystick = useFloatingJoystick(onAimUpdate, {
+    deadzone: settings.joystickDeadzone,
+    curve: settings.joystickCurve,
+  });
 
   // Spawn pixelated blood splatters on screen tap
   const handleBackgroundTapRemoved = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -635,6 +641,44 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                 step="0.05"
                 value={settings.virtualControlsOpacity}
                 onChange={(e) => updateSettings({ ...settings, virtualControlsOpacity: parseFloat(e.target.value) })}
+                className="w-full h-1.5 bg-black accent-amber-500 rounded-none cursor-pointer"
+              />
+            </div>
+
+            {/* Joystick Deadzone Slider */}
+            <div className="flex flex-col gap-1 py-1">
+              <div className="flex justify-between text-[10px] text-gray-300">
+                <span>DEADZONE DO JOYSTICK</span>
+                <span className="text-[#e8c76a] font-bold">{Math.round((settings.joystickDeadzone ?? 0.08) * 100)}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="0.5"
+                step="0.01"
+                value={settings.joystickDeadzone ?? 0.08}
+                onChange={(e) => updateSettings({ ...settings, joystickDeadzone: parseFloat(e.target.value) })}
+                className="w-full h-1.5 bg-black accent-amber-500 rounded-none cursor-pointer"
+              />
+            </div>
+
+            {/* Joystick Response Curve Slider */}
+            <div className="flex flex-col gap-1 py-1">
+              <div className="flex justify-between text-[10px] text-gray-300">
+                <span>CURVA DE RESPOSTA</span>
+                <span className="text-[#e8c76a] font-bold">
+                  {settings.joystickCurve == null || settings.joystickCurve === 1.8
+                    ? 'EQUILIBRADA'
+                    : settings.joystickCurve < 1.8 ? 'DIRETA' : 'PRECISA'}
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0.5"
+                max="3.0"
+                step="0.1"
+                value={settings.joystickCurve ?? 1.8}
+                onChange={(e) => updateSettings({ ...settings, joystickCurve: parseFloat(e.target.value) })}
                 className="w-full h-1.5 bg-black accent-amber-500 rounded-none cursor-pointer"
               />
             </div>

@@ -1,4 +1,10 @@
 import { useState, useRef, useCallback } from 'react';
+import {
+  applyJoystickResponse,
+  JoystickResponseConfig,
+  DEFAULT_JOYSTICK_DEADZONE,
+  DEFAULT_JOYSTICK_CURVE,
+} from '../utils/joystickResponse';
 
 /** Max visual displacement of the knob from the base */
 const KNOB_RADIUS = 52;
@@ -35,6 +41,7 @@ const INITIAL_STATE: FloatingJoystickState = {
  */
 export const useFloatingJoystick = (
   onUpdate: (x: number, y: number) => void,
+  responseConfig: JoystickResponseConfig = {},
 ) => {
   const [state, setState] = useState<FloatingJoystickState>(INITIAL_STATE);
 
@@ -80,14 +87,11 @@ export const useFloatingJoystick = (
       const normX = knobX / KNOB_RADIUS;
       const normY = knobY / KNOB_RADIUS;
 
-      // Tiny deadzone (< 4 px) → emit 0,0 to avoid drift on tap
-      if (Math.abs(knobX) < 4 && Math.abs(knobY) < 4) {
-        onUpdate(0, 0);
-      } else {
-        onUpdate(normX, normY);
-      }
+      // Apply configurable deadzone + non-linear response curve
+      const shaped = applyJoystickResponse(normX, normY, responseConfig);
+      onUpdate(shaped.x, shaped.y);
     },
-    [onUpdate],
+    [onUpdate, responseConfig],
   );
 
   const onPointerDown = useCallback(

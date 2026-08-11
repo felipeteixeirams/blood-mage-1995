@@ -1,8 +1,13 @@
 import React, { useState, useRef } from 'react';
+import {
+  applyJoystickResponse,
+  JoystickResponseConfig,
+} from '../utils/joystickResponse';
 
 export const useJoystick = (
   onUpdate: (x: number, y: number) => void,
-  resetOnEnd: boolean = true
+  resetOnEnd: boolean = true,
+  responseConfig: JoystickResponseConfig = {},
 ) => {
   const [active, setActive] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
@@ -31,7 +36,10 @@ export const useJoystick = (
     const renderY = dist > maxRadius ? (dy / dist) * maxRadius : dy;
 
     setPos({ x: renderX, y: renderY });
-    onUpdate(normX, normY);
+
+    // Apply configurable deadzone + non-linear response curve
+    const shaped = applyJoystickResponse(normX, normY, responseConfig);
+    onUpdate(shaped.x, shaped.y);
   };
 
   // Pointer Handlers (Works for Touch, Mouse, and Stylus)

@@ -1214,6 +1214,7 @@ export class GameScene extends Phaser.Scene {
           }
         } else if (updateResult.dodged) {
           this.spawnFloatingText(this.player.x, this.player.y - 14, 'MISS!', '#94a3b8', false);
+          CombatFeel.triggerVibration('dodge_success');
         }
       }
     });
@@ -2583,6 +2584,9 @@ export class GameScene extends Phaser.Scene {
   private triggerLevelUp() {
     // Onboarding trigger
     useGameStore.getState().triggerOnboardingEvent('firstLevelUpDone', 'DICA: Toque na Árvore de Talentos (T) para evoluir permanente!');
+
+    // Haptic feedback on level up (two long pulses)
+    CombatFeel.triggerVibration('level_up');
 
     // Just store pending data — player distributes later via talent tree (T key)
     if (this.callbacks?.onLevelUp) {

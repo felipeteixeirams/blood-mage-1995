@@ -7,6 +7,7 @@ import spellsData from '../../data/spells.json';
 import { useGameStore } from '../../store/gameStore';
 import { SkillPresetEditor } from './SkillPresetEditor';
 import { soundEngine } from '../../utils/soundEngine';
+import { CombatFeel } from '../../game/systems/CombatFeel';
 
 type SkillKey = 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam';
 
@@ -206,7 +207,13 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
       <button
         key={spellId}
         onPointerDown={(e) => {
-          if (!canCast) return;
+          if (!canCast) {
+            // Haptic feedback: weak pulse when skill is on cooldown
+            if (cd > 0) {
+              CombatFeel.triggerVibration('cooldown_warning');
+            }
+            return;
+          }
           e.currentTarget.setPointerCapture(e.pointerId);
           dragStateRef.current = {
             spellId,

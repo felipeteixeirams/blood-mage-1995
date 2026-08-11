@@ -193,6 +193,8 @@ export interface GameSettings {
   touchSensitivity: number; // 0.5 to 2.0
   virtualControlsOpacity: number; // 0.2 to 1.0
   controlsMode: 'auto' | 'touch' | 'keyboard';
+  joystickDeadzone?: number; // 0 to 0.5 (normalized)
+  joystickCurve?: number; // 0.5 to 3.0 (response curve exponent)
   screenShakeEnabled?: boolean;
   flashesEnabled?: boolean;
   lowPerformanceParticles?: boolean;
