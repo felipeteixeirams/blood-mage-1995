@@ -43,6 +43,7 @@ export class DungeonGenerator {
         const tile = this.scene.add.image(x + (y % 48 === 0 ? 0 : 24), y, 'tile_ground');
         tile.setTint(tints.ground);
         tile.setDepth(1);
+        (tile as any).setLighting?.(true);
       }
     }
 

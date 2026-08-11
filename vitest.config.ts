@@ -17,7 +17,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary'],
-      include: ['src/utils/localStorage.ts', 'src/store/gameStore.ts', 'src/game/systems/CombatFeel.ts', 'src/game/systems/ContractSystem.ts'],
+      include: ['src/utils/localStorage.ts', 'src/store/gameStore.ts', 'src/game/systems/CombatFeel.ts', 'src/game/systems/ContractSystem.ts', 'src/utils/textureGenerator.ts', 'src/game/systems/PostFXSystem.ts'],
       thresholds: {
         lines: 80,
         statements: 80,

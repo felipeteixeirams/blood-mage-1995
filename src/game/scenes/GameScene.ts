@@ -13,6 +13,8 @@ import spellsData from '../../data/spells.json';
 import { soundEngine } from '../../utils/soundEngine';
 import HapticFeedback from '../../utils/haptics';
 import ScreenEffects from '../systems/ScreenEffects';
+import PostFXSystem from '../systems/PostFXSystem';
+import LightingSystem from '../systems/LightingSystem';
 import AdvancedParticles from '../systems/AdvancedParticles';
 import ScreenShake from '../systems/ScreenShake';
 import { useGameStore } from '../../store/gameStore';
@@ -52,6 +54,8 @@ export class GameScene extends Phaser.Scene {
   private rooms: RoomData[] = [];
   private achievements: AchievementSystem = new AchievementSystem();
   private screenEffects: ScreenEffects | null = null;
+  private postFX: PostFXSystem | null = null;
+  private lightingSystem: LightingSystem | null = null;
   private advancedParticles: AdvancedParticles | null = null;
   private screenShake: ScreenShake | null = null;
   private darknessOverlay!: Phaser.GameObjects.Graphics;
@@ -178,6 +182,14 @@ export class GameScene extends Phaser.Scene {
     this.lootGroup = this.physics.add.group();
 
     this.dungeonGenerator = new DungeonGenerator(this, this.wallsGroup, this.chestsGroup);
+
+    // Eixo A: Sistemas de pós-processamento e iluminação GPU (criados antes do mapa
+    // para que o primeiro bioma já seja aplicado na criação dos tiles/tochas).
+    this.screenEffects = new ScreenEffects(this, this.cameras.main.width, this.cameras.main.height);
+    this.postFX = new PostFXSystem(this);
+    this.postFX.setEnabled(useGameStore.getState().settings.postProcessingEnabled !== false);
+    this.lightingSystem = new LightingSystem(this);
+    this.lightingSystem.setEnabled(useGameStore.getState().settings.postProcessingEnabled !== false);
 
     // 3. Generate Dungeon Map Layout
     this.buildDungeonMap(mapW, mapH, this.currentFloorDepth);
@@ -313,6 +325,11 @@ export class GameScene extends Phaser.Scene {
           .setScale(scale);
         this.lightSprites.push(light);
       });
+
+      // Eixo A: luzes reais nas tochas/braseiros (WebGL)
+      if (this.lightingSystem) {
+        this.lightingSystem.addTorchLights(flamePositions);
+      }
     });
 
     // Flicker timer — randomizes scale + alpha of all light sprites
@@ -350,7 +367,6 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
 
     // Fase 5: Inicializar sistemas de polimento visual e gameplay
-    this.screenEffects = new ScreenEffects(this, this.cameras.main.width, this.cameras.main.height);
     this.advancedParticles = new AdvancedParticles(this);
     this.screenShake = new ScreenShake(this.cameras.main);
     
@@ -563,6 +579,13 @@ export class GameScene extends Phaser.Scene {
     const { isTransitionIndoorOutdoor, previousIndoorState } = worldManager.setBiome(biome);
     const envConfig = worldManager.getCurrentConfig();
     soundEngine.updateEnvironmentAudio(envConfig.isIndoor, envConfig.reverbLevel);
+    if (this.postFX) {
+      this.postFX.setBiome(biome);
+    }
+    if (this.lightingSystem) {
+      this.lightingSystem.enable(biome);
+      this.lightingSystem.clearTorchLights();
+    }
 
     // Efeito de Adaptação de Pupila (Pupil Light Adaptation): Flash ao mudar de caverna/ambiente fechado para espaço aberto
     if (isTransitionIndoorOutdoor) {
@@ -589,6 +612,11 @@ export class GameScene extends Phaser.Scene {
       this.player.setPosition(spawnRoom.centerX, spawnRoom.centerY);
     }
     this.player.stats.floorDepth = floorDepth;
+
+    // Eixo A: luz real seguindo o player (WebGL)
+    if (this.lightingSystem) {
+      this.lightingSystem.createPlayerLight();
+    }
 
     // Clear old NPCs
     this.npcsGroup.clear(true, true);
@@ -857,6 +885,9 @@ export class GameScene extends Phaser.Scene {
     }
     if (this.screenEffects) {
       this.screenEffects.update(delta);
+    }
+    if (this.postFX) {
+      this.postFX.update(delta);
     }
 
     const store = useGameStore.getState();
@@ -1306,7 +1337,17 @@ export class GameScene extends Phaser.Scene {
       }
 
       // 4.3 & 4.4 — Vinheta Pulsante & Iluminação Dinâmica (WorldManager)
-      if (this.darknessOverlay) {
+      const lightingActive = this.lightingSystem?.isActive() === true;
+      const playerHpRatio = this.player.stats.hp / this.player.stats.maxHp;
+
+      // Eixo A: luz real do player (raio encolhe com HP baixo) — WebGL
+      if (this.lightingSystem) {
+        this.lightingSystem.updatePlayerLight(playerHpRatio);
+      }
+
+      // Fallback: quando a iluminação Light2D está ativa, o darknessOverlay é reduzido
+      // a um tint de ambiente sutil; caso contrário, mantém o overlay de Graphics original.
+      if (this.darknessOverlay && !lightingActive) {
         this.darknessOverlay.clear();
 
         worldManager.updateLighting(delta);
@@ -1318,7 +1359,6 @@ export class GameScene extends Phaser.Scene {
           ? (0.55 + 0.25 * Math.sin(time * 0.012)) // Rapid high danger pulse
           : (alertCount > 3 ? (envConfig.darknessAlpha + 0.1 * Math.sin(time * 0.003)) : envConfig.darknessAlpha);
 
-        const playerHpRatio = this.player.stats.hp / this.player.stats.maxHp;
         const hpMultiplier = playerHpRatio < 0.3 ? 0.75 : 1.0;
         const targetRadius = worldManager.currentLightRadius * hpMultiplier;
 
@@ -2048,14 +2088,16 @@ export class GameScene extends Phaser.Scene {
     }
 
     // Fase 5: Advanced Visual Effects baseado em tipo de dano
-    if (this.screenShake && this.screenEffects && this.advancedParticles) {
+    if (this.screenShake && (this.screenEffects || this.postFX) && this.advancedParticles) {
       // Screen Shake refinado por intensidade
       if (damage > 100) {
         this.screenShake.heavy(); // Dano crítico
-        this.screenEffects.setChromaticAberration(0.15, 200); // RGB separation
+        this.postFX?.setChromaticAberration(0.15, 200); // RGB separation (GPU)
+        this.screenEffects?.setChromaticAberration(0.15, 200);
       } else if (damage > 50) {
         this.screenShake.medium(); // Dano alto
-        this.screenEffects.setChromaticAberration(0.08, 150);
+        this.postFX?.setChromaticAberration(0.08, 150);
+        this.screenEffects?.setChromaticAberration(0.08, 150);
       } else if (damage > 20) {
         this.screenShake.light(); // Dano médio
       } else {
@@ -2512,6 +2554,9 @@ export class GameScene extends Phaser.Scene {
     HapticFeedback.playerDeath();
 
     // Fase 5: Advanced Visual Effect on death
+    if (this.postFX) {
+      this.postFX.effectDeath(); // Red tint + vignette + distortion (GPU)
+    }
     if (this.screenEffects) {
       this.screenEffects.effectDeath(); // Red tint + vignette + distortion
     }

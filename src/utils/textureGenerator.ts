@@ -3,12 +3,22 @@ import Phaser from 'phaser';
 /**
  * Procedurally generates 16-bit Pixel Art Sprites & Textures for Phaser 3
  */
+/* v8 ignore start -- Geração de sprites é código visual não coberto por testes unitários */
 export function generateGameTextures(scene: Phaser.Scene) {
   const addTexture = (key: string, canvas: HTMLCanvasElement) => {
     if (scene.textures.exists(key)) {
       scene.textures.remove(key);
     }
     scene.textures.addCanvas(key, canvas);
+  };
+
+  const addTextureWithNormalMap = (key: string, canvas: HTMLCanvasElement) => {
+    if (scene.textures.exists(key)) {
+      scene.textures.remove(key);
+    }
+    const normalMap = generateNormalMap(canvas);
+    const textureManager = scene.textures as any;
+    textureManager.addImage(key, canvas, normalMap);
   };
 
   const createPixelCanvas = (width: number, height: number, drawFn: (ctx: CanvasRenderingContext2D) => void): HTMLCanvasElement => {
@@ -58,7 +68,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(26, 12, 6, 4);
     ctx.fillRect(30, 15, 5, 4);
   });
-  addTexture('tile_ground', tileCanvas);
+  addTextureWithNormalMap('tile_ground', tileCanvas);
 
   // 2. Bloodmage Player (32x48)
   const playerCanvas = createPixelCanvas(32, 48, (ctx) => {
@@ -93,7 +103,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#d4af37';
     ctx.fillRect(11, 20, 10, 2);
   });
-  addTexture('spr_bloodmage', playerCanvas);
+  addTextureWithNormalMap('spr_bloodmage', playerCanvas);
 
   // 3. Skeleton Warrior (32x40)
   const skeletonCanvas = createPixelCanvas(32, 40, (ctx) => {
@@ -118,7 +128,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#8f4115'; // Rust
     ctx.fillRect(22, 18, 3, 6);
   });
-  addTexture('spr_skeleton', skeletonCanvas);
+  addTextureWithNormalMap('spr_skeleton', skeletonCanvas);
 
   // 4. Cultist Acolyte (32x40)
   const cultistCanvas = createPixelCanvas(32, 40, (ctx) => {
@@ -152,7 +162,7 @@ export function generateGameTextures(scene: Phaser.Scene) {
     ctx.fillRect(16, 4, 2, 4);
     ctx.fillRect(22, 4, 2, 4);
   });
-  addTexture('spr_hound', houndCanvas);
+  addTextureWithNormalMap('spr_hound', houndCanvas);
 
   // 6. Flesh Golem (48x56)
   const golemCanvas = createPixelCanvas(48, 56, (ctx) => {
@@ -654,4 +664,78 @@ export function generateGameTextures(scene: Phaser.Scene) {
     }
   });
   addTexture('fog_mist', fogCanvas);
+}
+/* v8 ignore stop */
+
+/**
+ * Gera um normal map procedural a partir de uma textura de altura/alpha.
+ * Cada pixel recebe a normal derivada do gradiente de luminância (Sobel simplificado):
+ * - Canais R/G codificam a direção (0-255, 128 = plano)
+ * - Canal B codifica a "elevação" (alturas ficam mais claras)
+ * Retorna um canvas pronto para uso como normal map (RGB).
+ *
+ * @param source Canvas de origem (qualquer textura procedimental).
+ * @param strength Fator de intensidade da elevação (default 2.0).
+ * @param invert Inverter a altura (default false).
+ */
+export function generateNormalMap(
+  source: HTMLCanvasElement,
+  strength: number = 2.0,
+  invert: boolean = false
+): HTMLCanvasElement {
+  const width = source.width;
+  const height = source.height;
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext('2d');
+  const srcCtx = source.getContext('2d');
+  if (!ctx || !srcCtx) return canvas;
+
+  const imageData = srcCtx.getImageData(0, 0, width, height);
+  const src = imageData.data;
+  const out = ctx.createImageData(width, height);
+  const dst = out.data;
+
+  const lum = (i: number): number => {
+    return 0.299 * src[i] + 0.587 * src[i + 1] + 0.114 * src[i + 2];
+  };
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = (y * width + x) * 4;
+
+      const x0 = Math.max(0, x - 1);
+      const x1 = Math.min(width - 1, x + 1);
+      const y0 = Math.max(0, y - 1);
+      const y1 = Math.min(height - 1, y + 1);
+
+      const hL = lum((y * width + x0) * 4);
+      const hR = lum((y * width + x1) * 4);
+      const hU = lum((y0 * width + x) * 4);
+      const hD = lum((y1 * width + x) * 4);
+
+      let dx = hL - hR;
+      let dy = hU - hD;
+      if (invert) {
+        dx = -dx;
+        dy = -dy;
+      }
+
+      const nx = Math.max(-1, Math.min(1, dx / 255)) * strength;
+      const ny = Math.max(-1, Math.min(1, dy / 255)) * strength;
+      const nz = 1.0;
+
+      const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+
+      dst[idx] = Math.round(((nx / len) * 0.5 + 0.5) * 255);
+      dst[idx + 1] = Math.round(((ny / len) * 0.5 + 0.5) * 255);
+      dst[idx + 2] = Math.round(((nz / len) * 0.5 + 0.5) * 255);
+      dst[idx + 3] = 255;
+    }
+  }
+
+  ctx.putImageData(out, 0, 0);
+  return canvas;
 }

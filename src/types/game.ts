@@ -197,6 +197,7 @@ export interface GameSettings {
   flashesEnabled?: boolean;
   lowPerformanceParticles?: boolean;
   highContrastDamageTexts?: boolean;
+  postProcessingEnabled?: boolean;
   hudLayout?: Record<string, { x: number, y: number, size: 'small' | 'medium' | 'large' }>;
   activePaletteId?: string;
 }

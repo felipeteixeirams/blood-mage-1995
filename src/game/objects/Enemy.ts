@@ -71,6 +71,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setScale(this.baseScale);
     this.setCollideWorldBounds(true);
     this.setSize(22, 26);
+    (this as any).setLighting?.(true);
 
     // Individual speed variance (85% - 115%) & personal phase offset
     this.speedMultiplier = 0.85 + Math.random() * 0.3;

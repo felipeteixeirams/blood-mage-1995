@@ -107,6 +107,7 @@ export const defaultSettings: GameSettings = {
   flashesEnabled: true,
   lowPerformanceParticles: false,
   highContrastDamageTexts: false,
+  postProcessingEnabled: true,
 };
 
 // Schema for Settings validation
@@ -124,6 +125,7 @@ const SettingsSchema = z.object({
   flashesEnabled: z.boolean().catch(true),
   lowPerformanceParticles: z.boolean().catch(false),
   highContrastDamageTexts: z.boolean().catch(false),
+  postProcessingEnabled: z.boolean().catch(true),
   hudLayout: z.record(z.object({
     x: z.number(),
     y: z.number(),
