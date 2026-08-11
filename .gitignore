@@ -9,3 +9,6 @@ out-tsc
 .env*
 !.env.example
 temp_lovable/
+test-results/
+playwright-report/
+coverage/
