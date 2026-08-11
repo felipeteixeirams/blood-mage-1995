@@ -60,6 +60,7 @@ docs/specs//
 
 | Feature | Prioridade | Conceito | Responsável |
 |---------|-----------|----------|-------------|
+| **Evolução Gráfica Avançada** | Média | postFX WebGL + iluminação Light2D/normal maps + pipeline de assets | - |
 | **PvP Multiplayer** | Baixa | Adicionar modo competitivo | - |
 | **Mobile App** | Média | Build nativa iOS/Android | - |
 | **Skinning System** | Média | Personalizações de personagem | - |
@@ -341,12 +342,12 @@ Link para sua spec: [[../features/XX.md]]
 ```
 FINALIZADAS    ██████████  100% (6/6)
 ANDAMENTO      ████████░░   80% (1/1)
-PROPOSTAS      ░░░░░░░░░░    0% (0/5)
+PROPOSTAS      ██░░░░░░░░   17% (1/6)
 
-Total: 12 features
+Total: 13 features
 Completado: 6
 Em progresso: 1
-Backlog: 5
+Backlog: 6
 ```
 
 ### Timeline
