@@ -11,6 +11,7 @@ import wavesData from '../../data/waves.json';
 import upgradesData from '../../data/upgrades.json';
 import spellsData from '../../data/spells.json';
 import { soundEngine } from '../../utils/soundEngine';
+import HapticFeedback from '../../utils/haptics';
 import { useGameStore } from '../../store/gameStore';
 import { telemetry } from '../../utils/telemetry';
 import { CombatFeel } from '../systems/CombatFeel';
@@ -2017,6 +2018,13 @@ export class GameScene extends Phaser.Scene {
     const isDead = this.player.takeDamage(damage);
     ContractSystem.onPlayerDamaged();
 
+    // Fase 5: Haptic Feedback on damage
+    if (damage > 50) {
+      HapticFeedback.playerDamaged(); // Padrão duplo para dano alto
+    } else {
+      HapticFeedback.lightImpact(); // Leve para dano baixo
+    }
+
     // Fase 3: Chance of inflicting a survival status condition (Dead Frontier 2 style)
     if (statusEffectOnHit && !this.player.stats.isUnconscious && !this.player.stats.isDefinitivelyDead) {
       if (Math.random() < statusEffectOnHit.chance) {
@@ -2385,6 +2393,9 @@ export class GameScene extends Phaser.Scene {
     this.isPaused = true;
     this.physics.pause();
     soundEngine.stopBGM();
+
+    // Fase 5: Haptic Feedback on death
+    HapticFeedback.playerDeath();
 
     if (this.callbacks?.onGameOver) {
       this.callbacks.onGameOver({ ...this.player.stats });

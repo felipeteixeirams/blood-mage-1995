@@ -1,7 +1,7 @@
 {
   "name": "Bloodmage 1995",
   "short_name": "Bloodmage",
-  "description": "Bloodmage 1995 - Action-RPG / boomer shooter isométrico de fantasia sombria.",
+  "description": "Bloodmage 1995 - Action-RPG / boomer shooter isométrico de fantasia sombria com gameplay roguelike, combate em tempo real e atmosfera grimdark dos anos 90.",
   "theme_color": "#0d0709",
   "background_color": "#0d0709",
   "display": "standalone",
@@ -9,16 +9,84 @@
   "start_url": "/",
   "scope": "/",
   "categories": ["game", "action", "role-playing"],
+  "screenshots": [
+    {
+      "src": "screenshot-1.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "screenshot-2.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Iniciar Partida",
+      "short_name": "Jogar",
+      "description": "Comece uma nova aventura no calabouço",
+      "url": "/",
+      "icons": [
+        {
+          "src": "icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Salão dos Recordes",
+      "short_name": "Recordes",
+      "description": "Veja seu ranking e conquistas",
+      "url": "/?view=records",
+      "icons": [
+        {
+          "src": "icon-96-trophy.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "prefer_related_applications": false,
+  "related_applications": []
 }
