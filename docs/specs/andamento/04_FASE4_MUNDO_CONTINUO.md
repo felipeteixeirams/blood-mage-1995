@@ -5,7 +5,7 @@ priority: P2
 start_date: 2026-08-10
 eta: 2026-09-30
 responsible: Jules (Google AI)
-progress: 80% (WorldManager, iluminação adaptativa, áudio, Safe Town com NPCs, corpos persistentes e marcas de sangue implementados)
+progress: 80% (WorldManager, iluminação adaptativa, áudio, Safe Town com NPCs, corpos persistentes e marcas de sangue implementados; backlog D-1 a D-3 registrado como discovery)
 agent_context: backend, frontend, game designer
 target_module: artifacts/bloodmage/src/game
 last_updated: 2026-08-11
@@ -52,11 +52,30 @@ tags: [specs, phase-4, continuous-world, safe-town, dynamic-lighting, soundscape
   - Manchas de sangue persistem por ~60s no chão e ~30s nas paredes.
   - Todos gerenciados pelo `bloodStainsGroup` para limpeza correta na transição de andares.
 
-### Nice to Have
+### Nice to Have → Backlog de Discovery
 
-- [ ] NPCs com linhas de diálogo interativas e pequenas quests locais.
-- [ ] Clima dinâmico por bioma (chuva de sangue no Santuário, cinzas flutuantes nas Catacumbas).
-- [ ] Sistema de viagem rápida entre vilarejos já descobertos.
+Itens sem spec detalhada. Seguem como **discovery** — escopo, valor e decisões necessárias registradas abaixo. Só devem virar `andamento` (spec detalhada) quando um deles for priorizado por Felipe.
+
+#### 🔍 D-1 — NPCs com Diálogo Interativo e Quests Locais
+
+- **Valor:** Transforma a Safe Town de vitrine em ponto de interação. Hoje os 4 NPCs abrem lojas/portais, mas sem narrativa nem quests.
+- **Escopo provável:** Sistema de diálogo em árvore (nós + opções) com persistência de flags por run; mini-quests locais com recompensas (itens/cristais); integração com o sistema de quests existente.
+- **Decisões de design em aberto:** quantidade de linhas por NPC, tom de escrita (lore dark fantasy 1995), recompensas por quest, se diálogo pausa o jogo, se há progressão de relacionamento entre runs.
+- **Dependências:** sistema de diálogo UI (provável reuso do padrão de modais), persistência de flags (localStorage já existe).
+
+#### 🔍 D-2 — Clima Dinâmico por Bioma
+
+- **Valor:** Alto — é o que diferencia visualmente cada bioma. A spec 7.3 já cobre o **áudio** ambiente por bioma; D-2 cobre o **visual** (partículas/efeitos).
+- **Escopo provável:** Sistema de partículas climáticas por zona (chuva de sangue no Santuário, cinzas nas Catacumbas, poeira/vapor no Fosso); intensidade graduada na transição entre biomas; custo controlado por bioma (PWA mobile).
+- **Decisões de design em aberto:** quais efeitos por bioma, densidade máxima de partículas, impacto no gate de 60 FPS, interação com `lowPerformanceParticles` (setting existente).
+- **Dependências:** sistema de partículas (Fase 5 — `AdvancedParticles` reescrito com `scene.add.particles`), `WorldManager` (gatilho de transição).
+
+#### 🔍 D-3 — Viagem Rápida entre Vilarejos Descobertos
+
+- **Valor:** Reduz fricção de locomoção no mundo contínuo em runs longas.
+- **Escopo provável:** Pontos de viagem (fogueiras/portais) desbloqueados por visita; mapa rápido acessível pelo menu (T?) listando destinos; custo opcional (cristais) ou gratuito.
+- **Decisões de design em aberto:** se há custo, se só destinos já visitados, se interrompe/limpa estado de zona atual (corpos/sangue), integração com o sistema de morte (cadáver).
+- **Dependências:** `WorldManager`, mapa de zonas.
 
 ---
 

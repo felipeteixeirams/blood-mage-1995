@@ -197,6 +197,7 @@ export interface GameSettings {
   joystickCurve?: number; // 0.5 to 3.0 (response curve exponent)
   screenShakeEnabled?: boolean;
   flashesEnabled?: boolean;
+  atmosphereEffectsEnabled?: boolean; // threat indicator + danger vignette + directional audio
   lowPerformanceParticles?: boolean;
   highContrastDamageTexts?: boolean;
   postProcessingEnabled?: boolean;

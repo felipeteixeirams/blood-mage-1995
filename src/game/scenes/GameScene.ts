@@ -1308,82 +1308,86 @@ export class GameScene extends Phaser.Scene {
     }
 
     // Offscreen Threat Indicator (Silent Hill-style edge chevrons)
+    const viewW = this.cameras.main.width || window.innerWidth;
+    const viewH = this.cameras.main.height || window.innerHeight;
+    const cx = viewW / 2;
+    const cy = viewH / 2;
+    let alertCount = 0;
     if (this.threatIndicatorGraphics) {
       this.threatIndicatorGraphics.clear();
 
-      const viewW = this.cameras.main.width || window.innerWidth;
-      const viewH = this.cameras.main.height || window.innerHeight;
-      const cx = viewW / 2;
-      const cy = viewH / 2;
+      const atmosphereEnabled = useGameStore.getState().settings.atmosphereEffectsEnabled !== false;
+      if (atmosphereEnabled) {
+        let closestOffscreenEnemy: Enemy | null = null;
+        let minOffscreenDistance = Infinity;
 
-      let closestOffscreenEnemy: Enemy | null = null;
-      let minOffscreenDistance = Infinity;
-      let alertCount = 0;
+        this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
+          const enemy = enemyObj as Enemy;
+          if (enemy.active) {
+            const isThreat = enemy.aiState === 'combat' || enemy.aiState === 'frenzy' || enemy.aiState === 'investigating';
+            if (isThreat) {
+              if (enemy.aiState === 'combat' || enemy.aiState === 'frenzy') {
+                alertCount++;
+              }
 
-      this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
-        const enemy = enemyObj as Enemy;
-        if (enemy.active) {
-          const isThreat = enemy.aiState === 'combat' || enemy.aiState === 'frenzy' || enemy.aiState === 'investigating';
-          if (isThreat) {
-            if (enemy.aiState === 'combat' || enemy.aiState === 'frenzy') {
-              alertCount++;
-            }
+              // Check if offscreen
+              const screenX = (enemy.x - this.cameras.main.scrollX) * this.cameras.main.zoom;
+              const screenY = (enemy.y - this.cameras.main.scrollY) * this.cameras.main.zoom;
+              const isOffscreen = screenX < 0 || screenX > viewW || screenY < 0 || screenY > viewH;
 
-            // Check if offscreen
-            const screenX = (enemy.x - this.cameras.main.scrollX) * this.cameras.main.zoom;
-            const screenY = (enemy.y - this.cameras.main.scrollY) * this.cameras.main.zoom;
-            const isOffscreen = screenX < 0 || screenX > viewW || screenY < 0 || screenY > viewH;
-
-            if (isOffscreen) {
-              const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
-              if (dist < minOffscreenDistance) {
-                minOffscreenDistance = dist;
-                closestOffscreenEnemy = enemy;
+              if (isOffscreen) {
+                const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
+                if (dist < minOffscreenDistance) {
+                  minOffscreenDistance = dist;
+                  closestOffscreenEnemy = enemy;
+                }
               }
             }
           }
+        });
+
+        if (closestOffscreenEnemy) {
+          const enemy = closestOffscreenEnemy as Enemy;
+          const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, enemy.x, enemy.y);
+
+          // Project onto border
+          const edgeX = cx + Math.cos(angle) * (cx - 25);
+          const edgeY = cy + Math.sin(angle) * (cy - 25);
+
+          const indicatorX = Phaser.Math.Clamp(edgeX, 25, viewW - 25);
+          const indicatorY = Phaser.Math.Clamp(edgeY, 25, viewH - 25);
+
+          const pulse = 0.4 + 0.3 * Math.sin(time * 0.008);
+          const finalAlpha = Phaser.Math.Clamp(pulse + (alertCount * 0.03), 0.3, 0.95);
+          const color = (enemy.aiState === 'combat' || enemy.aiState === 'frenzy') ? 0xef4444 : 0xf59e0b;
+
+          this.threatIndicatorGraphics.lineStyle(2, color, finalAlpha);
+          this.threatIndicatorGraphics.fillStyle(color, finalAlpha * 0.4);
+
+          const size = 16;
+          const px = Math.cos(angle) * size;
+          const py = Math.sin(angle) * size;
+          const tx = -Math.sin(angle) * (size * 0.6);
+          const ty = Math.cos(angle) * (size * 0.6);
+
+          this.threatIndicatorGraphics.beginPath();
+          this.threatIndicatorGraphics.moveTo(indicatorX + px, indicatorY + py);
+          this.threatIndicatorGraphics.lineTo(indicatorX - px + tx, indicatorY - py + ty);
+          this.threatIndicatorGraphics.lineTo(indicatorX - px - tx, indicatorY - py - ty);
+          this.threatIndicatorGraphics.closePath();
+          this.threatIndicatorGraphics.fillPath();
+          this.threatIndicatorGraphics.strokePath();
+
+          // 4.2 — Distorção de Áudio Direcional (Silent Hill Radio Static)
+          const dx = enemy.x - this.player.x;
+          const dy = enemy.y - this.player.y;
+          const dist = Math.hypot(dx, dy);
+          const relativeX = dist > 0 ? dx / dist : 0;
+          const isCombatThreat = enemy.aiState === 'combat' || enemy.aiState === 'frenzy';
+          soundEngine.updateSpatialThreat(relativeX, 0, isCombatThreat);
+        } else {
+          soundEngine.updateSpatialThreat(0, 0, false);
         }
-      });
-
-      if (closestOffscreenEnemy) {
-        const enemy = closestOffscreenEnemy as Enemy;
-        const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, enemy.x, enemy.y);
-
-        // Project onto border
-        const edgeX = cx + Math.cos(angle) * (cx - 25);
-        const edgeY = cy + Math.sin(angle) * (cy - 25);
-
-        const indicatorX = Phaser.Math.Clamp(edgeX, 25, viewW - 25);
-        const indicatorY = Phaser.Math.Clamp(edgeY, 25, viewH - 25);
-
-        const pulse = 0.4 + 0.3 * Math.sin(time * 0.008);
-        const finalAlpha = Phaser.Math.Clamp(pulse + (alertCount * 0.03), 0.3, 0.95);
-        const color = (enemy.aiState === 'combat' || enemy.aiState === 'frenzy') ? 0xef4444 : 0xf59e0b;
-
-        this.threatIndicatorGraphics.lineStyle(2, color, finalAlpha);
-        this.threatIndicatorGraphics.fillStyle(color, finalAlpha * 0.4);
-
-        const size = 16;
-        const px = Math.cos(angle) * size;
-        const py = Math.sin(angle) * size;
-        const tx = -Math.sin(angle) * (size * 0.6);
-        const ty = Math.cos(angle) * (size * 0.6);
-
-        this.threatIndicatorGraphics.beginPath();
-        this.threatIndicatorGraphics.moveTo(indicatorX + px, indicatorY + py);
-        this.threatIndicatorGraphics.lineTo(indicatorX - px + tx, indicatorY - py + ty);
-        this.threatIndicatorGraphics.lineTo(indicatorX - px - tx, indicatorY - py - ty);
-        this.threatIndicatorGraphics.closePath();
-        this.threatIndicatorGraphics.fillPath();
-        this.threatIndicatorGraphics.strokePath();
-
-        // 4.2 — Distorção de Áudio Direcional (Silent Hill Radio Static)
-        const dx = enemy.x - this.player.x;
-        const dy = enemy.y - this.player.y;
-        const dist = Math.hypot(dx, dy);
-        const relativeX = dist > 0 ? dx / dist : 0;
-        const isCombatThreat = enemy.aiState === 'combat' || enemy.aiState === 'frenzy';
-        soundEngine.updateSpatialThreat(relativeX, 0, isCombatThreat);
       } else {
         soundEngine.updateSpatialThreat(0, 0, false);
       }
@@ -1405,11 +1409,20 @@ export class GameScene extends Phaser.Scene {
         worldManager.updateLighting(delta);
         const envConfig = worldManager.getCurrentConfig();
 
+        const atmosphereEnabled = useGameStore.getState().settings.atmosphereEffectsEnabled !== false;
         const isBoss = this.isBossActive();
-        const baseColor = (alertCount > 10 || isBoss) ? 0x2d0208 : envConfig.darknessColor;
-        const maxOverlayAlpha = (alertCount > 10 || isBoss)
-          ? (0.55 + 0.25 * Math.sin(time * 0.012)) // Rapid high danger pulse
-          : (alertCount > 3 ? (envConfig.darknessAlpha + 0.1 * Math.sin(time * 0.003)) : envConfig.darknessAlpha);
+        const baseColor = (!atmosphereEnabled || alertCount <= 10 && !isBoss) ? envConfig.darknessColor : 0x2d0208;
+        let maxOverlayAlpha: number;
+
+        if (!atmosphereEnabled) {
+          maxOverlayAlpha = envConfig.darknessAlpha;
+        } else if (alertCount > 10 || isBoss) {
+          maxOverlayAlpha = (0.55 + 0.25 * Math.sin(time * 0.012)); // Rapid high danger pulse
+        } else if (alertCount > 3) {
+          maxOverlayAlpha = (envConfig.darknessAlpha + 0.1 * Math.sin(time * 0.003)); // Slow danger pulse
+        } else {
+          maxOverlayAlpha = envConfig.darknessAlpha;
+        }
 
         const hpMultiplier = playerHpRatio < 0.3 ? 0.75 : 1.0;
         const targetRadius = worldManager.currentLightRadius * hpMultiplier;

@@ -571,6 +571,17 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
               </button>
             </div>
 
+            {/* Toggle Atmosphere Effects (threat indicator + danger vignette + directional audio) */}
+            <div className="flex items-center justify-between py-1 border-b border-[#524341]">
+              <span className="text-[10px] text-gray-300 uppercase">EFEITOS DE ATMOSFERA</span>
+              <button
+                onClick={() => updateSettings({ ...settings, atmosphereEffectsEnabled: !settings.atmosphereEffectsEnabled })}
+                className="text-amber-500 cursor-pointer"
+              >
+                {settings.atmosphereEffectsEnabled !== false ? <CheckSquare size={16} /> : <Square size={16} />}
+              </button>
+            </div>
+
             {/* Toggle High Contrast Texts */}
             <div className="flex items-center justify-between py-1 border-b border-[#524341]">
               <span className="text-[10px] text-gray-300 uppercase">DANOS ALTO CONTRASTE</span>
