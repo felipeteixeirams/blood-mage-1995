@@ -8,6 +8,7 @@ describe('InputManager', () => {
     vi.stubGlobal('navigator', {
       getGamepads: vi.fn(() => []),
     });
+    InputManager.resetForTests();
   });
 
   afterEach(() => {
@@ -67,5 +68,54 @@ describe('InputManager', () => {
     InputManager.init();
     expect(InputManager.isGamepadConnected()).toBe(false);
     expect(InputManager.getGamepadState().isConnected).toBe(false);
+  });
+
+  it('wasButtonPressed() é true apenas na borda de subida', () => {
+    InputManager.resetForTests();
+    const gamepad = {
+      connected: true,
+      id: 'Test Pad',
+      axes: [0, 0, 0, 0],
+      buttons: Array.from({ length: 16 }, () => ({ pressed: false })),
+    };
+    const getGamepads = vi.fn(() => [gamepad]);
+    vi.stubGlobal('navigator', { getGamepads });
+
+    // Simula o polling inicial (nada pressionado)
+    InputManager.readGamepadState();
+    expect(InputManager.wasButtonPressed('a')).toBe(false);
+
+    // A pressão do botão A (frame seguinte)
+    gamepad.buttons[0].pressed = true;
+    InputManager.readGamepadState();
+    expect(InputManager.wasButtonPressed('a')).toBe(true);
+    // Mantendo o padrão pressionado -> não dispara de novo
+    expect(InputManager.wasButtonPressed('a')).toBe(false);
+
+    // Solta o botão
+    gamepad.buttons[0].pressed = false;
+    InputManager.readGamepadState();
+    expect(InputManager.wasButtonPressed('a')).toBe(false);
+  });
+
+  it('os botões D-pad (12-15) são refletidos no estado', () => {
+    InputManager.resetForTests();
+    const gamepad = {
+      connected: true,
+      id: 'Test Pad',
+      axes: [0, 0, 0, 0],
+      buttons: Array.from({ length: 16 }, () => ({ pressed: false })),
+    };
+    gamepad.buttons[14].pressed = true; // D-pad Left
+    gamepad.buttons[15].pressed = true; // D-pad Right
+    vi.stubGlobal('navigator', { getGamepads: vi.fn(() => [gamepad]) });
+
+    InputManager.readGamepadState();
+
+    const state = InputManager.getGamepadState();
+    expect(state.isConnected).toBe(true);
+    expect(state.buttons.dpadLeft).toBe(true);
+    expect(state.buttons.dpadRight).toBe(true);
+    expect(state.buttons.dpadUp).toBe(false);
   });
 });

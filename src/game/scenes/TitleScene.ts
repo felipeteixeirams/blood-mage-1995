@@ -1,10 +1,11 @@
 import Phaser from "phaser";
 import {
-  createEmberTexture,
-  createGlowTexture,
-  createScanlineTexture,
-  createSpiralTexture,
+   createEmberTexture,
+   createGlowTexture,
+   createScanlineTexture,
+   createSpiralTexture,
 } from "../../utils/uiTextures";
+import InputManager from "../systems/InputManager";
 
 import titleLogoUrl from "../../assets/ui/title-logo.png";
 import gargoyleTopUrl from "../../assets/ui/gargoyle-top.png";
@@ -69,17 +70,21 @@ function warmTint(dark: number, bright: number, level: number) {
 }
 
 export class TitleScene extends Phaser.Scene {
-  private time0 = 0;
-  private spiralA!: Phaser.GameObjects.Image;
-  private spiralB!: Phaser.GameObjects.Image;
-  private portalHaze!: Phaser.GameObjects.Image;
-  private logo!: Phaser.GameObjects.Image;
-  private logoGlow!: Phaser.GameObjects.Image;
-  private torches: Torch[] = [];
-  private prompt!: Phaser.GameObjects.Text;
-  private trophyGlow?: Phaser.GameObjects.Image;
-  private litProps: Phaser.GameObjects.Image[] = [];
-  private sideLit: Tintable[][] = [];
+   private time0 = 0;
+   private spiralA!: Phaser.GameObjects.Image;
+   private spiralB!: Phaser.GameObjects.Image;
+   private portalHaze!: Phaser.GameObjects.Image;
+   private logo!: Phaser.GameObjects.Image;
+   private logoGlow!: Phaser.GameObjects.Image;
+   private torches: Torch[] = [];
+   private prompt!: Phaser.GameObjects.Text;
+   private trophyGlow?: Phaser.GameObjects.Image;
+   private litProps: Phaser.GameObjects.Image[] = [];
+   private sideLit: Tintable[][] = [];
+   // Gamepad menu focus
+   private badges: Phaser.GameObjects.Container[] = [];
+   private badgeActions: (() => void)[] = [];
+   private currentFocusIndex = 0;
 
   constructor() {
     super("title");
@@ -332,57 +337,68 @@ export class TitleScene extends Phaser.Scene {
     });
   }
 
-  private buildHud() {
-    const mkBadge = (x: number, y: number, key: string, label: string, onClick?: () => void) => {
-      const c = this.add.container(x, y);
-      const w = 150;
-      const g = this.add.graphics();
-      g.fillStyle(0x14120f, 0.88).fillRoundedRect(-w / 2, -18, w, 36, 6);
-      g.lineStyle(2, 0x8c8578, 1).strokeRoundedRect(-w / 2, -18, w, 36, 6);
-      const badge = this.add.graphics();
-      badge.fillStyle(0xc98a2b, 1).fillCircle(-w / 2 + 20, 0, 11);
-      badge.lineStyle(2, 0x5a3c11, 1).strokeCircle(-w / 2 + 20, 0, 11);
-      const k = this.add
-        .text(-w / 2 + 20, 0, key, {
-          fontFamily: "monospace",
-          fontSize: "13px",
-          color: "#20160a",
-          fontStyle: "bold",
-        })
-        .setOrigin(0.5);
-      const l = this.add
-        .text(-w / 2 + 38, 0, label, {
-          fontFamily: "monospace",
-          fontSize: "14px",
-          color: "#e8e2d4",
-          fontStyle: "bold",
-        })
-        .setOrigin(0, 0.5);
-      c.add([g, badge, k, l]);
-      c.setAlpha(0.95).setDepth(30);
-      if (onClick) {
-        c.setSize(w, 36)
-          .setInteractive({ useHandCursor: true })
-          .on("pointerover", () => c.setAlpha(1))
-          .on("pointerout", () => c.setAlpha(0.95))
-          .on("pointerdown", onClick);
-      }
-      return c;
-    };
+private buildHud() {
+     const mkBadge = (x: number, y: number, key: string, label: string, onClick?: () => void) => {
+       const c = this.add.container(x, y);
+       const w = 150;
+       const g = this.add.graphics();
+       g.fillStyle(0x14120f, 0.88).fillRoundedRect(-w / 2, -18, w, 36, 6);
+       g.lineStyle(2, 0x8c8578, 1).strokeRoundedRect(-w / 2, -18, w, 36, 6);
+       const badge = this.add.graphics();
+       badge.fillStyle(0xc98a2b, 1).fillCircle(-w / 2 + 20, 0, 11);
+       badge.lineStyle(2, 0x5a3c11, 1).strokeCircle(-w / 2 + 20, 0, 11);
+       const k = this.add
+         .text(-w / 2 + 20, 0, key, {
+           fontFamily: "monospace",
+           fontSize: "13px",
+           color: "#20160a",
+           fontStyle: "bold",
+         })
+         .setOrigin(0.5);
+       const l = this.add
+         .text(-w / 2 + 38, 0, label, {
+           fontFamily: "monospace",
+           fontSize: "14px",
+           color: "#e8e2d4",
+           fontStyle: "bold",
+         })
+         .setOrigin(0, 0.5);
+       c.add([g, badge, k, l]);
+       c.setAlpha(0.95).setDepth(30);
+       if (onClick) {
+         c.setSize(w, 36)
+           .setInteractive({ useHandCursor: true })
+           .on("pointerover", () => c.setAlpha(1))
+           .on("pointerout", () => c.setAlpha(0.95))
+           .on("pointerdown", onClick);
+       }
+       return c;
+     };
 
-    // Bottom badges for HUD options
-    mkBadge(168, BASE_H - 62, "C", "CONTINUAR", () => {
-      const fn = this.registry.get("onContinueGame") as (() => void) | undefined;
-      if (fn) fn();
-    });
-    mkBadge(BASE_W / 2, BASE_H - 62, "P", "JOGAR", () => {
-      const fn = this.registry.get("onStartGame") as (() => void) | undefined;
-      if (fn) fn();
-    });
-    mkBadge(BASE_W - 168, BASE_H - 62, "O", "OPÇÕES", () => {
-      const fn = this.registry.get("onOpenSettings") as (() => void) | undefined;
-      if (fn) fn();
-    });
+     // Bottom badges for HUD options
+     const continueAction = () => {
+       const fn = this.registry.get("onContinueGame") as (() => void) | undefined;
+       if (fn) fn();
+     };
+     const continueBadge = mkBadge(168, BASE_H - 62, "C", "CONTINUAR", continueAction);
+     this.badges.push(continueBadge);
+     this.badgeActions.push(continueAction);
+
+     const startAction = () => {
+       const fn = this.registry.get("onStartGame") as (() => void) | undefined;
+       if (fn) fn();
+     };
+     const startBadge = mkBadge(BASE_W / 2, BASE_H - 62, "P", "JOGAR", startAction);
+     this.badges.push(startBadge);
+     this.badgeActions.push(startAction);
+
+     const settingsAction = () => {
+       const fn = this.registry.get("onOpenSettings") as (() => void) | undefined;
+       if (fn) fn();
+     };
+     const settingsBadge = mkBadge(BASE_W - 168, BASE_H - 62, "O", "OPÇÕES", settingsAction);
+     this.badges.push(settingsBadge);
+     this.badgeActions.push(settingsAction);
 
     const trophyButton = this.add.container(BASE_W - 76, 76).setDepth(31);
     const plate = this.add.graphics();

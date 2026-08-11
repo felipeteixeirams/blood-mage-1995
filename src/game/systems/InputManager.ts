@@ -20,15 +20,17 @@ export interface GamepadState {
     select: boolean;
     leftStickClick: boolean;
     rightStickClick: boolean;
+    dpadUp: boolean;
+    dpadDown: boolean;
+    dpadLeft: boolean;
+    dpadRight: boolean;
   };
   isConnected: boolean;
 }
 
 export class InputManager {
-  private static gamepadState: GamepadState = {
-    leftStick: { x: 0, y: 0 },
-    rightStick: { x: 0, y: 0 },
-    buttons: {
+  private static createDefaultButtons(): GamepadState['buttons'] {
+    return {
       a: false,
       b: false,
       x: false,
@@ -41,12 +43,27 @@ export class InputManager {
       select: false,
       leftStickClick: false,
       rightStickClick: false,
-    },
-    isConnected: false,
-  };
+      dpadUp: false,
+      dpadDown: false,
+      dpadLeft: false,
+      dpadRight: false,
+    };
+  }
+
+  private static createDefaultGamepadState(): GamepadState {
+    return {
+      leftStick: { x: 0, y: 0 },
+      rightStick: { x: 0, y: 0 },
+      buttons: this.createDefaultButtons(),
+      isConnected: false,
+    };
+  }
+
+  private static gamepadState: GamepadState = InputManager.createDefaultGamepadState();
 
   private static keyboardState: Record<string, boolean> = {};
   private static initialized: boolean = false;
+  private static prevButtons: GamepadState['buttons'] = InputManager.createDefaultButtons();
 
   /**
    * Inicializa listeners de entrada (idempotente — evita listeners duplicados
@@ -73,11 +90,41 @@ export class InputManager {
   }
 
   /**
+   * Reseta o estado de inputs (usado principalmente em testes para evitar
+   * vazamento de estado estático entre execuções).
+   */
+  public static resetForTests(): void {
+    this.initialized = false;
+    this.keyboardState = {};
+    this.gamepadState = this.createDefaultGamepadState();
+    this.prevButtons = this.createDefaultButtons();
+  }
+
+  /**
    * Poll gamepad state a cada frame (necessário pois Gamepad API não dispara eventos em mudanças)
    */
   private static pollGamepads(): void {
+    this.readGamepadState();
+    requestAnimationFrame(() => this.pollGamepads());
+  }
+
+  /**
+   * Lê o estado atual do gamepad uma única vez (sincronamente).
+   * Público para testes; o loop de polling privado a chama a cada frame.
+   */
+  public static readGamepadState(): void {
     const gamepads = navigator.getGamepads?.() || [];
     const gamepad = gamepads[0]; // Pega primeiro gamepad conectado
+
+    // Preserva estado anterior dos botões para edge-detection
+    const prev = this.gamepadState.buttons;
+    this.prevButtons = {
+      a: prev.a, b: prev.b, x: prev.x, y: prev.y,
+      lb: prev.lb, rb: prev.rb, lt: prev.lt, rt: prev.rt,
+      select: prev.select, start: prev.start,
+      leftStickClick: prev.leftStickClick, rightStickClick: prev.rightStickClick,
+      dpadUp: prev.dpadUp, dpadDown: prev.dpadDown, dpadLeft: prev.dpadLeft, dpadRight: prev.dpadRight,
+    };
 
     if (gamepad && gamepad.connected) {
       this.gamepadState.isConnected = true;
@@ -105,11 +152,14 @@ export class InputManager {
       this.gamepadState.buttons.start = gamepad.buttons[9]?.pressed || false;
       this.gamepadState.buttons.leftStickClick = gamepad.buttons[10]?.pressed || false;
       this.gamepadState.buttons.rightStickClick = gamepad.buttons[11]?.pressed || false;
+      // 12: D-pad Up, 13: D-pad Down, 14: D-pad Left, 15: D-pad Right
+      this.gamepadState.buttons.dpadUp = gamepad.buttons[12]?.pressed || false;
+      this.gamepadState.buttons.dpadDown = gamepad.buttons[13]?.pressed || false;
+      this.gamepadState.buttons.dpadLeft = gamepad.buttons[14]?.pressed || false;
+      this.gamepadState.buttons.dpadRight = gamepad.buttons[15]?.pressed || false;
     } else {
       this.gamepadState.isConnected = false;
     }
-
-    requestAnimationFrame(() => this.pollGamepads());
   }
 
   private static onGamepadConnected(e: GamepadEvent): void {
@@ -185,6 +235,16 @@ export class InputManager {
    */
   public static isButtonPressed(button: keyof GamepadState['buttons']): boolean {
     return this.gamepadState.buttons[button];
+  }
+
+  /**
+   * Detecção de borda de subida (just-pressed) para botões do gamepad.
+   * Retorna true apenas na primeira chamada enquanto o botão permanece pressionado.
+   */
+  public static wasButtonPressed(button: keyof GamepadState['buttons']): boolean {
+    const pressed = this.gamepadState.buttons[button] && !this.prevButtons[button];
+    this.prevButtons[button] = this.gamepadState.buttons[button];
+    return pressed;
   }
 
   /**
