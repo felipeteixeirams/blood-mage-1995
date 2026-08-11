@@ -17,6 +17,7 @@ import PostFXSystem from '../systems/PostFXSystem';
 import LightingSystem from '../systems/LightingSystem';
 import AdvancedParticles from '../systems/AdvancedParticles';
 import ScreenShake from '../systems/ScreenShake';
+import LightingPolish from '../systems/LightingPolish';
 import { useGameStore } from '../../store/gameStore';
 import { telemetry } from '../../utils/telemetry';
 import { CombatFeel } from '../systems/CombatFeel';
@@ -62,6 +63,7 @@ export class GameScene extends Phaser.Scene {
   private lightingSystem: LightingSystem | null = null;
   private advancedParticles: AdvancedParticles | null = null;
   private screenShake: ScreenShake | null = null;
+  private lightingPolish: LightingPolish | null = null;
   private darknessOverlay!: Phaser.GameObjects.Graphics;
 
   // Fase 5: Pooling, culling e monitor de performance
@@ -397,6 +399,9 @@ export class GameScene extends Phaser.Scene {
     // Fase 5: Inicializar sistemas de polimento visual e gameplay
     this.advancedParticles = new AdvancedParticles(this);
     this.screenShake = new ScreenShake(this.cameras.main);
+
+    // Fase 5 Final: LightingPolish - glow effects em itens, monstros, spells
+    this.lightingPolish = new LightingPolish(this);
 
     // Fase 5: InputManager unificado (gamepad/keyboard) + monitor de performance (toggle dev via ?perf=1)
     InputManager.init();
