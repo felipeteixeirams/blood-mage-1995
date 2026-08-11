@@ -44,7 +44,7 @@ const BIOME_LIGHTING: Record<BiomeType, BiomeLightingConfig> = {
 };
 
 export class LightingSystem {
-  private scene: Phaser.Scene;
+  private scene: Phaser.Scene & { player?: { x: number; y: number } };
   private isWebGL: boolean;
   private enabled: boolean;
 

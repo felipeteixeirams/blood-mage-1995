@@ -13,7 +13,7 @@ import { useGameStore } from '../store/gameStore';
 import type { FloatingJoystickState } from '../hooks/useFloatingJoystick';
 import {
   Eye, EyeOff, Settings, X, Shield, Scroll, RefreshCw,
-  MapPin, Backpack, Sparkles, Volume2, VolumeX, Pause, Play, LogOut, CheckSquare, Square
+  MapPin, Backpack, Sparkles, Volume2, VolumeX, Pause, Play, LogOut, CheckSquare, Square, Skull
 } from 'lucide-react';
 
 interface GameplayHUDProps {

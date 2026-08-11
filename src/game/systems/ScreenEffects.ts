@@ -17,7 +17,7 @@ export class ScreenEffects {
   private scene: Phaser.Scene;
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
-  private vignetteTexture: CanvasTexture | null = null;
+  private vignetteTexture: any | null = null;
   private currentConfig: ScreenEffectConfig = {};
   private targetConfig: ScreenEffectConfig = {};
   private easeProgress: number = 0;

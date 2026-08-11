@@ -144,7 +144,8 @@ const defaultPlayerStats: PlayerStats = {
     x: 0,
     y: 0,
     droppedTimestamp: 0,
-    itemsInside: [],
+    equipment: { weapon: null, armor: null, relics: [] },
+    curatives: { bandages: 0, antidotes: 0, antibiotics: 0 },
   },
 };
 

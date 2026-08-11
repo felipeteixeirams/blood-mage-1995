@@ -86,7 +86,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         x: 0,
         y: 0,
         droppedTimestamp: 0,
-        itemsInside: [],
+        equipment: { weapon: null, armor: null, relics: [] },
+        curatives: { bandages: 0, antidotes: 0, antibiotics: 0 },
       },
     };
 
@@ -215,7 +216,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
     } else {
       // Movement Physics — acceleration-based for smooth start/stop
-      const speed = this.stats.moveSpeed;
+      const speed = this.stats.moveSpeed * (this.stats.statusConditions?.bleeding ? 0.8 : 1.0);
       const dt = delta / 1000;
       const targetVx = this.moveVector.x * speed;
       const targetVy = this.moveVector.y * speed;
@@ -252,9 +253,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.infectionTimer += delta;
 
       if (this.stats.statusConditions?.bleeding) {
-        // Bleeding reduces movement speed by 20%
-        speed *= 0.8;
-
         if (this.bleedTimer >= 1500) {
           this.bleedTimer = 0;
           this.takeDamage(3);

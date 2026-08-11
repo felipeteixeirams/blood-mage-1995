@@ -14,7 +14,7 @@ export class HapticFeedback {
 
     const vibrate = navigator.vibrate || (navigator as any).webkitVibrate || (navigator as any).mozVibrate || (navigator as any).msVibrate;
     try {
-      vibrate.call(navigator, pattern);
+      vibrate.call(navigator, pattern as any);
     } catch (e) {
       // Silenciosamente falha se vibração não for suportada
     }
