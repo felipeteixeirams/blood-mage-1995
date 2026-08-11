@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShieldAlert } from 'lucide-react';
 
@@ -9,6 +9,8 @@ interface SplashScreenProps {
 export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   const [phase, setPhase] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   const bootSequence = [
     'INICIALIZANDO MEMÓRIA ESTENDIDA (XMS)... OK',
@@ -30,13 +32,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
         clearInterval(interval);
         setTimeout(() => {
           setPhase(1); // Ready to transition out
-          setTimeout(onComplete, 800);
+          setTimeout(() => onCompleteRef.current(), 800);
         }, 500);
       }
     }, 250); // Speed of text lines appearing
 
     return () => clearInterval(interval);
-  }, [onComplete]);
+  }, []);
 
   return (
     <AnimatePresence>
