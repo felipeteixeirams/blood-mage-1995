@@ -46,11 +46,16 @@ export class InputManager {
   };
 
   private static keyboardState: Record<string, boolean> = {};
+  private static initialized: boolean = false;
 
   /**
-   * Inicializa listeners de entrada
+   * Inicializa listeners de entrada (idempotente — evita listeners duplicados
+   * quando a GameScene é recriada em restart).
    */
   public static init(): void {
+    if (this.initialized) return;
+    this.initialized = true;
+
     // Gamepad events
     window.addEventListener('gamepadconnected', (e) => this.onGamepadConnected(e));
     window.addEventListener('gamepaddisconnected', (e) => this.onGamepadDisconnected(e));

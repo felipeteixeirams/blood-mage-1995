@@ -23,6 +23,10 @@ import { CombatFeel } from '../systems/CombatFeel';
 import { worldManager } from '../systems/WorldManager';
 import { ContractSystem } from '../systems/ContractSystem';
 import AchievementSystem from '../systems/AchievementSystem';
+import ObjectPool from '../systems/ObjectPool';
+import ViewportCuller from '../systems/ViewportCuller';
+import PerformanceMonitor from '../systems/PerformanceMonitor';
+import InputManager from '../systems/InputManager';
 
 export interface GameSceneCallbacks {
   onStatsUpdate: (stats: PlayerStats) => void;
@@ -59,6 +63,12 @@ export class GameScene extends Phaser.Scene {
   private advancedParticles: AdvancedParticles | null = null;
   private screenShake: ScreenShake | null = null;
   private darknessOverlay!: Phaser.GameObjects.Graphics;
+
+  // Fase 5: Pooling, culling e monitor de performance
+  private playerProjectilePool!: ObjectPool<Projectile>;
+  private enemyProjectilePool!: ObjectPool<Projectile>;
+  private viewportCuller = new ViewportCuller(150);
+  private performanceMonitor: PerformanceMonitor | null = null;
   private lightSprites: Phaser.GameObjects.Image[] = [];
   private fogOverlay!: Phaser.GameObjects.TileSprite;
   private bloodBurstEmitter!: Phaser.GameObjects.Particles.ParticleEmitter;
@@ -178,6 +188,24 @@ export class GameScene extends Phaser.Scene {
     this.enemiesGroup = this.physics.add.group({ runChildUpdate: false });
     this.playerProjectilesGroup = this.physics.add.group({ runChildUpdate: true });
     this.enemyProjectilesGroup = this.physics.add.group({ runChildUpdate: true });
+
+    // Fase 5: ObjectPool para projéteis (reduz GC/alocação por disparo)
+    this.playerProjectilePool = new ObjectPool<Projectile>(() => {
+      const proj = new Projectile(this, 0, 0, 'proj_blood_bolt');
+      proj.setOnExpired((p) => this.playerProjectilePool.release(p));
+      this.playerProjectilesGroup.add(proj);
+      proj.setActive(false);
+      proj.setVisible(false);
+      return proj;
+    }, 12);
+    this.enemyProjectilePool = new ObjectPool<Projectile>(() => {
+      const proj = new Projectile(this, 0, 0, 'proj_energy_bolt');
+      proj.setOnExpired((p) => this.enemyProjectilePool.release(p));
+      this.enemyProjectilesGroup.add(proj);
+      proj.setActive(false);
+      proj.setVisible(false);
+      return proj;
+    }, 8);
     this.collectiblesGroup = this.physics.add.group();
     this.lootGroup = this.physics.add.group();
 
@@ -369,6 +397,14 @@ export class GameScene extends Phaser.Scene {
     // Fase 5: Inicializar sistemas de polimento visual e gameplay
     this.advancedParticles = new AdvancedParticles(this);
     this.screenShake = new ScreenShake(this.cameras.main);
+
+    // Fase 5: InputManager unificado (gamepad/keyboard) + monitor de performance (toggle dev via ?perf=1)
+    InputManager.init();
+    const perfQuery = new URLSearchParams(window.location.search).get('perf');
+    if (perfQuery !== null) {
+      this.performanceMonitor = new PerformanceMonitor();
+      this.performanceMonitor.enable();
+    }
     
     // UI Pointer for Corpse
     this.corpsePointer = this.add.sprite(0, 0, 'icon_skull')
@@ -889,6 +925,9 @@ export class GameScene extends Phaser.Scene {
     if (this.postFX) {
       this.postFX.update(delta);
     }
+    if (this.performanceMonitor) {
+      this.performanceMonitor.update();
+    }
 
     const store = useGameStore.getState();
 
@@ -998,11 +1037,9 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    // Process gamepad inputs if connected
-    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-    const gp = gamepads.find(g => g !== null);
-    if (gp) {
-      this.handleGamepadInput(gp);
+    // Process gamepad inputs if connected (via InputManager unificado)
+    if (InputManager.isGamepadConnected()) {
+      this.handleGamepadInput();
     }
 
     // --- Fog / mist slow drift ---
@@ -1126,8 +1163,23 @@ export class GameScene extends Phaser.Scene {
 
     // 4. Update Enemies with FOV, State Machine & Raycast Walls
     const activeEnemiesList = this.enemiesGroup.getChildren() as Enemy[];
+
+    // Fase 5: ViewportCuller — esconde inimigos fora da viewport (render cost).
+    // NOTA: cullamos apenas visibilidade, nunca `active`, para não quebrar
+    // `countActive()` (usado para detectar floor clear / portal reveal).
+    const cam = this.cameras.main;
+    this.viewportCuller.update(cam.scrollX, cam.scrollY, cam.width, cam.height, activeEnemiesList);
+
     activeEnemiesList.forEach((enemy: Enemy) => {
       if (enemy.active) {
+        const isCombatStateEarly = enemy.aiState === 'combat' || enemy.aiState === 'frenzy' || enemy.aiState === 'flee';
+
+        // Skip full AI tick for culled passive enemies (they are offscreen & unengaged).
+        // Combat-state enemies always update to avoid AI regressions.
+        if (!isCombatStateEarly && this.viewportCuller.isCulled(enemy)) {
+          return;
+        }
+
         const distToPlayer = Phaser.Math.Distance.Between(enemy.x, enemy.y, this.player.x, this.player.y);
 
         // ⚡ Bolt's Optimization: Skip expensive wall raycasting (hasLineOfSight) for out-of-range passive enemies.
@@ -1150,11 +1202,10 @@ export class GameScene extends Phaser.Scene {
 
         if (updateResult.attack) {
           if (updateResult.attackType === 'ranged' || enemy.config.behavior === 'ranged' || enemy.config.behavior === 'boss') {
-            // Fire ranged energy bolt
-            const proj = new Projectile(this, enemy.x, enemy.y, 'proj_energy_bolt');
+            // Fire ranged energy bolt (pooled)
+            const proj = this.enemyProjectilePool.get(0, 0);
             const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, this.player.x, this.player.y);
             proj.fire(enemy.x, enemy.y, angle, 220, enemy.config.damage, true, enemy.config.statusEffectOnHit);
-            this.enemyProjectilesGroup.add(proj);
           } else {
             // Melee hit player
             this.playerHitByEnemy(updateResult.damage, enemy.config.statusEffectOnHit);
@@ -1433,33 +1484,26 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private handleGamepadInput(gp: Gamepad) {
+  private handleGamepadInput() {
     if (this.isPaused) return;
 
-    // 1. Move Inputs (Left Stick: axes 0 and 1)
-    let mx = gp.axes[0];
-    let my = gp.axes[1];
-    // Apply circular deadzone of 0.15
-    const moveLen = Math.hypot(mx, my);
-    if (moveLen < 0.15) {
-      mx = 0;
-      my = 0;
-    } else {
-      mx /= moveLen;
-      my /= moveLen;
-    }
-    this.player.setMoveInput(mx, my);
+    // 1. Move Inputs (Left Stick) via InputManager
+    const move = InputManager.getMovementInput();
+    this.player.setMoveInput(move.x, move.y);
 
-    // 2. Aim Inputs (Right Stick: axes 2 and 3)
-    let ax = gp.axes[2];
-    let ay = gp.axes[3];
-    const aimLen = Math.hypot(ax, ay);
-    if (aimLen >= 0.15) {
-      this.player.setAimInput(ax, ay);
+    // 2. Aim Inputs (Right Stick) via InputManager
+    const aim = InputManager.getAimInput();
+    if (aim.x !== 0 || aim.y !== 0) {
+      this.player.setAimInput(aim.x, aim.y);
     }
 
     // 3. Button presses (just-down edge detection)
-    const currentStates = gp.buttons.map(b => b.pressed);
+    const gp = InputManager.getGamepadState();
+    const currentStates = [
+      gp.buttons.a, gp.buttons.b, gp.buttons.x, gp.buttons.y,
+      gp.buttons.lb, gp.buttons.rb, gp.buttons.lt, gp.buttons.rt,
+      gp.buttons.select, gp.buttons.start, gp.buttons.leftStickClick, gp.buttons.rightStickClick,
+    ];
 
     const justPressed = (idx: number) => {
       const prev = this.lastGamepadButtonStates[idx] || false;
@@ -1511,7 +1555,7 @@ export class GameScene extends Phaser.Scene {
       const angle = baseAngle + offset;
 
       const boltCfg = (spellsData as Record<string, SpellConfig>)['blood_bolt'];
-      const proj = new Projectile(this, this.player.x, this.player.y, 'proj_blood_bolt');
+      const proj = this.playerProjectilePool.get(this.player.x, this.player.y);
       proj.fire(
         this.player.x,
         this.player.y,
@@ -1520,7 +1564,6 @@ export class GameScene extends Phaser.Scene {
         boltCfg.baseDamage * this.player.stats.damageMultiplier,
         false
       );
-      this.playerProjectilesGroup.add(proj);
     }
   }
 
@@ -1863,7 +1906,7 @@ export class GameScene extends Phaser.Scene {
       });
     }
 
-    proj.destroy();
+    proj.releaseToPool();
   }
 
   private handlePlayerOpenChest(playerObj: any, chestObj: any) {
@@ -1898,20 +1941,23 @@ export class GameScene extends Phaser.Scene {
     const enemy = enemyObj as Enemy;
 
     if (!proj.active || !enemy.active) return;
-    
+
+    // Read damage BEFORE releasing back to the pool (release resets the state)
+    const projectileDamage = proj.damage;
+
     // Blood Particles
     if (this.bloodEmitter) {
       this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 6);
     }
 
-    proj.destroy();
+    proj.releaseToPool();
 
     // Taking damage alerts group!
     this.triggerGroupAlert(enemy.x, enemy.y, 220);
 
     // Critical Hit Roll (15% chance for 1.75x damage)
     const isCrit = Math.random() < 0.15;
-    const finalDamage = isCrit ? proj.damage * 1.75 : proj.damage;
+    const finalDamage = isCrit ? projectileDamage * 1.75 : projectileDamage;
 
     const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
     const isDead = enemy.takeDamage(finalDamage);
@@ -2173,8 +2219,9 @@ export class GameScene extends Phaser.Scene {
     const proj = projObj as Projectile;
     if (proj.active) {
       const statusEffectOnHit = proj.statusEffectOnHit;
-      proj.destroy();
-      this.playerHitByEnemy(proj.damage, statusEffectOnHit);
+      const projDamage = proj.damage;
+      proj.releaseToPool();
+      this.playerHitByEnemy(projDamage, statusEffectOnHit);
     }
   }
 

@@ -1,3 +1,5 @@
+import Phaser from 'phaser';
+
 /**
  * ScreenShake (Fase 5)
  * Sistema de screen shake refinado com diferentes intensidades

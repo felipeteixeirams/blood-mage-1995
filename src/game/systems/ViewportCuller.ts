@@ -77,6 +77,13 @@ export class ViewportCuller {
   public getCulledCount(): number {
     return this.culledObjects.size;
   }
+
+  /**
+   * Verificar se um objeto está atualmente culled (fora da viewport).
+   */
+  public isCulled(obj: CullableObject): boolean {
+    return this.culledObjects.has(obj);
+  }
 }
 
 export default ViewportCuller;
