@@ -17,6 +17,7 @@ import { telemetry } from '../../utils/telemetry';
 import { CombatFeel } from '../systems/CombatFeel';
 import { worldManager } from '../systems/WorldManager';
 import { ContractSystem } from '../systems/ContractSystem';
+import AchievementSystem from '../systems/AchievementSystem';
 
 export interface GameSceneCallbacks {
   onStatsUpdate: (stats: PlayerStats) => void;
@@ -46,6 +47,7 @@ export class GameScene extends Phaser.Scene {
 
   // --- Visual improvements ---
   private rooms: RoomData[] = [];
+  private achievements: AchievementSystem = new AchievementSystem();
   private darknessOverlay!: Phaser.GameObjects.Graphics;
   private lightSprites: Phaser.GameObjects.Image[] = [];
   private fogOverlay!: Phaser.GameObjects.TileSprite;
