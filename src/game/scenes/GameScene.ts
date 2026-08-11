@@ -12,6 +12,9 @@ import upgradesData from '../../data/upgrades.json';
 import spellsData from '../../data/spells.json';
 import { soundEngine } from '../../utils/soundEngine';
 import HapticFeedback from '../../utils/haptics';
+import ScreenEffects from '../systems/ScreenEffects';
+import AdvancedParticles from '../systems/AdvancedParticles';
+import ScreenShake from '../systems/ScreenShake';
 import { useGameStore } from '../../store/gameStore';
 import { telemetry } from '../../utils/telemetry';
 import { CombatFeel } from '../systems/CombatFeel';
@@ -48,6 +51,9 @@ export class GameScene extends Phaser.Scene {
   // --- Visual improvements ---
   private rooms: RoomData[] = [];
   private achievements: AchievementSystem = new AchievementSystem();
+  private screenEffects: ScreenEffects | null = null;
+  private advancedParticles: AdvancedParticles | null = null;
+  private screenShake: ScreenShake | null = null;
   private darknessOverlay!: Phaser.GameObjects.Graphics;
   private lightSprites: Phaser.GameObjects.Image[] = [];
   private fogOverlay!: Phaser.GameObjects.TileSprite;
@@ -342,6 +348,11 @@ export class GameScene extends Phaser.Scene {
     // Camera setup
     this.cameras.main.setBounds(0, 0, mapW, mapH);
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+
+    // Fase 5: Inicializar sistemas de polimento visual e gameplay
+    this.screenEffects = new ScreenEffects(this, this.cameras.main.width, this.cameras.main.height);
+    this.advancedParticles = new AdvancedParticles(this);
+    this.screenShake = new ScreenShake(this.cameras.main);
     
     // UI Pointer for Corpse
     this.corpsePointer = this.add.sprite(0, 0, 'icon_skull')
@@ -839,6 +850,14 @@ export class GameScene extends Phaser.Scene {
 
   update(time: number, delta: number) {
     if (this.isPaused) return;
+
+    // Fase 5: Update visual effects systems
+    if (this.screenShake) {
+      this.screenShake.update(delta);
+    }
+    if (this.screenEffects) {
+      this.screenEffects.update(delta);
+    }
 
     const store = useGameStore.getState();
 
@@ -2028,6 +2047,49 @@ export class GameScene extends Phaser.Scene {
       HapticFeedback.lightImpact(); // Leve para dano baixo
     }
 
+    // Fase 5: Advanced Visual Effects baseado em tipo de dano
+    if (this.screenShake && this.screenEffects && this.advancedParticles) {
+      // Screen Shake refinado por intensidade
+      if (damage > 100) {
+        this.screenShake.heavy(); // Dano crítico
+        this.screenEffects.setChromaticAberration(0.15, 200); // RGB separation
+      } else if (damage > 50) {
+        this.screenShake.medium(); // Dano alto
+        this.screenEffects.setChromaticAberration(0.08, 150);
+      } else if (damage > 20) {
+        this.screenShake.light(); // Dano médio
+      } else {
+        this.screenShake.light();
+      }
+
+      // Advanced Particles baseado no tipo de dano
+      if (hitType === 'ranged' || hitType === 'toxic') {
+        // Dano à distância: gota de veneno
+        this.advancedParticles.emit({
+          type: 'acid_splash',
+          x: this.player.x,
+          y: this.player.y,
+          intensity: Math.min(damage / 100, 1),
+        });
+      } else if (hitType === 'heavy') {
+        // Dano pesado: osso quebrado
+        this.advancedParticles.emit({
+          type: 'bone_dust',
+          x: this.player.x,
+          y: this.player.y,
+          intensity: Math.min(damage / 100, 1),
+        });
+      } else {
+        // Dano normal: sangue
+        this.advancedParticles.emit({
+          type: 'blood_splatter',
+          x: this.player.x,
+          y: this.player.y,
+          intensity: Math.min(damage / 100, 1),
+        });
+      }
+    }
+
     // Fase 3: Chance of inflicting a survival status condition (Dead Frontier 2 style)
     if (statusEffectOnHit && !this.player.stats.isUnconscious && !this.player.stats.isDefinitivelyDead) {
       if (Math.random() < statusEffectOnHit.chance) {
@@ -2134,6 +2196,38 @@ export class GameScene extends Phaser.Scene {
     this.floorMonstersKilled++;
     this.registerKillCombo(enemy.x, enemy.y);
     ContractSystem.onEnemyKilled(enemy, this);
+
+    // Fase 5: Advanced Visual Effect on kill
+    if (this.advancedParticles) {
+      this.advancedParticles.emit({
+        type: 'spectral_burst',
+        x: enemy.x,
+        y: enemy.y,
+        intensity: 1.0, // Kill = intensidade máxima
+      });
+    }
+    if (this.screenShake) {
+      this.screenShake.light(); // Leve shake na vitória
+    }
+
+    // Fase 5: Achievement Wiring - Kill-based achievements
+    if (this.achievements) {
+      this.achievements.unlock('first_blood'); // Sempre desbloqueado no 1º kill
+      
+      if (this.player.stats.kills >= 10) {
+        const ach = this.achievements.unlock('slayer_10');
+        if (ach) {
+          this.spawnFloatingText(this.player.x, this.player.y - 50, `🏆 ACHIEVEMENT: ${ach.name}!`, '#fbbf24', true);
+        }
+      }
+      
+      if (this.player.stats.kills >= 50) {
+        const ach = this.achievements.unlock('slayer_50');
+        if (ach) {
+          this.spawnFloatingText(this.player.x, this.player.y - 50, `🏆 ACHIEVEMENT: ${ach.name}!`, '#fbbf24', true);
+        }
+      }
+    }
 
     // Onboarding trigger
     useGameStore.getState().triggerOnboardingEvent('firstKillDone', 'DICA: Colete o loot no chão antes de continuar!');
@@ -2311,6 +2405,23 @@ export class GameScene extends Phaser.Scene {
     this.player.heal(35); // Reward floor clear with HP restore
     this.player.addMana(50);
 
+    // Fase 5: Achievement Wiring - Depth-based achievements
+    if (this.achievements) {
+      if (this.currentFloorDepth >= 10) {
+        const ach = this.achievements.unlock('depth_10');
+        if (ach) {
+          this.spawnFloatingText(this.player.x, this.player.y - 50, `🏆 ${ach.name}!`, '#fbbf24', true);
+        }
+      }
+      
+      if (this.currentFloorDepth >= 25) {
+        const ach = this.achievements.unlock('depth_25');
+        if (ach) {
+          this.spawnFloatingText(this.player.x, this.player.y - 50, `🏆 ${ach.name}!`, '#fbbf24', true);
+        }
+      }
+    }
+
     // Clear old map entities
     this.wallsGroup.clear(true, true);
     this.chestsGroup.clear(true, true);
@@ -2399,6 +2510,14 @@ export class GameScene extends Phaser.Scene {
 
     // Fase 5: Haptic Feedback on death
     HapticFeedback.playerDeath();
+
+    // Fase 5: Advanced Visual Effect on death
+    if (this.screenEffects) {
+      this.screenEffects.effectDeath(); // Red tint + vignette + distortion
+    }
+    if (this.screenShake) {
+      this.screenShake.heavy(); // Shake pesado na morte
+    }
 
     if (this.callbacks?.onGameOver) {
       this.callbacks.onGameOver({ ...this.player.stats });
