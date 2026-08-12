@@ -23,7 +23,7 @@ tags: [specs, discovery, assets, pipeline, performance, procedural-replacement]
 - ✅ 60+ FPS garantido
 - ✅ Pronto para produção
 
-**Eixo B** cobre: "E depois, quando quisermos arte externa?"
+**Eixo B** cobra: "E depois, quando quisermos arte externa?" Para a visão de UI híbrida do React com fatiamento de imagens (9-slice CSS) e a transição gradativa de áudio (Eixo C), consulte o documento de direcionamento macro em `[[02_DISCOVERY_UI_ASSETS_EXTERNOS.md]]`.
 
 ---
 
@@ -194,7 +194,16 @@ export class AssetLoader {
       this.scene.load.once('complete', () => {
         resolve(this.scene.textures.get(def.key));
       });
-      this.scene.load.once('loaderror', reject);
+      this.scene.load.once('loaderror', (fileObj: any) => {
+        // Envia log estruturado local e reporta para o Sentry de forma silenciosa
+        console.error(`AssetLoader: Falha ao carregar ${def.key} de ${def.source}`);
+        if ((window as any).Sentry) {
+          (window as any).Sentry.captureException(new Error(`Asset load error: ${def.key}`), {
+            tags: { system: 'asset-loader', asset_key: def.key }
+          });
+        }
+        reject(fileObj);
+      });
       this.scene.load.start();
     });
   }

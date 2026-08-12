@@ -1,25 +1,25 @@
 ---
-agent_context: game-engine, frontend, game-designer
+agent_context: game-engine, frontend, game-designer, product-manager
 target_module: artifacts/bloodmage/src/game
 priority: alta
 status: proposta
 last_updated: 2026-08-11
-tags: [specs, proposta, ui, assets-externos, pixel-art, hybrid-system]
+tags: [specs, proposta, ui, assets-externos, pixel-art, hybrid-system, performance, audio]
 ---
 
 # Proposta de Discovery — Evolução de UI e Assets Externos Góticos (Pixel Art)
 
-> Este documento detalha a viabilidade técnica, o design de arte e o plano de transição para evoluir o visual do **Bloodmage 1995** a partir de assets externos gratuitos, aderentes à estética gótica sombria de meados dos anos 90 (estilo *Diablo I*, *Diablo II* e *Dungeon Siege 1*), no formato de **Pixel Art de Alta Resolução**.
+> Este documento detalha a viabilidade técnica, o design de arte, o plano de transição e o gerenciamento de recursos para evoluir o visual e a sonoplastia do **Bloodmage 1995** a partir de assets externos gratuitos ou licenciados. O objetivo é atingir a estética gótica sombria de meados dos anos 90 (estilo *Diablo I*, *Diablo II* e *Dungeon Siege 1*), no formato de **Pixel Art de Alta Resolução/Fidelidade** e sonorização imersiva, sem comprometer a robustez técnica do jogo.
 
 ---
 
 ## 1. Visão Geral e Direcionamento Artístico
 
-O **Bloodmage 1995** opera hoje sob uma arquitetura puramente procedural (`textureGenerator.ts` para renderização em canvas HTML5 e `soundEngine.ts` para síntese via Web Audio). Essa restrição foi crucial para o início ágil do projeto e bundle extremamente leve.
+O **Bloodmage 1995** opera hoje sob uma arquitetura puramente procedural (`textureGenerator.ts` para renderização em canvas HTML5 e `soundEngine.ts` para síntese via Web Audio API). Essa restrição foi essencial para garantir um carregamento instantâneo, leveza extrema e independência de rede.
 
-Contudo, para atingir o nível de **imersão comercial e "game juice"** desejados, propõe-se uma transição para um **modelo híbrido de renderização**:
-* **Assets de Alta Resolução (Pixel Art Sombria):** Utilizar recursos de alta qualidade visual para elementos de alta frequência de foco (personagem, inimigos, ícones, feitiços, cenários e menus).
-* **Fallback Procedural Ativo:** Manter o gerador de canvas como um fallback resiliente. Caso os assets falhem no carregamento ou ocorram erros de rede/disco, a engine renderiza os gráficos procedurais, garantindo robustez de execução.
+Contudo, para atingir o nível de **imersão comercial e "game juice"** necessários para competir no mercado (como PWA Premium ou em lojas como Steam e Google Play Store), propõe-se uma transição para um **modelo híbrido de carregamento**:
+* **Assets Físicos Sombrios:** Utilizar recursos visuais (PNG/WebP compactados) e sonoros (MP3/OGG) de alta qualidade para focar o jogador em elementos cruciais (mago, monstros, runas, efeitos sonoros de feitiços e trilhas ambientais).
+* **Fallback Procedural Resiliente:** Manter os geradores de canvas e síntese de áudio como fallbacks ativos de segurança. Caso os assets externos falhem (erros de rede, corrupção de cache ou ausência física), a engine renderiza os gráficos procedurais e sintetiza os sons em tempo de execução, impedindo falhas críticas ou travamentos de tela.
 
 ### 🎨 Paleta de Cores e Diretrizes de Estilo
 Todas as escolhas de assets devem alinhar-se à paleta **Grimdark** oficial do jogo:
@@ -34,23 +34,6 @@ Todas as escolhas de assets devem alinhar-se à paleta **Grimdark** oficial do j
 ## 2. Escopo e Mapeamento de Melhorias Visuais
 
 Sendo um jogo focado prioritariamente em **Mobile-First**, cada elemento precisa de alta legibilidade em telas compactas de smartphones, garantindo alto contraste e contornos bem definidos.
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                             GAMEPLAY HUD MOBILE                             │
-├─────────────────────────────────────────────────────────────────────────────┤
-│  [Orbe Vida (Crimson)]                     [Contratos / Quests HUD (Gold)]  │
-│                                                                             │
-│                                                                             │
-│              [Cenário / Masmorras (Pixel Art Gótica Sombria)]               │
-│                                                                             │
-│         [NPC] <── [Player com Equipamento Visível] ──► [Inimigo / Magia]    │
-│                                                                             │
-│                                                                             │
-│  [Movimento Joystick]                       [Barra / Orbe Mana]             │
-│                                             [Slots Habilidades Rúnicos]     │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
 
 ### 2.1. O Personagem Principal (Bloodmage)
 * **O que muda:** Substituição do sprite atual por uma spritesheet com animações fluidas de 8 direções de movimento, ataques com foice, conjuração de magias, hit (recebimento de dano) e morte.
@@ -91,117 +74,308 @@ Sendo um jogo focado prioritariamente em **Mobile-First**, cada elemento precisa
 
 ---
 
-## 3. Guia de Licenciamento de Assets Gratuitos
+## 3. Eixo B - Interface do Usuário (UI) Híbrida: React + Phaser
 
-Para garantir que o jogo permaneça 100% legal, sem riscos de custos futuros, quebras de contrato ou disputas de direitos autorais, todas as escolhas de assets externos devem seguir as regras abaixo.
+O **Bloodmage 1995** utiliza uma estrutura na qual o React gerencia a HUD, modais e telas de menu de forma sobreposta à *viewport* de renderização do Phaser.
 
-### 3.1. Tipos de Licenças Permitidas
+### 3.1. Por que manter menus complexos no React?
+1. **Responsividade Mobile-First:** O layout HTML/CSS se ajusta nativamente a proporções de tela variáveis, de celulares compactos (vertical/horizontal) a telas ultra-wide na Steam. Implementar o mesmo nível de adaptabilidade no Phaser exige recálculos complexos e caros de viewport.
+2. **Escalabilidade Comercial (Steam/Play Store/PWA):** No React, componentes de UI possuem scroll nativo de alta performance, botões de toque precisos e suporte completo a acessibilidade (leitores de tela, escala de texto nítida sem borrões).
+3. **Internacionalização (Localization):** Gerenciamento de strings de tradução do React é leve, permitindo transições suaves de idioma no inventário e caixas de diálogo.
 
-* **CC0 (Creative Commons Zero / Domínio Público):**
-  * *O que é:* O criador renunciou a todos os direitos de autor.
-  * *Uso:* Pode ser usado, modificado, distribuído comercialmente ou de forma privada sem necessidade de dar créditos ou permissão adicional.
-  * *Preferência:* **Máxima**. Ideal para menus de UI, grades, botões e sons.
+### 3.2. Integração de Assets Estéticos na UI do React
+Para dar o visual gótico e sombrio de 1995 às bordas e painéis do React de forma extremamente leve, adota-se a técnica de **9-Slice Scaling (Fatiamento de Imagem)** por meio do CSS `border-image`.
 
-* **CC-BY (Atribuição Creative Commons):**
-  * *O que é:* Permite uso comercial e modificação gratuita.
-  * *Condição:* **Obrigatoriamente** requer dar o devido crédito ao autor original nas configurações do jogo ou seção dedicada de créditos.
-  * *Contrato Visual:* Não há impacto de contrato visual. Basta colocar o nome do autor, link e tipo de licença de forma organizada em um menu "Créditos" ou arquivo acessível.
+```
+     FATIAMENTO 9-SLICE (Bordas de Pedra Escura e Cantos de Metal)
 
-* **Licença Livre OpenGameArt (OGA BY / CC-BY-SA):**
-  * *Uso:* Permitido em sua totalidade, respeitando as condições de compartilhamento sob a mesma licença se houver modificações drásticas e atribuição do criador original.
+     Canto Sup. Esq. (A)      Borda Superior (B)      Canto Sup. Dir. (C)
+            ┌───────────────┬───────────────────┬───────────────┐
+            │    16 x 16    │    Repetível      │    16 x 16    │
+            ├───────────────┼───────────────────┼───────────────┤
+            │               │                   │               │
+  Borda     │  Repetível    │   Fundo de Feltro │   Repetível   │  Borda
+  Esq. (D)  │               │     Escuro (E)    │               │  Dir. (F)
+            │               │                   │               │
+            ├───────────────┼───────────────────┼───────────────┤
+            │    16 x 16    │    Repetível      │    16 x 16    │
+            └───────────────┴───────────────────┴───────────────┘
+     Canto Inf. Esq. (G)      Borda Inferior (H)      Canto Inf. Dir. (I)
+```
 
-### 3.2. Estrutura de Créditos Organizada
-Propõe-se a criação do componente `CreditsModal.tsx` ou uma aba dedicada no menu de Configurações, onde os artistas são citados de forma profissional:
+#### Exemplo Prático de Estilização em CSS/Tailwind:
+Criar uma borda gótica texturizada usando um asset de cantoneira de pedra de 16px sem sofrer distorções de estiramento:
 
-> **"Agradecimentos Visuais e Créditos de Arte"**
-> * *Mapeamento de Masmorras (Tileset):* [Nome do Autor] sob licença CC-BY 4.0 (link do asset).
-> * *Ícones de Magias e Habilidades:* [Nome do Autor] sob licença CC0.
-> * *Sprites de Monstros e Criaturas:* [Nome do Autor] sob licença OGA-BY.
+```css
+/* src/index.css ou um arquivo de estilos dedicado */
+.gothic-panel {
+  border-width: 16px;
+  border-style: solid;
+  border-image-source: url('/assets/ui/gothic_border_slice.png');
+  border-image-slice: 16 fill; /* O 'fill' desenha a textura de fundo do feltro */
+  border-image-repeat: repeat; /* Repete a textura da borda sem esticar */
+  background-clip: padding-box;
+}
+
+.gothic-button-active {
+  border-width: 8px;
+  border-image-source: url('/assets/ui/gold_runic_border.png');
+  border-image-slice: 8 fill;
+  filter: drop-shadow(0 0 4px rgba(184, 134, 11, 0.6)); /* Glow de Ouro Envelhecido */
+  font-family: 'Cinzel', serif;
+  color: #e3dac9; /* Bone White */
+}
+```
+
+#### Aplicação no React:
+```tsx
+// Exemplo de modal de inventário híbrido no React
+import React from 'react';
+
+export const InventoryModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  return (
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+      <div
+        className="gothic-panel w-full max-w-md p-6 relative bg-[#171309] text-[#e3dac9]"
+        style={{ imageRendering: 'pixelated' }} /* Garante pixel art nítida */
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 gothic-button-active px-3 py-1 text-sm cursor-pointer"
+        >
+          X
+        </button>
+        <h2 className="text-xl font-bold font-cinzel text-[#b8860b] mb-4 text-center">
+          INVENTÁRIO
+        </h2>
+        {/* Grid de Slots */}
+        <div className="grid grid-cols-4 gap-2">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div
+              key={i}
+              className="w-16 h-16 bg-[#0a0705] border-2 border-[#3a271d] hover:border-[#b8860b] flex items-center justify-center cursor-pointer transition-colors"
+            >
+              {/* O item em pixel art é renderizado aqui */}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+```
 
 ---
 
-## 4. Repositórios Recomendados de Pixel Art Gótica
+## 4. Eixo C - Transição Gradual de Áudio (SFX e BGM)
 
-As fontes abaixo contêm acervos vastos de pixel art gratuita voltada especificamente para o terror de alta resolução, fantasia sombria e gótico medieval:
+Atualmente, o `soundEngine.ts` sintetiza ondas senoidais, dentes-de-serra e ruídos programáticos via Web Audio API. Para evoluir a experiência auditiva para algo digno de horror medieval, adotaremos um modelo de carregamento gradativo de arquivos físicos de áudio.
+
+### 4.1. Estratégia de Transição Híbrida do SoundEngine
+Os efeitos de alta prioridade (conjuração de magias, impactos de foice, rugidos de monstros) e músicas de fundo serão migrados gradualmente para arquivos compactados (`.mp3` ou `.ogg`), mantendo o gerador Web Audio como fallback silencioso para evitar erros de execução.
+
+```typescript
+// Estrutura conceitual do SoundEngine Híbrido
+import { logger } from './logger';
+
+export class HybridSoundEngine {
+  private audioContext: AudioContext;
+  private sfxCache: Map<string, AudioBuffer> = new Map();
+  private bgmElement: HTMLAudioElement | null = null;
+
+  constructor() {
+    this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  }
+
+  /**
+   * Tenta tocar um arquivo de som físico. Caso falhe ou não exista, ativa a síntese via Web Audio.
+   */
+  async playSFX(key: string, fallbackSynthFn: () => void): Promise<void> {
+    try {
+      const cached = this.sfxCache.get(key);
+      if (cached) {
+        this.playBuffer(cached);
+        return;
+      }
+
+      // Tenta carregar o arquivo sob demanda (lazy-loading)
+      const url = `/assets/audio/sfx/${key}.mp3`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`SFX file not found: ${key}`);
+
+      const arrayBuffer = await response.arrayBuffer();
+      const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+
+      this.sfxCache.set(key, audioBuffer);
+      this.playBuffer(audioBuffer);
+    } catch (error) {
+      logger.warn(`Falha ao tocar SFX físico '${key}'. Ativando fallback procedural.`, error);
+
+      // Envia telemetria do erro silencioso
+      this.reportAudioErrorToSentry(key, error);
+
+      // Roda o sintetizador antigo de ondas
+      fallbackSynthFn();
+    }
+  }
+
+  /**
+   * Executa streaming de música longa diretamente por elemento HTMLAudio
+   */
+  playBGM(key: string, volume: number = 0.4): void {
+    if (this.bgmElement) {
+      this.bgmElement.pause();
+    }
+
+    this.bgmElement = new Audio(`/assets/audio/bgm/${key}.mp3`);
+    this.bgmElement.loop = true;
+    this.bgmElement.volume = volume;
+
+    this.bgmElement.play().catch(error => {
+      logger.warn(`Erro no streaming da trilha ${key}. Usando silêncio de segurança.`, error);
+    });
+  }
+
+  private playBuffer(buffer: AudioBuffer): void {
+    const source = this.audioContext.createBufferSource();
+    source.buffer = buffer;
+    source.connect(this.audioContext.destination);
+    source.start(0);
+  }
+
+  private reportAudioErrorToSentry(key: string, error: any): void {
+    // Integração com Sentry para logs silenciosos em produção
+    if ((window as any).Sentry) {
+      (window as any).Sentry.captureException(error, {
+        tags: { system: 'audio-engine', asset_key: key },
+        extra: { message: `Audio asset failed to stream or load. Procedural fallback activated.` }
+      });
+    }
+  }
+}
+```
+
+### 4.2. Diretrizes de Compactação e Formatos de Áudio
+Para manter o carregamento instantâneo do PWA, o áudio deve ser altamente otimizado:
+* **Efeitos Sonoros (SFX):** Formato `.mp3` mono, taxa de amostragem reduzida para **22.050 Hz** ou **32.000 Hz**, taxa de bits constante (CBR) de **64 kbps**. Essa compressão combina perfeitamente com a estética rústica e crua de meados dos anos 90, pesando apenas de 10 KB a 30 KB por arquivo de som.
+* **Trilhas de Fundo (BGM):** Formato `.mp3` estéreo, taxa de amostragem de **44.100 Hz**, taxa de bits de **96 kbps** ou **128 kbps**. As faixas devem ser curtas (loops de 1m30s a 2m) e tocadas via streaming (`new Audio()`), evitando carregar todo o arquivo na memória RAM do dispositivo.
+
+---
+
+## 5. Limites de Performance, Compactação e Orçamento de VRAM
+
+Dispositivos móveis de entrada possuem fortes limitações de memória gráfica (VRAM) e processamento. Para evitar lentidão na taxa de quadros (micro-stuttering) ou fechamento abrupto do navegador, todas as adições de artes físicas seguirão um orçamento rigoroso.
+
+### 5.1. Resoluções Máximas de Pixel Art (Fidelidade Controlada)
+Para manter o visual clássico e o consumo de memória sob controle, os sprites deverão respeitar as seguintes grades de tamanho:
+* **Pisos e Paredes (Tiles):** Máximo **64x32** (isométrico de chão) e **32x32** (blocos de parede).
+* **Sprites de Personagem/Inimigos Médios:** Máximo **48x48** ou **64x64** por frame de animação.
+* **Inimigos Grandes / Chefes:** Máximo **128x128** por frame de animação.
+* **Ícones de Menu/Habilidades:** Máximo **32x32** ou **48x48** com alta definição cromática.
+
+### 5.2. Orçamento de Kilobytes e Carregamento sob Demanda (Lazy-Loading)
+O limite de tamanho total do pacote inicial de carregamento (*initial bundle size*) do jogo PWA deve ser estritamente preservado:
+* **Limite Inicial do PWA:** Máximo **2.5 MB** para as cenas iniciais (Título, Menu Principal e Safe Zone).
+* **Carregamento Assíncrono por Cenas:** Os spritesheets e trilhas dos biomas mais avançados (ex: Masmorras Nível 2+, Áreas de Chefe) devem ser carregados dinamicamente apenas quando o jogador for transicionar para a cena correspondente.
+
+### 5.3. Ferramentas e Processamento de Compactação Gráfica
+Nenhum arquivo PNG bruto deve ser publicado em produção:
+1. **Compressão de Spritesheets:** Uso obrigatório de compactação com perda controlada via `pngquant` com limitação de paleta para 256 cores (estilo retrô legítimo), reduzindo o peso do arquivo em até 70% sem alterar os detalhes visuais perceptíveis.
+2. **Utilização de WebP:** Sempre que compatível (navegadores modernos e aplicativos empacotados), converter as texturas de plano de fundo e tilesets para o formato `.webp` com fator de qualidade ajustado para **80%**, obtendo tamanhos de arquivo até 40% menores que o PNG.
+3. **Texture Atlas (Spritesheet Único):** Reunir todos os ícones de inventário e magias em um único arquivo de Atlas utilizando ferramentas como o *TexturePacker* ou *Shoebox*. Isso reduz a quantidade de requisições HTTP e otimiza as *Draw Calls* do WebGL no Phaser para apenas 1 (um único envio de imagem para a placa de vídeo).
+
+---
+
+## 6. Telemetria de Falhas e Logs Estruturados
+
+A estabilidade em produção é nosso maior pilar. Para garantir que o jogo nunca "fique mudo" ou com "quadrados invisíveis" sem sabermos, implementaremos um validador no pipeline de carregamento que reportará falhas silenciosas de recursos externos ao Sentry.
+
+### 6.1. Exemplo de Captura de Falha de Imagem no Phaser
+```typescript
+export function registerAssetLoadingListeners(scene: Phaser.Scene) {
+  scene.load.on('loaderror', (fileObj: any) => {
+    const errorMsg = `Falha ao carregar asset: [${fileObj.key}] de ${fileObj.url}`;
+
+    // Log estruturado local usando o serviço de logger do jogo
+    logger.error(errorMsg, {
+      system: 'asset-loader',
+      key: fileObj.key,
+      url: fileObj.url,
+      type: fileObj.type
+    });
+
+    // Envio para telemetria de produção (Sentry)
+    if ((window as any).Sentry) {
+      (window as any).Sentry.captureMessage(errorMsg, {
+        level: 'warning',
+        tags: {
+          system: 'asset-loader',
+          asset_key: fileObj.key,
+          asset_type: fileObj.type
+        },
+        extra: {
+          attempted_url: fileObj.url,
+          browser_info: navigator.userAgent
+        }
+      });
+    }
+  });
+}
+```
+
+---
+
+## 7. Guia de Licenciamento de Assets Gratuitos
+
+Para garantir a total legalidade e conformidade de direitos autorais em canais de distribuição comercial (Steam e Play Store), todas as escolhas de novos assets góticos devem seguir regras claras de licença.
+
+### 7.1. Tipos de Licenças Permitidas
+
+* **CC0 (Creative Commons Zero / Domínio Público):**
+  * *O que é:* Renúncia completa de direitos de autor.
+  * *Uso:* Totalmente livre para fins comerciais, modificação e redistribuição sem exigência de créditos.
+  * *Preferência:* **Máxima**. Excelente para botões, bordas, ícones de poção e efeitos visuais básicos.
+
+* **CC-BY (Atribuição Creative Commons):**
+  * *O que é:* Permite uso comercial e alteração.
+  * *Condição:* Exige a citação adequada do autor em seção acessível do jogo.
+  * *Implementação:* Se usarmos um asset CC-BY, devemos incluir o nome do criador, link para a licença e link para a fonte no arquivo de Créditos do Jogo.
+
+* **Licença Livre OpenGameArt (OGA BY):**
+  * *Uso:* Totalmente liberado para uso comercial, respeitando as exigências de crédito especificadas na página do autor.
+
+### 7.2. Estrutura de Créditos Organizada
+A aba de Créditos será acessível pelas Configurações do jogo ou pelo Menu Principal usando o componente React, listando as atribuições de forma legível e profissional.
+
+---
+
+## 8. Repositórios Recomendados de Pixel Art Gótica
+
+As fontes abaixo contêm acervos vastos de pixel art gratuita e compatível com a paleta sombria do projeto:
 
 1. **OpenGameArt.org (OGA):**
    * *O que buscar:* Termos como "dark fantasy", "gothic tileset", "necromancer spell", "rpg item icons".
-   * *Artistas de Destaque:* *Redshrike* (monstros e sprites), *Crichat* (UI gótica), *Buch* (RPG assets góticos).
+   * *Artistas de Destaque:* *Redshrike* (monstros), *Crichat* (UI gótica), *Buch* (RPG assets góticos).
 2. **Itch.io (Free Game Assets):**
-   * *O que buscar:* Filtros de "Free", "Pixel Art", "Dark Fantasy".
-   * *Coleções Recomendadas:* *Adamatlas* (UI rúnica e botões), *Penusbmic* (incríveis cenários góticos e monstros pixel art dark), *Caz Creations* (ícones de itens góticos).
+   * *Coleções Recomendadas:* *Adamatlas* (UI rúnica), *Penusbmic* (cenários góticos sombrios), *Caz Creations* (ícones de itens góticos).
 3. **Surt's Public Domain Treasures:**
    * Coleção monumental de assets CC0 voltados a clássicos de PC dos anos 90.
 
 ---
 
-## 5. Plano de Implementação e Arquitetura Técnica (Sistema Híbrido)
+## 9. Plano de Transição e Próximos Passos
 
-A transição deve ser cirúrgica, evitando quebras de performance em dispositivos móveis e mantendo a leveza do carregamento.
+A migração de procedural para assets externos será modular e executada em etapas:
 
-```
-                  ┌────────────────────────────────────────┐
-                  │          Início da Cena Phaser         │
-                  └───────────────────┬────────────────────┘
-                                      │
-                         [Tenta carregar spritesheet]
-                                      │
-                  ┌───────────────────┴────────────────────┐
-                  ▼                                        ▼
-        [Sucesso: Asset Existe]               [Erro: Falha / Ausência]
-                  │                                        │
-        ┌─────────┴──────────┐                   ┌─────────┴──────────┐
-        │ Injeta Spritesheet │                   │ Roda o Fallback    │
-        │    na Key Única    │                   │ Canvas Procedural  │
-        └─────────┬──────────┘                   └─────────┬──────────┘
-                  │                                        │
-                  └───────────────────┬────────────────────┘
-                                      ▼
-                  ┌────────────────────────────────────────┐
-                  │   Renderiza Objeto de Jogo em Tela     │
-                  └────────────────────────────────────────┘
-```
-
-### 5.1. Mecanismo de Key Única e Fallback no Loader
-No Phaser 3, os objetos de jogo se referenciam a texturas usando strings (Ex: `"spr_bloodmage"`). Para fazer a transição gradual sem alterar uma única linha lógica nos arquivos `Player.ts`, `Enemy.ts` ou `LootSystem.ts`:
-
-1. No loop `preload()` da cena Phaser, tenta-se carregar os arquivos de imagem das pastas de assets:
-   ```typescript
-   preload() {
-     // Configura o Loader com timeout de falha silenciosa
-     this.load.image('spr_bloodmage_asset', 'assets/sprites/bloodmage.png')
-       .on('loaderror', () => {
-         this.log.warn('Asset do player falhou. Ativando render procedural...');
-       });
-   }
-   ```
-2. No loop `create()`, validamos a presença do asset carregado. Caso esteja ausente ou corrompido, executamos o gerador de canvas procedural injetando o resultado exatamente sob a mesma key de textura:
-   ```typescript
-   create() {
-     if (this.textures.exists('spr_bloodmage_asset')) {
-       // Se o asset físico carregou com sucesso, clona para a key principal
-       this.textures.addAtlas('spr_bloodmage', this.textures.get('spr_bloodmage_asset').getSourceImage() as HTMLImageElement, ...);
-     } else {
-       // Fallback: Gera a textura procedural do zero no canvas em tempo de execução
-       TextureGenerator.generatePlayerTexture(this, 'spr_bloodmage');
-     }
-   }
-   ```
-
-### 5.2. Empacotamento de Sprites (Atlas / Sprite Sheets)
-* **Evitar Múltiplos Arquivos PNG:** Carregar 100 imagens de ícones individuais gera 100 requisições HTTP, quebrando a performance no mobile.
-* **Solução:** Unificar todos os itens, botões e runas em um único **Texture Atlas** (uma imagem grande contendo todas as menores e um arquivo JSON contendo as coordenadas X, Y, Largura e Altura de cada ícone).
-* **Compilação Automatizada:** Adicionar ferramentas como `spritesheet-js` ou usar scripts de build via Node que compilam as pastas de sprites em atlas de forma automática antes do deployment final.
-
-### 5.3. Otimização no Vite e Service Worker PWA
-* **Lazy Loading de Assets:** Os assets de áudio composto e spritesheets de biomas avançados não devem ser baixados no carregamento inicial da página. Eles devem ser carregados dinamicamente via Phaser Loader sob demanda quando a cena correspondente for ativada.
-* **Estratégia de Cache Cache-First no PWA:** Ajustar o `vite-plugin-pwa` em `vite.config.ts` para cachear em cache local do navegador todos os arquivos `.png`, `.json` e `.webp` da pasta de assets. O jogador só fará o download desses elementos visuais mais pesados uma única vez.
-
----
-
-## 6. Próximos Passos Recomendados
-
-1. **Aprovação deste Discovery:** Alinhamento final com o Product Manager sobre as recomendações visuais e técnicas descritas neste documento.
-2. **Homologação das Fontes de Arte:** Seleção e download dos primeiros pacotes de Pixel Art sob licenças CC0/CC-BY para os testes iniciais.
-3. **Criação do Protótipo Híbrido:** Aplicação do sistema de fallback com key única no `Player.ts` para validar o carregamento simultâneo do sprite em pixel art com fallback dinâmico.
-4. **Mapeamento de Sprites e Spritesheets:** Substituição gradual das keys procedurais do `textureGenerator.ts` de acordo com a ordem de prioridades estabelecida no jogo.
+1. **Etapa 1: Preparação do Pipeline Híbrido**
+   * Criação do `AssetLoader` centralizado e integração com o `TextureGenerator` como fallback unificado.
+   * Modificação do `soundEngine.ts` para herdar o modelo de carregamento híbrido e logs estruturados.
+2. **Etapa 2: Protótipo de Validação**
+   * Implementação de uma única spritesheet física do Player em pixel art com o fallback procedural ativo sob a mesma chave.
+   * Validação de renderização sem queda de performance (<60 FPS) e teste do fallback simulando erro de download.
+3. **Etapa 3: Migração de Biomas e UI**
+   * Fatiamento e estilização do React HUD utilizando CSS `border-image` com as cantoneiras góticas.
+   * Migração gradual dos tilesets das masmorras e spritesheets de inimigos conforme novos pacotes de assets forem homologados e compactados.
+4. **Etapa 4: Auditoria de Performance e Publicação**
+   * Verificação de vazamentos de memória (VRAM) em celulares mais antigos.
+   * Lançamento comercial em lojas e PWAs com a nova assinatura estética sombria de 1995 de alta qualidade.

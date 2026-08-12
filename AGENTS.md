@@ -13,11 +13,12 @@ To prevent context window bloat, reduce token cost, and prevent hallucinations/r
 
 Every agent modifying this codebase MUST respect the following strict, non-negotiable boundaries:
 
-### 1. Zero External Assets Architecture
-- **Absolutely NO external assets (images, audios, fonts) are allowed.**
-- All game textures must be generated dynamically on-the-fly inside HTML5 Canvas elements (see `src/utils/textureGenerator.ts`).
-- All background music (BGM) and sound effects (SFX) must be synthesized dynamically using the Web Audio API (see `src/utils/soundEngine.ts`).
-- Fonts are hosted offline in `public/fonts/` and configured in `index.css`.
+### 1. Hybrid Asset Architecture (Assets Externos + Fallback Procedural)
+- **Permissão de Assets Externos:** Assets físicos (imagens PNG/WebP e áudios MP3/OGG) são permitidos desde que integrados estritamente sob o pipeline híbrido com fallback procedural unificado para evitar regressões visuais ou quebras de áudio.
+- **Mecanismo de Chave Única e Fallback Procedural Mandatório:** Nunca associe ou mude as chaves de forma destrutiva. O código deve sempre tentar carregar o arquivo físico em primeiro lugar. Caso o carregamento falhe, falhe silenciosamente, acione a telemetria do Sentry e execute o gerador de canvas (`src/utils/textureGenerator.ts` para texturas) ou síntese de som (`src/utils/soundEngine.ts` para áudio) sob a mesma chave de identificação.
+- **UI do React Fatiada (9-Slice):** Painéis e botões de interface de usuário gótica no React devem usar fatiamento de imagem via CSS `border-image` com propriedades Tailwind para máxima responsividade mobile e compatibilidade comercial (Steam, Play Store e PWA).
+- **Orçamento de VRAM e Compactação:** Novos assets devem respeitar resoluções retrô pixeladas restritas (máximo de 64x64 para sprites de personagens/inimigos comuns e 64x32 para tiles) e ser compactados agressivamente via `pngquant` ou convertidos para `.webp` para manter o pacote inicial abaixo de 2.5 MB.
+- **Fontes locais:** As fontes continuam hospedadas offline em `public/fonts/` e configuradas em `index.css`.
 
 ### 2. Physical and Combat Mechanics Guardrails
 - **Passive contact damage ('touch damage') from enemies is forbidden.**
