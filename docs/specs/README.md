@@ -60,15 +60,15 @@ docs/specs//
 
 ### 🔵 PROPOSTAS (Backlog)
 
-| Feature | Prioridade | Conceito | Responsável |
-|---------|-----------|----------|-------------|
-| **Evolução de UI com Assets Externos** | Alta | Transição para pixel art de alta resolução com fallback procedural | Jules |
-| **Evolução Gráfica Avançada** | Média | postFX WebGL + iluminação Light2D/normal maps + pipeline de assets | - |
-| **PvP Multiplayer** | Baixa | Adicionar modo competitivo | - |
-| **Mobile App** | Média | Build nativa iOS/Android | - |
-| **Skinning System** | Média | Personalizações de personagem | - |
-| **Prestige Mode** | Baixa | New Game+ com progressão | - |
-| **World Events** | Média | Eventos dinâmicos globais | - |
+| Feature | Prioridade | Conceito | Documento de Especificação | Responsável |
+|---------|-----------|----------|----------------------------|-------------|
+| **Evolução de UI com Assets Externos** | Alta | Transição para pixel art de alta resolução com fallback de gerador de texturas procedural | [[./propostas/02_DISCOVERY_UI_ASSETS_EXTERNOS.md]] | Jules |
+| **Evolução Gráfica Avançada** | Média | postFX WebGL + iluminação Light2D/normal maps + pipeline de assets | [[./propostas/01_EVOLUCAO_GRAFICA_AVANCADA.md]] | - |
+| **Multijogador Cooperativo** | Média | Cooperação, ressurreição mútua e interações rúnicas P2P via WebRTC | [[./propostas/03_MULTIJOVADOR_COOPERATIVO_E_INTERATIVIDADE.md]] | Jules |
+| **Mobile App & Monetização** | Alta | Empacotamento Capacitor, UX móvel aprimorada e monetização ética não-intrusiva | [[./propostas/04_MOBILE_APP_E_MONETIZACAO_INDIE.md]] | Jules |
+| **Skinning & Camadas Canvas** | Média | Customização em tempo real de skins, armas e armaduras usando composições no gerador procedural | [[./propostas/05_SISTEMA_DE_SKINNING_E_CAMADAS_DINAMICAS.md]] | Jules |
+| **Prestige (Blood Seal)** | Média | Reset opcional de nível para bônus passivos permanentes e escalonamento simples de dificuldades | [[./propostas/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md]] | Jules |
+| **Eventos Globais & Sazonais** | Média | Eventos rotativos imersivos (Eclipse, Cerco, Rifts) e comemorações de calendário góticas | [[./propostas/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md]] | Jules |
 
 **Documentação:** [[./propostas/]]
 
@@ -345,12 +345,12 @@ Link para sua spec: [[../features/XX.md]]
 ```
 FINALIZADAS    ██████████  100% (6/6)
 ANDAMENTO      ████████░░   80% (1/1)
-PROPOSTAS      ██░░░░░░░░   17% (1/6)
+PROPOSTAS      ██████░░░░   60% (7/7)
 
-Total: 13 features
+Total: 14 features
 Completado: 6
 Em progresso: 1
-Backlog: 6
+Backlog: 7 (Especificadas em Detalhe)
 ```
 
 ### Timeline
