@@ -18,6 +18,7 @@ import LightingSystem from '../systems/LightingSystem';
 import AdvancedParticles from '../systems/AdvancedParticles';
 import ScreenShake from '../systems/ScreenShake';
 import LightingPolish from '../systems/LightingPolish';
+import AchievementNotification from '../systems/AchievementNotification';
 import { useGameStore } from '../../store/gameStore';
 import { telemetry } from '../../utils/telemetry';
 import { CombatFeel } from '../systems/CombatFeel';
@@ -64,6 +65,7 @@ export class GameScene extends Phaser.Scene {
   private advancedParticles: AdvancedParticles | null = null;
   private screenShake: ScreenShake | null = null;
   private lightingPolish: LightingPolish | null = null;
+  private achievementNotification: AchievementNotification | null = null;
   private darknessOverlay!: Phaser.GameObjects.Graphics;
 
   // Fase 5: Pooling, culling e monitor de performance
@@ -402,6 +404,9 @@ export class GameScene extends Phaser.Scene {
 
     // Fase 5 Final: LightingPolish - glow effects em itens, monstros, spells
     this.lightingPolish = new LightingPolish(this);
+
+    // Fase 5 Final: Achievement Notifications - UI visual para desbloqueamentos
+    this.achievementNotification = new AchievementNotification(this);
 
     // Fase 5: InputManager unificado (gamepad/keyboard) + monitor de performance (toggle dev via ?perf=1)
     InputManager.init();
@@ -2320,19 +2325,49 @@ export class GameScene extends Phaser.Scene {
 
     // Fase 5: Achievement Wiring - Kill-based achievements
     if (this.achievements) {
-      this.achievements.unlock('first_blood'); // Sempre desbloqueado no 1º kill
+      const ach = this.achievements.unlock('first_blood'); // Sempre desbloqueado no 1º kill
+      if (ach && this.achievementNotification) {
+        this.achievementNotification.show({
+          name: ach.name,
+          description: ach.description,
+          icon: '🩸',
+          rewards: {
+            bloodCrystals: ach.rewards?.bloodCrystals,
+            talentPoints: ach.rewards?.talentPoints,
+          },
+          rarity: 'rare',
+        });
+      }
       
       if (this.player.stats.kills >= 10) {
-        const ach = this.achievements.unlock('slayer_10');
-        if (ach) {
-          this.spawnFloatingText(this.player.x, this.player.y - 50, `🏆 ACHIEVEMENT: ${ach.name}!`, '#fbbf24', true);
+        const achKills = this.achievements.unlock('slayer_10');
+        if (achKills && this.achievementNotification) {
+          this.achievementNotification.show({
+            name: achKills.name,
+            description: achKills.description,
+            icon: '⚔️',
+            rewards: {
+              bloodCrystals: achKills.rewards?.bloodCrystals,
+              talentPoints: achKills.rewards?.talentPoints,
+            },
+            rarity: 'epic',
+          });
         }
       }
       
       if (this.player.stats.kills >= 50) {
-        const ach = this.achievements.unlock('slayer_50');
-        if (ach) {
-          this.spawnFloatingText(this.player.x, this.player.y - 50, `🏆 ACHIEVEMENT: ${ach.name}!`, '#fbbf24', true);
+        const achSlayer = this.achievements.unlock('slayer_50');
+        if (achSlayer && this.achievementNotification) {
+          this.achievementNotification.show({
+            name: achSlayer.name,
+            description: achSlayer.description,
+            icon: '💀',
+            rewards: {
+              bloodCrystals: achSlayer.rewards?.bloodCrystals,
+              talentPoints: achSlayer.rewards?.talentPoints,
+            },
+            rarity: 'legendary',
+          });
         }
       }
     }
@@ -2516,16 +2551,34 @@ export class GameScene extends Phaser.Scene {
     // Fase 5: Achievement Wiring - Depth-based achievements
     if (this.achievements) {
       if (this.currentFloorDepth >= 10) {
-        const ach = this.achievements.unlock('depth_10');
-        if (ach) {
-          this.spawnFloatingText(this.player.x, this.player.y - 50, `🏆 ${ach.name}!`, '#fbbf24', true);
+        const achDepth = this.achievements.unlock('depth_10');
+        if (achDepth && this.achievementNotification) {
+          this.achievementNotification.show({
+            name: achDepth.name,
+            description: achDepth.description,
+            icon: '🔻',
+            rewards: {
+              bloodCrystals: achDepth.rewards?.bloodCrystals,
+              talentPoints: achDepth.rewards?.talentPoints,
+            },
+            rarity: 'epic',
+          });
         }
       }
       
       if (this.currentFloorDepth >= 25) {
-        const ach = this.achievements.unlock('depth_25');
-        if (ach) {
-          this.spawnFloatingText(this.player.x, this.player.y - 50, `🏆 ${ach.name}!`, '#fbbf24', true);
+        const achDeep = this.achievements.unlock('depth_25');
+        if (achDeep && this.achievementNotification) {
+          this.achievementNotification.show({
+            name: achDeep.name,
+            description: achDeep.description,
+            icon: '🌑',
+            rewards: {
+              bloodCrystals: achDeep.rewards?.bloodCrystals,
+              talentPoints: achDeep.rewards?.talentPoints,
+            },
+            rarity: 'legendary',
+          });
         }
       }
     }

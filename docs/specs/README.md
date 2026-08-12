@@ -40,6 +40,8 @@ docs/specs//
 | **Inconsciência — Fase 1** | ✅ Completo | Jules | 2026-08-10 |
 | **Tela de Morte & Cadáver — Fase 2** | ✅ Completo | Jules | 2026-08-10 |
 | **Condições de Status — Fase 3** | ✅ Completo | Jules | 2026-08-10 |
+| **Mundo Contínuo — Fase 4** | ✅ Completo | Felipe + Jules | 2026-08-11 |
+| **Polimento de Produção — Fase 5** | ✅ **100% COMPLETO** | Claude + Felipe | 2026-08-11 |
 
 **Documentação:** [[./finalizadas/]]
 
