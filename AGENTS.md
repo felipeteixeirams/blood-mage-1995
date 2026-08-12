@@ -13,25 +13,29 @@ To prevent context window bloat, reduce token cost, and prevent hallucinations/r
 
 Every agent modifying this codebase MUST respect the following strict, non-negotiable boundaries:
 
-### 1. Hybrid Asset Architecture (Assets Externos + Fallback Procedural)
+### 1. Unified Game Domain & Explicit Confirmation (CRITICAL)
+- **Layer Protection:** Any modifications, refactoring, or adjustments touching core gameplay/business rules in the domain (Combat FSM/telegraphed attacks, touch-damage prohibitions, status conditions, player unconsciousness, and Safe Town mechanics) **MUST receive explicit, formal confirmation from the user before applying changes**.
+- **Spec-Driven Development (SDD):** All code modifications must strictly correspond to an authorized functional specification written inside `docs/` (such as `docs/domain/domain_rules.md`). Do not invent or remove domain features arbitrarily.
+
+### 2. Hybrid Asset Architecture (Assets Externos + Fallback Procedural)
 - **Permissão de Assets Externos:** Assets físicos (imagens PNG/WebP e áudios MP3/OGG) são permitidos desde que integrados estritamente sob o pipeline híbrido com fallback procedural unificado para evitar regressões visuais ou quebras de áudio.
 - **Mecanismo de Chave Única e Fallback Procedural Mandatório:** Nunca associe ou mude as chaves de forma destrutiva. O código deve sempre tentar carregar o arquivo físico em primeiro lugar. Caso o carregamento falhe, falhe silenciosamente, acione a telemetria do Sentry e execute o gerador de canvas (`src/utils/textureGenerator.ts` para texturas) ou síntese de som (`src/utils/soundEngine.ts` para áudio) sob a mesma chave de identificação.
-- **UI do React Fatiada (9-Slice):** Painéis e botões de interface de usuário gótica no React devem usar fatiamento de imagem via CSS `border-image` com propriedades Tailwind para máxima responsividade mobile e compatibilidade comercial (Steam, Play Store e PWA).
+- **UI do React Fatiada (9-Slice) & Mobile First:** Painéis e botões de interface de usuário gótica no React devem usar fatiamento de imagem via CSS `border-image` com propriedades Tailwind para máxima responsividade mobile e compatibilidade comercial. Standardized borders (`border-2 border-[#b8860b]/40`) and Charcoal colors (`bg-[#171309]/95`) are the visual standard. Mobile usability represents the highest layout hierarchy.
 - **Orçamento de VRAM e Compactação:** Novos assets devem respeitar resoluções retrô pixeladas restritas (máximo de 64x64 para sprites de personagens/inimigos comuns e 64x32 para tiles) e ser compactados agressivamente via `pngquant` ou convertidos para `.webp` para manter o pacote inicial abaixo de 2.5 MB.
-- **Fontes locais:** As fontes continuam hospedadas offline em `public/fonts/` e configuradas em `index.css`.
+- **Fontes locais:** As fontes continuam hospedadas offline em `public/fonts/` (Cinzel, VT323, Press Start 2P) and must be exclusively used without modern sans-serif or system fallbacks.
 
-### 2. Physical and Combat Mechanics Guardrails
+### 3. Physical and Combat Mechanics Guardrails
 - **Passive contact damage ('touch damage') from enemies is forbidden.**
 - Every physical or melee attack from any enemy must transition through a fully-telegraphed Finite State Machine (FSM): `Windup` -> `Strike` -> `Recovery`.
 - When calculating Line of Sight (LoS) or hearing ranges for active entities, prune computations using quick spatial/distance boundaries (AABB / squared distance) before executing Phaser's geometric raycast.
 - Ensure combat-related projectile collisions retain accurate wall/boundary checks to prevent bugs like wall-hacking.
 
-### 3. State Management and Persistence
+### 4. State Management and Persistence
 - **No Direct LocalStorage Mutations.**
 - All data read or written to `localStorage` must pass strictly through `src/utils/localStorage.ts`, using robust validation via **Zod schemas** with safe-parse fallbacks to prevent state corruption, prototype pollution, or crash on outdated save files.
 - Phaser-to-React communications must be decoupled using a unified event broker or global state (`src/store/gameStore.ts`). Click/pointer events in React overlays must call `e.stopPropagation()` and `e.nativeEvent.stopImmediatePropagation()` to prevent underlying canvas click triggers.
 
-### 4. Code Standards & Typing
+### 5. Code Standards & Typing
 - **TypeScript strict mode must pass with 0 errors.** (`pnpm run typecheck` / `pnpm run verify`).
 - Do not use `any`. Define strict union types or configurations.
 - Use Named Arguments/Objects for functions with more than 3 parameters to avoid parameter-swapping bugs.
