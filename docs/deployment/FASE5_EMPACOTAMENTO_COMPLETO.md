@@ -1,7 +1,13 @@
 ---
+agent_context: DevOps / all agents
+target_module: deployment
+priority: high
+status: active
+last_updated: 2026-08-11
+tags: [deployment, production, pwa, twa, steam]
 title: Fase 5 - Guia de Empacotamento e Deploy
 date: 2026-08-11
-status: Produção
+production_status: Produção
 ---
 
 # 🚀 Guia Completo: PWA → TWA (Google Play) → Steam

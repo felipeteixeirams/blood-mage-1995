@@ -1,3 +1,13 @@
+---
+agent_context: DevOps / all agents
+target_module: deployment
+priority: high
+status: active
+last_updated: 2026-08-11
+tags: [deployment, production, pwa, twa, steam]
+title: Deployment Guide - Bloodmage 1995
+---
+
 # 🚀 Deployment Guide - Bloodmage 1995
 
 Guia rápido para fazer deploy em Web (PWA), Google Play (TWA) e Steam.

@@ -59,6 +59,9 @@ docs/
 │   ├── 01_VERCEL_DEPLOYMENT.md
 │   ├── 02_MCP_SERVERS.md
 │   └── 03_AI_AGENT_SETUP.md
+├── deployment/ (empacotamento e deploy)
+│   ├── DEPLOYMENT.md (guia rápido de deploy)
+│   └── FASE5_EMPACOTAMENTO_COMPLETO.md (guia completo de empacotamento)
 ├── reference/ (dados e referência rápida)
 │   ├── 00_QUICK_REFERENCE.md
 │   ├── 01_FILE_STRUCTURE.md
@@ -79,8 +82,11 @@ docs/
 │   └── finalizadas/ (concluído e testado)
 │       └── 01_RECORDS_DISPLAY.md
 ├── reviews/ (auditorias e validações)
+│   ├── AUDIT_REPORT_AI_DRIVEN_2026.md
 │   ├── AUDIT_REPORT_QUALIDADE_2026.md
-│   └── VALIDATION_DUNGEON_SIEGE_2026_08_10.md
+│   ├── VALIDATION_DUNGEON_SIEGE_2026_08_10.md
+│   ├── MUDANCAS_SESSAO_2026_08_10_11.md
+│   └── STATUS_PROGRESSO_2026_08_11.md
 ├── decisions/ (decisões de arquitetura - ADRs)
 ├── templates/ (modelos padronizados, incl. frontmatter)
 ├── wip/ (documentos em andamento)
@@ -262,8 +268,9 @@ related: [[design/02_UI_PATTERNS.md]]
 | features/ | ✅ Partial | 2026-08-09 | Felipe |
 | critical/ | ✅ Complete | 2026-08-09 | Claude |
 | integration/ | ✅ Draft | 2026-08-09 | Claude |
+| deployment/ | ✅ Complete | 2026-08-11 | Felipe |
 | reference/ | 🔲 TODO | - | Claude |
-| reviews/ | ✅ Complete | 2026-08-10 | Felipe |
+| reviews/ | ✅ Complete | 2026-08-11 | Felipe |
 | specs/ | ✅ Partial | 2026-08-10 | Felipe |
 | legacy/ | ✅ Complete | 2026-08-09 | Felipe |
 
