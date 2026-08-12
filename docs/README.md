@@ -69,6 +69,8 @@ docs/
 ├── specs/ (specs por estágio de desenvolvimento)
 │   ├── README.md (índice de status)
 │   ├── propostas/ (ideias em backlog)
+│   │   ├── 01_EVOLUCAO_GRAFICA_AVANCADA.md
+│   │   └── 02_DISCOVERY_UI_ASSETS_EXTERNOS.md
 │   ├── andamento/ (em desenvolvimento ativo)
 │   │   ├── 01_FASE1_INCONSCIENCIA.md
 │   │   ├── PHASE_1_UNCONSCIOUSNESS_SPEC.md
