@@ -73,7 +73,12 @@ docs/
 │   ├── README.md (índice de status)
 │   ├── propostas/ (ideias em backlog)
 │   │   ├── 01_EVOLUCAO_GRAFICA_AVANCADA.md
-│   │   └── 02_DISCOVERY_UI_ASSETS_EXTERNOS.md
+   │   │   ├── 02_DISCOVERY_UI_ASSETS_EXTERNOS.md
+   │   │   ├── 03_MULTIJOVADOR_COOPERATIVO_E_INTERATIVIDADE.md
+   │   │   ├── 04_MOBILE_APP_E_MONETIZACAO_INDIE.md
+   │   │   ├── 05_SISTEMA_DE_SKINNING_E_CAMADAS_DINAMICAS.md
+   │   │   ├── 06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md
+   │   │   └── 07_EVENTOS_MUNDIAIS_E_SAZONAIS.md
 │   ├── andamento/ (em desenvolvimento ativo)
 │   │   ├── 01_FASE1_INCONSCIENCIA.md
 │   │   ├── PHASE_1_UNCONSCIOUSNESS_SPEC.md
