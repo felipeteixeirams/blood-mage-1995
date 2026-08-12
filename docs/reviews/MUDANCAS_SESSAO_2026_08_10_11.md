@@ -1,8 +1,13 @@
 ---
+agent_context: all agents
+target_module: docs
+priority: medium
+status: complete
+last_updated: 2026-08-11
+tags: [reviews, reports, changes]
 title: Relatório de Mudanças - Bloodmage 1995
 date: 2026-08-10 a 2026-08-11
 version: 1.0
-status: COMPLETO
 ---
 
 # 📋 Relatório Completo de Mudanças — Bloodmage 1995

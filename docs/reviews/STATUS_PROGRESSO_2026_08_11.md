@@ -1,8 +1,13 @@
 ---
+agent_context: all agents
+target_module: docs
+priority: high
+status: active
+last_updated: 2026-08-11
+tags: [reviews, reports, status, progress]
 title: Status de Progresso - Bloodmage 1995
 date: 2026-08-11
-status: 75% COMPLETO
-last_updated: Após Pull Felipe (Suite de Testes + Evolução Gráfica)
+completion_status: 75% COMPLETO
 ---
 
 # 📊 Status Geral do Projeto - Bloodmage 1995
