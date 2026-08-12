@@ -23,40 +23,40 @@ export const HighScoresModal: React.FC<HighScoresModalProps> = ({ scores, onClos
         {/* Scores Table */}
         <div className="overflow-y-auto space-y-2 pr-1">
           {scores.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 font-retro text-base text-left">
+            <div className="text-center py-8 text-[#e8c76a]/60 font-retro text-sm text-left uppercase">
               Nenhum ritual registrado ainda. Sobreviva para entrar para a história!
             </div>
           ) : (
             scores.map((record, index) => (
               <div
                 key={record.id}
-                className={`p-3 rounded border flex items-center justify-between font-retro text-sm ${
+                className={`p-3 border flex items-center justify-between font-retro text-sm ${
                   index === 0
-                    ? 'bg-amber-950/60 border-amber-500/80 text-amber-200'
+                    ? 'bg-[#1c140e] border-[#b8860b] text-[#e8c76a] shadow-[0_0_8px_rgba(184,134,11,0.2)]'
                     : index === 1
-                    ? 'bg-gray-900/80 border-gray-500/80 text-gray-200'
+                    ? 'bg-[#121111]/80 border-gray-650 text-gray-200'
                     : index === 2
-                    ? 'bg-amber-950/30 border-amber-800/60 text-amber-300/90'
-                    : 'bg-black/60 border-red-950 text-gray-400'
+                    ? 'bg-[#12100d]/60 border-[#b8860b]/40 text-[#e8c76a]/80'
+                    : 'bg-black/40 border-gray-900/60 text-gray-400'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <span className="font-pixel text-[10px] w-6 text-center text-amber-400">
+                  <span className="font-pixel text-[9px] w-6 text-center text-[#e8c76a]">
                     #{index + 1}
                   </span>
                   <div className="text-left">
                     <div className="font-pixel text-[9px] text-white flex items-center gap-2">
                       <span>{record.score.toLocaleString()} PTS</span>
-                      <span className="text-[8px] text-amber-500 font-mono">
+                      <span className="text-[8px] text-[#e8c76a] font-mono">
                         [NÍVEL {record.wave}]
                       </span>
                     </div>
                     <div className="text-xs text-gray-400 flex items-center gap-3 pt-0.5 font-retro">
                       <span className="flex items-center gap-1">
-                        <Skull className="w-3 h-3 text-red-500" /> {record.kills} Kills
+                        <Skull className="w-3.5 h-3.5 text-red-600" /> {record.kills} Kills
                       </span>
                       <span className="flex items-center gap-1">
-                        <Flame className="w-3 h-3 text-amber-500" /> Nível {record.levelReached}
+                        <Flame className="w-3.5 h-3.5 text-[#e8c76a]" /> Nível {record.levelReached}
                       </span>
                       <span>⏱️ {record.timeSurvived}</span>
                     </div>

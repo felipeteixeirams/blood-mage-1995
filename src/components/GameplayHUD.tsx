@@ -37,7 +37,7 @@ const JoystickVisual: React.FC<{
 }> = ({ state, variant, opacity }) => {
   if (!state.active || opacity === 0) return null;
 
-  const ringBg = "bg-gradient-to-br from-[#120d0c]/90 to-[#241e1d]/90";
+  const ringBg = "bg-gradient-to-br from-[#0c0a09]/90 to-[#1f1a17]/90";
   const ringBorder = variant === 'move' ? "border-[#990000]/70" : "border-[#5a189a]/70";
   const knobBg = variant === 'move' ? "from-[#ff3333] to-[#660000]" : "from-[#b388ff] to-[#3c096c]";
 
@@ -242,11 +242,11 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
           {/* Desaturation grayscale filter tint */}
           <div className="absolute inset-0 bg-red-950/20 backdrop-grayscale backdrop-contrast-125" />
           {/* Alert Badge Center-Top */}
-          <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-red-950/90 border-2 border-red-600 px-4 py-2 shadow-[0_0_30px_rgba(239,68,68,0.8)] flex flex-col items-center animate-bounce">
-            <span className="font-pixel text-red-500 font-bold text-sm tracking-widest uppercase flex items-center gap-2">
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-[#0c0a09]/95 border-2 border-[#b8860b] px-4 py-2 shadow-[0_0_30px_rgba(184,134,11,0.8)] flex flex-col items-center animate-bounce">
+            <span className="font-pixel text-[#e8c76a] font-bold text-sm tracking-widest uppercase flex items-center gap-2">
               <Skull className="w-5 h-5 animate-spin" /> INCONSCIENTE ({stats.knockoutCount}/2)
             </span>
-            <span className="font-retro text-xs text-amber-200 mt-0.5">
+            <span className="font-retro text-[10px] text-gray-300 mt-0.5 uppercase">
               Regenerando HP... Agarre o sopro de vida para se levantar!
             </span>
           </div>
@@ -309,20 +309,20 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       </div>
 
       {/* ── TOP LEFT HUD: Segmented HP/MP & Portrait ── */}
-      <div className="absolute top-3 left-3 p-1 z-30 pointer-events-auto flex flex-col gap-1.5">
+      <div className="absolute top-2 left-2 p-1 z-30 pointer-events-auto flex flex-col gap-1">
         <PlayerStatus stats={stats} />
         {(stats.statusConditions?.bleeding || stats.statusConditions?.poison || stats.statusConditions?.infection) && (
-          <div className="flex gap-1.5 pl-0.5">
+          <div className="flex gap-1 pl-0.5">
             {stats.statusConditions.bleeding && (
               <button
                 onClick={() => useCurative('bandages')}
                 disabled={(stats.curatives?.bandages || 0) < 1}
-                className="flex items-center gap-1 bg-[#181211]/95 border border-red-700 px-1.5 py-0.5 shadow-[2px_2px_0px_#000000] disabled:opacity-50"
+                className="flex items-center gap-1 bg-[#0c0a09]/95 border border-red-700 px-1 py-0.5 shadow-[2px_2px_0px_#000000] disabled:opacity-50"
                 title="Sangramento — drena HP ao se mover. Clique para usar Atadura."
               >
-                <span className="text-[10px]">🩸</span>
-                <span className="text-[8px] font-pixel text-red-300 uppercase font-bold">
-                  Sangrando ({stats.curatives?.bandages || 0})
+                <span className="text-[9px]">🩸</span>
+                <span className="text-[7px] font-pixel text-red-300 uppercase font-bold">
+                  SANGUE ({stats.curatives?.bandages || 0})
                 </span>
               </button>
             )}
@@ -330,12 +330,12 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
               <button
                 onClick={() => useCurative('antidotes')}
                 disabled={(stats.curatives?.antidotes || 0) < 1}
-                className="flex items-center gap-1 bg-[#181211]/95 border border-lime-700 px-1.5 py-0.5 shadow-[2px_2px_0px_#000000] disabled:opacity-50"
+                className="flex items-center gap-1 bg-[#0c0a09]/95 border border-lime-700 px-1 py-0.5 shadow-[2px_2px_0px_#000000] disabled:opacity-50"
                 title="Envenenado — drena HP continuamente. Clique para usar Antídoto."
               >
-                <span className="text-[10px]">🍇</span>
-                <span className="text-[8px] font-pixel text-lime-300 uppercase font-bold">
-                  Envenenado ({stats.curatives?.antidotes || 0})
+                <span className="text-[9px]">🍇</span>
+                <span className="text-[7px] font-pixel text-lime-300 uppercase font-bold">
+                  VENENO ({stats.curatives?.antidotes || 0})
                 </span>
               </button>
             )}
@@ -343,12 +343,12 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
               <button
                 onClick={() => useCurative('antibiotics')}
                 disabled={(stats.curatives?.antibiotics || 0) < 1}
-                className="flex items-center gap-1 bg-[#181211]/95 border border-purple-700 px-1.5 py-0.5 shadow-[2px_2px_0px_#000000] disabled:opacity-50"
+                className="flex items-center gap-1 bg-[#0c0a09]/95 border border-purple-700 px-1 py-0.5 shadow-[2px_2px_0px_#000000] disabled:opacity-50"
                 title="Infeccionado — reduz HP máximo e bloqueia regeneração. Clique para usar Antibiótico."
               >
-                <span className="text-[10px]">🧪</span>
-                <span className="text-[8px] font-pixel text-purple-300 uppercase font-bold">
-                  Infeccionado ({stats.curatives?.antibiotics || 0})
+                <span className="text-[9px]">🧪</span>
+                <span className="text-[7px] font-pixel text-purple-300 uppercase font-bold">
+                  INFECT ({stats.curatives?.antibiotics || 0})
                 </span>
               </button>
             )}
@@ -356,122 +356,125 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
         )}
       </div>
 
-      {/* ── TOP CENTER: Area Banner & Time SURVIVED ── */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-auto max-w-[280px] md:max-w-[420px] w-full text-center">
+      {/* ── TOP CENTER: Area Banner & Time SURVIVED (Discreet Line-Style for Mobile First) ── */}
+      <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-auto max-w-[280px] md:max-w-[420px] w-full text-center">
         <GameStats stats={stats} />
       </div>
 
       {/* ── TOP RIGHT PANEL: Adaptive Minimap & Actions ── */}
-      <div className="absolute top-3 right-3 flex flex-col items-end gap-2.5 z-30 pointer-events-auto">
+      <div className="absolute top-2 right-2 flex flex-col items-end gap-2 z-30 pointer-events-auto">
 
-        {/* Trophy Button — Records Hall */}
-        <button
-          className="bg-[#181211]/95 border-2 border-[#e8c76a] p-2 text-[#e8c76a] hover:bg-[#2f2827] hover:border-[#ffdf9a] shadow-[2px_2px_0px_#000000] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center"
-          onClick={() => { soundEngine.playButtonClick(); setPauseOpen(true); setRecordsOpen(true); setGameState('paused'); }}
-          
-        >
-          {/* Pixel-art trophy icon */}
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* Base */}
-            <rect x="2" y="13" width="12" height="1" fill="currentColor" />
-            {/* Stem */}
-            <rect x="7" y="9" width="2" height="4" fill="currentColor" />
-            {/* Cup body */}
-            <rect x="4" y="5" width="8" height="4" fill="currentColor" opacity="0.8" />
-            {/* Cup shine */}
-            <rect x="5" y="6" width="1" height="2" fill="currentColor" opacity="0.4" />
-            {/* Left handle */}
-            <rect x="2" y="6" width="2" height="3" fill="currentColor" opacity="0.6" />
-            {/* Right handle */}
-            <rect x="12" y="6" width="2" height="3" fill="currentColor" opacity="0.6" />
-          </svg>
-        </button>
-
-        {/* Quick action buttons column */}
-        <div className="flex gap-2">
+        {/* Compact action buttons row to clean the view for smartphones */}
+        <div className="flex gap-1.5">
+          {/* Trophy Button — Records Hall */}
           <button
-            className="bg-[#181211]/95 border-2 border-[#ab8983] p-2 text-[#e8c76a] hover:bg-[#2f2827] shadow-[2px_2px_0px_#000000] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center"
+            className="bg-[#0c0a09]/95 border border-[#b8860b]/50 p-1.5 text-[#e8c76a] hover:bg-[#1c140e] shadow-[2px_2px_4px_rgba(0,0,0,0.8)] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center w-8 h-8"
+            onClick={() => { soundEngine.playButtonClick(); setPauseOpen(true); setRecordsOpen(true); setGameState('paused'); }}
+            title="Recordes"
+          >
+            {/* Pixel-art trophy icon */}
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="13" width="12" height="1" fill="currentColor" />
+              <rect x="7" y="9" width="2" height="4" fill="currentColor" />
+              <rect x="4" y="5" width="8" height="4" fill="currentColor" opacity="0.8" />
+              <rect x="2" y="6" width="2" height="3" fill="currentColor" opacity="0.6" />
+              <rect x="12" y="6" width="2" height="3" fill="currentColor" opacity="0.6" />
+            </svg>
+          </button>
+
+          <button
+            className="bg-[#0c0a09]/95 border border-[#b8860b]/50 p-1.5 text-[#e8c76a] hover:bg-[#1c140e] shadow-[2px_2px_4px_rgba(0,0,0,0.8)] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center w-8 h-8"
             onClick={() => { soundEngine.playButtonClick(); setInventoryOpen(true); }}
-            
+            title="Inventário"
           >
-            <Backpack size={16} />
+            <Backpack size={14} />
           </button>
 
           <button
-            className="bg-[#181211]/95 border-2 border-[#ab8983] p-2 text-[#e8c76a] hover:bg-[#2f2827] shadow-[2px_2px_0px_#000000] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center"
+            className="bg-[#0c0a09]/95 border border-[#b8860b]/50 p-1.5 text-[#e8c76a] hover:bg-[#1c140e] shadow-[2px_2px_4px_rgba(0,0,0,0.8)] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center w-8 h-8"
             onClick={() => { soundEngine.playButtonClick(); setQuickSettingsOpen(!isQuickSettingsOpen); }}
-            
+            title="Configurações Rápidas"
           >
-            <Settings size={16} />
+            <Settings size={14} />
           </button>
 
           <button
-            className="bg-[#181211]/95 border-2 border-[#ab8983] p-2 text-white hover:bg-[#2f2827] shadow-[2px_2px_0px_#000000] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center"
+            className="bg-[#0c0a09]/95 border border-[#b8860b]/50 p-1.5 text-white hover:bg-[#1c140e] shadow-[2px_2px_4px_rgba(0,0,0,0.8)] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center w-8 h-8"
             onClick={handlePauseToggle}
-            
+            title="Pausar"
           >
-            <Pause size={16} />
+            <Pause size={14} />
           </button>
         </div>
 
-        {/* Run contracts panel */}
+        {/* Run contracts panel (Retractile / Compact) */}
         <ContractHUD />
       </div>
 
-      {/* ── INVENTORY MODAL OVERLAY (Gothic Stone Slab) ── */}
+      {/* ── INVENTORY MODAL OVERLAY (Gothic Stone Slab Style) ── */}
       {isInventoryOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
-          <div className="bg-[#181211] border-4 border-[#5b403c] shadow-[8px_8px_0px_#000000] p-4 max-w-md w-full relative flex flex-col gap-3">
+          <div className="bg-[#0c0a09] border-4 border-double border-[#b8860b] shadow-[0_0_35px_rgba(0,0,0,0.95)] p-5 max-w-md w-full relative flex flex-col gap-3">
+            {/* Cantoneiras douradas simuladas nos quatro cantos */}
+            <div className="absolute top-1 left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-[#b8860b]" />
+            <div className="absolute top-1 right-1 w-2.5 h-2.5 border-t-2 border-r-2 border-[#b8860b]" />
+            <div className="absolute bottom-1 left-1 w-2.5 h-2.5 border-b-2 border-l-2 border-[#b8860b]" />
+            <div className="absolute bottom-1 right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-[#b8860b]" />
+
             {/* Header */}
-            <div className="flex justify-between items-center border-b-2 border-[#ab8983] pb-2">
+            <div className="flex justify-between items-center border-b-2 border-[#b8860b]/30 pb-2.5">
               <div className="flex items-center gap-2">
-                <Backpack className="text-[#e8c76a]" size={18} />
-                <h3 className="font-pixel text-[#e8c76a] text-sm md:text-base uppercase tracking-wider">TESOUROS DO SACRIFÍCIO</h3>
+                <Backpack className="text-[#e8c76a]" size={16} />
+                <h3 className="font-pixel text-[#e8c76a] text-xs md:text-sm uppercase tracking-widest font-bold">TESOUROS DO SACRIFÍCIO</h3>
               </div>
               <button
                 onClick={() => setInventoryOpen(false)}
-                className="p-1 hover:bg-[#2f2827] text-[#ab8983] hover:text-red-500"
+                className="p-1 hover:bg-red-950/40 text-red-400 border border-red-900/40 w-8 h-8 flex items-center justify-center"
               >
-                <X size={16} />
+                <X size={14} />
               </button>
             </div>
 
             {/* Tab selector */}
-            <div className="flex gap-1">
+            <div className="flex gap-1.5">
               <button
                 onClick={() => setInventoryActiveTab('items')}
-                className={`flex-1 py-1.5 text-[10px] uppercase font-bold border border-[#5b403c] transition ${
-                  inventoryActiveTab === 'items' ? 'bg-[#990000] text-white' : 'bg-black/40 text-gray-500 hover:bg-[#241e1d]'
+                className={`flex-1 py-1.5 text-[9px] uppercase font-bold border transition ${
+                  inventoryActiveTab === 'items'
+                    ? 'bg-[#1e1713] text-[#e8c76a] border-[#b8860b]'
+                    : 'bg-black/40 border-gray-900 text-gray-500 hover:text-gray-300'
                 }`}
               >
                 EQUIPAMENTO
               </button>
               <button
                 onClick={() => setInventoryActiveTab('scrolls')}
-                className={`flex-1 py-1.5 text-[10px] uppercase font-bold border border-[#5b403c] transition ${
-                  inventoryActiveTab === 'scrolls' ? 'bg-[#990000] text-white' : 'bg-black/40 text-gray-500 hover:bg-[#241e1d]'
+                className={`flex-1 py-1.5 text-[9px] uppercase font-bold border transition ${
+                  inventoryActiveTab === 'scrolls'
+                    ? 'bg-[#1e1713] text-[#e8c76a] border-[#b8860b]'
+                    : 'bg-black/40 border-gray-900 text-gray-500 hover:text-gray-300'
                 }`}
               >
-                PERGAMINHOS e ELIXIRES
+                PERGAMINHOS & ELIXIRES
               </button>
             </div>
 
             {/* Grid display */}
             {inventoryActiveTab === 'items' ? (
-              <div className="grid grid-cols-4 gap-2 bg-[#110e05]/60 p-2.5 border border-[#524341]">
+              <div className="grid grid-cols-4 gap-2 bg-[#120e0d]/80 p-2.5 border border-[#b8860b]/20">
                 {/* Cajado de Osso */}
-                <div className="aspect-square bg-gradient-to-b from-[#241e1d] to-black border-2 border-[#b8860b] p-1.5 flex flex-col items-center justify-center relative group cursor-pointer hover:border-amber-400">
+                <div className="aspect-square bg-[#0f0a09] border-2 border-[#b8860b] p-1.5 flex flex-col items-center justify-center relative group cursor-pointer hover:border-amber-400">
                   <svg viewBox="0 0 24 24" className="w-8 h-8 text-[#e8c76a] fill-none stroke-current" strokeWidth="1.5">
                     <line x1="4" y1="20" x2="20" y2="4" />
                     <circle cx="20" cy="4" r="3" />
                     <path d="M 4,20 L 7,21 L 5,18 Z" fill="currentColor" />
                   </svg>
                   {/* Gold rare tag */}
-                  <span className="absolute bottom-0 inset-x-0 bg-amber-600/90 text-[6px] text-center text-black font-bold uppercase font-sans">RARIDADE</span>
+                  <span className="absolute bottom-0 inset-x-0 bg-amber-600/90 text-[6px] text-center text-black font-bold uppercase font-sans">LENDÁRIO</span>
                 </div>
 
                 {/* Gema de Sangue */}
-                <div className="aspect-square bg-gradient-to-b from-[#241e1d] to-black border-2 border-red-800 p-1.5 flex flex-col items-center justify-center relative group cursor-pointer hover:border-red-400">
+                <div className="aspect-square bg-[#0f0a09] border-2 border-red-800 p-1.5 flex flex-col items-center justify-center relative group cursor-pointer hover:border-red-400">
                   <svg viewBox="0 0 24 24" className="w-8 h-8 text-[#ff3333] fill-current">
                     <polygon points="12,2 20,9 12,22 4,9" />
                   </svg>
@@ -480,37 +483,37 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
 
                 {/* Slots placeholders */}
                 {Array.from({ length: 6 }).map((_, idx) => (
-                  <div key={`inv-slot-${idx}`} className="aspect-square bg-[#0f0d14]/80 border border-[#524341] flex items-center justify-center">
-                    <span className="text-gray-700 text-xs">+</span>
+                  <div key={`inv-slot-${idx}`} className="aspect-square bg-[#0c0a09]/80 border border-gray-900 flex items-center justify-center text-gray-700 font-bold">
+                    +
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col gap-2 bg-[#110e05]/60 p-2.5 border border-[#524341] max-h-48 overflow-y-auto">
+              <div className="flex flex-col gap-2 bg-[#120e0d]/80 p-2.5 border border-[#b8860b]/20 max-h-48 overflow-y-auto">
                 {/* Scroll item 1 */}
-                <div className="flex gap-2.5 p-2 bg-[#181211] border border-[#5b403c] rounded-none">
-                  <Scroll className="text-amber-500 w-8 h-8 shrink-0" />
+                <div className="flex gap-2.5 p-2 bg-[#0c0a09] border border-gray-900">
+                  <Scroll className="text-[#e8c76a] w-6 h-6 shrink-0" />
                   <div className="flex flex-col text-left">
-                    <span className="text-[10px] text-amber-200 uppercase font-bold">Pergaminho de Hemomancia</span>
-                    <span className="text-[8px] text-gray-400 leading-normal">Casta instantaneamente a habilidade Blood Nova causando 250% de dano base sacrificando vitalidade.</span>
+                    <span className="text-[9px] text-[#e8c76a] uppercase font-bold">Pergaminho de Hemomancia</span>
+                    <span className="text-[8px] text-gray-400 leading-tight">Casta instantaneamente a habilidade Blood Nova causando 250% de dano base sacrificando vitalidade.</span>
                   </div>
                 </div>
 
                 {/* Scroll item 2 */}
-                <div className="flex gap-2.5 p-2 bg-[#181211] border border-[#5b403c] rounded-none">
-                  <Shield className="text-purple-400 w-8 h-8 shrink-0" />
+                <div className="flex gap-2.5 p-2 bg-[#0c0a09] border border-gray-900">
+                  <Shield className="text-blue-400 w-6 h-6 shrink-0" />
                   <div className="flex flex-col text-left">
-                    <span className="text-[10px] text-purple-300 uppercase font-bold">Elixir de Almas</span>
-                    <span className="text-[8px] text-gray-400 leading-normal">Restaura 50% de Mana instantaneamente e concede imunidade a fadiga por 10 segundos.</span>
+                    <span className="text-[9px] text-blue-300 uppercase font-bold">Elixir de Almas</span>
+                    <span className="text-[8px] text-gray-400 leading-tight">Restaura 50% de Mana instantaneamente e concede imunidade a fadiga por 10 segundos.</span>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Tooltip detail inside Inventory */}
-            <div className="bg-[#120d0c] border border-[#5b403c] p-2 text-left">
+            <div className="bg-[#120e0d] border border-gray-900 p-2.5 text-left">
               <span className="text-[9px] text-[#e8c76a] font-bold uppercase block">CAJADO DE OSSO (LENDÁRIO)</span>
-              <span className="text-[8px] text-gray-400 block mt-0.5 leading-normal">Concedido pelas almas perdidas no Fosso das Chagas. Concede +15% de Dano de Sangue e reduz o custo de HP de suas magias em 20%.</span>
+              <span className="text-[8px] text-gray-400 block mt-0.5 leading-tight">Concedido pelas almas perdidas no Fosso das Chagas. Concede +15% de Dano de Sangue e reduz o custo de HP de suas magias em 20%.</span>
             </div>
           </div>
         </div>
@@ -519,99 +522,105 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       {/* ── QUICK CONFIGURATIONS OVERLAY PANEL ── */}
       {isQuickSettingsOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
-          <div className="bg-[#181211] border-4 border-[#5b403c] shadow-[8px_8px_0px_#000000] p-4 max-w-sm w-full relative flex flex-col gap-3 text-left">
-            <div className="flex justify-between items-center border-b border-[#ab8983] pb-2">
-              <h3 className="font-pixel text-[#e8c76a] text-sm uppercase">CONFIURAÇÕES RÁPIDAS</h3>
-              <button onClick={() => setQuickSettingsOpen(false)} className="text-[#ab8983] hover:text-red-500">
-                <X size={16} />
+          <div className="bg-[#0c0a09] border-4 border-double border-[#b8860b] shadow-[0_0_35px_rgba(0,0,0,0.95)] p-5 max-w-sm w-full relative flex flex-col gap-2.5 text-left">
+            {/* Cantoneiras */}
+            <div className="absolute top-1 left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-[#b8860b]" />
+            <div className="absolute top-1 right-1 w-2.5 h-2.5 border-t-2 border-r-2 border-[#b8860b]" />
+            <div className="absolute bottom-1 left-1 w-2.5 h-2.5 border-b-2 border-l-2 border-[#b8860b]" />
+            <div className="absolute bottom-1 right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-[#b8860b]" />
+
+            <div className="flex justify-between items-center border-b-2 border-[#b8860b]/30 pb-2">
+              <h3 className="font-pixel text-[#e8c76a] text-xs font-bold uppercase">AJUSTES RÁPIDOS</h3>
+              <button onClick={() => setQuickSettingsOpen(false)} className="p-1 hover:bg-red-950/40 text-red-400 border border-red-900/40">
+                <X size={12} />
               </button>
             </div>
 
             {/* Toggle Retrato Animado */}
-            <div className="flex items-center justify-between py-1 border-b border-[#524341]">
-              <span className="text-[10px] text-gray-300 uppercase">RETRATO ANIMADO (MOBILE FX)</span>
+            <div className="flex items-center justify-between py-1 border-b border-gray-900">
+              <span className="text-[9px] text-gray-300 uppercase">RETRATO ANIMADO (MOBILE FX)</span>
               <button
                 onClick={() => updateSettings({ ...settings, animatedPortrait: !settings.animatedPortrait })}
-                className="text-amber-500"
+                className="text-[#e8c76a]"
               >
-                {settings.animatedPortrait ? <CheckSquare size={16} /> : <Square size={16} />}
+                {settings.animatedPortrait ? <CheckSquare size={14} /> : <Square size={14} />}
               </button>
             </div>
 
             {/* Toggle CRT Filter */}
-            <div className="flex items-center justify-between py-1 border-b border-[#524341]">
-              <span className="text-[10px] text-gray-300 uppercase">SCANLINES FILTRO CRT</span>
+            <div className="flex items-center justify-between py-1 border-b border-gray-900">
+              <span className="text-[9px] text-gray-300 uppercase">SCANLINES FILTRO CRT</span>
               <button
                 onClick={() => updateSettings({ ...settings, crtFilter: !settings.crtFilter })}
-                className="text-amber-500"
+                className="text-[#e8c76a]"
               >
-                {settings.crtFilter ? <CheckSquare size={16} /> : <Square size={16} />}
+                {settings.crtFilter ? <CheckSquare size={14} /> : <Square size={14} />}
               </button>
             </div>
 
             {/* Toggle Screen Shake */}
-            <div className="flex items-center justify-between py-1 border-b border-[#524341]">
-              <span className="text-[10px] text-gray-300 uppercase">TREMOR DE TELA</span>
+            <div className="flex items-center justify-between py-1 border-b border-gray-900">
+              <span className="text-[9px] text-gray-300 uppercase">TREMOR DE TELA</span>
               <button
                 onClick={() => updateSettings({ ...settings, screenShakeEnabled: !settings.screenShakeEnabled })}
-                className="text-amber-500 cursor-pointer"
+                className="text-[#e8c76a]"
               >
-                {settings.screenShakeEnabled !== false ? <CheckSquare size={16} /> : <Square size={16} />}
+                {settings.screenShakeEnabled !== false ? <CheckSquare size={14} /> : <Square size={14} />}
               </button>
             </div>
 
             {/* Toggle Flashes */}
-            <div className="flex items-center justify-between py-1 border-b border-[#524341]">
-              <span className="text-[10px] text-gray-300 uppercase">FLASHES DE DANO</span>
+            <div className="flex items-center justify-between py-1 border-b border-gray-900">
+              <span className="text-[9px] text-gray-300 uppercase">FLASHES DE DANO</span>
               <button
                 onClick={() => updateSettings({ ...settings, flashesEnabled: !settings.flashesEnabled })}
-                className="text-amber-500 cursor-pointer"
+                className="text-[#e8c76a]"
               >
-                {settings.flashesEnabled !== false ? <CheckSquare size={16} /> : <Square size={16} />}
+                {settings.flashesEnabled !== false ? <CheckSquare size={14} /> : <Square size={14} />}
               </button>
             </div>
 
-            {/* Toggle Atmosphere Effects (threat indicator + danger vignette + directional audio) */}
-            <div className="flex items-center justify-between py-1 border-b border-[#524341]">
-              <span className="text-[10px] text-gray-300 uppercase">EFEITOS DE ATMOSFERA</span>
+            {/* Toggle Atmosphere Effects */}
+            <div className="flex items-center justify-between py-1 border-b border-gray-900">
+              <span className="text-[9px] text-gray-300 uppercase">EFEITOS DE ATMOSFERA</span>
               <button
                 onClick={() => updateSettings({ ...settings, atmosphereEffectsEnabled: !settings.atmosphereEffectsEnabled })}
-                className="text-amber-500 cursor-pointer"
+                className="text-[#e8c76a]"
               >
-                {settings.atmosphereEffectsEnabled !== false ? <CheckSquare size={16} /> : <Square size={16} />}
+                {settings.atmosphereEffectsEnabled !== false ? <CheckSquare size={14} /> : <Square size={14} />}
               </button>
             </div>
 
             {/* Toggle High Contrast Texts */}
-            <div className="flex items-center justify-between py-1 border-b border-[#524341]">
-              <span className="text-[10px] text-gray-300 uppercase">DANOS ALTO CONTRASTE</span>
+            <div className="flex items-center justify-between py-1 border-b border-gray-900">
+              <span className="text-[9px] text-gray-300 uppercase">DANOS ALTO CONTRASTE</span>
               <button
                 onClick={() => updateSettings({ ...settings, highContrastDamageTexts: !settings.highContrastDamageTexts })}
-                className="text-amber-500 cursor-pointer"
+                className="text-[#e8c76a]"
               >
-                {settings.highContrastDamageTexts ? <CheckSquare size={16} /> : <Square size={16} />}
+                {settings.highContrastDamageTexts ? <CheckSquare size={14} /> : <Square size={14} />}
               </button>
             </div>
 
             {/* HUD Edit Button */}
-            <div className="flex items-center justify-between py-2 border-b border-[#524341]">
-              <span className="text-[10px] text-gray-300 uppercase">LAYOUT DE BOTÕES</span>
+            <div className="flex items-center justify-between py-1.5 border-b border-gray-900">
+              <span className="text-[9px] text-gray-300 uppercase">LAYOUT DE BOTÕES</span>
               <button
                 onClick={() => {
                   soundEngine.playButtonClick();
                   setQuickSettingsOpen(false); // Close quick settings
                   setEditingHUD(true); // Open edit mode
                 }}
-                className="px-2.5 py-1 bg-amber-900 border border-amber-500 text-amber-100 hover:bg-amber-800 text-[8px] uppercase font-pixel tracking-wide flex items-center gap-1 cursor-pointer animate-pulse"
+                className="px-2 py-0.5 bg-[#171309] border border-[#b8860b] text-[#e8c76a] hover:bg-[#282216] text-[8px] uppercase tracking-wide cursor-pointer"
               >
                 EDITAR
               </button>
             </div>
 
             {/* Cosmetic Palettes */}
-            <div className="flex flex-col gap-1 py-1.5 border-b border-[#524341]">
-              <span className="text-[10px] text-gray-300 uppercase">PALETA DE SANGUE</span>
-              <div className="grid grid-cols-4 gap-1.5 mt-1 text-[7px] text-center font-bold">
+            <div className="flex flex-col gap-1 py-1 border-b border-gray-900">
+              <span className="text-[9px] text-gray-300 uppercase">PALETA DE SANGUE</span>
+              <div className="grid grid-cols-4 gap-1 mt-1 text-[7px] text-center font-bold">
                 {palettesData.map((p) => {
                   const active = settings.activePaletteId === p.id || (!settings.activePaletteId && p.id === 'crimson');
                   return (
@@ -625,10 +634,10 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                         });
                         window.dispatchEvent(new CustomEvent('update-cosmetic-tint'));
                       }}
-                      className={`py-1 border transition cursor-pointer ${
+                      className={`py-0.5 border transition cursor-pointer ${
                         active
-                          ? 'border-amber-500 text-amber-300 bg-amber-950/40'
-                          : 'border-gray-800 text-gray-500 bg-black/40 hover:border-gray-700'
+                          ? 'border-[#b8860b] text-[#e8c76a] bg-[#1e1713]'
+                          : 'border-gray-900 text-gray-500 bg-black/40 hover:border-gray-700'
                       }`}
                       style={{ color: p.color !== '#ffffff' ? p.color : undefined }}
                     >
@@ -641,8 +650,8 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
 
             {/* Virtual Controls HUD Opacity Slider */}
             <div className="flex flex-col gap-1 py-1">
-              <div className="flex justify-between text-[10px] text-gray-300">
-                <span>OPACIDADE DOS CONTROLES HUD</span>
+              <div className="flex justify-between text-[9px] text-gray-300">
+                <span>OPACIDADE CONTROLES HUD</span>
                 <span className="text-[#e8c76a] font-bold">{Math.round(settings.virtualControlsOpacity * 100)}%</span>
               </div>
               <input
@@ -652,70 +661,15 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                 step="0.05"
                 value={settings.virtualControlsOpacity}
                 onChange={(e) => updateSettings({ ...settings, virtualControlsOpacity: parseFloat(e.target.value) })}
-                className="w-full h-1.5 bg-black accent-amber-500 rounded-none cursor-pointer"
-              />
-            </div>
-
-            {/* Joystick Deadzone Slider */}
-            <div className="flex flex-col gap-1 py-1">
-              <div className="flex justify-between text-[10px] text-gray-300">
-                <span>DEADZONE DO JOYSTICK</span>
-                <span className="text-[#e8c76a] font-bold">{Math.round((settings.joystickDeadzone ?? 0.08) * 100)}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="0.5"
-                step="0.01"
-                value={settings.joystickDeadzone ?? 0.08}
-                onChange={(e) => updateSettings({ ...settings, joystickDeadzone: parseFloat(e.target.value) })}
-                className="w-full h-1.5 bg-black accent-amber-500 rounded-none cursor-pointer"
-              />
-            </div>
-
-            {/* Joystick Response Curve Slider */}
-            <div className="flex flex-col gap-1 py-1">
-              <div className="flex justify-between text-[10px] text-gray-300">
-                <span>CURVA DE RESPOSTA</span>
-                <span className="text-[#e8c76a] font-bold">
-                  {settings.joystickCurve == null || settings.joystickCurve === 1.8
-                    ? 'EQUILIBRADA'
-                    : settings.joystickCurve < 1.8 ? 'DIRETA' : 'PRECISA'}
-                </span>
-              </div>
-              <input
-                type="range"
-                min="0.5"
-                max="3.0"
-                step="0.1"
-                value={settings.joystickCurve ?? 1.8}
-                onChange={(e) => updateSettings({ ...settings, joystickCurve: parseFloat(e.target.value) })}
-                className="w-full h-1.5 bg-black accent-amber-500 rounded-none cursor-pointer"
-              />
-            </div>
-
-            {/* SFX / BGM Volume sliders */}
-            <div className="flex flex-col gap-1.5">
-              <div className="flex justify-between text-[10px] text-gray-300">
-                <span>SFE VOLUME DOS EFEITOS</span>
-                <span className="text-amber-500">{Math.round(settings.sfxVolume * 100)}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="1.0"
-                step="0.05"
-                value={settings.sfxVolume}
-                onChange={(e) => updateSettings({ ...settings, sfxVolume: parseFloat(e.target.value) })}
-                className="w-full h-1 bg-black accent-amber-500 rounded-none cursor-pointer"
+                className="w-full h-1 bg-black accent-[#b8860b] rounded-none cursor-pointer"
               />
             </div>
 
             <button
               onClick={() => setQuickSettingsOpen(false)}
-              className="w-full mt-2 py-1.5 bg-[#990000] border border-red-500 text-white text-[10px] uppercase font-bold hover:bg-red-800 transition"
+              className="w-full mt-1.5 py-1.5 bg-[#171309] hover:bg-[#282216] border border-[#b8860b] text-[#e8c76a] text-[9px] uppercase font-bold transition shadow-[inset_1px_1px_2px_rgba(0,0,0,0.8)]"
             >
-              FECHAR AJUSTES
+              FECHAR CONFIGS
             </button>
           </div>
         </div>
@@ -724,12 +678,18 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       {/* ── PAUSE OVERLAY MODAL ── */}
       {isPauseOpen && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 pointer-events-auto">
-          <div className="bg-[#181211] border-4 border-[#5b403c] p-6 max-w-xs w-full text-center space-y-4 shadow-[8px_8px_0px_#000000]">
-            <h2 className="text-lg font-pixel text-amber-200 uppercase tracking-widest">JOGO PAUSADO</h2>
+          <div className="bg-[#0c0a09] border-4 border-double border-[#b8860b] p-6 max-w-xs w-full text-center space-y-4 shadow-[0_0_35px_rgba(0,0,0,0.95)] relative">
+            {/* Cantoneiras */}
+            <div className="absolute top-1 left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-[#b8860b]" />
+            <div className="absolute top-1 right-1 w-2.5 h-2.5 border-t-2 border-r-2 border-[#b8860b]" />
+            <div className="absolute bottom-1 left-1 w-2.5 h-2.5 border-b-2 border-l-2 border-[#b8860b]" />
+            <div className="absolute bottom-1 right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-[#b8860b]" />
+
+            <h2 className="text-sm font-pixel text-[#e8c76a] uppercase tracking-widest font-bold">JOGO PAUSADO</h2>
             <div className="flex flex-col gap-2">
               <button
                 onClick={handleResume}
-                className="w-full py-2 bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-100 font-pixel text-[10px] rounded-none transition"
+                className="w-full py-2 bg-[#171309] hover:bg-[#282216] border border-[#b8860b]/60 text-[#e8c76a] font-pixel text-[9px] uppercase transition shadow-[inset_1px_1px_2px_rgba(0,0,0,0.8)]"
               >
                 RECOMECAR JORNADA
               </button>
@@ -739,7 +699,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                   setPauseOpen(false);
                   setGameState('menu');
                 }}
-                className="w-full py-2 bg-[#990000] hover:bg-red-900 border border-red-800 text-white font-pixel text-[10px] rounded-none transition"
+                className="w-full py-2 bg-[#990000] hover:bg-red-900 border border-red-800 text-white font-pixel text-[9px] uppercase transition"
               >
                 SAIR DO ANDAR
               </button>
@@ -750,14 +710,6 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
 
       {/* ══════════════════════════════════════════════════════════
           TOUCH ZONES — pointer-active overlay zones.
-          Left side (47%) regulates the movement Analog Joystick.
-          Right side (47%) handles aiming gestures.
-         ══════════════════════════════════════════════════════════ */}
-
-      {/* ══════════════════════════════════════════════════════════
-          TOUCH ZONES — pointer-active overlay zones.
-          Left side (47%) regulates the movement Analog Joystick.
-          Right side (47%) handles aiming gestures.
          ══════════════════════════════════════════════════════════ */}
 
       {!gamepadConnected && isTouchDevice && (
@@ -786,8 +738,8 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
 
       {/* ── Onboarding / Tutorial Tip Overlay ── */}
       {activeTip && (
-        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-[110] max-w-sm w-full bg-[#181211]/95 border-2 border-amber-600 shadow-[0_0_15px_rgba(217,119,6,0.3)] p-3 text-center pointer-events-auto rounded-lg">
-          <span className="text-amber-400 font-bold uppercase text-[9px] block tracking-wider mb-1">📖 APRENDA O RITUAL</span>
+        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-[110] max-w-sm w-full bg-[#0c0a09]/95 border-2 border-[#b8860b] shadow-[0_0_15px_rgba(184,134,11,0.3)] p-3 text-center pointer-events-auto rounded-none">
+          <span className="text-[#e8c76a] font-bold uppercase text-[9px] block tracking-wider mb-1">📖 APRENDA O RITUAL</span>
           <span className="text-[8px] text-gray-200 block leading-normal font-sans">
             {activeTip}
           </span>
@@ -818,8 +770,8 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
           className="absolute left-6 bottom-6 pointer-events-none"
           style={{ opacity: settings.virtualControlsOpacity * 0.55 }}
         >
-          <div className="w-16 h-16 rounded-full border border-dashed border-[#ab8983] flex items-center justify-center animate-pulse">
-            <span className="text-[8px] font-pixel text-gray-500 uppercase tracking-widest">ARRASTAR</span>
+          <div className="w-14 h-14 rounded-full border border-dashed border-[#b8860b]/40 flex items-center justify-center animate-pulse">
+            <span className="text-[7px] font-pixel text-gray-500 uppercase tracking-widest">ARRASTAR</span>
           </div>
         </div>
       )}
@@ -842,9 +794,9 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
 
       {/* ── HUD Edit Mode Banner ── */}
       {isEditingHUD && (
-        <div className="fixed top-20 inset-x-0 mx-auto max-w-lg bg-[#181211] border-4 border-amber-500 shadow-[4px_4px_0px_#000000] p-4 text-center z-50 flex flex-col gap-2 text-white font-pixel text-xs pointer-events-auto">
-          <span className="text-amber-400 font-bold uppercase tracking-wider block">✍️ MODO DE EDIÇÃO DE HUD</span>
-          <span className="text-[10px] text-gray-300 block font-sans leading-normal">
+        <div className="fixed top-20 inset-x-0 mx-auto max-w-lg bg-[#0c0a09] border-4 border-[#b8860b] shadow-[0_0_20px_rgba(0,0,0,0.9)] p-4 text-center z-50 flex flex-col gap-2 text-[#E3DAC9] font-pixel text-xs pointer-events-auto">
+          <span className="text-[#e8c76a] font-bold uppercase tracking-widest block">✍️ MODO DE EDIÇÃO DE HUD</span>
+          <span className="text-[9px] text-gray-400 block font-sans leading-normal">
             Arraste os botões de skill para qualquer posição da tela. Clique nos botões S/M/L sobre cada habilidade para mudar o tamanho dos botões.
           </span>
           <div className="flex gap-2.5 justify-center mt-1">
@@ -853,7 +805,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                 soundEngine.playButtonClick();
                 setEditingHUD(false);
               }}
-              className="px-4 py-2 bg-emerald-900 border border-emerald-500 text-emerald-100 uppercase hover:bg-emerald-800 text-[10px] cursor-pointer"
+              className="px-4 py-2 bg-emerald-950 border border-emerald-500 text-emerald-100 uppercase hover:bg-emerald-800 text-[9px] cursor-pointer"
             >
               SALVAR LAYOUT
             </button>
@@ -865,7 +817,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                   hudLayout: undefined
                 });
               }}
-              className="px-4 py-2 bg-black border border-gray-600 text-gray-300 uppercase hover:bg-gray-900 text-[10px] cursor-pointer"
+              className="px-4 py-2 bg-black border border-gray-650 text-gray-300 uppercase hover:bg-gray-900 text-[9px] cursor-pointer"
             >
               RESTAURAR PADRÃO
             </button>
@@ -875,12 +827,12 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
 
       {/* ── NPC Interaction Prompt ── */}
       {closestNPCType && !activeNPC && (
-        <div className="fixed bottom-1/4 inset-x-0 mx-auto max-w-xs bg-[#171309] border-2 border-sky-500 shadow-[4px_4px_0px_rgba(0,0,0,0.8)] p-2.5 text-center z-40 flex flex-col items-center gap-1.5 text-[#E3DAC9] pointer-events-auto select-none">
-          <span className="text-sky-400 text-xs font-bold uppercase tracking-wider block">
+        <div className="fixed bottom-1/4 inset-x-0 mx-auto max-w-xs bg-[#0c0a09] border-2 border-[#b8860b]/40 shadow-[4px_4px_10px_rgba(0,0,0,0.85)] p-2.5 text-center z-40 flex flex-col items-center gap-1.5 text-[#E3DAC9] pointer-events-auto select-none">
+          <span className="text-[#e8c76a] text-xs font-bold uppercase tracking-wider block">
             👤 {closestNPCType === 'cleric' ? 'CLÉRIGO' : closestNPCType === 'alchemist' ? 'ALQUIMISTA' : closestNPCType === 'blacksmith' ? 'FERREIRO' : 'ANCIÃO'} ESTÁ PRÓXIMO
           </span>
-          <span className="text-[10px] text-gray-400 font-sans block leading-none">
-            Aproxime-se e pressione <span className="text-amber-500 font-bold">[E]</span> para falar.
+          <span className="text-[9px] text-gray-400 font-sans block leading-none uppercase">
+            Aproxime-se e pressione <span className="text-[#e8c76a] font-bold">[E]</span> para falar.
           </span>
           <button
             onPointerDown={(e) => {
@@ -889,7 +841,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
               soundEngine.playButtonClick();
               setActiveNPC(closestNPCType);
             }}
-            className="mt-1 px-3 py-1 bg-sky-950 border border-sky-600 text-sky-100 hover:bg-sky-900 active:scale-95 text-[10px] font-bold uppercase cursor-pointer"
+            className="mt-1 px-3 py-1.5 bg-[#171309] border border-[#b8860b] text-[#e8c76a] hover:bg-[#282216] active:scale-95 text-[9px] font-bold uppercase cursor-pointer shadow-[inset_1px_1px_2px_rgba(0,0,0,0.8)]"
           >
             FALAR COM NPC
           </button>
@@ -899,11 +851,16 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       {/* ── NPC Dialogue Modal ── */}
       {activeNPC && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
-          <div className="bg-[#171309] border-4 border-[#B8860B] rounded-none p-5 max-w-md w-full text-[#E3DAC9] shadow-[0_0_30px_rgba(184,134,11,0.4)]">
+          <div className="bg-[#0c0a09] border-4 border-double border-[#b8860b] p-5 max-w-md w-full text-[#E3DAC9] shadow-[0_0_35px_rgba(0,0,0,0.95)] relative">
+            {/* Cantoneiras */}
+            <div className="absolute top-1 left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-[#b8860b]" />
+            <div className="absolute top-1 right-1 w-2.5 h-2.5 border-t-2 border-r-2 border-[#b8860b]" />
+            <div className="absolute bottom-1 left-1 w-2.5 h-2.5 border-b-2 border-l-2 border-[#b8860b]" />
+            <div className="absolute bottom-1 right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-[#b8860b]" />
 
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-[#B8860B]/40 pb-3 mb-4">
-              <span className="text-sm font-pixel text-[#B8860B] uppercase font-bold tracking-wider">
+            <div className="flex items-center justify-between border-b-2 border-[#b8860b]/30 pb-2.5 mb-3">
+              <span className="text-xs font-pixel text-[#e8c76a] uppercase font-bold tracking-wider">
                 {activeNPC === 'cleric' ? 'Clérigo Curandeiro' : activeNPC === 'alchemist' ? 'Alquimista de Fronteira' : activeNPC === 'blacksmith' ? 'Ferreiro Necromântico' : 'Ancião da Vila'}
               </span>
               <button
@@ -911,14 +868,14 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                   soundEngine.playButtonClick();
                   setActiveNPC(null);
                 }}
-                className="p-1 text-red-400 hover:bg-red-950/40 border border-red-900/60 rounded-none cursor-pointer"
+                className="p-1 hover:bg-red-950/40 text-red-400 border border-red-900/40 w-8 h-8 flex items-center justify-center"
               >
                 ✕
               </button>
             </div>
 
             {/* Content / Dialog Text */}
-            <p className="text-xs font-gothic leading-relaxed mb-5 italic border-l-2 border-amber-600 pl-3 py-1 text-gray-300">
+            <p className="text-[10px] font-gothic leading-relaxed mb-4 italic border-l-2 border-[#b8860b] pl-2.5 py-1 text-gray-300 text-left">
               {activeNPC === 'cleric' && '"Que a benção do Sangue Purificador te guarde, Mestre do Sangue. Deseja curar suas chagas ou purificar a infecção?"'}
               {activeNPC === 'alchemist' && '"Frascos, elixires e ataduras para aplacar os males do abismo... Que desejas comprar, Bloodmage?"'}
               {activeNPC === 'blacksmith' && '"O metal clama por sacrifício. Posso aprimorar sua foice ou sua couraça de ossos em troca de cristais de sangue."'}
@@ -926,7 +883,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
             </p>
 
             {/* Action Buttons */}
-            <div className="space-y-3 font-pixel text-[11px]">
+            <div className="space-y-2 font-pixel text-[9px]">
 
               {/* Cleric actions */}
               {activeNPC === 'cleric' && (
@@ -934,15 +891,14 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                   <button
                     onClick={() => {
                       soundEngine.playButtonClick();
-                      // Full Heal HP/Mana
                       setPlayerStats({
                         ...stats,
                         hp: stats.maxHp,
                         mana: stats.maxMana
                       });
-                      soundEngine.playNova(); // special trigger sound
+                      soundEngine.playNova();
                     }}
-                    className="w-full text-left p-2.5 bg-sky-950/40 border border-sky-600 hover:bg-sky-900/50 uppercase transition-colors font-bold cursor-pointer"
+                    className="w-full text-left p-2 bg-[#171309] border border-[#b8860b] hover:bg-[#282216] uppercase font-bold cursor-pointer text-[#e8c76a]"
                   >
                     💖 Restaurar HP & Mana (Gratuito)
                   </button>
@@ -954,10 +910,10 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                       setStatusCondition('infection', false);
                       soundEngine.playNova();
                     }}
-                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
+                    className={`w-full text-left p-2 border font-bold uppercase transition-colors ${
                       stats.statusConditions?.infection && bloodCrystals >= 15
-                        ? 'bg-emerald-950/40 border-emerald-500 hover:bg-emerald-900/50 text-emerald-100 cursor-pointer'
-                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
+                        ? 'bg-[#1e1713] border-[#b8860b] hover:brightness-125 text-[#e8c76a] cursor-pointer'
+                        : 'bg-black/30 border-gray-900 text-gray-500 cursor-not-allowed'
                     }`}
                   >
                     🧪 Purificar Infecção (Custo: 15 Cristais)
@@ -973,10 +929,10 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                     onClick={() => {
                       buyCurative('bandages', 15);
                     }}
-                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
+                    className={`w-full text-left p-2 border font-bold uppercase transition-colors ${
                       bloodCrystals >= 15
-                        ? 'bg-red-950/40 border-red-600 hover:bg-red-900/50 text-red-200 cursor-pointer'
-                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
+                        ? 'bg-[#1e1713] border-[#b8860b] hover:brightness-125 text-[#e8c76a] cursor-pointer'
+                        : 'bg-black/30 border-gray-900 text-gray-500 cursor-not-allowed'
                     }`}
                   >
                     🩸 Comprar Atadura (Sangramento) - 15 Cristais [Possui: {stats.curatives?.bandages || 0}]
@@ -986,10 +942,10 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                     onClick={() => {
                       buyCurative('antidotes', 20);
                     }}
-                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
+                    className={`w-full text-left p-2 border font-bold uppercase transition-colors ${
                       bloodCrystals >= 20
-                        ? 'bg-purple-950/40 border-purple-600 hover:bg-purple-900/50 text-purple-200 cursor-pointer'
-                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
+                        ? 'bg-[#1e1713] border-[#b8860b] hover:brightness-125 text-[#e8c76a] cursor-pointer'
+                        : 'bg-black/30 border-gray-900 text-gray-500 cursor-not-allowed'
                     }`}
                   >
                     🍇 Comprar Antídoto (Veneno) - 20 Cristais [Possui: {stats.curatives?.antidotes || 0}]
@@ -999,10 +955,10 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                     onClick={() => {
                       buyCurative('antibiotics', 35);
                     }}
-                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
+                    className={`w-full text-left p-2 border font-bold uppercase transition-colors ${
                       bloodCrystals >= 35
-                        ? 'bg-emerald-950/40 border-emerald-600 hover:bg-emerald-900/50 text-emerald-200 cursor-pointer'
-                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
+                        ? 'bg-[#1e1713] border-[#b8860b] hover:brightness-125 text-[#e8c76a] cursor-pointer'
+                        : 'bg-black/30 border-gray-900 text-gray-500 cursor-not-allowed'
                     }`}
                   >
                     🧪 Comprar Antibiótico (Infecção) - 35 Cristais [Possui: {stats.curatives?.antibiotics || 0}]
@@ -1026,10 +982,10 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                         soundEngine.playEquipLoot();
                       }
                     }}
-                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
+                    className={`w-full text-left p-2 border font-bold uppercase transition-colors ${
                       bloodCrystals >= 50
-                        ? 'bg-amber-950/40 border-[#B8860B] hover:bg-amber-900/50 text-amber-200 cursor-pointer'
-                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
+                        ? 'bg-[#1e1713] border-[#b8860b] hover:brightness-125 text-[#e8c76a] cursor-pointer'
+                        : 'bg-black/30 border-gray-900 text-gray-500 cursor-not-allowed'
                     }`}
                   >
                     ⚔️ Upgrade de Arma (+10% Dano) - 50 Cristais [Atual: +{Math.round((stats.damageMultiplier - 1)*100)}%]
@@ -1048,10 +1004,10 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                         soundEngine.playEquipLoot();
                       }
                     }}
-                    className={`w-full text-left p-2.5 border font-bold uppercase transition-colors ${
+                    className={`w-full text-left p-2 border font-bold uppercase transition-colors ${
                       bloodCrystals >= 50
-                        ? 'bg-amber-950/40 border-[#B8860B] hover:bg-amber-900/50 text-amber-200 cursor-pointer'
-                        : 'bg-black/30 border-gray-800 text-gray-500 cursor-not-allowed'
+                        ? 'bg-[#1e1713] border-[#b8860b] hover:brightness-125 text-[#e8c76a] cursor-pointer'
+                        : 'bg-black/30 border-gray-900 text-gray-500 cursor-not-allowed'
                     }`}
                   >
                     🛡️ Upgrade de Armadura (+20 HP Máx) - 50 Cristais [Atual: {stats.maxHp} HP]
@@ -1064,14 +1020,13 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                 <button
                   onClick={() => {
                     soundEngine.playButtonClick();
-                    // Quest acceptance: give them 100 crystals as startup aid!
                     addBloodCrystals(100);
                     soundEngine.playNova();
                     setActiveNPC(null);
                   }}
-                  className="w-full text-left p-2.5 bg-amber-950/40 border border-[#B8860B] hover:bg-amber-900/50 text-amber-200 font-bold uppercase cursor-pointer"
+                  className="w-full text-left p-2 bg-[#171309] border border-[#b8860b] hover:bg-[#282216] text-[#e8c76a] font-bold uppercase cursor-pointer"
                 >
-                  📜 Aceitar Clamor de Auxílio (+100 Cristais de Sangue)
+                  📜 Aceitar Clamor de Auxílio (+100 Cristais)
                 </button>
               )}
 
@@ -1081,7 +1036,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                   soundEngine.playButtonClick();
                   setActiveNPC(null);
                 }}
-                className="w-full text-center p-2.5 bg-black border border-gray-700 text-gray-400 uppercase font-bold hover:bg-gray-950 cursor-pointer"
+                className="w-full text-center p-2 bg-black border border-gray-900 text-gray-500 uppercase font-bold hover:bg-gray-950 cursor-pointer"
               >
                 ENCERRAR DIÁLOGO
               </button>
