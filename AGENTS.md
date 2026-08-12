@@ -5,7 +5,8 @@
 To prevent context window bloat, reduce token cost, and prevent hallucinations/regression:
 1. **Never read multiple full source files unless absolutely necessary.** Use targeted tools like specific file reading, `grep`, or documentation indexing.
 2. **Prioritize documentation over code investigation.** Consult `/docs/README.md` first to find out which targeted document has your answers.
-3. **If you must modify a file above 400 lines (e.g. `GameScene.ts` or `GameplayHUD.tsx`), perform surgery with surgical accuracy.** Use precise search-and-replace or git merge diff blocks. Never rewrite or replace the entire file.
+3. **Always consult `docs/specs/README.md` right after reading this document** to understand the active development pipeline, current Kanban board state, maturation metrics, and ongoing specs. It is the absolute master index for the project's specification status.
+4. **If you must modify a file above 400 lines (e.g. `GameScene.ts` or `GameplayHUD.tsx`), perform surgery with surgical accuracy.** Use precise search-and-replace or git merge diff blocks. Never rewrite or replace the entire file.
 
 ---
 

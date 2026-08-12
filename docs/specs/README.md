@@ -1,420 +1,160 @@
 ---
-role: Product Manager / Project Lead
-complexity: Low
-audience: Project Management + All Developers
-agent_context: product
+role: Product Manager / Architect
+complexity: High
+audience: Project Management + All Developers + AI Agents
+agent_context: product, engineering, architecture
 target_module: docs/specs
 priority: high
 status: active
-last_updated: 2026-08-10
-tags: [specs, index, status]
+last_updated: 2026-08-11
+tags: [specs, index, master, kanban, decisions, maturation, pipeline]
 ---
 
-# 📋 Specs Index — Bloodmage 1995
+# 📋 Documento Mestre de Especificações e Esteira de Desenvolvimento
 
-> **Status de Features:** Organize todas as especificações por estágio de desenvolvimento.
+> **⚠️ Fonte da Verdade de Engenharia & Produto:** Este é o ponto de acesso principal logo após o root `AGENTS.md`. Ele consolida todo o trabalho de implementação em andamento, planejado e finalizado, servindo como a bússola de desenvolvimento do Bloodmage 1995, independente de onde o projeto esteja sendo construído (Replit, Local Sandbox, Vercel ou GitHub).
 
 ---
 
-## 🗺️ Estrutura de Specs
+## 🗺️ Mapa de Navegação Rápida
 
 ```
-docs/specs//
-├── README.md (este arquivo)
-├── propostas// — Ideias, não iniciado ainda
-├── andamento// — Em desenvolvimento ativo
-└── finalizadas// — Concluído e testado
-```
-
----
-
-## 📊 Status Overview
-
-### 🟢 FINALIZADAS (Pronto em Produção)
-
-| Feature | Status | Responsável | Completado |
-|---------|--------|-------------|-----------|
-| **Records Display** | ✅ Completo | Claude + Felipe | 2026-08-09 |
-| **Game Design Philosophy** | ✅ Completo | Felipe | 2026-08-09 |
-| **Core Combat Feel** | ✅ Completo | Jules | 2026-08-08 |
-| **Inconsciência — Fase 1** | ✅ Completo | Jules | 2026-08-10 |
-| **Tela de Morte & Cadáver — Fase 2** | ✅ Completo | Jules | 2026-08-10 |
-| **Condições de Status — Fase 3** | ✅ Completo | Jules | 2026-08-10 |
-| **Mundo Contínuo — Fase 4** | ✅ Completo | Felipe + Jules | 2026-08-11 |
-| **Polimento de Produção — Fase 5** | ✅ **100% COMPLETO** | Claude + Felipe | 2026-08-11 |
-
-**Documentação:** [[./finalizadas/]]
-
----
-
-### 🟡 ANDAMENTO (Desenvolvimento Ativo)
-
-| Feature | Fase | Responsável | ETA | Progresso |
-|---------|------|-------------|-----|-----------|
-| **Mundo Contínuo (Fase 4)** | 4/4 | Jules | 2026-09-30 | 🟡 80% |
-| **Polimento de Produção & PWA/Steam (Fase 5)** | 5/5 | Jules + Felipe | 2026-10-30 | 🟡 0% (Proposta) |
-
-**Documentação:** [[./andamento/]]
-
----
-
-### 🔵 PROPOSTAS (Backlog)
-
-| Feature | Prioridade | Conceito | Documento de Especificação | Responsável |
-|---------|-----------|----------|----------------------------|-------------|
-| **Evolução de UI com Assets Externos** | Alta | Transição para pixel art de alta resolução com fallback de gerador de texturas procedural | [[./propostas/02_DISCOVERY_UI_ASSETS_EXTERNOS.md]] | Jules |
-| **Evolução Gráfica Avançada** | Média | postFX WebGL + iluminação Light2D/normal maps + pipeline de assets | [[./propostas/01_EVOLUCAO_GRAFICA_AVANCADA.md]] | - |
-| **Multijogador Cooperativo** | Média | Cooperação, ressurreição mútua e interações rúnicas P2P via WebRTC | [[./propostas/03_MULTIJOVADOR_COOPERATIVO_E_INTERATIVIDADE.md]] | Jules |
-| **Mobile App & Monetização** | Alta | Empacotamento Capacitor, UX móvel aprimorada e monetização ética não-intrusiva | [[./propostas/04_MOBILE_APP_E_MONETIZACAO_INDIE.md]] | Jules |
-| **Skinning & Camadas Canvas** | Média | Customização em tempo real de skins, armas e armaduras usando composições no gerador procedural | [[./propostas/05_SISTEMA_DE_SKINNING_E_CAMADAS_DINAMICAS.md]] | Jules |
-| **Prestige (Blood Seal)** | Média | Reset opcional de nível para bônus passivos permanentes e escalonamento simples de dificuldades | [[./propostas/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md]] | Jules |
-| **Eventos Globais & Sazonais** | Média | Eventos rotativos imersivos (Eclipse, Cerco, Rifts) e comemorações de calendário góticas | [[./propostas/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md]] | Jules |
-
-**Documentação:** [[./propostas/]]
-
----
-
-## 🎯 Legenda de Status
-
-### Estágios de Feature
-
-```
-1️⃣ PROPOSTA
-   ├─ Conceito escrito
-   ├─ Discussão de viabilidade
-   └─ Pronto para Discovery
-
-2️⃣ DISCOVERY
-   ├─ Especificação detalhada (GDD)
-   ├─ Design document completo
-   └─ Pronto para implementação
-
-3️⃣ ANDAMENTO
-   ├─ Desenvolvimento ativo
-   ├─ PRs em revisão
-   ├─ Testes em paralelo
-   └─ Pronto para validação QA
-
-4️⃣ QA
-   ├─ Testing gates validados
-   ├─ Bugs reportados + fixados
-   ├─ Performance validada
-   └─ Pronto para merge
-
-5️⃣ FINALIZADAS
-   ├─ Merged em main
-   ├─ Deployed em produção
-   ├─ Monitorado por bugs
-   └─ Documentação atualizada
+docs/specs/
+├── README.md (Este arquivo - Entrada Master)
+├── propostas/ — Ideias e conceitos iniciais em Backlog
+├── andamento/ — Especificações técnicas e fases em desenvolvimento ativo
+└── finalizadas/ — Especificações e relatórios de features prontas em produção
 ```
 
 ---
 
-## 📈 Pipeline de Features
+## 📊 Quadro Kanban Simplificado (Esteira de Desenvolvimento)
+
+Abaixo está a representação visual da esteira de desenvolvimento do jogo, organizando as iniciativas pelo seu amadurecimento e estágio atual.
+
+| 🔵 BACKLOG / PROPOSTAS | 🟡 PLANEJADO / DISCOVERY | 🟠 EM ANDAMENTO | 🟢 FINALIZADOS / PRODUÇÃO |
+| :--- | :--- | :--- | :--- |
+| **03. Multijogador Coop**<br>_Coop P2P via WebRTC_<br>📄 [[./propostas/03_MULTIJOVADOR_COOPERATIVO_E_INTERATIVIDADE.md]] | **02. Assets Externos (UI)**<br>_Transição para pixel-art de alta resolução_<br>📄 [[./propostas/02_DISCOVERY_UI_ASSETS_EXTERNOS.md]] | **Fase 4: Mundo Contínuo**<br>_Mapeamento de biomas, Safe Town e transições_<br>📄 [[./andamento/04_FASE4_MUNDO_CONTINUO.md]] | **Fase 1: Inconsciência**<br>_Sistema de desmaio do jogador (2x max)_<br>📄 [[./finalizadas/01_FASE1_INCONSCIENCIA.md]] |
+| **05. Skinning & Camadas Canvas**<br>_Customização de visual em runtime_<br>📄 [[./propostas/05_SISTEMA_DE_SKINNING_E_CAMADAS_DINAMICAS.md]] | **04. Mobile App & Monetização**<br>_Ajustes finos Capacitor e IAP_<br>📄 [[./propostas/04_MOBILE_APP_E_MONETIZACAO_INDIE.md]] | **UI Gamepad Navigation**<br>_Navegação D-Pad em menus React/Phaser_<br>📄 [[./andamento/SPECS_EVOLUCAO.md]] | **Fase 2: Tela de Morte & Gore**<br>_Gore persistente, corpos e câmera de morte_<br>📄 [[./finalizadas/02_FASE2_TELA_DE_MORTE_E_GORE.md]] |
+| **06. Sistema de Prestigio**<br>_Blood Seal prestige e scaling_<br>📄 [[./propostas/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md]] | **D-1. Diálogos com NPCs**<br>_Sistema de árvore de conversas e quests locais_<br>📄 [[./andamento/04_FASE4_MUNDO_CONTINUO.md]] | | **Fase 3: Condições de Sobrevivência**<br>_Fome, infecção e itens curativos_<br>📄 [[./finalizadas/03_FASE3_CONDICOES_DE_SOBREVIVENCIA.md]] |
+| **07. Eventos Globais Sazonais**<br>_Eventos rotativos do mundo gótico_<br>📄 [[./propostas/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md]] | **D-2. Clima Dinâmico**<br>_Partículas de clima por bioma (chuva de sangue)_<br>📄 [[./andamento/04_FASE4_MUNDO_CONTINUO.md]] | | **Fase 5: Polimento de Produção**<br>_PWA completo, Gamepad, Haptics, Conquistas_<br>📄 [[./finalizadas/05_FASE5_POLIMENTO_PRODUCAO_COMPLETO.md]] |
+| | **D-3. Fast Travel**<br>_Viagem rápida entre vilarejos descobertos_<br>📄 [[./andamento/04_FASE4_MUNDO_CONTINUO.md]] | | **Eixo A: Gráficos Avançados**<br>_postFX GPU, iluminação Light2D e Normal Maps_<br>📄 [[./andamento/06_EIXO_A_GRAFICOS_AVANCADOS.md]] |
+| | | | **Records Display**<br>_Modal de recordes locais integrados_<br>📄 [[./finalizadas/01_RECORDS_DISPLAY.md]] |
+
+---
+
+## 🧠 Decisões de Engenharia & Arquitetura (ADRs Sintetizadas)
+
+O amadurecimento técnico do Bloodmage 1995 é guiado por um conjunto de decisões arquiteturais rígidas para assegurar alta performance de codificação e execução:
+
+### 1. Comunicação Desacoplada (Phaser ↔ React 19)
+*   **Decisão:** O loop físico e render de alta frequência do Phaser atualiza o estado global no Zustand (`src/store/gameStore.ts`) de forma otimizada com throttling, enquanto a interface do usuário (HUD de feitiços, inventário, etc.) é desenhada no React 19.
+*   **Mitigação de Inputs:** Para evitar que cliques nos overlays de React disparem ações no canvas do Phaser, eventos de pointer do React chamam estritamente `e.stopPropagation()` e `e.nativeEvent.stopImmediatePropagation()`.
+
+### 2. Arquitetura Híbrida de Assets (Físico ↔ Fallback Procedural)
+*   **Decisão:** Assets físicos (.png/.webp/.mp3) são carregados de forma prioritária. Caso ocorra falha de rede ou de carregamento, o sistema falha silenciosamente, envia telemetria via Sentry, e executa o fallback procedural (geração de canvas em tempo real em `textureGenerator.ts` ou síntese em `soundEngine.ts`) sob a mesma chave identificadora. Isso garante imunidade a "fantasmas visuais" e crashs por falta de arquivos físicos.
+
+### 3. Persistência Sanitizada com Validação Zod Strict
+*   **Decisão:** Nenhum dado é lido do `localStorage` sem validação rígida de tipo e limites. O arquivo `src/utils/localStorage.ts` encapsula todas as escritas e leituras através de esquemas Zod robustos, aplicando fallbacks automáticos para dados corrompidos de versões anteriores, prevenindo prototype pollution e quebras silenciosas.
+
+### 4. Iluminação Light2D + Normal Maps Procedurais (Eixo A)
+*   **Decisão:** A iluminação fictícia via CPU (Graphics overlay) foi substituída por iluminação 2D acelerada por GPU (WebGL `LightsPlugin`), com normal maps gerados dinamicamente em runtime através do cálculo de derivadas de luminância das texturas procedurais. Quando WebGL não está disponível, a engine reverte automaticamente para o fallback gráfico CPU.
+
+### 5. Otimização Brutal de Performance (Fase 5 AAA)
+*   **Decisão:** Para garantir 60+ FPS em dispositivos mobile modestos, o jogo implementa:
+    *   **Object Pooling (`ObjectPool.ts`):** Reuso estático de projéteis, partículas e efeitos, eliminando gargalos de Garbage Collection.
+    *   **Viewport Culling (`ViewportCuller.ts`):** Entidades fora da tela param de desenhar e processar atualizações pesadas de renderização.
+    *   **AABB Pruning:** Testes rápidos de colisão de caixa delimitadora descartam elementos distantes antes de executar raycasts geométricos caros de linha de visão.
+
+---
+
+## 📈 Amadurecimento do Projeto (Maturation Levels)
+
+Medição contínua do nível de prontidão comercial das frentes do projeto para o lançamento:
 
 ```
-PROPOSTAS
-    ↓
-(Discussion com Felipe)
-    ↓
-DISCOVERY (Spec detalhado)
-    ↓
-ANDAMENTO (Desenvolvimento)
-    ↓
-QA (Testes)
-    ↓
-FINALIZADAS (Deploy)
-    ↓
-MONITORED (Produção)
+[Core Gameplay Engine]  █████████████████████████░ 96% (Estável, FSM Combat)
+[Gráficos e Pós-FX]     ██████████████████████░░░ 88% (GPU Lights, Normal Maps)
+[Persistência e Estado] █████████████████████████░ 98% (Strict Zod Schemas)
+[Infraestrutura PWA/Lojas]██████████████████████░░░ 88% (PWA Webmanifest, TWA Scripts)
+[Quests e Narrativa]    ██████████████░░░░░░░░░░░ 56% (Fase 4 Safe Town, Falta Dialog Tree)
 ```
 
----
-
-## 🔄 Workflow de Mudança de Status
-
-### Proposta → Discovery
-
-**Checklist:**
-- [ ] Discussão realizada com Felipe?
-- [ ] Viabilidade técnica confirmada?
-- [ ] Design agreement conseguido?
-- [ ] Prioridade definida (P0-P3)?
-
-**Ação:** Mova arquivo de propostas// para andamento//  
-**Crie:** Spec detalhado em [[../features/XX_NOME.md]]
-
-### Discovery → Andamento
-
-**Checklist:**
-- [ ] Spec completa em [[../features/XX_NOME.md]]?
-- [ ] Contexto criado para agentes (ex: GAME_DESIGNER.md)?
-- [ ] Testing gates documentados?
-- [ ] Agente de IA designado?
-
-**Ação:** Crie PR com branch `feature/XX-nome`  
-**Link:** Referência spec em commit
-
-### Andamento → QA
-
-**Checklist:**
-- [ ] Code review aprovado?
-- [ ] TypeScript: zero erros?
-- [ ] Sem regressões documentadas?
-- [ ] Testing gates passando?
-
-**Ação:** Mova arquivo para finalizadas//  
-**Crie:** Relatório de QA
-
-### QA → Finalizadas
-
-**Checklist:**
-- [ ] Todos os testes passaram?
-- [ ] Performance validada?
-- [ ] Documentação atualizada?
-- [ ] Bug nenhum encontrado?
-
-**Ação:** Merge para main  
-**Deploy:** Produção
+### Detalhes de Maturação por Subsistema:
+1.  **Core Combat & Physics (96%):** Altamente robusto. Estados de windup, strike e recovery totalmente implementados e livres de falhas. Proibição absoluta de touch damage passivo.
+2.  **Sound Engine (90%):** Altamente robusto e leve, gerando trilhas de áudio e SFX puramente por síntese Web Audio, com suporte a transições dinâmicas de reverb para biomas indoors/outdoors.
+3.  **UI & HUD Design (92%):** Layout Mobile-First excelente baseado em Diablo II e Dungeon Siege 1. Suporta HUD adaptativa, joystick virtual, gamepad cross-platform nativo e haptics em colisões/morte.
+4.  **World & Generation (80%):** O ecossistema contínuo une a Safe Town inicial (Room 0) aos biomas. Possui persistência de cadáveres e manchas de sangue.
 
 ---
 
-## 📂 Organização de Arquivos Spec
+## 🔄 Fluxo de Esteira de Desenvolvimento (Workflow)
 
-### Dentro de finalizadas//
+Independentemente se você está desenvolvendo no **Replit Sandbox**, **Localmente**, ou integrando no **GitHub**, siga estritamente os checkpoints abaixo ao mover uma iniciativa:
 
-```markdown
-# Records Display System
-
----
-status: FINALIZADA
-phase: V1
-completed_date: 2026-08-09
-responsible: Claude + Felipe
-link_to_pr: #18
----
-
-## ✅ O que foi entregue
-- Modal de records funcional
-- Top 8 com design harmonizado
-- Integração localStorage
-- Botão troféu no HUD
-
-## 📊 Métricas
-- Performance: 60 FPS ✅
-- Memory: <5MB ✅
-- Tests: Todos passaram ✅
-
-## 📝 Documentação
-- Spec: [[../../gameplay/05_RECORDS_SYSTEM.md]]
-- Design: [[../../design/02_UI_PATTERNS.md]]
-- Context: [[../../context/FRONTEND_DEVELOPER.md]]
+```
+┌───────────┐     ┌───────────┐     ┌───────────┐     ┌───────────┐     ┌─────────────┐
+│ 1.PROPOSTA│ ──> │2.DISCOVERY│ ──> │3.ANDAMENTO│ ──> │   4.QA    │ ──> │5.FINALIZADO │
+└───────────┘     └───────────┘     └───────────┘     └───────────┘     └─────────────┘
+  Conceito          Spec e GDD        Dev Ativo         Verificação       Merge & Deploy
 ```
 
-### Dentro de andamento//
+### Checkpoints Exigidos por Transição:
 
-```markdown
-# Inconsciência (Fase 1)
+#### A. Proposta ➔ Discovery
+*   Discussão técnica preliminar documentada.
+*   Viabilidade de orçamentos de RAM/VRAM para mobile validada.
+*   Criação de rascunho de especificação em `docs/specs/propostas/`.
+
+#### B. Discovery ➔ Andamento
+*   Documento de especificação detalhado movido para `docs/specs/andamento/` ou `docs/features/`.
+*   Zonas críticas anti-regressão em `docs/critical/01_CRITICAL_FILES.md` mapeadas e protegidas.
+*   **Confirmação do Domínio:** Alterações em regras de combate ou status góticos exigem confirmação prévia formal do usuário.
+
+#### C. Andamento ➔ QA
+*   Compilação limpa com TypeScript Strict (`pnpm run typecheck` zero erros).
+*   Testes unitários vitest passando sem exceção (`pnpm test`).
+*   Verificação visual mobile em 320px de largura mantendo legibilidade e acessibilidade.
+
+#### D. QA ➔ Finalizado
+*   Validação de performance confirmando 60 FPS estáveis na cena de combate.
+*   Mover arquivo de especificação técnica para `docs/specs/finalizadas/`.
+*   Atualização deste Documento Mestre de Especificações e do painel Kanban.
 
 ---
-status: ANDAMENTO
-phase: 1/4
-start_date: 2026-08-09
-eta: 2026-08-20
-responsible: Jules
----
 
-## 📋 O que será feito
-- Estado de desmaio ao invés de morte
-- Inimigos perdem aggro
-- Regeneração passiva
-- Limite de 2 desmaios por sessão
+## 🛠️ Guia do Desenvolvedor Cross-Platform
 
-## 🎯 Success Criteria
-- [ ] Player desmaiar ao HP <= 0
-- [ ] Inimigos se afastam
-- [ ] HP regenera até 5%
-- [ ] Contador funciona
-- [ ] localStorage persiste
+Seja no Replit Workspace, terminal local ou GitHub Actions, os comandos fundamentais de integridade são unificados:
 
-## 📚 Documentação
-- Spec: [[../../features/01_INCONSCIOUSNESS_PHASE1.md]]
-- Context: [[../../context/GAME_DESIGNER.md]]
-- Critical: [[../../critical/01_CRITICAL_FILES.md]]
-
-## 🚦 Testing Gates
-- TypeScript strict ✅
-- Teste 3x desmaios
-- FPS 60+
-- Zero regressões
+### 1. Preparação de Ambiente
+Se a pasta `node_modules` estiver ausente ou corrompida (comum em trocas rápidas de workspace do Replit), force a recriação limpa com:
+```bash
+pnpm install --force
 ```
 
-### Dentro de propostas//
+### 2. Verificação de Tipos (Gate de Compilação)
+O Bloodmage 1995 exige 100% de conformidade com TypeScript Strict. Rode antes de comitar:
+```bash
+pnpm run typecheck
+```
 
-```markdown
-# PvP Multiplayer System
+### 3. Suite de Testes Unitários (Vitest)
+Garante que as regras de persistência local, lógica de conquistas e pós-processamento estejam intactas:
+```bash
+pnpm test
+```
 
----
-status: PROPOSTA
-priority: BAIXA
-phase: Conceito
----
-
-## 💡 Conceito
-Adicionar modo competitivo onde 2-4 jogadores lutam entre si.
-
-## 🎮 Jogabilidade
-- Arena pequena (não o calabouço)
-- Sem inimigos
-- Drop de loot normal
-- Fim do jogo: último vivo ganha
-
-## ⚠️ Desafios Técnicos
-- Sincronização de rede
-- Latência de inputs
-- Anti-cheat
-
-## 📊 Viabilidade
-- Técnica: ⚠️ Alta (requer backend)
-- Design: ✅ Média
-- Prioridade: 🔵 Baixa
-
-## 👤 Próximos Passos
-- Discussão com Felipe
-- Design refinement
-- Estimar esforço
+### 4. Testes Ponta a Ponta (Playwright Visual)
+Para checar regressões de renderização na HUD ou nos componentes góticos de React:
+```bash
+pnpm test:e2e
 ```
 
 ---
 
-## 🎯 Como Usar Este Index
+**Mantido por:** Product Manager / Lead Architect
+**Última Atualização:** 2026-08-11
+**Versão:** 1.2 (Master Spec & Unified Development Pipeline)
 
-### Para Agentes de IA
-
-```markdown
-Você trabalha no Bloodmage 1995.
-
-Status de features: docs/specs//README.md
-
-Sua feature está em:
-- propostas// → Ainda em discussão
-- andamento// → Implemente agora!
-- finalizadas// → Já entregue, manutenção
-
-Link para sua spec: [[../features/XX.md]]
-```
-
-### Para Felipe (Product Manager)
-
-```
-1. Nova ideia?
-   → Crie arquivo em propostas//
-   → Convide agentes para discussão
-
-2. Feature aprovada?
-   → Mova para andamento//
-   → Crie spec em features//
-
-3. Feature pronta?
-   → Mova para finalizadas//
-   → Archive histórico se necessário
-```
-
-### Para Jules / Agentes de Desenvolvimento
-
-```
-1. Receba task de Felipe
-   → Abra docs/specs/andamento/
-   → Encontre sua feature
-   → Leia spec em [[../features/XX.md]]
-
-2. Implementar
-   → Segue contexto de seu role ([[../context/]])
-   → Valida contra [[../critical/]]
-
-3. Pronto?
-   → Notifica Felipe
-   → Felipe move para finalizadas//
-```
-
----
-
-## 📊 Dashboard de Status
-
-### Gráfico de Progresso
-
-```
-FINALIZADAS    ██████████  100% (6/6)
-ANDAMENTO      ████████░░   80% (1/1)
-PROPOSTAS      ██████░░░░   60% (7/7)
-
-Total: 14 features
-Completado: 6
-Em progresso: 1
-Backlog: 7 (Especificadas em Detalhe)
-```
-
-### Timeline
-
-```
-Ago 2026 |█████████████|  Records (✅)
-         |█████████████|  Inconsciência (✅ 100%)
-         |█████████████|  Menu Morte (✅ 100%)
-         |█████████████|  Status Effects (✅ 100%)
-Set 2026 |████████░░░░░|  Mundo Contínuo (🟡 80%)
-```
-
----
-
-## 🔔 Notificações de Status
-
-### Quando Atualizar
-
-**SEMPRE atualize status quando:**
-
-1. ✅ Feature completada (PR merged)
-   - Move de andamento// → finalizadas//
-   - Update date em frontmatter
-   - Link para PR #numero
-
-2. 🟡 Feature iniciar desenvolvimento
-   - Move de propostas// → andamento//
-   - Set start_date
-   - Assign responsible
-
-3. 🔴 Feature bloqueada
-   - Adicione status: BLOQUEADA
-   - Explique bloqueador
-   - ETA revisada
-
-4. 📝 Spec atualizada
-   - Update version em frontmatter
-   - Commit message referencia spec
-   - Notifique agentes
-
----
-
-## 📚 Documentação Relacionada
-
-- [[../README.md]] - Índice principal
-- [[../features/]] - Especificações detalhadas
-- [[../context/]] - Contextos por role
-- [[../critical/]] - Proteção anti-regressão
-
----
-
-## 🚀 Próximos Passos
-
-- [ ] Preencher finalizadas// com features pronto
-- [ ] Preencher andamento// com features em dev
-- [ ] Organizar propostas// com ideias aprovadas
-- [ ] Setup automático de update de status
-- [ ] Integrar com GitHub Issues/Projects
-- [ ] Criar automação para mover specs
-
----
-
-**Mantido por:** Felipe (Product Manager)  
-**Última atualização:** 2026-08-10  
-**Versão:** 1.1
-
-[[../README.md]] | [[./finalizadas/]] | [[./andamento/]] | [[./propostas/]]
+[[docs/README.md]] | [[AGENTS.md]] | [[docs/critical/01_CRITICAL_FILES.md]]
