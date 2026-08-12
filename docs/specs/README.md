@@ -62,6 +62,7 @@ docs/specs//
 
 | Feature | Prioridade | Conceito | Responsável |
 |---------|-----------|----------|-------------|
+| **Evolução de UI com Assets Externos** | Alta | Transição para pixel art de alta resolução com fallback procedural | Jules |
 | **Evolução Gráfica Avançada** | Média | postFX WebGL + iluminação Light2D/normal maps + pipeline de assets | - |
 | **PvP Multiplayer** | Baixa | Adicionar modo competitivo | - |
 | **Mobile App** | Média | Build nativa iOS/Android | - |
