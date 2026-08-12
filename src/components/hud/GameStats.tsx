@@ -7,9 +7,9 @@ interface GameStatsProps {
 }
 
 const BIOME_NAMES: Record<string, string> = {
-  fosso_chagas: 'Fosso das Chagas',
-  catacumbas_martires: 'Catacumbas dos Mártires',
-  santuario_sangue: 'Santuário de Sangue',
+  fosso_chagas: 'FOSSO DAS CHAGAS',
+  catacumbas_martires: 'CATACUMBAS DOS MÁRTIRES',
+  santuario_sangue: 'SANTUÁRIO DE SANGUE',
 };
 
 export const GameStats: React.FC<GameStatsProps> = ({ stats }) => {
@@ -22,17 +22,15 @@ export const GameStats: React.FC<GameStatsProps> = ({ stats }) => {
   };
 
   return (
-    <div className="bg-black/85 border-2 border-amber-900/80 px-4 py-2 rounded-lg text-center backdrop-blur shadow-xl flex flex-col items-center">
-      <div className="font-pixel text-xs text-amber-400 uppercase tracking-wider flex items-center gap-2">
-        <span>🏰 {BIOME_NAMES[currentBiome] || 'Calabouço'} - ANDAR {stats.floorDepth || 1}</span>
-      </div>
-      <div className="flex items-center gap-3 text-[11px] font-retro text-gray-300 pt-0.5">
+    <div className="bg-[#0c0a09]/80 border border-[#b8860b]/30 px-3 py-1 text-center backdrop-blur shadow-[2px_2px_8px_rgba(0,0,0,0.85)] flex flex-row items-center justify-center gap-3 max-w-full overflow-hidden whitespace-nowrap">
+      <span className="font-pixel text-[8px] text-[#e8c76a] font-bold tracking-wider">
+        🏰 {BIOME_NAMES[currentBiome] || 'CALABOUÇO'} (ANDAR {stats.floorDepth || 1})
+      </span>
+      <span className="text-gray-600 text-[8px]">•</span>
+      <div className="flex items-center gap-2.5 text-[8px] font-pixel text-gray-300">
         <span className="text-red-400">ABATES: <strong className="text-white">{stats.kills}</strong></span>
-        <span>•</span>
         <span className="text-emerald-400">PONTOS: <strong className="text-white">{stats.score}</strong></span>
-        <span>•</span>
         <span className="text-rose-400">💎 <strong className="text-rose-300">{bloodCrystals}</strong></span>
-        <span>•</span>
         <span className="text-blue-300">{formatTime(stats.timeSurvivedSeconds)}</span>
       </div>
     </div>

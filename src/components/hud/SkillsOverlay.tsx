@@ -30,12 +30,12 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 const COLOR_ACTIVE: Record<string, string> = {
-  hellfire_nova: 'bg-emerald-950/90 border-emerald-500 text-emerald-300 shadow-[0_0_14px_rgba(16,185,129,0.4)]',
-  syphon_soul: 'bg-purple-950/90 border-purple-500 text-purple-300 shadow-[0_0_14px_rgba(147,51,234,0.4)]',
-  bone_shield: 'bg-slate-900/90 border-slate-300 text-slate-100 shadow-[0_0_14px_rgba(226,232,240,0.4)]',
-  crimson_scythe: 'bg-red-950/90 border-red-500 text-red-300 shadow-[0_0_14px_rgba(239,68,68,0.5)]',
-  blood_ritual_circle: 'bg-rose-950/90 border-rose-500 text-rose-300 shadow-[0_0_14px_rgba(244,63,94,0.5)]',
-  hemomancy_beam: 'bg-orange-950/90 border-orange-400 text-orange-200 shadow-[0_0_14px_rgba(251,146,60,0.5)]',
+  hellfire_nova: 'bg-emerald-950/80 border-emerald-600 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.35)]',
+  syphon_soul: 'bg-purple-950/80 border-purple-600 text-purple-300 shadow-[0_0_12px_rgba(147,51,234,0.35)]',
+  bone_shield: 'bg-zinc-900/80 border-[#b8860b]/60 text-amber-200 shadow-[0_0_12px_rgba(184,134,11,0.25)]',
+  crimson_scythe: 'bg-red-950/80 border-red-700 text-red-300 shadow-[0_0_12px_rgba(239,68,68,0.4)]',
+  blood_ritual_circle: 'bg-rose-950/80 border-rose-700 text-rose-300 shadow-[0_0_12px_rgba(244,63,94,0.4)]',
+  hemomancy_beam: 'bg-orange-950/80 border-orange-600 text-orange-200 shadow-[0_0_12px_rgba(251,146,60,0.4)]',
 };
 
 interface SkillsOverlayProps {
@@ -146,7 +146,7 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
     const cd = getCooldownRemaining(spellId);
     const canCast = checkCanCast(spellId);
     const Icon = ICON_MAP[spell.icon] || Flame;
-    const activeCls = COLOR_ACTIVE[spellId] || 'bg-gray-900/90 border-gray-500 text-gray-300';
+    const activeCls = COLOR_ACTIVE[spellId] || 'bg-gray-900 border-gray-600 text-gray-300';
 
     const cdMax = spell.cooldownMs;
     const cdPct = cd > 0 ? Math.min(1, cd / cdMax) : 0;
@@ -155,7 +155,7 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
     const layout = settings.hudLayout?.[spellId];
     const size = layout?.size || 'medium';
 
-    let sizeClasses = 'w-14 h-14 md:w-16 md:h-16 text-[10px]';
+    let sizeClasses = 'w-14 h-14 md:w-16 md:h-16 text-[9px]';
     let iconSize = 'w-5 h-5 md:w-6 md:h-6';
     if (size === 'small') {
       sizeClasses = 'w-11 h-11 md:w-12 md:h-12 text-[8px]';
@@ -172,29 +172,29 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
           onPointerDown={(e) => handleEditPointerDown(e, spellId)}
           onPointerMove={(e) => handleEditPointerMove(e, spellId)}
           onPointerUp={(e) => handleEditPointerUp(e, spellId)}
-          className={`relative border-2 border-dashed border-amber-500 bg-amber-950/70 text-amber-200 flex flex-col items-center justify-center gap-0.5 select-none cursor-move ${sizeClasses}`}
+          className={`relative border-2 border-dashed border-[#b8860b] bg-[#1e1713] text-[#e8c76a] flex flex-col items-center justify-center gap-0.5 select-none cursor-move rounded-full ${sizeClasses}`}
           style={layout ? { position: 'fixed', left: layout.x, top: layout.y, zIndex: 100 } : undefined}
         >
           <Icon className={iconSize} />
-          <span className="text-[6px] font-pixel block font-sans">ARRASTAR</span>
+          <span className="text-[6px] font-pixel block font-sans">MOVER</span>
 
           {/* Size picker */}
-          <div className="absolute -top-7 left-1/2 -translate-x-1/2 flex gap-1 bg-black/90 border border-amber-500 p-0.5 rounded shadow z-50 pointer-events-auto">
+          <div className="absolute -top-7 left-1/2 -translate-x-1/2 flex gap-1 bg-[#0c0a09] border border-[#b8860b]/60 p-0.5 rounded shadow z-50 pointer-events-auto">
             <span
               onClick={(e) => { e.stopPropagation(); setButtonSize(spellId, 'small'); }}
-              className={`px-1 text-[8px] cursor-pointer hover:text-amber-400 ${size === 'small' ? 'text-amber-400 font-bold' : 'text-gray-400'}`}
+              className={`px-1 text-[8px] cursor-pointer hover:text-white ${size === 'small' ? 'text-[#e8c76a] font-bold' : 'text-gray-500'}`}
             >
               S
             </span>
             <span
               onClick={(e) => { e.stopPropagation(); setButtonSize(spellId, 'medium'); }}
-              className={`px-1 text-[8px] cursor-pointer hover:text-amber-400 ${size === 'medium' ? 'text-amber-400 font-bold' : 'text-gray-400'}`}
+              className={`px-1 text-[8px] cursor-pointer hover:text-white ${size === 'medium' ? 'text-[#e8c76a] font-bold' : 'text-gray-500'}`}
             >
               M
             </span>
             <span
               onClick={(e) => { e.stopPropagation(); setButtonSize(spellId, 'large'); }}
-              className={`px-1 text-[8px] cursor-pointer hover:text-amber-400 ${size === 'large' ? 'text-amber-400 font-bold' : 'text-gray-400'}`}
+              className={`px-1 text-[8px] cursor-pointer hover:text-white ${size === 'large' ? 'text-[#e8c76a] font-bold' : 'text-gray-500'}`}
             >
               L
             </span>
@@ -208,7 +208,6 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
         key={spellId}
         onPointerDown={(e) => {
           if (!canCast) {
-            // Haptic feedback: weak pulse when skill is on cooldown
             if (cd > 0) {
               CombatFeel.triggerVibration('cooldown_warning');
             }
@@ -274,23 +273,24 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
             }
           }));
         }}
-        className={`relative rounded-2xl border-2 flex flex-col items-center justify-center gap-0.5
-          transition-all active:scale-90 cursor-pointer touch-manipulation select-none
+        className={`relative rounded-full border-2 flex flex-col items-center justify-center gap-0.5
+          transition-all active:scale-95 cursor-pointer touch-manipulation select-none
           ${!canCast
-            ? 'bg-gray-950/90 border-gray-800 text-gray-600 opacity-60'
-            : `${activeCls} hover:brightness-125`
+            ? 'bg-black/80 border-gray-900 text-gray-700 opacity-50'
+            : `${activeCls} hover:brightness-110`
           } ${sizeClasses}`}
         style={layout ? { position: 'fixed', left: layout.x, top: layout.y, zIndex: 100 } : undefined}
         title={`${spell.name}: ${spell.description}`}
         aria-label={spell.name}
       >
-        <Icon className={iconSize} />
+        {/* Stone-carved icon overlay feel */}
+        <Icon className={`${iconSize} drop-shadow-[1px_1px_2px_rgba(0,0,0,0.9)]`} />
 
-        {/* HP cost badge */}
+        {/* Cost labels */}
         {spell.hpCost ? (
-          <span className="text-[7px] font-pixel text-red-400 leading-none">-{spell.hpCost}HP</span>
+          <span className="text-[7px] font-pixel text-rose-400 font-bold leading-none">-{spell.hpCost}HP</span>
         ) : (
-          <span className="text-[7px] font-pixel text-gray-500 leading-none">
+          <span className="text-[7px] font-pixel text-blue-300 font-bold leading-none">
             {spell.manaCost > 0 ? `-${spell.manaCost}MP` : ''}
           </span>
         )}
@@ -299,13 +299,13 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
         {cd > 0 && (
           <>
             <div
-              className="absolute inset-0 rounded-2xl"
+              className="absolute inset-0 rounded-full"
               style={{
-                background: `conic-gradient(rgba(0,0,0,0.72) ${cdPct * 360}deg, transparent ${cdPct * 360}deg)`,
+                background: `conic-gradient(rgba(0,0,0,0.78) ${cdPct * 360}deg, transparent ${cdPct * 360}deg)`,
               }}
             />
-            <span className="absolute inset-0 flex items-center justify-center font-pixel text-[10px] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">
-              {(cd / 1000).toFixed(1)}
+            <span className="absolute inset-0 flex items-center justify-center font-pixel text-[9px] text-[#e8c76a] font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">
+              {(cd / 1000).toFixed(1)}s
             </span>
           </>
         )}
@@ -328,9 +328,9 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
           ) : (
             <div
               key={`empty-${idx}`}
-              className="w-14 h-14 md:w-16 md:h-16 rounded-2xl border-2 border-dashed border-gray-800/60 bg-black/30 flex items-center justify-center"
+              className="w-14 h-14 md:w-16 md:h-16 rounded-full border-2 border-dashed border-gray-800 bg-black/35 flex items-center justify-center text-gray-700 font-bold text-xs"
             >
-              <span className="text-[8px] font-pixel text-gray-700">+</span>
+              +
             </div>
           ),
         )}
