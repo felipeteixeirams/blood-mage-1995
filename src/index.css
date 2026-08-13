@@ -225,3 +225,14 @@ body {
   z-index: 1;
 }
 
+/* Gamepad UI Navigation focus highlight */
+[data-gamepad-focused="true"],
+.gamepad-focused {
+  outline: 3px solid #f59e0b !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.8), inset 0 0 8px rgba(245, 158, 11, 0.3) !important;
+  transform: scale(1.03);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+

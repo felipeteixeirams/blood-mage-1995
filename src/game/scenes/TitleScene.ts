@@ -123,6 +123,8 @@ export class TitleScene extends Phaser.Scene {
     this.buildMenu();
     this.buildOverlays();
 
+    InputManager.init();
+
     // Input listener to trigger game start when clicking main arena
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       // If clicking near center/prompt area
@@ -654,5 +656,27 @@ private buildHud() {
     this.logoGlow.setAlpha(0.22 + 0.12 * ((a + 1) / 2) + 0.05 * Math.sin(t * 2.2));
 
     this.prompt.setAlpha(0.45 + 0.55 * (0.5 + 0.5 * Math.sin(t * 3.2)));
+
+    // Gamepad Navigation no Menu Principal
+    if (InputManager.isGamepadConnected()) {
+      if (!this.menuOpen) {
+        if (InputManager.wasButtonPressed("a") || InputManager.wasButtonPressed("start")) {
+          const fn = this.registry.get("onStartGame") as (() => void) | undefined;
+          if (fn) fn();
+        } else if (InputManager.wasButtonPressed("y") || InputManager.wasButtonPressed("select")) {
+          this.openMenu();
+        }
+      } else {
+        if (InputManager.wasButtonPressed("dpadDown")) {
+          this.highlight((this.menuIndex + 1) % this.menuItems.length);
+        } else if (InputManager.wasButtonPressed("dpadUp")) {
+          this.highlight((this.menuIndex - 1 + this.menuItems.length) % this.menuItems.length);
+        } else if (InputManager.wasButtonPressed("a") || InputManager.wasButtonPressed("start")) {
+          this.menuItems[this.menuIndex]?.action();
+        } else if (InputManager.wasButtonPressed("b") || InputManager.wasButtonPressed("select")) {
+          this.closeMenu();
+        }
+      }
+    }
   }
 }

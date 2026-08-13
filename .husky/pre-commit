@@ -1,1 +1,5 @@
-pnpm typecheck && pnpm typecheck:game && pnpm lint-staged
+if command -v pnpm >/dev/null 2>&1; then
+  pnpm typecheck && pnpm typecheck:game && pnpm lint-staged
+else
+  npm run typecheck && npm run typecheck:game && npx lint-staged
+fi

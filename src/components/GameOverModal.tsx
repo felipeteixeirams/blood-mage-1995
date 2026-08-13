@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { PlayerStats } from '../types/game';
-import { RotateCcw, Home, Skull, Flame, Trophy, Clock, Heart } from 'lucide-react';
+import { RotateCcw, Home, Skull, Flame, Trophy, Clock } from 'lucide-react';
 import { soundEngine } from '../utils/soundEngine';
+import { useGamepadUINavigation } from '../hooks/useGamepadUINavigation';
 
 interface GameOverModalProps {
   stats: PlayerStats;
@@ -10,18 +11,29 @@ interface GameOverModalProps {
 }
 
 export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, onGoHome }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60).toString().padStart(2, '0');
     const s = Math.floor(secs % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
   };
 
+  // Suporte a Gamepad (D-pad Up/Down, Botão A confirma)
+  useGamepadUINavigation({
+    containerRef,
+    isActive: true,
+  });
+
   return (
     <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-4 select-none animate-blood-pulse">
       {/* Dark vignette border representing tunneling vision */}
       <div className="absolute inset-0 bg-gradient-radial from-transparent to-black pointer-events-none z-10" />
 
-      <div className="w-full max-w-md bg-[#171309] border-4 border-[#B8860B] rounded-none p-6 shadow-[0_0_60px_rgba(153,0,0,0.85)] flex flex-col items-center space-y-6 text-center relative z-20">
+      <div
+        ref={containerRef}
+        className="w-full max-w-md bg-[#171309] border-4 border-[#B8860B] rounded-none p-6 shadow-[0_0_60px_rgba(153,0,0,0.85)] flex flex-col items-center space-y-6 text-center relative z-20"
+      >
         {/* Title Header */}
         <div className="space-y-2">
           <div className="p-3 bg-red-950/40 rounded-none border border-[#B8860B]/60 mx-auto w-fit">
@@ -93,7 +105,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
               // Dispatch CustomEvent to let Phaser handle respawn
               window.dispatchEvent(new CustomEvent('respawn-player'));
             }}
-            className="w-full py-4 bg-gradient-to-r from-red-950 via-red-900 to-red-950 hover:from-red-900 hover:to-red-800 text-red-100 font-pixel text-xs rounded-none border border-red-600 shadow-[0_0_20px_rgba(153,0,0,0.5)] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-4 bg-gradient-to-r from-red-950 via-red-900 to-red-950 hover:from-red-900 hover:to-red-800 focus:from-red-900 focus:to-red-800 text-red-100 font-pixel text-xs rounded-none border border-red-600 shadow-[0_0_20px_rgba(153,0,0,0.5)] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer outline-none"
           >
             <RotateCcw className="w-4 h-4" />
             <span>RENASCER NA VILA (PERDA DE XP)</span>
@@ -104,7 +116,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
               soundEngine.playButtonClick();
               onGoHome();
             }}
-            className="w-full py-3 bg-black/80 hover:bg-gray-950 border border-gray-800 rounded-none text-gray-400 font-retro text-sm flex items-center justify-center gap-2 hover:border-gray-600 transition-colors cursor-pointer"
+            className="w-full py-3 bg-black/80 hover:bg-gray-950 focus:bg-gray-900 border border-gray-800 focus:border-gray-500 rounded-none text-gray-400 font-retro text-sm flex items-center justify-center gap-2 hover:border-gray-600 transition-colors cursor-pointer outline-none"
           >
             <Home className="w-4 h-4" />
             <span>RETORNAR AO MENU</span>
@@ -114,3 +126,5 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
     </div>
   );
 };
+
+export default GameOverModal;

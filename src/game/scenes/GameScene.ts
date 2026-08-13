@@ -595,6 +595,7 @@ export class GameScene extends Phaser.Scene {
 
         this.enemiesGroup.add(enemy);
         this.depthGroup.add(enemy);
+        this.lightingPolish?.addMonsterGlow(enemy, pending.monsterId);
       }
     }
   }
@@ -707,6 +708,7 @@ export class GameScene extends Phaser.Scene {
         const boss = new Enemy(this, room.centerX, room.centerY, bossId);
         this.enemiesGroup.add(boss);
         this.depthGroup.add(boss);
+        this.lightingPolish?.addMonsterGlow(boss, bossId);
         this.totalFloorMonsters++;
 
         if (bossId === 'necro_lord_boss' || bossId.includes('boss')) {
@@ -722,6 +724,7 @@ export class GameScene extends Phaser.Scene {
           const guard = new Enemy(this, room.centerX + offset, room.centerY + 50, 'cultist_acolyte');
           this.enemiesGroup.add(guard);
           this.depthGroup.add(guard);
+          this.lightingPolish?.addMonsterGlow(guard, 'cultist_acolyte');
           this.totalFloorMonsters++;
         }
       } else {
@@ -1588,6 +1591,7 @@ export class GameScene extends Phaser.Scene {
         boltCfg.baseDamage * this.player.stats.damageMultiplier,
         false
       );
+      this.lightingPolish?.addSpellGlow(proj, 'blood_bolt');
     }
   }
 
@@ -1949,6 +1953,7 @@ export class GameScene extends Phaser.Scene {
     const chestLoot = LootSystem.generateLoot(this.currentFloorDepth, true);
     const lootSprite = new LootSprite(this, chest.x + (Math.random() - 0.5) * 30, chest.y + (Math.random() - 0.5) * 30, chestLoot);
     this.lootGroup.add(lootSprite);
+    this.lightingPolish?.addItemGlow(lootSprite, chestLoot.rarity);
 
     // Grant Blood Crystals (15 to 30)
     const crystals = 15 + Math.floor(Math.random() * 16);
@@ -1986,6 +1991,9 @@ export class GameScene extends Phaser.Scene {
     const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
     const isDead = enemy.takeDamage(finalDamage);
     CombatFeel.handleHitImpact(this, finalDamage, isCrit, false, enemy.hp / enemy.maxHp);
+    if (isCrit && this.lightingPolish) {
+      this.lightingPolish.addCriticalImpactGlow(enemy.x, enemy.y);
+    }
 
     // Floating damage numbers
     const dmgText = Math.round(finalDamage).toString();
@@ -1996,6 +2004,7 @@ export class GameScene extends Phaser.Scene {
       const stolen = finalDamage * this.player.stats.vampirism;
       this.player.heal(stolen);
       this.spawnFloatingText(this.player.x, this.player.y - 12, `+${Math.round(stolen)}`, '#22c55e', false);
+      this.lightingPolish?.addHealGlow(this.player.x, this.player.y);
     }
 
     if (isDead) {
@@ -2051,6 +2060,7 @@ export class GameScene extends Phaser.Scene {
       const lootSprite = new LootSprite(this, scav.x + (Math.random() - 0.5) * 20, scav.y + (Math.random() - 0.5) * 20, lootItem);
       this.lootGroup.add(lootSprite);
       this.depthGroup.add(lootSprite);
+      this.lightingPolish?.addItemGlow(lootSprite, lootItem.rarity);
     }
 
     // Chance to scavenge curatives (Atadura, Antídoto, Antibiótico)
@@ -2322,6 +2332,9 @@ export class GameScene extends Phaser.Scene {
     if (this.screenShake) {
       this.screenShake.light(); // Leve shake na vitória
     }
+    if (this.lightingPolish) {
+      this.lightingPolish.addDeathGlow(enemy.x, enemy.y);
+    }
 
     // Fase 5: Achievement Wiring - Kill-based achievements
     if (this.achievements) {
@@ -2485,6 +2498,7 @@ export class GameScene extends Phaser.Scene {
       const lootData = LootSystem.generateLoot(this.currentFloorDepth);
       const loot = new LootSprite(this, enemy.x + (Math.random() - 0.5) * 30, enemy.y + (Math.random() - 0.5) * 30, lootData);
       this.lootGroup.add(loot);
+      this.lightingPolish?.addItemGlow(loot, lootData.rarity);
     }
 
     enemy.destroy();
@@ -2501,6 +2515,7 @@ export class GameScene extends Phaser.Scene {
   private revealDescentPortal(x: number, y: number) {
     this.isPortalActive = true;
     this.portalSprite = this.add.sprite(x, y, 'spr_portal').setDepth(10).setScale(1.2);
+    this.lightingPolish?.addPortalGlow(this.portalSprite);
 
     // Swirling portal tween
     this.tweens.add({
@@ -2658,6 +2673,7 @@ export class GameScene extends Phaser.Scene {
 
     // Haptic feedback on level up (two long pulses)
     CombatFeel.triggerVibration('level_up');
+    this.lightingPolish?.addLevelUpGlow(this.player.x, this.player.y);
 
     // Just store pending data — player distributes later via talent tree (T key)
     if (this.callbacks?.onLevelUp) {
@@ -2671,6 +2687,7 @@ export class GameScene extends Phaser.Scene {
     this.isPaused = true;
     this.physics.pause();
     soundEngine.stopBGM();
+    this.lightingPolish?.addDeathGlow(this.player.x, this.player.y);
 
     // Fase 5: Haptic Feedback on death
     HapticFeedback.playerDeath();

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { UpgradeOption } from '../types/game';
 import { Sparkles, Zap, Heart, Clock, ShieldPlus, Footprints, Droplet, Crown } from 'lucide-react';
 import { soundEngine } from '../utils/soundEngine';
+import { useGamepadUINavigation } from '../hooks/useGamepadUINavigation';
 
 interface LevelUpModalProps {
   level: number;
@@ -10,6 +11,8 @@ interface LevelUpModalProps {
 }
 
 export const LevelUpModal: React.FC<LevelUpModalProps> = ({ level, options, onSelectOption }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case 'sparkles': return <Sparkles className="w-6 h-6 text-amber-400" />;
@@ -35,9 +38,19 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({ level, options, onSe
     }
   };
 
+  // Suporte a controle/gamepad (D-Pad Left/Right, Botão A confirma)
+  useGamepadUINavigation({
+    containerRef,
+    isActive: true,
+    horizontalGridColumns: 3,
+  });
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none">
-      <div className="w-full max-w-3xl bg-[#120a0e] border-4 border-red-900/80 rounded-xl p-6 shadow-[0_0_50px_rgba(185,28,28,0.5)] flex flex-col items-center space-y-6">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none animate-fadeIn">
+      <div
+        ref={containerRef}
+        className="w-full max-w-3xl bg-[#120a0e] border-4 border-red-900/80 rounded-xl p-6 shadow-[0_0_50px_rgba(185,28,28,0.5)] flex flex-col items-center space-y-6"
+      >
         {/* Title */}
         <div className="text-center space-y-1">
           <p className="font-pixel text-xs text-amber-500 tracking-widest uppercase">
@@ -47,20 +60,21 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({ level, options, onSe
             RITUAL DE EVOLUÇÃO
           </h2>
           <p className="text-xs font-retro text-gray-400">
-            Escolha uma dádiva de sangue para fortalecer suas artes necromânticas
+            Escolha uma dádiva de sangue para fortalecer suas artes necromânticas (D-Pad / A)
           </p>
         </div>
 
         {/* 3 Upgrade Option Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-          {options.map((option) => (
+          {options.map((option, idx) => (
             <button
               key={option.id}
+              data-gamepad-index={idx}
               onClick={() => {
                 soundEngine.playButtonClick();
                 onSelectOption(option);
               }}
-              className="group relative bg-black/90 hover:bg-red-950/60 border-2 border-red-900/60 hover:border-amber-500/80 rounded-lg p-5 flex flex-col items-center text-center transition-all duration-200 shadow-lg hover:scale-105 cursor-pointer"
+              className="group relative bg-black/90 hover:bg-red-950/60 focus:bg-red-950/80 border-2 border-red-900/60 hover:border-amber-500/80 focus:border-amber-400 rounded-lg p-5 flex flex-col items-center text-center transition-all duration-200 shadow-lg hover:scale-105 cursor-pointer outline-none"
             >
               <div className="mb-3 p-3 rounded-full bg-red-950/80 border border-red-800/60 group-hover:border-amber-500 group-hover:scale-110 transition-transform">
                 {getIcon(option.icon)}
@@ -82,3 +96,5 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({ level, options, onSe
     </div>
   );
 };
+
+export default LevelUpModal;

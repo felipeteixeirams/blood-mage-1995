@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { X } from 'lucide-react';
+import { useGamepadUINavigation } from '../../hooks/useGamepadUINavigation';
 
 interface ModalBaseProps {
   title: string;
@@ -15,6 +16,8 @@ export const ModalBase: React.FC<ModalBaseProps> = ({
   onClose,
   children
 }) => {
+  const modalContentRef = useRef<HTMLDivElement>(null);
+
   // Listen for Escape key to close the modal
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -25,6 +28,13 @@ export const ModalBase: React.FC<ModalBaseProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
+
+  // Hook de navegação com Gamepad (D-Pad, Botão A confirma, Botão B fecha)
+  useGamepadUINavigation({
+    containerRef: modalContentRef,
+    isActive: true,
+    onClose,
+  });
 
   return (
     <motion.div
@@ -38,6 +48,7 @@ export const ModalBase: React.FC<ModalBaseProps> = ({
     >
       {/* Placa de pedra cinza escura / gótica medieval de Diablo II */}
       <motion.div
+        ref={modalContentRef}
         initial={{ scale: 0.95 }}
         animate={{ scale: 1 }}
         exit={{ scale: 0.95 }}
@@ -59,7 +70,7 @@ export const ModalBase: React.FC<ModalBaseProps> = ({
           <button
             onClick={onClose}
             className="p-1.5 bg-[#171309] hover:bg-[#282216] border border-[#b8860b]/50 text-[#e8c76a] transition-colors cursor-pointer w-9 h-9 flex items-center justify-center shadow-[inset_1px_1px_3px_rgba(0,0,0,0.8)] active:scale-95"
-            title="Fechar"
+            title="Fechar (B / Esc)"
             aria-label="Fechar"
           >
             <X className="w-4 h-4" />
@@ -74,3 +85,5 @@ export const ModalBase: React.FC<ModalBaseProps> = ({
     </motion.div>
   );
 };
+
+export default ModalBase;

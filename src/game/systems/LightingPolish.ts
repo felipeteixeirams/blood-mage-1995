@@ -1,7 +1,9 @@
+import Phaser from 'phaser';
+
 /**
- * LightingPolish (Fase 5 Final)
- * Efeitos de glow e iluminação refinada para polimento visual final
- * Integra com LightingSystem de Felipe para criar atmosfera imersiva
+ * LightingPolish (Fase 5 Final - Eixo A: Evolução Gráfica Avançada)
+ * Efeitos de glow, flash de impacto crítico e iluminação refinada
+ * Integra com LightingSystem e Phaser Light2D para criar atmosfera gótica imersiva.
  */
 
 export interface GlowConfig {
@@ -13,176 +15,230 @@ export interface GlowConfig {
 
 export class LightingPolish {
   private scene: Phaser.Scene;
-  private glowSprites: Map<string, Phaser.GameObjects.Light> = new Map();
+  private glowLights: Map<Phaser.GameObjects.GameObject, Phaser.GameObjects.Light> = new Map();
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
   }
 
   /**
+   * Verifica se o sistema de luzes do Phaser está disponível e habilitado
+   */
+  private isLight2DActive(): boolean {
+    return Boolean(
+      this.scene &&
+      this.scene.lights &&
+      this.scene.lights.active
+    );
+  }
+
+  /**
    * Criar glow para item raro/épico/lendário
    */
   public addItemGlow(sprite: Phaser.GameObjects.Sprite, rarity: 'common' | 'rare' | 'epic' | 'legendary'): void {
+    if (!sprite || !sprite.active) return;
+
     const glowConfigs = {
-      common: { color: 0x888888, intensity: 0.3, radius: 20 },
-      rare: { color: 0x3b82f6, intensity: 0.5, radius: 30 },
-      epic: { color: 0xa855f7, intensity: 0.6, radius: 35 },
-      legendary: { color: 0xf59e0b, intensity: 0.8, radius: 40 },
+      common: { color: 0x94a3b8, intensity: 0.35, radius: 24 },
+      rare: { color: 0x3b82f6, intensity: 0.65, radius: 36 },
+      epic: { color: 0xa855f7, intensity: 0.85, radius: 44 },
+      legendary: { color: 0xf59e0b, intensity: 1.1, radius: 56 },
     };
 
-    const config = glowConfigs[rarity];
+    const config = glowConfigs[rarity] || glowConfigs.common;
     this.addGlowEffect(sprite, config.color, config.intensity, config.radius);
 
-    // Pulsação leve para épico/lendário
-    if (rarity === 'epic' || rarity === 'legendary') {
+    // Pulsação de escala e brilho para itens raros, épicos e lendários
+    if (rarity === 'rare' || rarity === 'epic' || rarity === 'legendary') {
       this.scene.tweens.add({
         targets: sprite,
-        scale: sprite.scale,
-        duration: 600,
+        scale: { from: sprite.scale, to: sprite.scale * 1.18 },
+        alpha: { from: 0.85, to: 1.0 },
+        duration: rarity === 'legendary' ? 450 : 700,
         yoyo: true,
         repeat: -1,
-        ease: 'Sine.inOut',
+        ease: 'Sine.easeInOut',
       });
     }
   }
 
   /**
-   * Criar glow para monstro baseado em tipo
+   * Criar glow para monstro baseado em tipo e raridade (Elites/Chefes/Especiais)
    */
   public addMonsterGlow(sprite: Phaser.GameObjects.Sprite, monsterType: string): void {
+    if (!sprite || !sprite.active) return;
+
     const monsterGlows: Record<string, { color: number; intensity: number; radius: number }> = {
-      // Tier 1 - Vermelho (sangue)
-      skeleton_warrior: { color: 0xdc2626, intensity: 0.4, radius: 25 },
-      zombie_shambler: { color: 0x16a34a, intensity: 0.35, radius: 20 },
+      // Tier 1 - Sangue / Pútrido
+      skeleton_warrior: { color: 0xdc2626, intensity: 0.4, radius: 28 },
+      zombie_shambler: { color: 0x16a34a, intensity: 0.35, radius: 24 },
+      cultist_acolyte: { color: 0x9333ea, intensity: 0.5, radius: 32 },
 
-      // Tier 2 - Roxo (sobrenatural)
-      blood_specter: { color: 0xa855f7, intensity: 0.6, radius: 35 },
-      hell_hound: { color: 0xf97316, intensity: 0.5, radius: 30 },
+      // Tier 2 - Espectral / Fera
+      blood_specter: { color: 0xa855f7, intensity: 0.75, radius: 45 },
+      hell_hound: { color: 0xf97316, intensity: 0.6, radius: 36 },
 
-      // Tier 3 - Amarelo (mágico)
-      werewolf_lycan: { color: 0xfbbf24, intensity: 0.55, radius: 32 },
-      flesh_golem: { color: 0xf43f5e, intensity: 0.5, radius: 28 },
+      // Tier 3 - Licantropo / Golem
+      werewolf_lycan: { color: 0xfbbf24, intensity: 0.7, radius: 40 },
+      flesh_golem: { color: 0xf43f5e, intensity: 0.65, radius: 38 },
 
-      // Boss - Branco (perigoso)
-      gore_abomination: { color: 0xffffff, intensity: 0.8, radius: 45 },
+      // Chefes / Abominações
+      gore_abomination: { color: 0xffffff, intensity: 1.2, radius: 70 },
+      blood_overlord: { color: 0xff2222, intensity: 1.3, radius: 80 },
     };
 
-    const config = monsterGlows[monsterType] || { color: 0xff0000, intensity: 0.3, radius: 20 };
+    const config = monsterGlows[monsterType] || { color: 0xff3333, intensity: 0.4, radius: 30 };
     this.addGlowEffect(sprite, config.color, config.intensity, config.radius);
   }
 
   /**
-   * Criar glow para spell/magia sendo lançada
+   * Criar glow dinâmico para projétil / spell sendo lançado
    */
   public addSpellGlow(sprite: Phaser.GameObjects.Sprite, spellType: string): void {
+    if (!sprite || !sprite.active) return;
+
     const spellGlows: Record<string, { color: number; intensity: number; radius: number }> = {
-      blood_bolt: { color: 0xdc2626, intensity: 0.7, radius: 40 },
-      blood_wave: { color: 0xdc2626, intensity: 0.8, radius: 50 },
-      blood_storm: { color: 0xdc2626, intensity: 0.9, radius: 60 },
-      dark_bolt: { color: 0xa855f7, intensity: 0.7, radius: 35 },
+      blood_bolt: { color: 0xdc2626, intensity: 0.8, radius: 45 },
+      blood_wave: { color: 0xef4444, intensity: 0.9, radius: 55 },
+      blood_storm: { color: 0xb91c1c, intensity: 1.0, radius: 65 },
+      dark_bolt: { color: 0xa855f7, intensity: 0.8, radius: 40 },
+      hellfire_nova: { color: 0xf97316, intensity: 1.2, radius: 80 },
     };
 
-    const config = spellGlows[spellType] || { color: 0xff0000, intensity: 0.6, radius: 30 };
+    const config = spellGlows[spellType] || { color: 0xdc2626, intensity: 0.7, radius: 35 };
     this.addGlowEffect(sprite, config.color, config.intensity, config.radius);
-
-    // Pulso de magia lançada
-    this.scene.tweens.add({
-      targets: sprite,
-      alpha: sprite.alpha,
-      duration: 300,
-      yoyo: true,
-      ease: 'Quad.out',
-    });
   }
 
   /**
-   * Criar glow para portal/transição
+   * Criar aura de luz pulsante para portal das profundezas
    */
   public addPortalGlow(sprite: Phaser.GameObjects.Sprite): void {
-    this.addGlowEffect(sprite, 0x06b6d4, 0.7, 50);
+    if (!sprite || !sprite.active) return;
 
-    // Rotação contínua para portal
+    this.addGlowEffect(sprite, 0x06b6d4, 0.95, 80);
+
+    // Pulso constante na aura do portal
     this.scene.tweens.add({
       targets: sprite,
-      rotation: sprite.rotation + Math.PI * 2,
-      duration: 4000,
+      scale: { from: 1.15, to: 1.35 },
+      alpha: { from: 0.85, to: 1 },
+      duration: 1200,
+      yoyo: true,
       repeat: -1,
-      ease: 'Linear',
+      ease: 'Sine.easeInOut',
     });
   }
 
   /**
-   * Criar glow de impacto crítico (flash)
+   * Criar flash de luz e glow para acerto crítico
    */
   public addCriticalImpactGlow(x: number, y: number): void {
-    const light = this.scene.lights.addLight(x, y, 100, 0xffff00, 1.2);
+    if (!this.isLight2DActive()) return;
 
-    this.scene.tweens.add({
-      targets: light,
-      intensity: 0,
-      duration: 300,
-      onComplete: () => {
-        this.scene.lights.removeLight(light);
-      },
-    });
+    try {
+      const light = this.scene.lights.addLight(x, y, 120, 0xffeb3b, 1.4);
+      this.scene.tweens.add({
+        targets: light,
+        intensity: 0,
+        radius: 160,
+        duration: 250,
+        ease: 'Quad.easeOut',
+        onComplete: () => {
+          try {
+            this.scene.lights?.removeLight(light);
+          } catch {
+            // Safe fallback
+          }
+        },
+      });
+    } catch {
+      // Ignora silenciosamente se o limite de luzes do WebGL for atingido
+    }
   }
 
   /**
-   * Criar glow de morte (fade vermelho)
+   * Criar glow de morte violenta / dissolução
    */
   public addDeathGlow(x: number, y: number): void {
-    const light = this.scene.lights.addLight(x, y, 150, 0xff0000, 1.5);
+    if (!this.isLight2DActive()) return;
 
-    this.scene.tweens.add({
-      targets: light,
-      intensity: 0,
-      radius: 0,
-      duration: 800,
-      ease: 'Quad.out',
-      onComplete: () => {
-        this.scene.lights.removeLight(light);
-      },
-    });
+    try {
+      const light = this.scene.lights.addLight(x, y, 140, 0x990000, 1.3);
+      this.scene.tweens.add({
+        targets: light,
+        intensity: 0,
+        radius: 20,
+        duration: 650,
+        ease: 'Quad.easeOut',
+        onComplete: () => {
+          try {
+            this.scene.lights?.removeLight(light);
+          } catch {
+            // Safe fallback
+          }
+        },
+      });
+    } catch {
+      // Ignora silenciosamente se o limite for atingido
+    }
   }
 
   /**
-   * Efeito de "heal pulse" (verde)
+   * Efeito de pulso de cura (esmeralda / necromancia benéfica)
    */
   public addHealGlow(x: number, y: number): void {
-    const light = this.scene.lights.addLight(x, y, 80, 0x22c55e, 1.0);
+    if (!this.isLight2DActive()) return;
 
-    this.scene.tweens.add({
-      targets: light,
-      intensity: 0,
-      radius: 150,
-      duration: 500,
-      ease: 'Quad.out',
-      onComplete: () => {
-        this.scene.lights.removeLight(light);
-      },
-    });
+    try {
+      const light = this.scene.lights.addLight(x, y, 90, 0x10b981, 1.1);
+      this.scene.tweens.add({
+        targets: light,
+        intensity: 0,
+        radius: 170,
+        duration: 500,
+        ease: 'Quad.easeOut',
+        onComplete: () => {
+          try {
+            this.scene.lights?.removeLight(light);
+          } catch {
+            // Safe fallback
+          }
+        },
+      });
+    } catch {
+      // Ignora silenciosamente se o limite for atingido
+    }
   }
 
   /**
-   * Efeito de "level up" (glow branco + pulso)
+   * Efeito de Level-up com explosão de luz dourada
    */
   public addLevelUpGlow(x: number, y: number): void {
-    const light = this.scene.lights.addLight(x, y, 120, 0xffffff, 1.2);
+    if (!this.isLight2DActive()) return;
 
-    this.scene.tweens.add({
-      targets: light,
-      intensity: 0,
-      radius: 200,
-      duration: 700,
-      ease: 'Quad.out',
-      onComplete: () => {
-        this.scene.lights.removeLight(light);
-      },
-    });
+    try {
+      const light = this.scene.lights.addLight(x, y, 130, 0xfef08a, 1.5);
+      this.scene.tweens.add({
+        targets: light,
+        intensity: 0,
+        radius: 240,
+        duration: 850,
+        ease: 'Cubic.easeOut',
+        onComplete: () => {
+          try {
+            this.scene.lights?.removeLight(light);
+          } catch {
+            // Safe fallback
+          }
+        },
+      });
+    } catch {
+      // Ignora silenciosamente se o limite for atingido
+    }
   }
 
   /**
-   * Adicionar glow genérico a sprite
+   * Adiciona o light2D acoplado ao ciclo de vida do Sprite
    */
   private addGlowEffect(
     sprite: Phaser.GameObjects.Sprite,
@@ -190,55 +246,48 @@ export class LightingPolish {
     intensity: number,
     radius: number
   ): void {
-    const light = this.scene.lights.addLight(sprite.x, sprite.y, radius, color, intensity);
+    if (!this.isLight2DActive() || !sprite) return;
 
-    // Sync com sprite
-    this.scene.physics.world.on('worldbounds', () => {
-      light.setPosition(sprite.x, sprite.y);
-    });
+    try {
+      const light = this.scene.lights.addLight(sprite.x, sprite.y, radius, color, intensity);
+      this.glowLights.set(sprite, light);
 
-    const spriteName = `glow_${Math.random()}`;
-    this.glowSprites.set(spriteName, light);
-  }
+      // Sincroniza a posição da luz quando o sprite for atualizado
+      const updatePosition = () => {
+        if (sprite.active && light) {
+          light.setPosition(sprite.x, sprite.y);
+        }
+      };
 
-  /**
-   * Remover glow de um sprite
-   */
-  public removeGlow(spriteId: string): void {
-    const light = this.glowSprites.get(spriteId);
-    if (light) {
-      this.scene.lights.removeLight(light);
-      this.glowSprites.delete(spriteId);
+      this.scene.events.on('update', updatePosition);
+
+      // Desvincula e remove a luz automaticamente quando o sprite for destruído
+      sprite.once('destroy', () => {
+        this.scene.events.off('update', updatePosition);
+        try {
+          this.scene.lights?.removeLight(light);
+        } catch {
+          // ignore
+        }
+        this.glowLights.delete(sprite);
+      });
+    } catch {
+      // Ignora falha de luzes secundárias
     }
   }
 
   /**
-   * Ambient glow baseado em depth (profundidade do calabouço)
-   */
-  public setAmbientGlow(depth: number): void {
-    // Quanto mais profundo, mais escuro (vermelho/roxo)
-    const depthFactor = Math.min(depth / 25, 1); // 0 no andar 1, 1 no andar 25+
-
-    const baseIntensity = 0.5;
-    const color = Phaser.Display.Color.Interpolate.ColorWithColor(
-      Phaser.Display.Color.HexStringToColor('#ffffff'), // Branco nos andares iniciais
-      Phaser.Display.Color.HexStringToColor('#6b0000'), // Vermelho escuro nos andares profundos
-      1,
-      depthFactor
-    );
-
-    // Aplicar como ambiente light se sistema de lights suportar
-    // (dependente de implementação do LightingSystem de Felipe)
-  }
-
-  /**
-   * Limpar todos os glows
+   * Limpar todos os glows ativos
    */
   public cleanup(): void {
-    this.glowSprites.forEach((light) => {
-      this.scene.lights.removeLight(light);
+    this.glowLights.forEach((light) => {
+      try {
+        this.scene.lights?.removeLight(light);
+      } catch {
+        // ignore
+      }
     });
-    this.glowSprites.clear();
+    this.glowLights.clear();
   }
 }
 
