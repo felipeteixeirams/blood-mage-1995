@@ -1,0 +1,38 @@
+16:18:20 
+artifacts/bloodmage build$ vite build --config vite.config.ts
+16:18:20 
+artifacts/bloodmage build: failed to load config from /vercel/path0/artifacts/bloodmage/vite.config.ts
+16:18:20 
+artifacts/bloodmage build: error during build:
+16:18:20 
+artifacts/bloodmage build: Error: PORT environment variable is required but was not provided.
+16:18:20 
+artifacts/bloodmage build:     at file:///vercel/path0/artifacts/bloodmage/node_modules/.vite-temp/vite.config.ts.timestamp-1785701900332-a0303ff453f7.mjs:10:9
+16:18:20 
+artifacts/bloodmage build:     at ModuleJob.run (node:internal/modules/esm/module_job:437:25)
+16:18:20 
+artifacts/bloodmage build:     at async node:internal/modules/esm/loader:639:26
+16:18:20 
+artifacts/bloodmage build:     at async loadConfigFromBundledFile (file:///vercel/path0/node_modules/.pnpm/vite@7.3.6_@types+node@25.9.5_jiti@2.7.0_lightningcss@1.32.0_tsx@4.23.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/config.js:35996:12)
+16:18:20 
+artifacts/bloodmage build:     at async bundleAndLoadConfigFile (file:///vercel/path0/node_modules/.pnpm/vite@7.3.6_@types+node@25.9.5_jiti@2.7.0_lightningcss@1.32.0_tsx@4.23.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/config.js:35884:17)
+16:18:20 
+artifacts/bloodmage build:     at async loadConfigFromFile (file:///vercel/path0/node_modules/.pnpm/vite@7.3.6_@types+node@25.9.5_jiti@2.7.0_lightningcss@1.32.0_tsx@4.23.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/config.js:35851:42)
+16:18:20 
+artifacts/bloodmage build:     at async resolveConfig (file:///vercel/path0/node_modules/.pnpm/vite@7.3.6_@types+node@25.9.5_jiti@2.7.0_lightningcss@1.32.0_tsx@4.23.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/config.js:35500:22)
+16:18:20 
+artifacts/bloodmage build:     at async createBuilder (file:///vercel/path0/node_modules/.pnpm/vite@7.3.6_@types+node@25.9.5_jiti@2.7.0_lightningcss@1.32.0_tsx@4.23.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/config.js:33955:19)
+16:18:20 
+artifacts/bloodmage build:     at async CAC.<anonymous> (file:///vercel/path0/node_modules/.pnpm/vite@7.3.6_@types+node@25.9.5_jiti@2.7.0_lightningcss@1.32.0_tsx@4.23.1_yaml@2.9.0/node_modules/vite/dist/node/cli.js:629:10)
+16:18:20 
+artifacts/bloodmage build: Failed
+16:18:20 
+/vercel/path0/artifacts/bloodmage:
+16:18:20 
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/bloodmage@0.0.0 build: `vite build --config vite.config.ts`
+16:18:20 
+Exit status 1
+16:18:20 
+ ELIFECYCLE  Command failed with exit code 1.
+16:18:20 
+Error: Command "pnpm run build" exited with 1
