@@ -75,7 +75,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     >
       <div 
         ref={containerRef}
-        className="w-full max-w-2xl [&_canvas]:!max-w-full [&_canvas]:!max-h-full [&_canvas]:!w-auto [&_canvas]:!h-auto"
+        className="w-full max-w-5xl h-[540px] max-h-[90vh] aspect-[16/9] flex items-center justify-center relative shadow-2xl"
       />
     </motion.div>
   );

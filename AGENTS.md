@@ -36,6 +36,15 @@ Every agent modifying this codebase MUST respect the following strict, non-negot
 - Do not use `any`. Define strict union types or configurations.
 - Use Named Arguments/Objects for functions with more than 3 parameters to avoid parameter-swapping bugs.
 
+### 5. Mandatory Troubleshooting Documentation (Root-Cause Logging)
+- **Always document non-trivial/complex bugs**: Any bug, regression, asset corruption, state mismatch, or lifecycle/rendering issue that required multi-step investigation or significant debugging time **MUST** be immediately logged in `/docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md`.
+- **Standard Entry Structure**: Each entry must include:
+  1. **Sintoma** (o que quebrou ou como se manifesta visualmente/em runtime).
+  2. **Causa-Raiz** (explicação técnica exata do motivo da falha).
+  3. **Como Diagnosticar** (comandos, logs ou testes para identificar rapidamente).
+  4. **Procedimento de Resolução** (passo a passo claro para correção sem regressão).
+  5. Atualização da **Tabela de Diagnóstico Rápido** no final do documento.
+
 ---
 
 ## 🧪 Testing and Safety Gates

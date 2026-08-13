@@ -92,7 +92,6 @@ export class RecordsScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.imageLoadType = "HTMLImageElement";
     this.load.on("loaderror", (fileObj: any) => {
       const key = fileObj ? fileObj.key : "";
       if (key && !this.textures.exists(key)) {
@@ -301,7 +300,12 @@ export class RecordsScene extends Phaser.Scene {
         label.setColor("#ddd0a6");
       })
       .on("pointerdown", () => {
-        this.scene.start("title");
+        const onClose = this.registry.get("onClose") as (() => void) | undefined;
+        if (onClose) {
+          onClose();
+        } else if (this.scene.manager.getScene("title")) {
+          this.scene.start("title");
+        }
       });
   }
 

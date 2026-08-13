@@ -53,7 +53,8 @@ docs/
 │   ├── 01_CRITICAL_FILES.md
 │   ├── 02_PERFORMANCE_OPTIMIZATION.md
 │   ├── 03_TESTING_GATES.md
-│   └── 04_PERFORMANCE_METRICS.md
+│   ├── 04_PERFORMANCE_METRICS.md
+│   └── 05_TROUBLESHOOTING_KNOWN_ISSUES.md
 ├── integration/ (third-party + tools)
 │   ├── 00_LOVABLE_INTEGRATION.md
 │   ├── 01_VERCEL_DEPLOYMENT.md
@@ -81,6 +82,7 @@ docs/
    │   │   └── 07_EVENTOS_MUNDIAIS_E_SAZONAIS.md
 │   ├── andamento/ (em desenvolvimento ativo)
 │   │   ├── 01_FASE1_INCONSCIENCIA.md
+│   │   ├── 08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md
 │   │   ├── PHASE_1_UNCONSCIOUSNESS_SPEC.md
 │   │   ├── SPECS_EVOLUCAO.md
 │   │   └── SPEC_DUNGEON_SIEGE_EVOLUTION.md

@@ -51,10 +51,11 @@ docs/specs//
 
 | Feature | Fase | Responsável | ETA | Progresso |
 |---------|------|-------------|-----|-----------|
+| **Mapeamento de Sprites & Checklist** | Living Spec | Felipe + Jules | Contínuo | 🟡 18.7% (UI Pronta) |
 | **Mundo Contínuo (Fase 4)** | 4/4 | Jules | 2026-09-30 | 🟡 80% |
 | **Polimento de Produção & PWA/Steam (Fase 5)** | 5/5 | Jules + Felipe | 2026-10-30 | 🟡 0% (Proposta) |
 
-**Documentação:** [[./andamento/]]
+**Documentação:** [[./andamento/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md]]
 
 ---
 

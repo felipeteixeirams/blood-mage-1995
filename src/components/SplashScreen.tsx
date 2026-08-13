@@ -37,7 +37,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       }
     }, 250); // Speed of text lines appearing
 
-    return () => clearInterval(interval);
+    const handleSkip = () => {
+      clearInterval(interval);
+      onCompleteRef.current();
+    };
+
+    window.addEventListener('keydown', handleSkip, { once: true });
+    window.addEventListener('pointerdown', handleSkip, { once: true });
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('keydown', handleSkip);
+      window.removeEventListener('pointerdown', handleSkip);
+    };
   }, []);
 
   return (

@@ -68,7 +68,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
       game.destroy(true);
       gameRef.current = null;
     };
-  }, [onStartGame, onContinueGame, onOpenSettings, onOpenHighScores, handleOpenBestiary]);
+  }, []);
 
   // Update registry callbacks if props change
   useEffect(() => {
@@ -91,7 +91,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
       {/* 1. Animated Phaser Title Scene Background & Frame */}
       <div
         ref={containerRef}
-        className="absolute inset-0 w-full h-full flex items-center justify-center [&_canvas]:!max-w-full [&_canvas]:!max-h-full [&_canvas]:!w-auto [&_canvas]:!h-auto pointer-events-auto z-0"
+        className="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-auto z-0"
       />
 
       {/* 2. Top Header Controls (Mute & PWA Version) */}

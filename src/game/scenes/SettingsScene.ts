@@ -63,7 +63,6 @@ export class SettingsScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.imageLoadType = "HTMLImageElement";
     this.load.on("loaderror", (fileObj: any) => {
       const key = fileObj ? fileObj.key : "";
       if (key && !this.textures.exists(key)) {
