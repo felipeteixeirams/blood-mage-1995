@@ -6,13 +6,12 @@ import {
 } from "../../utils/uiTextures";
 import { generateUITextures } from "../../utils/textureGenerator";
 import { GameSettings } from "../../types/game";
-
-
-
-
-
-
-
+import rockTileUrl from "../../assets/ui/rock-tile.jpg";
+import stoneTileUrl from "../../assets/ui/stone-tile.jpg";
+import cornerUrl from "../../assets/ui/ui-corner.png";
+import plaqueUrl from "../../assets/ui/ui-plaque.png";
+import gemUrl from "../../assets/ui/ui-gem.png";
+import capUrl from "../../assets/ui/ui-slider-cap.png";
 
 export const BASE_W = 960;
 export const BASE_H = 540;
@@ -64,6 +63,20 @@ export class SettingsScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.imageLoadType = "HTMLImageElement";
+    this.load.on("loaderror", (fileObj: any) => {
+      const key = fileObj ? fileObj.key : "";
+      if (key && !this.textures.exists(key)) {
+        generateUITextures(this, [key]);
+      }
+    });
+
+    this.load.image("rockTile", rockTileUrl);
+    this.load.image("stoneTile", stoneTileUrl);
+    this.load.image("uiCorner", cornerUrl);
+    this.load.image("uiPlaque", plaqueUrl);
+    this.load.image("uiGem", gemUrl);
+    this.load.image("uiCap", capUrl);
   }
 
   create() {

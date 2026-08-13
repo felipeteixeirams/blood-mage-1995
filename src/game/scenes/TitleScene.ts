@@ -7,15 +7,14 @@ import {
 } from "../../utils/uiTextures";
 import { generateUITextures } from "../../utils/textureGenerator";
 import InputManager from "../systems/InputManager";
-
-
-
-
-
-
-
-
-
+import titleLogoUrl from "../../assets/ui/title-logo.png";
+import gargoyleTopUrl from "../../assets/ui/gargoyle-top.png";
+import gargoyleBottomUrl from "../../assets/ui/gargoyle-bottom.png";
+import torchUrl from "../../assets/ui/torch.png";
+import altarUrl from "../../assets/ui/altar.png";
+import runeArchUrl from "../../assets/ui/rune-arch.png";
+import stoneTileUrl from "../../assets/ui/stone-tile.jpg";
+import rockTileUrl from "../../assets/ui/rock-tile.jpg";
 
 export const BASE_W = 960;
 export const BASE_H = 540;
@@ -92,8 +91,23 @@ export class TitleScene extends Phaser.Scene {
   }
 
   preload() {
-    
-                                  }
+    this.load.imageLoadType = "HTMLImageElement";
+    this.load.on("loaderror", (fileObj: any) => {
+      const key = fileObj ? fileObj.key : "";
+      if (key && !this.textures.exists(key)) {
+        generateUITextures(this, [key]);
+      }
+    });
+
+    this.load.image("logo", titleLogoUrl);
+    this.load.image("gargoyleTop", gargoyleTopUrl);
+    this.load.image("gargoyleBottom", gargoyleBottomUrl);
+    this.load.image("torch", torchUrl);
+    this.load.image("altar", altarUrl);
+    this.load.image("runeArch", runeArchUrl);
+    this.load.image("stoneTile", stoneTileUrl);
+    this.load.image("rockTile", rockTileUrl);
+  }
 
   create() {
     const uiKeys = [
