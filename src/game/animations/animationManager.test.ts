@@ -10,7 +10,7 @@ describe('animationManager', () => {
   it('contains valid animation definitions for game entities', () => {
     expect(GAME_ANIMATIONS.length).toBeGreaterThan(5);
 
-    const bloodmageIdle = GAME_ANIMATIONS.find((a) => a.key === 'bloodmage_idle');
+    const bloodmageIdle = GAME_ANIMATIONS.find((a) => a.key === 'bloodmage_idle_down');
     expect(bloodmageIdle).toBeDefined();
     expect(bloodmageIdle?.textureKey).toBe('spr_bloodmage');
 
@@ -52,8 +52,8 @@ describe('animationManager', () => {
     registerAllAnimations(mockScene);
 
     // Multi-frame animation check
-    expect(createdAnims['bloodmage_walk']).toBeDefined();
-    expect(createdAnims['bloodmage_walk'].frames.length).toBeGreaterThan(1);
+    expect(createdAnims['bloodmage_walk_down']).toBeDefined();
+    expect(createdAnims['bloodmage_walk_down'].frames.length).toBeGreaterThan(1);
 
     // Single-frame animation fallback check
     expect(createdAnims['skeleton_idle']).toBeDefined();
@@ -68,14 +68,14 @@ describe('animationManager', () => {
       },
       scene: {
         anims: {
-          exists: vi.fn((key: string) => key === 'bloodmage_walk'),
+          exists: vi.fn((key: string) => key === 'bloodmage_walk_down'),
         },
       },
     } as unknown as Phaser.GameObjects.Sprite;
 
-    const playedExisting = safePlayAnimation(mockSprite, 'bloodmage_walk');
+    const playedExisting = safePlayAnimation(mockSprite, 'bloodmage_walk_down');
     expect(playedExisting).toBe(true);
-    expect(mockSprite.play).toHaveBeenCalledWith('bloodmage_walk', true);
+    expect(mockSprite.play).toHaveBeenCalledWith('bloodmage_walk_down', true);
 
     const playedMissing = safePlayAnimation(mockSprite, 'unknown_anim');
     expect(playedMissing).toBe(false);

@@ -233,16 +233,36 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.setVelocity(this.currentVx, this.currentVy);
     }
 
-    // Flip sprite based on move or aim direction
-    if (this.aimVector.x !== 0) {
-      this.setFlipX(this.aimVector.x < 0);
-    } else if (this.moveVector.x !== 0) {
-      this.setFlipX(this.moveVector.x < 0);
+    // Play directional walk or idle animation based on movement and aim
+    const isMoving = this.moveVector.x !== 0 || this.moveVector.y !== 0;
+    
+    // Determine the direction
+    let dir = 'down';
+    if (this.aimVector.x !== 0 || this.aimVector.y !== 0) {
+      // Aim takes priority for facing direction
+      if (Math.abs(this.aimVector.x) > Math.abs(this.aimVector.y)) {
+        dir = 'side';
+        this.setFlipX(this.aimVector.x < 0);
+      } else {
+        dir = this.aimVector.y < 0 ? 'up' : 'down';
+      }
+    } else if (isMoving) {
+      if (Math.abs(this.moveVector.x) > Math.abs(this.moveVector.y)) {
+        dir = 'side';
+        this.setFlipX(this.moveVector.x < 0);
+      } else {
+        dir = this.moveVector.y < 0 ? 'up' : 'down';
+      }
     }
 
-    // Play walk or idle animation based on movement
-    const isMoving = this.moveVector.x !== 0 || this.moveVector.y !== 0;
-    safePlayAnimation(this, isMoving ? 'bloodmage_walk' : 'bloodmage_idle');
+    const animState = isMoving ? 'walk' : 'idle';
+    const animKey = `bloodmage_${animState}_${dir}`;
+    // Provide fallback if we don't have enough frames for directional cast/dash yet.
+    if (this.scene && this.scene.anims.exists(animKey)) {
+      safePlayAnimation(this, animKey);
+    } else {
+      safePlayAnimation(this, isMoving ? 'bloodmage_walk_down' : 'bloodmage_idle_down');
+    }
 
     // Sync status conditions & curatives from Zustand store
     const storeStats = useGameStore.getState().playerStats;
