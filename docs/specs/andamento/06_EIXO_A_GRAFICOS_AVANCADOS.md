@@ -2,18 +2,18 @@
 agent_context: game-engine, frontend
 target_module: artifacts/bloodmage/src/game
 priority: high
-status: ANDAMENTO
+status: CONCLUIDO
 start_date: 2026-08-11
 responsible: opencode (Felipe)
-progress: 70% (PostFXSystem, normal maps, LightingSystem, toggle de settings e testes implementados)
+progress: 100% (Finalizado)
 agent_context: game-engine, frontend
 tags: [specs, phase-3, postfx, iluminacao, normal-maps, webgl]
-last_updated: 2026-08-11
+last_updated: 2026-08-14
 ---
 
 # 🎨 Eixo A — Gráficos Avançados (postFX, Iluminação Light2D e Normal Maps)
 
-> **Status:** Em Andamento | **Origem:** [[../propostas/01_EVOLUCAO_GRAFICA_AVANCADA.md]]
+> **Status:** Concluído | **Origem:** [[../propostas/01_EVOLUCAO_GRAFICA_AVANCADA.md]]
 
 ## Contexto
 
@@ -43,14 +43,14 @@ O jogo é 100% procedural e usa **Phaser 4.2.1 + WebGL**, mas nenhum shader/filt
 
 ## Critérios de Aceite
 
-- [ ] `PostFXSystem` aplica vignette/colormatrix/displacement via GPU com fallback Canvas funcional
-- [ ] `ScreenEffects.render()` continua sendo chamado como fallback (bug da chamada ausente corrigido no fluxo de fallback)
-- [ ] Normal maps gerados proceduralmente para player + 2 inimigos + tile de chão
-- [ ] Luzes dinâmicas substituem os overlays do `WorldManager` sem regressão visual em WebGL
-- [ ] Toggle `postProcessingEnabled` nas settings desliga filtros e luzes
-- [ ] 60 FPS mantidos em desktop (gate `critical/04_PERFORMANCE_METRICS.md`)
-- [ ] Testes unitários para `generateNormalMap` e lógica pura do `PostFXSystem`
-- [ ] E2E golden continua verde (menu principal) e gameplay continua startável
+- [x] `PostFXSystem` aplica vignette/colormatrix/displacement via GPU com fallback Canvas funcional
+- [x] `ScreenEffects.render()` continua sendo chamado como fallback (bug da chamada ausente corrigido no fluxo de fallback)
+- [x] Normal maps gerados proceduralmente para player + 2 inimigos + tile de chão
+- [x] Luzes dinâmicas substituem os overlays do `WorldManager` sem regressão visual em WebGL
+- [x] Toggle `postProcessingEnabled` nas settings desliga filtros e luzes
+- [x] 60 FPS mantidos em desktop (gate `critical/04_PERFORMANCE_METRICS.md`)
+- [x] Testes unitários para `generateNormalMap` e lógica pura do `PostFXSystem`
+- [x] E2E golden continua verde (menu principal) e gameplay continua startável
 
 ## Arquivos Envolvidos
 
