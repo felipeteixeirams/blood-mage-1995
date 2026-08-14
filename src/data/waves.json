@@ -1,37 +1,51 @@
 [
   {
     "waveNumber": 1,
-    "monsterPool": ["skeleton_warrior", "zombie_shambler", "bat_swarm"],
-    "totalMonsters": 18,
+    "monsterPool": ["skeleton_warrior", "cultist_acolyte", "bat_swarm"],
+    "totalMonsters": 16,
     "spawnIntervalMs": 1700,
     "isBossWave": false
   },
   {
     "waveNumber": 2,
     "monsterPool": ["skeleton_warrior", "cultist_acolyte", "zombie_shambler", "bat_swarm"],
-    "totalMonsters": 28,
-    "spawnIntervalMs": 1400,
+    "totalMonsters": 24,
+    "spawnIntervalMs": 1450,
     "isBossWave": false
   },
   {
     "waveNumber": 3,
-    "monsterPool": ["skeleton_warrior", "vampire_stalker", "hell_hound", "cultist_acolyte", "bat_swarm"],
-    "totalMonsters": 38,
-    "spawnIntervalMs": 1150,
+    "monsterPool": ["skeleton_warrior", "hell_hound", "zombie_shambler", "cultist_acolyte"],
+    "totalMonsters": 32,
+    "spawnIntervalMs": 1250,
     "isBossWave": false
   },
   {
     "waveNumber": 4,
-    "monsterPool": ["werewolf_lycan", "vampire_stalker", "flesh_golem", "gore_abomination", "blood_specter"],
-    "totalMonsters": 48,
-    "spawnIntervalMs": 950,
+    "monsterPool": ["hell_hound", "zombie_shambler", "vampire_stalker", "blood_specter"],
+    "totalMonsters": 40,
+    "spawnIntervalMs": 1050,
     "isBossWave": false
   },
   {
     "waveNumber": 5,
-    "monsterPool": ["vampire_stalker", "werewolf_lycan", "blood_specter", "gore_abomination"],
-    "totalMonsters": 55,
+    "monsterPool": ["werewolf_lycan", "blood_specter", "vampire_stalker", "flesh_golem"],
+    "totalMonsters": 48,
+    "spawnIntervalMs": 900,
+    "isBossWave": false
+  },
+  {
+    "waveNumber": 6,
+    "monsterPool": ["flesh_golem", "gore_abomination", "werewolf_lycan", "blood_specter"],
+    "totalMonsters": 54,
     "spawnIntervalMs": 800,
+    "isBossWave": false
+  },
+  {
+    "waveNumber": 7,
+    "monsterPool": ["gore_abomination", "blood_specter", "werewolf_lycan", "vampire_stalker"],
+    "totalMonsters": 60,
+    "spawnIntervalMs": 750,
     "isBossWave": true,
     "bossMonsterId": "necro_lord_boss"
   }

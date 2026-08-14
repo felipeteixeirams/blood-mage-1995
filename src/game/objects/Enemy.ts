@@ -1,13 +1,21 @@
 import Phaser from 'phaser';
-import { MonsterConfig, AIState } from '../../types/game';
+import { MonsterConfig, AIState, EliteAffix } from '../../types/game';
 import monstersData from '../../data/monsters.json';
 import { soundEngine } from '../../utils/soundEngine';
 import { useGameStore } from '../../store/gameStore';
+
+export interface EnemyOptions {
+  floorDepth?: number;
+  eliteAffix?: EliteAffix;
+}
 
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
   public config: MonsterConfig;
   public hp: number;
   public maxHp: number;
+  public damage: number;
+  public floorDepth: number = 1;
+  public eliteAffix: EliteAffix = 'none';
   public aiState: AIState = 'idle';
   private isAngered: boolean = false;
 
@@ -55,26 +63,50 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private moveVx: number = 0;
   private moveVy: number = 0;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, monsterId: string) {
+  constructor(scene: Phaser.Scene, x: number, y: number, monsterId: string, options?: EnemyOptions) {
     const rawData = monstersData as Record<string, MonsterConfig>;
     const monsterConfig = rawData[monsterId] || rawData['skeleton_warrior'];
 
     super(scene, x, y, monsterConfig.spriteKey);
     this.config = monsterConfig;
-    this.hp = monsterConfig.hp;
-    this.maxHp = monsterConfig.hp;
+    this.floorDepth = options?.floorDepth ?? 1;
+    this.eliteAffix = options?.eliteAffix ?? 'none';
+
+    // Difficulty curve scaling per floor (+6% HP, +4% Damage per floor beyond floor 1)
+    const floorHpMult = 1.0 + Math.max(0, this.floorDepth - 1) * 0.06;
+    const floorDmgMult = 1.0 + Math.max(0, this.floorDepth - 1) * 0.04;
+
+    let affixHpMult = 1.0;
+    let affixDmgMult = 1.0;
+    let affixSpeedMult = 1.0;
+
+    if (this.eliteAffix === 'frenzied') {
+      affixSpeedMult = 1.35;
+      affixDmgMult = 1.25;
+    } else if (this.eliteAffix === 'vampiric') {
+      affixHpMult = 1.4;
+    } else if (this.eliteAffix === 'cursed') {
+      affixHpMult = 1.3;
+    } else if (this.eliteAffix === 'spectral') {
+      affixSpeedMult = 1.2;
+    }
+
+    const calculatedHp = Math.round(monsterConfig.hp * floorHpMult * affixHpMult);
+    this.hp = calculatedHp;
+    this.maxHp = calculatedHp;
+    this.damage = Math.round(monsterConfig.damage * floorDmgMult * affixDmgMult);
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
-    this.baseScale = monsterConfig.scale;
+    this.baseScale = monsterConfig.scale * (this.eliteAffix !== 'none' ? 1.15 : 1.0);
     this.setScale(this.baseScale);
     this.setCollideWorldBounds(true);
     this.setSize(22, 26);
     (this as any).setLighting?.(true);
 
     // Individual speed variance (85% - 115%) & personal phase offset
-    this.speedMultiplier = 0.85 + Math.random() * 0.3;
+    this.speedMultiplier = (0.85 + Math.random() * 0.3) * affixSpeedMult;
     this.personalPhase = Math.random() * Math.PI * 2;
 
     // Initial facing angle randomized
@@ -87,7 +119,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     // Start in IDLE or PATROL state
     const hasFuryPit = useGameStore.getState().activeModifiers.includes('fury_pit');
-    if (hasFuryPit) {
+    if (hasFuryPit || this.eliteAffix === 'frenzied') {
       this.aiState = 'frenzy';
       this.setTint(0xff3333);
     } else {
@@ -97,6 +129,23 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   private applyBaseTint() {
+    if (this.eliteAffix === 'frenzied') {
+      this.setTint(0xff4444);
+      return;
+    }
+    if (this.eliteAffix === 'vampiric') {
+      this.setTint(0xd97706);
+      return;
+    }
+    if (this.eliteAffix === 'cursed') {
+      this.setTint(0xa855f7);
+      return;
+    }
+    if (this.eliteAffix === 'spectral') {
+      this.setTint(0x38bdf8);
+      this.setAlpha(0.8);
+      return;
+    }
     if (this.config.color) {
       const tintHex = parseInt(this.config.color.replace('#', '0x'), 16);
       this.setTint(tintHex);
@@ -213,8 +262,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
    * Check incoming player projectile to attempt a tactical side dodge
    */
   public tryDodgeProjectile(projX: number, projY: number, projVx: number, projVy: number, time: number) {
-    if (this.isDodging || (this.config.dodgeChance || 0) <= 0) return;
-    if (time < this.lastDodgeTime + 2000) return;
+    const baseDodge = this.config.dodgeChance || 0;
+    const effectiveDodge = this.eliteAffix === 'spectral' ? Math.min(0.7, baseDodge + 0.35) : baseDodge;
+    if (this.isDodging || effectiveDodge <= 0) return;
+    if (time < this.lastDodgeTime + (this.eliteAffix === 'spectral' ? 1200 : 2000)) return;
 
     const dx = this.x - projX;
     // Fast horizontal boundary pruning
@@ -229,7 +280,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (distSq > 32400 || distSq < 900) return; // 180^2 = 32400, 30^2 = 900
 
     // Check probability
-    if (Math.random() <= (this.config.dodgeChance || 0)) {
+    if (Math.random() <= effectiveDodge) {
       this.lastDodgeTime = time;
       this.isDodging = true;
 
@@ -378,15 +429,15 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
           // Hit check: Did player remain in the attack range during windup?
           if (this.attackType === 'ranged') {
-            result = { attack: true, damage: this.config.damage, attackType: 'ranged' };
+            result = { attack: true, damage: this.damage, attackType: 'ranged' };
           } else {
             const currentDist = Phaser.Math.Distance.Between(this.x, this.y, playerX, playerY);
             if (currentDist <= this.config.attackRange + 22) {
-              result = { attack: true, damage: this.config.damage, attackType: 'melee' };
+              result = { attack: true, damage: this.damage, attackType: 'melee' };
 
-              // Vampire Stalker Lifesteal Ability
-              if (this.config.id === 'vampire_stalker') {
-                const stolenHp = Math.round(this.config.damage * 0.5);
+              // Vampire Stalker / Vampiric Elite Lifesteal Ability
+              if (this.config.id === 'vampire_stalker' || this.eliteAffix === 'vampiric') {
+                const stolenHp = Math.round(this.damage * 0.4);
                 this.hp = Math.min(this.maxHp, this.hp + stolenHp);
                 if ((this.scene as any).spawnFloatingText) {
                   (this.scene as any).spawnFloatingText(this.x, this.y - 10, `+${stolenHp} HP`, '#22c55e', false);

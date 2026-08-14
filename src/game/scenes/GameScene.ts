@@ -6,7 +6,7 @@ import { Projectile } from '../objects/Projectile';
 import { Collectible } from '../objects/Collectible';
 import { LootSprite } from '../objects/Loot';
 import { LootSystem } from '../systems/LootSystem';
-import { PlayerStats, WaveConfig, UpgradeOption, BiomeType, SpellConfig } from '../../types/game';
+import { PlayerStats, WaveConfig, UpgradeOption, BiomeType, SpellConfig, EliteAffix } from '../../types/game';
 import wavesData from '../../data/waves.json';
 import upgradesData from '../../data/upgrades.json';
 import spellsData from '../../data/spells.json';
@@ -588,7 +588,16 @@ export class GameScene extends Phaser.Scene {
     while (this.enemiesGroup.countActive(true) < cap && this.pendingEnemySpawns.length > 0) {
       const pending = this.pendingEnemySpawns.shift();
       if (pending) {
-        const enemy = new Enemy(this, pending.x, pending.y, pending.monsterId);
+        let affix: EliteAffix = 'none';
+        if (this.currentFloorDepth >= 2 && Math.random() < Math.min(0.22, 0.08 + (this.currentFloorDepth - 1) * 0.025)) {
+          const possibleAffixes: EliteAffix[] = ['frenzied', 'vampiric', 'cursed', 'spectral'];
+          affix = Phaser.Utils.Array.GetRandom(possibleAffixes);
+        }
+
+        const enemy = new Enemy(this, pending.x, pending.y, pending.monsterId, {
+          floorDepth: this.currentFloorDepth,
+          eliteAffix: affix
+        });
         // Set room patrol boundaries
         enemy.patrolP1 = { x: pending.room.x + 40, y: pending.room.y + 40 };
         enemy.patrolP2 = { x: pending.room.x + pending.room.width - 40, y: pending.room.y + pending.room.height - 40 };
@@ -705,7 +714,7 @@ export class GameScene extends Phaser.Scene {
       if (room.type === 'boss') {
         // Boss Sanctum Room
         const bossId = currentWave.isBossWave && currentWave.bossMonsterId ? currentWave.bossMonsterId : 'necro_lord_boss';
-        const boss = new Enemy(this, room.centerX, room.centerY, bossId);
+        const boss = new Enemy(this, room.centerX, room.centerY, bossId, { floorDepth, eliteAffix: 'none' });
         this.enemiesGroup.add(boss);
         this.depthGroup.add(boss);
         this.lightingPolish?.addMonsterGlow(boss, bossId);
@@ -721,7 +730,7 @@ export class GameScene extends Phaser.Scene {
         const bodyguardCount = Math.round(2 * spawnMultiplier);
         for (let i = 0; i < bodyguardCount; i++) {
           const offset = i === 0 ? -90 : (i === 1 ? 90 : (i === 2 ? -140 : 140));
-          const guard = new Enemy(this, room.centerX + offset, room.centerY + 50, 'cultist_acolyte');
+          const guard = new Enemy(this, room.centerX + offset, room.centerY + 50, 'cultist_acolyte', { floorDepth, eliteAffix: 'none' });
           this.enemiesGroup.add(guard);
           this.depthGroup.add(guard);
           this.lightingPolish?.addMonsterGlow(guard, 'cultist_acolyte');
@@ -2245,7 +2254,8 @@ export class GameScene extends Phaser.Scene {
   private handleEnemyTouchPlayer(playerObj: any, enemyObj: any) {
     const enemy = enemyObj as Enemy;
     if (enemy.active) {
-      this.playerHitByEnemy(enemy.config.damage * 0.4, enemy.config.statusEffectOnHit);
+      const touchDamage = (enemy.damage ?? enemy.config.damage) * 0.4;
+      this.playerHitByEnemy(touchDamage, enemy.config.statusEffectOnHit);
     }
   }
 
@@ -2491,7 +2501,21 @@ export class GameScene extends Phaser.Scene {
       this.triggerLevelUp();
     }
 
-    // 5. Check Loot Drop
+    // 5. Check Loot Drop & Elite Rewards
+    if (enemy.eliteAffix && enemy.eliteAffix !== 'none') {
+      const bonusCrystals = 4 + Math.floor(Math.random() * 4);
+      useGameStore.getState().addBloodCrystals(bonusCrystals);
+      const affixNames: Record<string, string> = {
+        frenzied: '⚡ FRENÉTICO',
+        vampiric: '🩸 VAMPÍRICO',
+        cursed: '💀 AMALDIÇOADO',
+        spectral: '👻 ETÉREO'
+      };
+      const title = affixNames[enemy.eliteAffix] || 'ELITE';
+      this.spawnFloatingText(enemy.x, enemy.y - 45, `+${bonusCrystals} CRISTAIS ${title}! 💎`, '#facc15', true);
+      soundEngine.playOrbPickup();
+    }
+
     const hasBloodTide = useGameStore.getState().activeModifiers.includes('blood_tide');
     const rolled = hasBloodTide ? (Math.random() < 0.325) : LootSystem.rollLootChance();
     if (rolled) {

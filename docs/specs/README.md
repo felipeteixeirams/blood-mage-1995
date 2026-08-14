@@ -42,6 +42,7 @@ docs/specs//
 | **Condições de Status — Fase 3** | ✅ Completo | Jules | 2026-08-10 |
 | **Mundo Contínuo — Fase 4** | ✅ Completo | Felipe + Jules | 2026-08-11 |
 | **Polimento de Produção — Fase 5** | ✅ **100% COMPLETO** | Claude + Felipe | 2026-08-11 |
+| **Monster Balance & Elite System** | ✅ **100% COMPLETO** | Jules + Felipe | 2026-08-14 |
 
 **Documentação:** [[./finalizadas/]]
 

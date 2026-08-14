@@ -71,6 +71,8 @@ export type MonsterGait = 'quadruped' | 'biped_fast' | 'biped_slow' | 'ethereal'
 
 export type AIState = 'idle' | 'patrol' | 'patrol_away_from_player' | 'investigating' | 'combat' | 'flee' | 'frenzy';
 
+export type EliteAffix = 'frenzied' | 'vampiric' | 'cursed' | 'spectral' | 'none';
+
 export interface MonsterConfig {
   id: string;
   name: string;
