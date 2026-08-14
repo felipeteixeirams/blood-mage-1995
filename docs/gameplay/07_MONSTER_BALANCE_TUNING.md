@@ -1,9 +1,10 @@
 ---
-title: Monster Balance Tuning & Difficulty Curve
-subtitle: Análise e Ajustes para Curva de Dificuldade Profissional
-date: 2026-08-11
-status: PROPOSTA - Pronto para Implementação
-impact: ALTO - Gameplay profissional
+agent_context: game-designer, backend
+target_module: src/data/monsters.json, src/game/objects/Enemy.ts
+priority: high
+status: active
+last_updated: 2026-08-14
+tags: [gameplay, balance, monsters, difficulty, stats]
 ---
 
 # 🎮 Monster Balance Tuning & Difficulty Curve

@@ -41,7 +41,9 @@ docs/
 │   ├── 02_COMBAT_FEEL.md
 │   ├── 03_SKILL_SYSTEM.md
 │   ├── 04_LOOT_SYSTEM.md
-│   └── 05_RECORDS_SYSTEM.md
+│   ├── 05_RECORDS_SYSTEM.md
+│   ├── 06_ACHIEVEMENT_NOTIFICATIONS.md
+│   └── 07_MONSTER_BALANCE_TUNING.md
 ├── features/ (features em desenvolvimento)
 │   ├── 00_DUNGEON_SIEGE_EVOLUTION.md
 │   ├── 01_INCONSCIOUSNESS_PHASE1.md
@@ -74,21 +76,28 @@ docs/
 │   ├── README.md (índice de status)
 │   ├── propostas/ (ideias em backlog)
 │   │   ├── 01_EVOLUCAO_GRAFICA_AVANCADA.md
-   │   │   ├── 02_DISCOVERY_UI_ASSETS_EXTERNOS.md
-   │   │   ├── 03_MULTIJOVADOR_COOPERATIVO_E_INTERATIVIDADE.md
-   │   │   ├── 04_MOBILE_APP_E_MONETIZACAO_INDIE.md
-   │   │   ├── 05_SISTEMA_DE_SKINNING_E_CAMADAS_DINAMICAS.md
-   │   │   ├── 06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md
-   │   │   └── 07_EVENTOS_MUNDIAIS_E_SAZONAIS.md
+│   │   ├── 02_DISCOVERY_UI_ASSETS_EXTERNOS.md
+│   │   ├── 02_EIXO_B_ASSETS_EXTERNOS_DISCOVERY.md
+│   │   ├── 03_MULTIJOVADOR_COOPERATIVO_E_INTERATIVIDADE.md
+│   │   ├── 04_MOBILE_APP_E_MONETIZACAO_INDIE.md
+│   │   ├── 05_SISTEMA_DE_SKINNING_E_CAMADAS_DINAMICAS.md
+│   │   ├── 06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md
+│   │   ├── 07_EVENTOS_MUNDIAIS_E_SAZONAIS.md
+│   │   └── 08_GUIA_EVOLUCAO_COMERCIAL.md
 │   ├── andamento/ (em desenvolvimento ativo)
-│   │   ├── 01_FASE1_INCONSCIENCIA.md
+│   │   ├── 04_FASE4_MUNDO_CONTINUO.md
+│   │   ├── 05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md
+│   │   ├── 06_EIXO_A_GRAFICOS_AVANCADOS.md
 │   │   ├── 08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md
 │   │   ├── 09_PIXEL_LAB_PROMPT_GUIDE.md
-│   │   ├── PHASE_1_UNCONSCIOUSNESS_SPEC.md
-│   │   ├── SPECS_EVOLUCAO.md
-│   │   └── SPEC_DUNGEON_SIEGE_EVOLUTION.md
+│   │   └── SPECS_EVOLUCAO.md
 │   └── finalizadas/ (concluído e testado)
-│       └── 01_RECORDS_DISPLAY.md
+│       ├── 01_FASE1_INCONSCIENCIA.md
+│       ├── 01_RECORDS_DISPLAY.md
+│       ├── 02_FASE2_TELA_DE_MORTE_E_GORE.md
+│       ├── 03_FASE3_CONDICOES_DE_SOBREVIVENCIA.md
+│       ├── 03_FASE3_STATUS_SOBREVIVENCIA.md
+│       └── 05_FASE5_POLIMENTO_PRODUCAO_COMPLETO.md
 ├── reviews/ (auditorias e validações)
 │   ├── AUDIT_REPORT_AI_DRIVEN_2026.md
 │   ├── AUDIT_REPORT_QUALIDADE_2026.md
@@ -99,8 +108,9 @@ docs/
 ├── templates/ (modelos padronizados, incl. frontmatter)
 ├── wip/ (documentos em andamento)
 └── legacy/ (histórico descontinuado)
+    ├── Bloodmage1995_Discovery_Evolucao.docx
     ├── DISCOVERY_DUNGEON_SIEGE_EVOLUTION.md
-    └── Bloodmage1995_Discovery_Evolucao.docx
+    └── SPEC_DUNGEON_SIEGE_EVOLUTION_HISTORICO.md
 ```
 
 ---

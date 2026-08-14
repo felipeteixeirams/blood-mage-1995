@@ -1,3 +1,12 @@
+---
+agent_context: product-manager, game-designer, all agents
+target_module: docs/specs
+priority: high
+status: proposta
+last_updated: 2026-08-14
+tags: [specs, proposta, commercial, mobile-first, architecture, roadmap]
+---
+
 # 📜 Guia de Evolução e Preparação Comercial: Bloodmage 1995
 
 Este documento serve como especificação técnica e de design para guiar os próximos passos de evolução do projeto **Bloodmage 1995** a fim de atingir um nível de polimento visual e técnico comparável a marcos como *Dungeon Siege 1* e *Diablo 2*, preparando o jogo para um lançamento comercial de sucesso em plataformas móveis (smartphones) e desktop.

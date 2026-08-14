@@ -1,9 +1,10 @@
 ---
-title: Achievement Notifications System
-subtitle: UI Visual para Desbloqueamento de Achievements
-date: 2026-08-11
-status: Implementado
-impact: ALTO - Feedback Visual Imediato
+agent_context: frontend, game-designer
+target_module: src/game/systems/AchievementNotification.ts, src/game/scenes/GameScene.ts
+priority: medium
+status: complete
+last_updated: 2026-08-14
+tags: [gameplay, achievements, notifications, ui, hud]
 ---
 
 # 🏆 Achievement Notifications System

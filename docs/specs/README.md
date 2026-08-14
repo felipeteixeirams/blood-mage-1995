@@ -71,6 +71,7 @@ docs/specs//
 | **Skinning & Camadas Canvas** | Média | Customização em tempo real de skins, armas e armaduras usando composições no gerador procedural | [[./propostas/05_SISTEMA_DE_SKINNING_E_CAMADAS_DINAMICAS.md]] | Jules |
 | **Prestige (Blood Seal)** | Média | Reset opcional de nível para bônus passivos permanentes e escalonamento simples de dificuldades | [[./propostas/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md]] | Jules |
 | **Eventos Globais & Sazonais** | Média | Eventos rotativos imersivos (Eclipse, Cerco, Rifts) e comemorações de calendário góticas | [[./propostas/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md]] | Jules |
+| **Guia de Evolução Comercial** | Alta | Roteiro de transição para padrão comercial (Diablo II / Dungeon Siege) em mobile e desktop | [[./propostas/08_GUIA_EVOLUCAO_COMERCIAL.md]] | Jules + Felipe |
 
 **Documentação:** [[./propostas/]]
 
