@@ -1422,75 +1422,13 @@ export class GameScene extends Phaser.Scene {
       const lightingActive = this.lightingSystem?.isActive() === true;
       const playerHpRatio = this.player.stats.hp / this.player.stats.maxHp;
 
-      // Eixo A: luz real do player (raio encolhe com HP baixo) — WebGL
+      // Eixo A: luz real do player
       if (this.lightingSystem) {
         this.lightingSystem.updatePlayerLight(playerHpRatio);
       }
 
-      // Fallback: quando a iluminação Light2D está ativa, o darknessOverlay é reduzido
-      // a um tint de ambiente sutil; caso contrário, mantém o overlay de Graphics original.
-      if (this.darknessOverlay && !lightingActive) {
+      if (this.darknessOverlay) {
         this.darknessOverlay.clear();
-
-        worldManager.updateLighting(delta);
-        const envConfig = worldManager.getCurrentConfig();
-
-        const atmosphereEnabled = useGameStore.getState().settings.atmosphereEffectsEnabled !== false;
-        const isBoss = this.isBossActive();
-        const baseColor = (!atmosphereEnabled || alertCount <= 10 && !isBoss) ? envConfig.darknessColor : 0x2d0208;
-        let maxOverlayAlpha: number;
-
-        if (!atmosphereEnabled) {
-          maxOverlayAlpha = envConfig.darknessAlpha;
-        } else if (alertCount > 10 || isBoss) {
-          maxOverlayAlpha = (0.55 + 0.25 * Math.sin(time * 0.012)); // Rapid high danger pulse
-        } else if (alertCount > 3) {
-          maxOverlayAlpha = (envConfig.darknessAlpha + 0.1 * Math.sin(time * 0.003)); // Slow danger pulse
-        } else {
-          maxOverlayAlpha = envConfig.darknessAlpha;
-        }
-
-        const hpMultiplier = playerHpRatio < 0.3 ? 0.75 : 1.0;
-        const targetRadius = worldManager.currentLightRadius * hpMultiplier;
-
-        const playerScreenX = (this.player.x - this.cameras.main.scrollX) * this.cameras.main.zoom;
-        const playerScreenY = (this.player.y - this.cameras.main.scrollY) * this.cameras.main.zoom;
-
-        // Draw the darkness overlay using a solid outer region and a soft gradient inner hole
-        
-        // 1. Fill the rest of the screen outside the light radius
-        this.darknessOverlay.fillStyle(baseColor, maxOverlayAlpha);
-        this.darknessOverlay.beginPath();
-        // Outer screen bounds (clockwise)
-        this.darknessOverlay.moveTo(0, 0);
-        this.darknessOverlay.lineTo(viewW, 0);
-        this.darknessOverlay.lineTo(viewW, viewH);
-        this.darknessOverlay.lineTo(0, viewH);
-        this.darknessOverlay.lineTo(0, 0);
-        // Inner hole (anti-clockwise)
-        this.darknessOverlay.moveTo(playerScreenX + targetRadius, playerScreenY);
-        this.darknessOverlay.arc(playerScreenX, playerScreenY, targetRadius, 0, Math.PI * 2, true);
-        this.darknessOverlay.fillPath();
-
-        // 2. Draw soft gradient rings inside the hole (donuts)
-        const numRings = 10;
-        const ringWidth = targetRadius / numRings;
-        for (let r = 0; r < numRings; r++) {
-          const outerR = targetRadius - (r * ringWidth);
-          const innerR = Math.max(0, targetRadius - ((r + 1) * ringWidth));
-          const ringAlpha = maxOverlayAlpha * (outerR / targetRadius);
-          
-          this.darknessOverlay.fillStyle(baseColor, ringAlpha);
-          this.darknessOverlay.beginPath();
-          // Outer edge (clockwise)
-          this.darknessOverlay.arc(playerScreenX, playerScreenY, outerR, 0, Math.PI * 2, false);
-          // Inner edge (anti-clockwise)
-          if (innerR > 0) {
-            this.darknessOverlay.moveTo(playerScreenX + innerR, playerScreenY);
-            this.darknessOverlay.arc(playerScreenX, playerScreenY, innerR, 0, Math.PI * 2, true);
-          }
-          this.darknessOverlay.fillPath();
-        }
       }
     }
   }
