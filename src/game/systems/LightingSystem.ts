@@ -68,7 +68,7 @@ export class LightingSystem {
   }
 
   /** Liga o sistema de luzes na cena e define o ambient color do bioma. */
-  public enable(biome: BiomeType): void {
+  public enable(biome: BiomeType, floorDepth: number = 1): void {
     if (!this.enabled) return;
     this.activeBiome = biome;
     try {
@@ -77,7 +77,15 @@ export class LightingSystem {
         lights.enable();
       }
       const config = BIOME_LIGHTING[biome] || BIOME_LIGHTING.fosso_chagas;
-      lights.setAmbientColor(config.ambientColor);
+      
+      // Eixo A - Iluminação Avançada: Ajuste de penumbra e transição de luz por profundidade
+      const depthMultiplier = Math.max(0.2, 1 - (floorDepth - 1) * 0.05); 
+      const r = Math.floor(((config.ambientColor >> 16) & 0xff) * depthMultiplier);
+      const g = Math.floor(((config.ambientColor >> 8) & 0xff) * depthMultiplier);
+      const b = Math.floor((config.ambientColor & 0xff) * depthMultiplier);
+      const finalColor = (r << 16) | (g << 8) | b;
+
+      lights.setAmbientColor(finalColor);
     } catch (e) {
       this.enabled = false;
     }

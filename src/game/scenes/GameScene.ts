@@ -639,7 +639,7 @@ export class GameScene extends Phaser.Scene {
       this.postFX.setBiome(biome);
     }
     if (this.lightingSystem) {
-      this.lightingSystem.enable(biome);
+      this.lightingSystem.enable(biome, this.currentFloorDepth);
       this.lightingSystem.clearTorchLights();
     }
 
@@ -672,6 +672,10 @@ export class GameScene extends Phaser.Scene {
     // Eixo A: luz real seguindo o player (WebGL)
     if (this.lightingSystem) {
       this.lightingSystem.createPlayerLight();
+    }
+    
+    if (this.lightingPolish) {
+      this.lightingPolish.addPlayerStaffGlow(this.player);
     }
 
     // Clear old NPCs

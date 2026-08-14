@@ -238,6 +238,56 @@ export class LightingPolish {
   }
 
   /**
+   * Criar luz dinâmica pulsante para o cajado do Bloodmage
+   */
+  public addPlayerStaffGlow(sprite: Phaser.GameObjects.Sprite): void {
+    if (!this.isLight2DActive() || !sprite) return;
+
+    // A luz do cajado é um vermelho sangue vibrante
+    const color = 0xef4444; 
+    const intensity = 0.8;
+    const radius = 60;
+
+    try {
+      // Posiciona a luz ligeiramente acima e à direita do centro do sprite, para simular a ponta do cajado
+      const light = this.scene.lights.addLight(sprite.x + 8, sprite.y - 12, radius, color, intensity);
+      this.glowLights.set(sprite, light);
+
+      // Pulsação suave do cajado
+      this.scene.tweens.add({
+        targets: light,
+        intensity: { from: 0.6, to: 0.9 },
+        radius: { from: 55, to: 65 },
+        duration: 1500,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+
+      const updatePosition = () => {
+        if (sprite.active && light) {
+          // Mantém o offset relativo (baseado no flipX se quisermos precisão, mas simplificando aqui)
+          const offsetX = sprite.flipX ? -8 : 8;
+          light.setPosition(sprite.x + offsetX, sprite.y - 12);
+        }
+      };
+      this.scene.events.on('update', updatePosition);
+
+      sprite.once('destroy', () => {
+        this.scene.events.off('update', updatePosition);
+        try {
+          this.scene.lights?.removeLight(light);
+        } catch {
+          // ignore
+        }
+        this.glowLights.delete(sprite);
+      });
+    } catch {
+      // Ignora
+    }
+  }
+
+  /**
    * Adiciona o light2D acoplado ao ciclo de vida do Sprite
    */
   private addGlowEffect(
