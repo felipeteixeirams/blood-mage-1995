@@ -18,7 +18,9 @@ tags: [critical, troubleshooting, known-issues, assets, phaser]
 1. [Menu com Fallback Procedural em vez dos Assets Pixel Art do Lovable](#1-menu-com-fallback-procedural-em-vez-dos-assets-pixel-art)
 2. [Canvas com Altura Zero ou Colapso em Modais React](#2-canvas-com-altura-zero-ou-colapso-em-modais-react)
 3. [Instanciação Repetida / Memory Leak do Phaser no React](#3-instanciação-repetida--memory-leak-do-phaser-no-react)
-4. [Tabela de Diagnóstico Rápido](#4-tabela-de-diagnóstico-rápido)
+4. [Erro de Lockfile na Vercel (`ERR_PNPM_OUTDATED_LOCKFILE`)](#4-erro-de-lockfile-na-vercel-err_pnpm_outdated_lockfile)
+5. [Remoção de Limitação de Visão e Overlay de Escuridão](#5-remoção-de-limitação-de-visão-e-overlay-de-escuridão)
+6. [Tabela de Diagnóstico Rápido](#6-tabela-de-diagnóstico-rápido)
 
 ---
 
@@ -154,14 +156,57 @@ O `useEffect` de instanciação do `Phaser.Game` incluía funções mutáveis de
 
 ---
 
-## 4. Tabela de Diagnóstico Rápido
+## 4. Erro de Lockfile na Vercel (`ERR_PNPM_OUTDATED_LOCKFILE`)
+
+### 🔴 Sintoma
+O build falha na Vercel com o erro:
+`ERR_PNPM_OUTDATED_LOCKFILE: Cannot install with "frozen-lockfile" because pnpm-lock.yaml is not up to date with package.json` (especificamente devido a dependências adicionadas como `omggif` e `pngjs`).
+
+### 🔍 Causa-Raiz
+Em ambientes CI/CD como a Vercel, o `pnpm install` roda por padrão com `--frozen-lockfile`. Se novas dependências foram adicionadas diretamente no `package.json` sem atualizar e commitar o `pnpm-lock.yaml`, o build falha por inconsistência de hash.
+
+### 🛠️ Procedimento de Resolução
+1. Execute localmente para atualizar o lockfile:
+   ```bash
+   pnpm install
+   ```
+2. Certifique-se de commitar e enviar o `pnpm-lock.yaml` atualizado:
+   ```bash
+   git add pnpm-lock.yaml
+   git commit -m "fix(deps): update pnpm-lock.yaml for new dependencies"
+   git push origin main
+   ```
+
+---
+
+## 5. Remoção de Limitação de Visão e Overlay de Escuridão
+
+### 🔴 Sintoma
+O usuário reporta que o gameplay está muito escuro, com efeitos vermelhos cobrindo o personagem e os elementos do jogo devido ao sistema de vinheta dinâmica e raio de luz reduzido (`lightRadius`).
+
+### 🔍 Causa-Raiz
+O `GameScene` aplicava um `darknessOverlay` com gráficos em formato de furo ao redor do player e pulsos de alerta baseados em perigo, além de configurações restritivas de raio de luz em `WorldManager.ts`.
+
+### 🛠️ Procedimento de Resolução
+1. Limpar e desativar o `darknessOverlay` no loop de atualização do `GameScene`:
+   ```ts
+   if (this.darknessOverlay) {
+     this.darknessOverlay.clear();
+   }
+   ```
+2. Garantir que o mapa seja renderizado por completo sem vinhetas escuras ou restrições artificiais de visão.
+
+---
+
+## 6. Tabela de Diagnóstico Rápido
 
 | Sintoma | Causa Mais Provável | Ferramenta / Comando de Diagnóstico | Ação Imediata |
 |---|---|---|---|
 | Menu retrô com formas geométricas em vez de texturas | PNG/JPG corrompidos em `src/assets/ui/` | `file src/assets/ui/*` | Reextrair do zip original |
 | Modal Phaser invisível / tela preta | Container pai com `height: 0` | Inspecionar DOM (`computed style`) | Adicionar `h-[540px] aspect-[16/9]` |
 | Game duplicando canvas | Dependências instáveis no `useEffect` | Checar array de deps no React | Isolar ciclo de vida do Phaser em `[]` |
-| Erro de TypeScript em `game.registry` | Tipagem estrita ou `registry.get` sem casting | `npm run typecheck` | Utilizar type assertions seguras `as (...)` |
+| Erro de Lockfile na Vercel | `pnpm-lock.yaml` desincronizado com `package.json` | Logs da Vercel | Rodar `pnpm install` e commitar o lockfile |
+| Cenário escuro / vinheta vermelha | Overlay de escuridão ativo em `GameScene` | Inspecionar `darknessOverlay` | Limpar overlay e remover restrições de visão |
 
 ---
 
