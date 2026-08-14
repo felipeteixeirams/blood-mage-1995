@@ -318,7 +318,7 @@ export class GameScene extends Phaser.Scene {
     this.dragAimGraphics = this.add.graphics().setDepth(2050);
     this.threatIndicatorGraphics = this.add.graphics().setDepth(2100).setScrollFactor(0);
     this.darknessOverlay = this.add.graphics().setDepth(1990).setScrollFactor(0);
-    this.darknessOverlay.fillStyle(0x050510, 0.35);
+    this.darknessOverlay.fillStyle(0x050510, 0.12);
     this.darknessOverlay.fillRect(0, 0, mapW, mapH);
 
     // Place light sprites (additive blend over darkness)
@@ -1463,9 +1463,16 @@ export class GameScene extends Phaser.Scene {
           this.darknessOverlay.fillCircle(cx, cy, outerRadius);
         }
 
-        // Fill rest of the screen
-        this.darknessOverlay.lineStyle(viewW, baseColor, maxOverlayAlpha);
-        this.darknessOverlay.strokeCircle(cx, cy, targetRadius + viewW / 2);
+        // Fill rest of the screen with 4 rectangles to avoid strokeCircle WebGL glitches
+        this.darknessOverlay.fillStyle(baseColor, maxOverlayAlpha);
+        // Top
+        this.darknessOverlay.fillRect(0, 0, viewW, Math.max(0, cy - targetRadius));
+        // Bottom
+        this.darknessOverlay.fillRect(0, cy + targetRadius, viewW, Math.max(0, viewH - (cy + targetRadius)));
+        // Left
+        this.darknessOverlay.fillRect(0, Math.max(0, cy - targetRadius), Math.max(0, cx - targetRadius), targetRadius * 2);
+        // Right
+        this.darknessOverlay.fillRect(cx + targetRadius, Math.max(0, cy - targetRadius), Math.max(0, viewW - (cx + targetRadius)), targetRadius * 2);
       }
     }
   }

@@ -40,7 +40,7 @@ export const GAME_ASSET_MANIFEST: GameAssetConfig[] = [
     key: 'spr_bloodmage',
     type: 'spritesheet',
     path: 'assets/sprites/player/bloodmage.png',
-    frameWidth: 32,
+    frameWidth: 48,
     frameHeight: 48,
   },
 

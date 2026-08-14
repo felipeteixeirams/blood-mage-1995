@@ -42,7 +42,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.setCollideWorldBounds(true);
     this.setSize(20, 24);
-    this.setOffset(6, 20);
+    this.setOffset(14, 22);
     (this as any).setLighting?.(true);
 
     const typedSpellsData = spellsData as Record<string, SpellConfig>;
