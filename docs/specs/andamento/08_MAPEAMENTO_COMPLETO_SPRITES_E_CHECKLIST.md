@@ -1,16 +1,91 @@
 ---
 agent_context: game-engine, frontend, game-designer, pixel-artist, developer
-target_module: artifacts/bloodmage/src/assets, src/game, src/utils
+target_module: src/assets, src/game, src/utils, src/game/scenes/BootScene.ts
 priority: alta
 status: andamento
-last_updated: 2026-08-13
-tags: [specs, sprites, pixel-art, assets, mapping, checklist, hybrid-system]
+last_updated: 2026-08-14
+tags: [specs, sprites, pixel-art, assets, mapping, checklist, hybrid-system, maturity, architecture]
 ---
 
 # 🎨 Mapeamento Completo de Sprites & Checklist de Substituição
 
-> **Documento Vivo de Rastreamento (Living Tracking Spec)**
-> Mapeamento exaustivo de todos os elementos visuais do **Bloodmage 1995** que possuem geração procedural (Canvas) e que serão progressivamente substituídos por assets em Pixel Art física (PNG/WebP), preservando o fallback procedural sob a mesma chave única.
+> **Documento Vivo de Rastreamento & Arquitetura (Living Tracking Spec)**  
+> Mapeamento exaustivo de todos os elementos visuais do **Bloodmage 1995**, diagnóstico de maturidade técnica da engine, adequações prévias necessárias e checklist faseado de integração de assets físicos (PNG/WebP) com fallback procedural unificado.
+
+---
+
+## 🔍 Diagnóstico de Maturidade Arquitetural
+
+Nossa base arquitetural possui alto nível de maturidade e desacoplamento para receber sprites externos, mantendo a estabilidade já consolidada no Phaser 3 + React:
+
+### 🟢 Pontos Fortes Prontos (Ready for Sprites)
+1. **Chaves Únicas e Desacopladas (`Texture Keys`):**
+   - Todas as entidades, monstros, projéteis e orbes usam identificadores padronizados no código (`spr_bloodmage`, `spr_skeleton_warrior`, `spr_cultist_acolyte`, `spr_zombie_shambler`, `spr_flesh_golem`, `spr_blood_specter`, `proj_blood_bolt`, `tile_ground`, etc.).
+2. **Hitboxes e Física Isoladas do Render:**
+   - As caixas de colisão Arcade Physics (`setSize` e `setOffset`) já estão isoladas no `Player.ts` e `Enemy.ts`. Alterações de resolução visual dos sprites não afetam o cálculo de colisão, pulos ou raycasts.
+3. **Tinting e Shaders WebGL Nativos:**
+   - O sistema de afixos de elites, efeitos de status (sangramento/veneno) e shaders de iluminação (`setTint()`, `setLighting()`) operam diretamente na pipeline WebGL do Phaser, compatíveis com qualquer PNG/WebP.
+4. **Fallback Procedural Pré-existente:**
+   - O `src/utils/textureGenerator.ts` atua como rede de proteção: caso algum asset físico falhe ou demore a carregar, a engine gera a textura procedural na mesma chave sem interromper o loop de jogo.
+
+---
+
+## 🛠️ As 3 Adequações Prévias Obrigatórias (Pré-requisitos Técnicos)
+
+Antes de carregar lotes de sprites nos objetos de jogo, o pipeline exige as seguintes 3 adequações:
+
+### 1. Loader Híbrido Assíncrono no `BootScene.ts`
+- **Situação Atual:** O `BootScene` executa `generateGameTextures(this)` de forma síncrona logo no início.
+- **Adequação:** Transformar o carregamento em um pipeline assíncrono que:
+  - Tenta carregar os arquivos físicos via `this.load.image` ou `this.load.spritesheet`.
+  - Captura eventos de `loaderror` por chave e executa automaticamente a rotina do `textureGenerator.ts` apenas para as chaves ausentes.
+  - Exibe feedback de progresso limpo sem bloquear a transição de cena.
+
+### 2. Definição do Esquema de Animações (Spritesheets vs Sprites Únicos)
+- **Adequação:** Padronizar a criação e reprodução de frames no Phaser:
+  - **Spritesheets (Multi-frame):** Configurar dimensões fixas de frame (ex: 32x48 ou 64x64) e registrar animações no `BootScene`/`GameScene` via `this.anims.create({ key, frames, frameRate, repeat })`.
+  - **Sprites Estáticos Únicos:** Para entidades sem sheet de animação, manter os tweens de respiração e *squash & stretch* procedurais.
+  - **Calibração de Ponto de Pivô (`Origin`):** Fixar `setOrigin(0.5, 0.7)` para ancorar os pés das entidades corretamente na perspectiva isométrica.
+
+### 3. Estruturação de Pastas e Orçamento de VRAM
+- **Adequação:** Estruturar a árvore de assets em `public/assets/sprites/` e `src/assets/`:
+  - `public/assets/sprites/player/`
+  - `public/assets/sprites/enemies/`
+  - `public/assets/sprites/projectiles/`
+  - `public/assets/sprites/items/`
+  - `public/assets/tilesets/`
+- **Orçamento de VRAM & Compressão:** Compactar todos os PNGs com `pngquant` ou converter para `.webp`, mantendo o pacote inicial total abaixo de 2.5 MB.
+
+---
+
+## 📋 Checklist Faseado de Implementação da Engine
+
+Conforme as tarefas forem executadas, marque com `[x]`:
+
+### Fase 0: Adequação da Arquitetura & Loader Híbrido
+- [ ] **0.1** Criar estrutura de diretórios `public/assets/sprites/` (player, enemies, projectiles, items, tilesets)
+- [ ] **0.2** Refatorar `src/game/scenes/BootScene.ts` para suportar carregamento assíncrono com fallback automático para `textureGenerator.ts`
+- [ ] **0.3** Implementar helper central de registro de animações (`src/game/animations/animationManager.ts`)
+- [ ] **0.4** Configurar tratador de erro `loaderror` no Phaser loader com telemetria silenciosa
+
+### Fase 1: Piloto de Integração e Calibração (Player + Skeleton)
+- [ ] **1.1** Integrar spritesheet do **Bloodmage** (`spr_bloodmage`) com animações de Idle e Walk
+- [ ] **1.2** Calibrar hitbox (`setSize`/`setOffset`) e ponto de ancoragem dos pés (`setOrigin`) do Player
+- [ ] **1.3** Integrar spritesheet do **Skeleton Warrior** (`spr_skeleton_warrior`) com animações de Walk e Windup/Strike
+- [ ] **1.4** Validar compatibilidade de tinting de elites e efeitos de status com os sprites físicos
+- [ ] **1.5** Rodar testes automatizados e typecheck (`npm run verify`)
+
+### Fase 2: Expansão do Bestiário e Projéteis
+- [ ] **2.1** Integrar monstros de Tier 1: Cultist Acolyte (`spr_cultist_acolyte`) e Hound (`spr_hound`)
+- [ ] **2.2** Integrar monstros de Tier 2: Zombie Shambler (`spr_zombie_shambler`) e Blood Specter (`spr_blood_specter`)
+- [ ] **2.3** Integrar monstros de Tier 3: Gore Abomination (`spr_gore_abomination`) e Flesh Golem (`spr_flesh_golem`)
+- [ ] **2.4** Integrar projéteis e VFX: Blood Bolt (`proj_blood_bolt`), Bone Shard (`proj_bone_shard`), Blood Siphon (`proj_siphon`)
+- [ ] **2.5** Integrar orbes e coletáveis: Orbe de HP (`orb_hp`), Orbe de Sangue (`orb_blood`), Cristais (`crystal_red`)
+
+### Fase 3: Cenário, Props e Iluminação
+- [ ] **3.1** Integrar tilesets de chão (`tile_ground`, `tile_altar_floor`, `tile_blood_pool`)
+- [ ] **3.2** Integrar props de masmorra (`prop_torch`, `prop_pillar`, `prop_skull_pile`)
+- [ ] **3.3** Calibrar profundidade e layers de ordenação Z no `GameScene.ts`
 
 ---
 
