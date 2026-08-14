@@ -27,10 +27,32 @@ tags: [critical, troubleshooting, known-issues, assets, phaser]
 ### 🔴 Sintoma
 A tela inicial (`TitleScene`), configurações (`SettingsScene`) ou salão de recordes (`RecordsScene`) exibe gráficos geométricos simples em linhas e caixas douradas (fallback procedural gerado por `textureGenerator.ts`), em vez dos assets de alta fidelidade do Lovable (altar gótico, gárgulas em pedra, tochas vivas com partículas, arco rúnico e logotipo).
 
-### 🔍 Causa-Raiz
-1. **Corrupção de Arquivos Binários de Imagem:** Gravação acidental de imagens binárias (PNG/JPG em `src/assets/ui/`) através de ferramentas de edição de texto ou encoding UTF-8 indevido. O arquivo perde seu cabeçalho mágico (`\x89PNG` ou `\xFF\xD8`) e vira texto corrompido (`data`).
-2. **Falha Silenciosa de Carregamento:** O loader do Phaser falha ao decodificar a imagem (`loaderror`), aciona o mecanismo de resiliência híbrida e substitui a textura pelo gerador procedural no canvas.
-3. **Propriedades Incompatíveis no Loader:** Uso de flags como `this.load.imageLoadType = "HTMLImageElement"` em cenas Phaser que interferem no empacotador Vite.
+### 🔍 Causa-Raiz Detalhada
+1. **Corrupção de Arquivos Binários de Imagem:** Gravação ou sincronização indevida de imagens binárias (PNG/JPG em `src/assets/ui/` e `public/`) através de ferramentas de edição de texto ou conversão implícita UTF-8. Quando um binário é salvo como string UTF-8, bytes arbitrários são substituídos pelo caractere de substituição `\uFFFD` (hex `EF BF BD`), destruindo o cabeçalho mágico de 8 bytes do PNG (`\x89PNG\r\n\x1a\n`) ou JPEG (`\xFF\xD8\xFF`). O utilitário `file` passa a reportar o arquivo genericamente como `data` em vez de imagem válida.
+2. **Ativação do Fallback de Resiliência do Phaser:** Quando o carregador do Phaser tenta decodificar um arquivo binário corrompido, o navegador emite um erro de decodificação de imagem (`loaderror`). O sistema híbrido de assets do jogo aciona o fallback procedural (`textureGenerator.ts`), gerando a moldura geométrica dourada e textos básicos em canvas para prevenir um crash total da aplicação.
+3. **Corrupção em Cadeia no Git Index:** A tentativa de indexar ou manipular arquivos binários alterados como texto pode corromper os objetos soltos (`.git/objects/`) ou os índices de pacote (`pack-*.idx`), gerando erros como `fatal: loose object is corrupt` ou `fatal: unknown index entry format`.
+
+---
+
+### ⚠️ Análise Post-Mortem da Regressão (Incidente 2026-08-14)
+
+* **Sintoma Observado:** O menu principal voltou a exibir o layout geométrico amarelo/dourado antigo em vez dos assets de alta resolução do Lovable (altar, tochas animadas, logo gótico, gárgulas e arco rúnico).
+* **Fator Desencadeante:** Os arquivos em `src/assets/ui/*.png` e `public/icon-*.png` tiveram seus primeiros bytes convertidos para `efbfbd504e470d0a...` (UTF-8 replacement byte sequence), invalidando o header PNG.
+* **Mecanismo de Falha:** O `TitleScene.preload()` disparou o `loaderror` silencioso e invocou o gerador procedural de textura.
+* **Ação Corretiva Executada:**
+  1. Download dos arquivos binários puros a partir do GitHub via API REST (`/repos/.../contents/...`) com decodificação direta de `base64` para `Buffer` binário no Node.js (sem passar por strings intermediárias).
+  2. Reparação do `.git` local com `git clone --bare` + `git reset`.
+  3. Validação dos cabeçalhos binários com `file src/assets/ui/*`.
+  4. Execução de `npm run typecheck && npm test` (133 testes verdes).
+  5. Reinicialização do servidor de desenvolvimento.
+
+---
+
+### 🛡️ Regras Anti-Regressão para Arquivos Binários
+
+1. **PROIBIDO usar ferramentas de texto em binários:** Nunca utilize ferramentas de edição de texto (`edit_file`, `create_file`, concatenação em bash) em arquivos de extensão `.png`, `.jpg`, `.webp`, `.woff2`, `.mp3` ou `.ogg`.
+2. **Restauração Segura via Base64/Buffer:** Sempre que precisar restaurar ou baixar um asset, utilize buffers binários nativos (`Buffer.from(data, "base64")` ou `stream.pipe()`).
+3. **Validação Obrigatória pré-commit:** Execute `file src/assets/ui/*` e certifique-se de que todos retornam `PNG image data` ou `JPEG image data`.
 
 ### 🧪 Como Diagnosticar
 Execute no terminal:
