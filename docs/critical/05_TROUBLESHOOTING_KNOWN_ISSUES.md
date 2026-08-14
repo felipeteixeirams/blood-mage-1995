@@ -47,11 +47,30 @@ md5sum src/assets/ui/title-logo.png
 ```
 
 ### 🛠️ Procedimento de Resolução
-1. Reextraia os assets binários originais diretamente do zip arquivado:
+1. **Opção A (A partir do Zip Local):**
    ```bash
    unzip -o animated-spark-art-main.zip "animated-spark-art-main/src/assets/*" -d src/assets/ui/
    mv src/assets/ui/animated-spark-art-main/src/assets/* src/assets/ui/
    rm -rf src/assets/ui/animated-spark-art-main
+   ```
+   **Opção B (Download Binário Direto do Repositório GitHub):**
+   ```bash
+   node -e '
+   const https = require("https");
+   const fs = require("fs");
+   const token = process.env.GITHUB_TOKEN_PERSONAL;
+   const repo = "felipeteixeirams/blood-mage-1995";
+   const files = ["altar.png","gargoyle-bottom.png","gargoyle-top.png","rock-tile.jpg","rune-arch.png","stone-tile.jpg","title-logo.png","torch.png","ui-corner.png","ui-gem.png","ui-plaque.png","ui-slider-cap.png"];
+   files.forEach(f => {
+     https.get({ hostname: "api.github.com", path: `/repos/${repo}/contents/src/assets/ui/${f}`, headers: { "User-Agent": "NodeJS", "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" } }, res => {
+       let data = ""; res.on("data", c => data += c);
+       res.on("end", () => {
+         const j = JSON.parse(data);
+         if (j.content) fs.writeFileSync(`src/assets/ui/${f}`, Buffer.from(j.content, "base64"));
+       });
+     });
+   });
+   '
    ```
 2. Remova qualquer manipulação forçada de `imageLoadType` do método `preload()` das cenas.
 3. Valide o tipo dos arquivos com `file src/assets/ui/*`.

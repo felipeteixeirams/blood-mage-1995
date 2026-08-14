@@ -83,6 +83,7 @@ docs/
 │   ├── andamento/ (em desenvolvimento ativo)
 │   │   ├── 01_FASE1_INCONSCIENCIA.md
 │   │   ├── 08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md
+│   │   ├── 09_PIXEL_LAB_PROMPT_GUIDE.md
 │   │   ├── PHASE_1_UNCONSCIOUSNESS_SPEC.md
 │   │   ├── SPECS_EVOLUCAO.md
 │   │   └── SPEC_DUNGEON_SIEGE_EVOLUTION.md
