@@ -1,11 +1,19 @@
 import Phaser from 'phaser';
 
+export interface TextureGenerationOptions {
+  /** If true, overwrites existing textures in Phaser's TextureManager */
+  force?: boolean;
+}
+
 /**
  * Procedurally generates 16-bit Pixel Art Sprites & Textures for Phaser 3
  */
 /* v8 ignore start -- Geração de sprites é código visual não coberto por testes unitários */
-export function generateGameTextures(scene: Phaser.Scene) {
+export function generateGameTextures(scene: Phaser.Scene, options: TextureGenerationOptions = {}) {
   const addTexture = (key: string, canvas: HTMLCanvasElement) => {
+    if (!options.force && scene.textures.exists(key)) {
+      return;
+    }
     if (scene.textures.exists(key)) {
       scene.textures.remove(key);
     }
@@ -13,6 +21,9 @@ export function generateGameTextures(scene: Phaser.Scene) {
   };
 
   const addTextureWithNormalMap = (key: string, canvas: HTMLCanvasElement) => {
+    if (!options.force && scene.textures.exists(key)) {
+      return;
+    }
     if (scene.textures.exists(key)) {
       scene.textures.remove(key);
     }

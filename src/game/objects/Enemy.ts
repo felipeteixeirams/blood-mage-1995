@@ -3,6 +3,7 @@ import { MonsterConfig, AIState, EliteAffix } from '../../types/game';
 import monstersData from '../../data/monsters.json';
 import { soundEngine } from '../../utils/soundEngine';
 import { useGameStore } from '../../store/gameStore';
+import { safePlayAnimation } from '../animations/animationManager';
 
 export interface EnemyOptions {
   floorDepth?: number;
@@ -711,7 +712,61 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       }
     }
 
+    this.updateAnimation();
+
     return result;
+  }
+
+  /** Safely plays frame-based animation or fallback based on enemy state */
+  private updateAnimation() {
+    const isMoving = Math.abs(this.moveVx) > 5 || Math.abs(this.moveVy) > 5;
+    const key = this.config.spriteKey;
+    let prefix = '';
+
+    if (key === 'spr_skeleton') prefix = 'skeleton';
+    else if (key === 'spr_cultist') prefix = 'cultist';
+    else if (key === 'spr_hound') prefix = 'hound';
+    else if (key === 'spr_golem') prefix = 'golem';
+    else if (key === 'spr_specter') prefix = 'specter';
+    else if (key === 'spr_zombie_shambler') prefix = 'zombie';
+    else if (key === 'spr_vampire_stalker') prefix = 'vampire';
+    else if (key === 'spr_werewolf_lycan') prefix = 'lycan';
+    else if (key === 'spr_bat_swarm') prefix = 'bat';
+    else if (key === 'spr_gore_abomination') prefix = 'abomination';
+
+    if (!prefix) return;
+
+    if (this.attackPhase === 'windup' || this.attackPhase === 'strike') {
+      if (this.scene?.anims?.exists(`${prefix}_attack`)) {
+        safePlayAnimation(this, `${prefix}_attack`);
+      } else if (this.scene?.anims?.exists(`${prefix}_strike`)) {
+        safePlayAnimation(this, `${prefix}_strike`);
+      } else if (this.scene?.anims?.exists(`${prefix}_cast`)) {
+        safePlayAnimation(this, `${prefix}_cast`);
+      } else if (this.scene?.anims?.exists(`${prefix}_bite`)) {
+        safePlayAnimation(this, `${prefix}_bite`);
+      } else if (this.scene?.anims?.exists(`${prefix}_smash`)) {
+        safePlayAnimation(this, `${prefix}_smash`);
+      } else if (this.scene?.anims?.exists(`${prefix}_slash`)) {
+        safePlayAnimation(this, `${prefix}_slash`);
+      } else if (this.scene?.anims?.exists(`${prefix}_slam`)) {
+        safePlayAnimation(this, `${prefix}_slam`);
+      }
+    } else if (isMoving) {
+      if (this.scene?.anims?.exists(`${prefix}_walk`)) {
+        safePlayAnimation(this, `${prefix}_walk`);
+      } else if (this.scene?.anims?.exists(`${prefix}_run`)) {
+        safePlayAnimation(this, `${prefix}_run`);
+      } else if (this.scene?.anims?.exists(`${prefix}_fly`)) {
+        safePlayAnimation(this, `${prefix}_fly`);
+      } else if (this.scene?.anims?.exists(`${prefix}_float`)) {
+        safePlayAnimation(this, `${prefix}_float`);
+      }
+    } else {
+      if (this.scene?.anims?.exists(`${prefix}_idle`)) {
+        safePlayAnimation(this, `${prefix}_idle`);
+      }
+    }
   }
 
   /** Smoothly accelerate toward a target velocity —

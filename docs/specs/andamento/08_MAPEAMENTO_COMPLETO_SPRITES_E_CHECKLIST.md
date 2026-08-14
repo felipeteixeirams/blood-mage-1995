@@ -63,10 +63,10 @@ Antes de carregar lotes de sprites nos objetos de jogo, o pipeline exige as segu
 Conforme as tarefas forem executadas, marque com `[x]`:
 
 ### Fase 0: Adequação da Arquitetura & Loader Híbrido
-- [ ] **0.1** Criar estrutura de diretórios `public/assets/sprites/` (player, enemies, projectiles, items, tilesets)
-- [ ] **0.2** Refatorar `src/game/scenes/BootScene.ts` para suportar carregamento assíncrono com fallback automático para `textureGenerator.ts`
-- [ ] **0.3** Implementar helper central de registro de animações (`src/game/animations/animationManager.ts`)
-- [ ] **0.4** Configurar tratador de erro `loaderror` no Phaser loader com telemetria silenciosa
+- [x] **0.1** Criar estrutura de diretórios `public/assets/sprites/` (player, enemies, projectiles, items, tilesets)
+- [x] **0.2** Refatorar `src/game/scenes/BootScene.ts` para suportar carregamento assíncrono com fallback automático para `textureGenerator.ts`
+- [x] **0.3** Implementar helper central de registro de animações (`src/game/animations/animationManager.ts`)
+- [x] **0.4** Configurar tratador de erro `loaderror` no Phaser loader com telemetria silenciosa (`src/game/assets/assetManifest.ts`)
 
 ### Fase 1: Piloto de Integração e Calibração (Player + Skeleton)
 - [ ] **1.1** Integrar spritesheet do **Bloodmage** (`spr_bloodmage`) com animações de Idle e Walk

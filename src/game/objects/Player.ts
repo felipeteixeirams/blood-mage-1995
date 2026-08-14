@@ -3,6 +3,7 @@ import { PlayerStats, SpellConfig, LootItem } from '../../types/game';
 import spellsData from '../../data/spells.json';
 import { soundEngine } from '../../utils/soundEngine';
 import { useGameStore } from '../../store/gameStore';
+import { safePlayAnimation } from '../animations/animationManager';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   public stats: PlayerStats;
@@ -238,6 +239,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     } else if (this.moveVector.x !== 0) {
       this.setFlipX(this.moveVector.x < 0);
     }
+
+    // Play walk or idle animation based on movement
+    const isMoving = this.moveVector.x !== 0 || this.moveVector.y !== 0;
+    safePlayAnimation(this, isMoving ? 'bloodmage_walk' : 'bloodmage_idle');
 
     // Sync status conditions & curatives from Zustand store
     const storeStats = useGameStore.getState().playerStats;
