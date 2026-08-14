@@ -1453,26 +1453,44 @@ export class GameScene extends Phaser.Scene {
         const hpMultiplier = playerHpRatio < 0.3 ? 0.75 : 1.0;
         const targetRadius = worldManager.currentLightRadius * hpMultiplier;
 
-        // Draw concentric rings from center to create smooth radial light hole
-        const numRings = 10;
-        for (let r = 0; r < numRings; r++) {
-          const outerRadius = ((r + 1) / numRings) * targetRadius;
-          const ringAlpha = (r / numRings) * maxOverlayAlpha;
+        const playerScreenX = (this.player.x - this.cameras.main.scrollX) * this.cameras.main.zoom;
+        const playerScreenY = (this.player.y - this.cameras.main.scrollY) * this.cameras.main.zoom;
 
-          this.darknessOverlay.fillStyle(baseColor, ringAlpha);
-          this.darknessOverlay.fillCircle(cx, cy, outerRadius);
-        }
-
-        // Fill rest of the screen with 4 rectangles to avoid strokeCircle WebGL glitches
+        // Draw the darkness overlay using a solid outer region and a soft gradient inner hole
+        
+        // 1. Fill the rest of the screen outside the light radius
         this.darknessOverlay.fillStyle(baseColor, maxOverlayAlpha);
-        // Top
-        this.darknessOverlay.fillRect(0, 0, viewW, Math.max(0, cy - targetRadius));
-        // Bottom
-        this.darknessOverlay.fillRect(0, cy + targetRadius, viewW, Math.max(0, viewH - (cy + targetRadius)));
-        // Left
-        this.darknessOverlay.fillRect(0, Math.max(0, cy - targetRadius), Math.max(0, cx - targetRadius), targetRadius * 2);
-        // Right
-        this.darknessOverlay.fillRect(cx + targetRadius, Math.max(0, cy - targetRadius), Math.max(0, viewW - (cx + targetRadius)), targetRadius * 2);
+        this.darknessOverlay.beginPath();
+        // Outer screen bounds (clockwise)
+        this.darknessOverlay.moveTo(0, 0);
+        this.darknessOverlay.lineTo(viewW, 0);
+        this.darknessOverlay.lineTo(viewW, viewH);
+        this.darknessOverlay.lineTo(0, viewH);
+        this.darknessOverlay.lineTo(0, 0);
+        // Inner hole (anti-clockwise)
+        this.darknessOverlay.moveTo(playerScreenX + targetRadius, playerScreenY);
+        this.darknessOverlay.arc(playerScreenX, playerScreenY, targetRadius, 0, Math.PI * 2, true);
+        this.darknessOverlay.fillPath();
+
+        // 2. Draw soft gradient rings inside the hole (donuts)
+        const numRings = 10;
+        const ringWidth = targetRadius / numRings;
+        for (let r = 0; r < numRings; r++) {
+          const outerR = targetRadius - (r * ringWidth);
+          const innerR = Math.max(0, targetRadius - ((r + 1) * ringWidth));
+          const ringAlpha = maxOverlayAlpha * (outerR / targetRadius);
+          
+          this.darknessOverlay.fillStyle(baseColor, ringAlpha);
+          this.darknessOverlay.beginPath();
+          // Outer edge (clockwise)
+          this.darknessOverlay.arc(playerScreenX, playerScreenY, outerR, 0, Math.PI * 2, false);
+          // Inner edge (anti-clockwise)
+          if (innerR > 0) {
+            this.darknessOverlay.moveTo(playerScreenX + innerR, playerScreenY);
+            this.darknessOverlay.arc(playerScreenX, playerScreenY, innerR, 0, Math.PI * 2, true);
+          }
+          this.darknessOverlay.fillPath();
+        }
       }
     }
   }
