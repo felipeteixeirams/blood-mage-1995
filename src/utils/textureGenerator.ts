@@ -44,10 +44,10 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     return canvas;
   };
 
-  // 1. Dark Gothic Isometric Ground Tile (64x32 Isometric Diamond)
+  // 1. Gothic Isometric Flagstone Ground Diamond Tile with Normal Map (64x32)
   const tileCanvas = createPixelCanvas(64, 32, (ctx) => {
-    // Fill dark stone diamond base
-    ctx.fillStyle = '#140e15';
+    // Fill dark slate diamond base
+    ctx.fillStyle = '#120d14';
     ctx.beginPath();
     ctx.moveTo(32, 0);
     ctx.lineTo(64, 16);
@@ -56,28 +56,33 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     ctx.closePath();
     ctx.fill();
 
-    // Dark slate stone border mortar
-    ctx.strokeStyle = '#221623';
-    ctx.lineWidth = 1.5;
+    // Deep mortar border groove
+    ctx.strokeStyle = '#0a070c';
+    ctx.lineWidth = 2.0;
     ctx.stroke();
 
-    // Cobblestone / Flagstone slab pixel textures
-    ctx.fillStyle = '#1f1621';
-    ctx.fillRect(18, 6, 12, 6);
-    ctx.fillRect(34, 10, 14, 7);
-    ctx.fillRect(12, 16, 16, 8);
-    ctx.fillRect(32, 20, 12, 6);
+    // Staggered Flagstone Slabs (Dungeon Siege flagstone texture)
+    ctx.fillStyle = '#211723';
+    ctx.fillRect(16, 5, 14, 7);
+    ctx.fillRect(34, 9, 16, 8);
+    ctx.fillRect(10, 15, 18, 9);
+    ctx.fillRect(31, 20, 15, 7);
 
-    // Subtle stone highlights
-    ctx.fillStyle = '#2b1e2d';
-    ctx.fillRect(19, 7, 10, 2);
-    ctx.fillRect(35, 11, 12, 2);
-    ctx.fillRect(13, 17, 14, 2);
+    // Stone Slab Top/Left Bevel Highlights
+    ctx.fillStyle = '#3a2b3d';
+    ctx.fillRect(16, 5, 14, 1);
+    ctx.fillRect(34, 9, 16, 1);
+    ctx.fillRect(10, 15, 18, 1);
 
-    // Ancient blood stains on dungeon floor
-    ctx.fillStyle = 'rgba(100, 12, 20, 0.65)';
-    ctx.fillRect(26, 12, 6, 4);
-    ctx.fillRect(30, 15, 5, 4);
+    // Carved Gothic Rune / Cross Inlay on central stone
+    ctx.fillStyle = '#302233';
+    ctx.fillRect(28, 14, 8, 2);
+    ctx.fillRect(31, 11, 2, 8);
+
+    // Ancient Blood & Dirt Patches
+    ctx.fillStyle = 'rgba(110, 14, 24, 0.7)';
+    ctx.fillRect(24, 10, 7, 5);
+    ctx.fillRect(28, 14, 6, 4);
   });
   addTextureWithNormalMap('tile_ground', tileCanvas);
 
@@ -420,49 +425,124 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   });
   addTexture('blood_pool_stain', bloodPoolCanvas);
 
-  // 16. Dungeon Stone Brick Wall Block (32x32)
+  // 16. Gothic Dungeon Stone Wall Block with 3D Ledge & Normal Map (32x32)
   const wallCanvas = createPixelCanvas(32, 32, (ctx) => {
-    ctx.fillStyle = '#221922'; // Base dark stone
+    // Deep obsidian mortar base
+    ctx.fillStyle = '#0b080d';
     ctx.fillRect(0, 0, 32, 32);
 
-    ctx.fillStyle = '#3a2d3c'; // Bricks
-    ctx.fillRect(2, 2, 13, 6);
-    ctx.fillRect(17, 2, 13, 6);
-    ctx.fillRect(2, 10, 28, 6);
-    ctx.fillRect(2, 18, 13, 6);
-    ctx.fillRect(17, 18, 13, 6);
-    ctx.fillRect(2, 26, 28, 4);
+    // Top Stone Ledge / Cap (y: 0..4) - Gives wall top depth
+    ctx.fillStyle = '#4a3b50';
+    ctx.fillRect(0, 0, 32, 4);
+    ctx.fillStyle = '#6e5a78'; // Top bevel highlight edge
+    ctx.fillRect(0, 0, 32, 1);
+    ctx.fillStyle = '#1a121d'; // Ledge bottom shadow
+    ctx.fillRect(0, 4, 32, 1);
 
-    // Highlights & Moss
-    ctx.fillStyle = '#533e56';
-    ctx.fillRect(2, 2, 13, 1);
-    ctx.fillRect(17, 2, 13, 1);
-    ctx.fillStyle = '#1e382b'; // Dark moss in crevices
-    ctx.fillRect(12, 14, 4, 2);
-    ctx.fillRect(2, 24, 6, 2);
+    // Helper to draw bevelled stone ashlar brick
+    const drawStoneBrick = (bx: number, by: number, bw: number, bh: number) => {
+      // Brick main body
+      ctx.fillStyle = '#2f2434';
+      ctx.fillRect(bx, by, bw, bh);
+
+      // Top/Left highlight bevel
+      ctx.fillStyle = '#56445d';
+      ctx.fillRect(bx, by, bw, 1);
+      ctx.fillRect(bx, by, 1, bh);
+
+      // Bottom/Right shadow bevel
+      ctx.fillStyle = '#18121c';
+      ctx.fillRect(bx, by + bh - 1, bw, 1);
+      ctx.fillRect(bx + bw - 1, by, 1, bh);
+    };
+
+    // Row 1: Two staggered stone blocks
+    drawStoneBrick(1, 6, 14, 7);
+    drawStoneBrick(17, 6, 14, 7);
+
+    // Row 2: Wide central stone block with side piers
+    drawStoneBrick(1, 15, 29, 7);
+
+    // Row 3: Two staggered stone blocks
+    drawStoneBrick(1, 24, 14, 7);
+    drawStoneBrick(17, 24, 14, 7);
+
+    // Mortar / Crevice detail lines & stone cracks
+    ctx.fillStyle = '#0d0a10';
+    ctx.fillRect(15, 6, 2, 7);
+    ctx.fillRect(15, 24, 2, 7);
+
+    // Weathering cracks & ancient moss/dried blood
+    ctx.fillStyle = '#7a6085';
+    ctx.fillRect(6, 8, 4, 1); // Surface scratch
+    ctx.fillRect(22, 17, 5, 1);
+
+    ctx.fillStyle = '#1c3623'; // Dark tomb moss
+    ctx.fillRect(13, 11, 4, 2);
+    ctx.fillRect(2, 29, 6, 2);
+
+    ctx.fillStyle = '#5c101a'; // Dried blood drip
+    ctx.fillRect(20, 10, 2, 4);
+
+    // Bottom Ambient Drop Shadow onto Floor
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.fillRect(0, 30, 32, 2);
   });
-  addTexture('tile_wall_brick', wallCanvas);
+  addTextureWithNormalMap('tile_wall_brick', wallCanvas);
 
-  // 17. Dungeon Door Archway (32x32)
+  // 17. Gothic Archway Threshold Door Frame with Normal Map (32x32)
   const doorCanvas = createPixelCanvas(32, 32, (ctx) => {
-    ctx.fillStyle = '#1c131d';
+    // Background dark stone fill
+    ctx.fillStyle = '#09060c';
     ctx.fillRect(0, 0, 32, 32);
 
-    // Archway outline
-    ctx.fillStyle = '#4a2333';
-    ctx.beginPath();
-    ctx.arc(16, 16, 12, Math.PI, 0);
-    ctx.fill();
-    ctx.fillRect(4, 16, 24, 14);
+    // Outer Stone Pillars (Left & Right)
+    ctx.fillStyle = '#3a2c40';
+    ctx.fillRect(0, 0, 6, 32);
+    ctx.fillRect(26, 0, 6, 32);
 
-    // Inner passage shadow
-    ctx.fillStyle = '#0a050a';
+    // Pillar Bevels & Highlights
+    ctx.fillStyle = '#614d6b';
+    ctx.fillRect(0, 0, 1, 32);
+    ctx.fillRect(26, 0, 1, 32);
+    ctx.fillStyle = '#150f19';
+    ctx.fillRect(5, 0, 1, 32);
+    ctx.fillRect(31, 0, 1, 32);
+
+    // Iron reinforcement bands on pillars
+    ctx.fillStyle = '#8a6e32'; // Tarnished Gold / Iron
+    ctx.fillRect(0, 8, 6, 2);
+    ctx.fillRect(26, 8, 6, 2);
+    ctx.fillRect(0, 22, 6, 2);
+    ctx.fillRect(26, 22, 6, 2);
+
+    // Top Arched Lintel & Carved Keystone
+    ctx.fillStyle = '#4a3752';
+    ctx.beginPath();
+    ctx.arc(16, 16, 11, Math.PI, 0);
+    ctx.fill();
+    ctx.fillRect(6, 0, 20, 8);
+
+    // Keystone in top-center
+    ctx.fillStyle = '#785e84';
+    ctx.fillRect(14, 0, 4, 6);
+    ctx.fillStyle = '#9e7db0';
+    ctx.fillRect(14, 0, 4, 1);
+
+    // Pitch-black Inner Passage Void (Shadow Threshold)
+    ctx.fillStyle = '#020103';
     ctx.beginPath();
     ctx.arc(16, 16, 9, Math.PI, 0);
     ctx.fill();
     ctx.fillRect(7, 16, 18, 14);
+
+    // Runic Crimson Threshold Inlay at bottom
+    ctx.fillStyle = 'rgba(220, 38, 38, 0.7)';
+    ctx.fillRect(7, 29, 18, 2);
+    ctx.fillStyle = '#fef08a'; // Glowing central rune spark
+    ctx.fillRect(15, 29, 2, 2);
   });
-  addTexture('tile_door', doorCanvas);
+  addTextureWithNormalMap('tile_door', doorCanvas);
 
   // 18. Portal to Next Dungeon Floor (40x40)
   const portalCanvas = createPixelCanvas(40, 40, (ctx) => {
@@ -483,47 +563,90 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   });
   addTexture('spr_portal', portalCanvas);
 
-  // 19. Dungeon Treasure Chest (24x20)
+  // 19. Gothic Ornate Treasure Chest (24x20)
   const chestCanvas = createPixelCanvas(24, 20, (ctx) => {
-    ctx.fillStyle = '#78350f'; // Dark wood
-    ctx.fillRect(2, 4, 20, 14);
+    // Drop Shadow on Ground
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(1, 17, 22, 3);
 
-    ctx.fillStyle = '#d97706'; // Gold trim
-    ctx.fillRect(2, 4, 20, 3);
-    ctx.fillRect(2, 15, 20, 3);
-    ctx.fillRect(10, 4, 4, 14);
+    // Dark Oak Wooden Chest Body
+    ctx.fillStyle = '#451a03';
+    ctx.fillRect(2, 4, 20, 13);
 
-    ctx.fillStyle = '#fef08a'; // Glowing lock
-    ctx.fillRect(10, 9, 4, 4);
+    // Wood Grain Texture
+    ctx.fillStyle = '#5c2204';
+    ctx.fillRect(3, 6, 18, 2);
+    ctx.fillRect(3, 11, 18, 2);
+
+    // Tarnished Gold Corner Bracket Plates & Bands
+    ctx.fillStyle = '#b45309';
+    ctx.fillRect(2, 4, 4, 13);
+    ctx.fillRect(18, 4, 4, 13);
+    ctx.fillRect(2, 4, 20, 2); // Lid top trim
+    ctx.fillRect(2, 10, 20, 2); // Mid band
+
+    // Gold Bevel Highlights
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillRect(2, 4, 20, 1);
+    ctx.fillRect(2, 4, 1, 13);
+
+    // Skull Lock Keyplate
+    ctx.fillStyle = '#fef08a'; // Glowing Gold Lock
+    ctx.fillRect(10, 8, 4, 5);
+    ctx.fillStyle = '#450a0a'; // Keyhole void
+    ctx.fillRect(11, 10, 2, 2);
   });
-  addTexture('spr_chest', chestCanvas);
+  addTextureWithNormalMap('spr_chest', chestCanvas);
 
-  // 19b. Skeleton Remains (Bones)
+  // 19b. Skeleton Remains (Bones) with Shadow (24x18)
   const bonesCanvas = createPixelCanvas(24, 18, (ctx) => {
-    ctx.fillStyle = '#e3dac9'; // Bone white
-    // Draw skull
-    ctx.fillRect(8, 2, 8, 8);
-    ctx.fillStyle = '#111111'; // Eye sockets
-    ctx.fillRect(10, 4, 2, 2);
-    ctx.fillRect(13, 4, 2, 2);
-    // Draw crossbones
+    // Ground Shadow
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.fillRect(1, 13, 22, 4);
+
+    // Bone White Skull
     ctx.fillStyle = '#e3dac9';
+    ctx.fillRect(8, 2, 8, 7);
+    ctx.fillStyle = '#1c1917'; // Eye sockets & nasal void
+    ctx.fillRect(9, 4, 2, 2);
+    ctx.fillRect(13, 4, 2, 2);
+    ctx.fillRect(11, 6, 2, 2);
+
+    // Cracked Crossbones
+    ctx.fillStyle = '#d6cbba';
     ctx.fillRect(2, 11, 20, 2);
-    ctx.fillRect(4, 8, 2, 8);
-    ctx.fillRect(18, 8, 2, 8);
+    ctx.fillRect(4, 8, 2, 7);
+    ctx.fillRect(18, 8, 2, 7);
+
+    // Bone Highlights
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(8, 2, 8, 1);
   });
   addTexture('spr_skeleton_remains', bonesCanvas);
 
-  // 19c. Dead Soldier
+  // 19c. Dead Soldier Corpse with Armor & Blood Pool (28x16)
   const corpseCanvas = createPixelCanvas(28, 16, (ctx) => {
-    ctx.fillStyle = '#475569'; // Steel armor body
-    ctx.fillRect(4, 4, 18, 8);
-    ctx.fillStyle = '#991b1b'; // Dried blood
-    ctx.fillRect(12, 5, 4, 4);
-    ctx.fillStyle = '#e2e8f0'; // Helmet
-    ctx.fillRect(2, 4, 4, 6);
-    ctx.fillStyle = '#1e293b'; // Boots/gloves
-    ctx.fillRect(22, 5, 4, 5);
+    // Dried Blood Stain Pool
+    ctx.fillStyle = 'rgba(120, 15, 25, 0.75)';
+    ctx.fillRect(2, 8, 24, 7);
+
+    // Dark Steel Cuirass / Armor
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(6, 4, 16, 7);
+    ctx.fillStyle = '#64748b'; // Steel Specular
+    ctx.fillRect(6, 4, 16, 1);
+
+    // Steel Visor Helmet
+    ctx.fillStyle = '#475569';
+    ctx.fillRect(1, 3, 5, 6);
+    ctx.fillStyle = '#0f172a'; // Eye slit
+    ctx.fillRect(2, 5, 3, 1);
+
+    // Broken Sword hilt lying nearby
+    ctx.fillStyle = '#f59e0b'; // Gold pommel
+    ctx.fillRect(23, 3, 3, 3);
+    ctx.fillStyle = '#94a3b8'; // Steel blade stub
+    ctx.fillRect(23, 6, 2, 6);
   });
   addTexture('spr_dead_soldier', corpseCanvas);
 
@@ -565,96 +688,118 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   });
   addTexture('icon_flee', fleeCanvas);
 
-  // 23. Torch Light Sprite (128×128 — visible handle + flame + glow)
+  // 23. Wall Sconce Torch Light Sprite with Metal Bracket & Fiery Flame (128×128)
   const torchLightCanvas = createPixelCanvas(128, 128, (ctx) => {
-    // Draw torch handle (brown wooden stick) — centered at (64, 64), pointing down-right
-    ctx.fillStyle = '#5c3a1e';
-    ctx.fillRect(59, 70, 10, 28);            // stick
-    ctx.fillStyle = '#3d2510';
-    ctx.fillRect(61, 72, 6, 24);              // stick shadow side
+    // Wrought Iron Wall Sconce Bracket
+    ctx.fillStyle = '#1a130e';
+    ctx.fillRect(56, 76, 16, 20); // Wall mount plate
+    ctx.fillStyle = '#8a6e32'; // Gold rivets
+    ctx.fillRect(57, 78, 2, 2);
+    ctx.fillRect(69, 78, 2, 2);
+    ctx.fillRect(57, 92, 2, 2);
+    ctx.fillRect(69, 92, 2, 2);
 
-    // Flame core (bright yellow-white teardrop)
-    ctx.fillStyle = '#ffecb3';
+    // Wooden Torch Handle
+    ctx.fillStyle = '#4a2d16';
+    ctx.fillRect(60, 62, 8, 28);
+    ctx.fillStyle = '#2d1a0b';
+    ctx.fillRect(64, 62, 4, 28); // Handle shadow
+
+    // Iron Cup Basket at top
+    ctx.fillStyle = '#261c16';
+    ctx.fillRect(57, 58, 14, 6);
+
+    // Multi-layered Fiery Flame Core
+    // Outer Flame (Dark Red/Orange)
+    ctx.fillStyle = '#dc2626';
     ctx.beginPath();
-    ctx.ellipse(64, 56, 10, 18, 0, 0, Math.PI * 2);
+    ctx.ellipse(64, 48, 14, 22, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Flame mid (orange)
-    ctx.fillStyle = '#ff8c42';
+    // Mid Flame (Vibrant Orange)
+    ctx.fillStyle = '#f97316';
     ctx.beginPath();
-    ctx.ellipse(64, 58, 14, 24, 0, 0, Math.PI * 2);
+    ctx.ellipse(64, 48, 10, 16, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Flame outer (red)
-    ctx.fillStyle = '#d43d1a';
+    // Flame Core (Incandescent Yellow-White)
+    ctx.fillStyle = '#fef08a';
     ctx.beginPath();
-    ctx.ellipse(64, 60, 18, 30, 0, 0, Math.PI * 2);
+    ctx.ellipse(64, 50, 6, 10, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Glow gradient over everything
-    const gradient = ctx.createRadialGradient(64, 58, 0, 64, 58, 64);
-    gradient.addColorStop(0, 'rgba(255, 200, 100, 0.5)');
-    gradient.addColorStop(0.2, 'rgba(255, 150, 50, 0.35)');
-    gradient.addColorStop(0.45, 'rgba(200, 80, 20, 0.15)');
-    gradient.addColorStop(0.75, 'rgba(100, 30, 10, 0.05)');
+    // Floating embers
+    ctx.fillStyle = '#fde047';
+    ctx.fillRect(58, 32, 2, 2);
+    ctx.fillRect(68, 28, 2, 2);
+    ctx.fillRect(62, 22, 3, 3);
+
+    // Radial Golden Halo Ambient Light Gradient
+    const gradient = ctx.createRadialGradient(64, 48, 0, 64, 48, 64);
+    gradient.addColorStop(0, 'rgba(254, 240, 138, 0.55)');
+    gradient.addColorStop(0.25, 'rgba(249, 115, 22, 0.38)');
+    gradient.addColorStop(0.5, 'rgba(220, 38, 38, 0.18)');
+    gradient.addColorStop(0.8, 'rgba(100, 20, 10, 0.05)');
     gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 128, 128);
   });
   addTexture('light_torch', torchLightCanvas);
 
-  // 24. Brazier / Large Light Sprite (192×192 — visible bowl + flame + glow)
+  // 24. Gothic Iron Tripod Brazier Light Sprite (192×192)
   const brazierLightCanvas = createPixelCanvas(192, 192, (ctx) => {
-    // Brazier bowl (dark metal cauldron shape) — centered at (96, 106)
-    ctx.fillStyle = '#2a1e1a';
+    // Spiked Metal Tripod Legs
+    ctx.fillStyle = '#1a130e';
+    ctx.fillRect(64, 110, 8, 40);
+    ctx.fillRect(120, 110, 8, 40);
+    ctx.fillRect(92, 115, 8, 38);
+
+    // Heavy Cauldron Bowl (centered at 96, 100)
+    ctx.fillStyle = '#261c16';
     ctx.beginPath();
-    ctx.moveTo(66, 92);
-    ctx.lineTo(56, 118);
-    ctx.lineTo(60, 130);
-    ctx.lineTo(132, 130);
-    ctx.lineTo(136, 118);
-    ctx.lineTo(126, 92);
+    ctx.moveTo(60, 88);
+    ctx.lineTo(52, 114);
+    ctx.lineTo(58, 126);
+    ctx.lineTo(134, 126);
+    ctx.lineTo(140, 114);
+    ctx.lineTo(132, 88);
     ctx.closePath();
     ctx.fill();
 
-    // Bowl rim highlight
-    ctx.fillStyle = '#4a3630';
-    ctx.fillRect(64, 92, 64, 4);
+    // Bowl Rim Highlight
+    ctx.fillStyle = '#4a3629';
+    ctx.fillRect(58, 88, 76, 4);
 
-    // Bowl inner (dark ember glow)
-    ctx.fillStyle = '#8a3a1a';
-    ctx.fillRect(68, 96, 56, 18);
+    // Burning Charcoal Embers
+    ctx.fillStyle = '#7f1d1d';
+    ctx.fillRect(64, 92, 64, 16);
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(72, 94, 12, 6);
+    ctx.fillRect(96, 92, 16, 8);
+    ctx.fillRect(118, 96, 10, 5);
 
-    // Embers inside
-    ctx.fillStyle = '#ff6a20';
-    ctx.fillRect(76, 100, 8, 6);
-    ctx.fillRect(92, 98, 10, 8);
-    ctx.fillRect(110, 102, 6, 4);
-
-    // Flame rising from bowl (multiple tongues)
+    // Rising Fire Tongues
     for (let i = 0; i < 5; i++) {
-      const fx = 78 + i * 9;
-      const fy = 68 + Math.sin(i * 1.3) * 8;
-      const fw = 6 + (i % 3) * 2;
-      const fh = 14 + (i % 4) * 6;
-      ctx.fillStyle = i % 2 === 0 ? '#ff8c42' : '#d43d1a';
+      const fx = 76 + i * 10;
+      const fy = 66 + Math.sin(i * 1.5) * 8;
+      ctx.fillStyle = i % 2 === 0 ? '#f97316' : '#dc2626';
       ctx.beginPath();
-      ctx.ellipse(fx, fy, fw, fh, 0.2, 0, Math.PI * 2);
+      ctx.ellipse(fx, fy, 7, 18, 0, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // Flame core
-    ctx.fillStyle = '#ffecb3';
+    // Bright Central Flame Core
+    ctx.fillStyle = '#fef08a';
     ctx.beginPath();
-    ctx.ellipse(96, 62, 8, 14, 0, 0, Math.PI * 2);
+    ctx.ellipse(96, 60, 9, 16, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Glow gradient
-    const gradient = ctx.createRadialGradient(96, 80, 0, 96, 80, 96);
-    gradient.addColorStop(0, 'rgba(255, 180, 80, 0.45)');
-    gradient.addColorStop(0.2, 'rgba(255, 120, 40, 0.3)');
-    gradient.addColorStop(0.4, 'rgba(200, 70, 20, 0.12)');
-    gradient.addColorStop(0.65, 'rgba(100, 30, 10, 0.04)');
+    // Radial Warm Ambient Halo
+    const gradient = ctx.createRadialGradient(96, 75, 0, 96, 75, 96);
+    gradient.addColorStop(0, 'rgba(254, 240, 138, 0.50)');
+    gradient.addColorStop(0.25, 'rgba(249, 115, 22, 0.35)');
+    gradient.addColorStop(0.55, 'rgba(220, 38, 38, 0.15)');
+    gradient.addColorStop(0.85, 'rgba(80, 15, 10, 0.04)');
     gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 192, 192);

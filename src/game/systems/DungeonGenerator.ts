@@ -37,12 +37,15 @@ export class DungeonGenerator {
   public generate(mapW: number, mapH: number, biome: BiomeType = 'fosso_chagas'): RoomData[] {
     const tints = BIOME_TINTS[biome] || BIOME_TINTS.fosso_chagas;
 
-    // Fill Isometric Floor Tiles with Biome Tinting
+    // Fill Isometric Floor Tiles with Biome Tinting & Light2D pipeline
     for (let x = 0; x < mapW; x += 48) {
       for (let y = 0; y < mapH; y += 24) {
         const tile = this.scene.add.image(x + (y % 48 === 0 ? 0 : 24), y, 'tile_ground');
         tile.setTint(tints.ground);
         tile.setDepth(1);
+        if ((tile as any).setPipeline) {
+          try { (tile as any).setPipeline('Light2D'); } catch (e) { /* Fallback */ }
+        }
         (tile as any).setLighting?.(true);
       }
     }
@@ -86,20 +89,26 @@ export class DungeonGenerator {
     rooms.forEach((room) => {
       const doorWidth = 80;
 
-      // Top Wall
+      // Top Wall & Doorway Threshold
       if (room.y > 100) {
         const midX = room.centerX;
         this.buildWallLine(room.x, room.y, midX - doorWidth / 2, room.y, tints.wall);
         this.buildWallLine(midX + doorWidth / 2, room.y, room.x + room.width, room.y, tints.wall);
-        this.scene.add.image(midX, room.y, 'tile_door').setDepth(2);
+        const door = this.scene.add.image(midX, room.y, 'tile_door').setDepth(room.y + 18);
+        if ((door as any).setPipeline) {
+          try { (door as any).setPipeline('Light2D'); } catch (e) { /* Fallback */ }
+        }
       }
 
-      // Left Wall
+      // Left Wall & Doorway Threshold
       if (room.x > 120) {
         const midY = room.centerY;
         this.buildWallLine(room.x, room.y, room.x, midY - doorWidth / 2, tints.wall);
         this.buildWallLine(room.x, midY + doorWidth / 2, room.x, room.y + room.height, tints.wall);
-        this.scene.add.image(room.x, midY, 'tile_door').setDepth(2);
+        const door = this.scene.add.image(room.x, midY, 'tile_door').setDepth(midY + 18);
+        if ((door as any).setPipeline) {
+          try { (door as any).setPipeline('Light2D'); } catch (e) { /* Fallback */ }
+        }
       }
 
       // Special Room Features
@@ -135,10 +144,17 @@ export class DungeonGenerator {
       const wx = x1 + dx * t;
       const wy = y1 + dy * t;
 
+      // Ambient Ground Drop Shadow underneath wall base
+      const wallShadow = this.scene.add.rectangle(wx, wy + 14, 32, 8, 0x000000, 0.42);
+      wallShadow.setDepth(wy + 1);
+
       const wall = this.wallsGroup.create(wx, wy, 'tile_wall_brick');
       wall.setTint(wallTint);
       wall.setSize(32, 32);
       wall.setDepth(wy + 16);
+      if ((wall as any).setPipeline) {
+        try { (wall as any).setPipeline('Light2D'); } catch (e) { /* Fallback */ }
+      }
       wall.refreshBody();
     }
   }
