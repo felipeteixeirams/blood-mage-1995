@@ -44,7 +44,7 @@ describe('assetManifest', () => {
     expect(mockLoader.spritesheet).toHaveBeenCalledWith(
       'spr_bloodmage',
       'assets/sprites/player/bloodmage.png',
-      expect.objectContaining({ frameWidth: 48, frameHeight: 48 })
+      expect.objectContaining({ frameWidth: 68, frameHeight: 68 })
     );
     expect(mockLoader.spritesheet).not.toHaveBeenCalledWith('spr_skeleton', expect.anything(), expect.anything());
   });
