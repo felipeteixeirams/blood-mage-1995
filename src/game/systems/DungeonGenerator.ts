@@ -108,20 +108,30 @@ export class DungeonGenerator {
         this.scene.add.star(room.centerX, room.centerY, 5, 25, 55, 0xdc2626, 0.35).setDepth(2);
         this.scene.add.circle(room.centerX, room.centerY, 60).setStrokeStyle(3, 0xf43f5e, 0.8).setDepth(2);
       } else if (room.type === 'secret_treasure') {
-        // Guarantee 2 chests in secret treasure room
-        const chest1 = this.chestsGroup.create(room.centerX - 50, room.centerY, 'spr_chest');
-        const chest2 = this.chestsGroup.create(room.centerX + 50, room.centerY, 'spr_chest');
+        // Guarantee 2 chests in secret treasure room with directional facing
+        const key1 = this.getChestTextureKey('south_east');
+        const key2 = this.getChestTextureKey('south_west');
+        const chest1 = this.chestsGroup.create(room.centerX - 50, room.centerY, key1);
+        const chest2 = this.chestsGroup.create(room.centerX + 50, room.centerY, key2);
         chest1.setDepth(room.centerY);
         chest2.setDepth(room.centerY);
       } else if (room.type !== 'spawn' && Math.random() < 0.65) {
         const chestX = room.x + 40 + Math.random() * (room.width - 80);
         const chestY = room.y + 40 + Math.random() * (room.height - 80);
-        const chest = this.chestsGroup.create(chestX, chestY, 'spr_chest');
+        const chestKey = this.getChestTextureKey();
+        const chest = this.chestsGroup.create(chestX, chestY, chestKey);
         chest.setDepth(chestY);
       }
     });
 
     return rooms;
+  }
+
+  public getChestTextureKey(dir?: string): string {
+    const directions = ['south', 'south_west', 'west', 'north_west', 'north', 'north_east', 'east', 'south_east'];
+    const chosenDir = dir || directions[Math.floor(Math.random() * directions.length)];
+    const key = `spr_chest_${chosenDir}`;
+    return this.scene.textures.exists(key) ? key : 'spr_chest';
   }
 
   private buildWallLine(x1: number, y1: number, x2: number, y2: number, wallTint: number) {
