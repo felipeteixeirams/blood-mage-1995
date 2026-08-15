@@ -235,33 +235,24 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Play directional walk or idle animation based on movement and aim
     const isMoving = this.moveVector.x !== 0 || this.moveVector.y !== 0;
-    
-    // Determine the direction
-    let dir = 'down';
-    if (this.aimVector.x !== 0 || this.aimVector.y !== 0) {
-      // Aim takes priority for facing direction
-      if (Math.abs(this.aimVector.x) > Math.abs(this.aimVector.y)) {
-        dir = 'side';
-        this.setFlipX(this.aimVector.x < 0);
-      } else {
-        dir = this.aimVector.y < 0 ? 'up' : 'down';
-      }
+    const isAiming = this.aimVector.x !== 0 || this.aimVector.y !== 0;
+
+    let dir = 'south';
+    if (isAiming) {
+      dir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     } else if (isMoving) {
-      if (Math.abs(this.moveVector.x) > Math.abs(this.moveVector.y)) {
-        dir = 'side';
-        this.setFlipX(this.moveVector.x < 0);
-      } else {
-        dir = this.moveVector.y < 0 ? 'up' : 'down';
-      }
+      dir = this.get8Direction(this.moveVector.x, this.moveVector.y);
     }
+
+    this.setFlipX(false);
 
     const animState = isMoving ? 'walk' : 'idle';
     const animKey = `bloodmage_${animState}_${dir}`;
-    // Provide fallback if we don't have enough frames for directional cast/dash yet.
+
     if (this.scene && this.scene.anims.exists(animKey)) {
       safePlayAnimation(this, animKey);
     } else {
-      safePlayAnimation(this, isMoving ? 'bloodmage_walk_down' : 'bloodmage_idle_down');
+      safePlayAnimation(this, isMoving ? 'bloodmage_walk_south' : 'bloodmage_idle_south');
     }
 
     // Sync status conditions & curatives from Zustand store
@@ -366,6 +357,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (time > this.lastAutoShootTime + autoCd) {
       this.castBloodBolt(time);
     }
+  }
+
+  private get8Direction(vx: number, vy: number): string {
+    const angle = Math.atan2(vy, vx) * (180 / Math.PI);
+    if (angle >= -22.5 && angle < 22.5) return 'east';
+    if (angle >= 22.5 && angle < 67.5) return 'south_east';
+    if (angle >= 67.5 && angle < 112.5) return 'south';
+    if (angle >= 112.5 && angle < 157.5) return 'south_west';
+    if (angle >= 157.5 || angle < -157.5) return 'west';
+    if (angle >= -157.5 && angle < -112.5) return 'north_west';
+    if (angle >= -112.5 && angle < -67.5) return 'north';
+    if (angle >= -67.5 && angle < -22.5) return 'north_east';
+    return 'south';
   }
 
   public getAimAngle(): number {

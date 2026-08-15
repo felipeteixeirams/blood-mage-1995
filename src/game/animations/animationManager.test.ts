@@ -10,9 +10,13 @@ describe('animationManager', () => {
   it('contains valid animation definitions for game entities', () => {
     expect(GAME_ANIMATIONS.length).toBeGreaterThan(5);
 
-    const bloodmageIdle = GAME_ANIMATIONS.find((a) => a.key === 'bloodmage_idle_down');
+    const bloodmageIdle = GAME_ANIMATIONS.find((a) => a.key === 'bloodmage_idle_south');
     expect(bloodmageIdle).toBeDefined();
     expect(bloodmageIdle?.textureKey).toBe('spr_bloodmage');
+
+    const bloodmageWalkNE = GAME_ANIMATIONS.find((a) => a.key === 'bloodmage_walk_north_east');
+    expect(bloodmageWalkNE).toBeDefined();
+    expect(bloodmageWalkNE?.textureKey).toBe('spr_bloodmage');
 
     const skeletonWalk = GAME_ANIMATIONS.find((a) => a.key === 'skeleton_walk');
     expect(skeletonWalk).toBeDefined();
@@ -22,7 +26,7 @@ describe('animationManager', () => {
   it('registers animations safely on a Phaser scene', () => {
     const createdAnims: Record<string, any> = {};
     const existingTextures: Record<string, { frameTotal: number }> = {
-      spr_bloodmage: { frameTotal: 8 },
+      spr_bloodmage: { frameTotal: 72 },
       spr_skeleton: { frameTotal: 1 }, // single frame fallback
     };
 
