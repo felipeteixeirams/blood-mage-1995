@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { BiomeType } from '../../types/game';
+import { useGameStore } from '../../store/gameStore';
 
 /**
  * PostFXSystem (Eixo A — Evolução Gráfica Avançada)
@@ -84,20 +85,26 @@ export class PostFXSystem {
     return this.enabled && this.isWebGL && this.vignette !== null;
   }
 
-  public setBiome(biome: BiomeType): void {
+  public setBiome(biome: BiomeType, floorDepth: number = 1): void {
     this.activeBiome = biome;
     if (this.colorMatrix) {
-      this.applyBiomeMatrix();
+      this.applyBiomeMatrix(floorDepth);
     }
   }
 
-  private applyBiomeMatrix(): void {
+  private applyBiomeMatrix(floorDepth: number = 1): void {
     const config = this.biomeColor[this.activeBiome] || this.biomeColor.fosso_chagas;
     if (!this.colorMatrix) return;
     try {
       this.colorMatrix.colorMatrix.reset();
-      this.colorMatrix.colorMatrix.saturate(config.saturate);
-      this.colorMatrix.colorMatrix.hue(config.hue);
+
+      // Cascata de Luz (A.3): Ajuste dinâmico de Hue e Saturation na GPU conforme a profundidade (floorDepth)
+      const depthProgress = Math.min(1.0, Math.max(0, (floorDepth - 1) / 8));
+      const cascadedHue = config.hue + (depthProgress * -30); // Desloca tom para o matiz avermelhado
+      const cascadedSaturate = config.saturate + (depthProgress * 0.2); // Intensifica saturação com a profundidade
+
+      this.colorMatrix.colorMatrix.saturate(cascadedSaturate);
+      this.colorMatrix.colorMatrix.hue(cascadedHue);
       this.colorMatrix.colorMatrix.brightness(config.brightness);
     } catch (e) {
       // Ignorar falhas de matrix
@@ -117,6 +124,26 @@ export class PostFXSystem {
   public setDisplacement(amount: number, duration: number = 300): void {
     this.targetDisplacement = Math.max(0, Math.min(1, amount));
     this.startEase(duration);
+  }
+
+  public triggerFearDistortion(durationMs: number = 1200): void {
+    const isFearEnabled = useGameStore.getState().settings.fearDistortionEnabled ?? true;
+    if (!isFearEnabled) return;
+
+    this.setDisplacement(0.35, 200);
+    this.setVignette(0.75, 200);
+    this.setTint('#581c87', 200);
+
+    this.scene.time.delayedCall(durationMs * 0.4, () => {
+      this.setDisplacement(0.15, 300);
+      this.setVignette(0.35, 300);
+    });
+
+    this.scene.time.delayedCall(durationMs, () => {
+      this.setDisplacement(0, 400);
+      this.setVignette(0, 400);
+      this.setTint('transparent', 400);
+    });
   }
 
   public setTint(color: string, duration: number = 300): void {

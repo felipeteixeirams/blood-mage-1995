@@ -67,7 +67,7 @@ export class LightingSystem {
     return this.enabled;
   }
 
-  /** Liga o sistema de luzes na cena e define o ambient color do bioma. */
+  /** Liga o sistema de luzes na cena e define o ambient color do bioma e cascata de luz. */
   public enable(biome: BiomeType, floorDepth: number = 1): void {
     if (!this.enabled) return;
     this.activeBiome = biome;
@@ -76,16 +76,21 @@ export class LightingSystem {
       if (lights && !lights.active) {
         lights.enable();
       }
-      const config = BIOME_LIGHTING[biome] || BIOME_LIGHTING.fosso_chagas;
       
-      // Eixo A - Iluminação Avançada: Ajuste de penumbra e transição de luz por profundidade
-      const depthMultiplier = Math.max(0.2, 1 - (floorDepth - 1) * 0.05); 
-      const r = Math.floor(((config.ambientColor >> 16) & 0xff) * depthMultiplier);
-      const g = Math.floor(((config.ambientColor >> 8) & 0xff) * depthMultiplier);
-      const b = Math.floor((config.ambientColor & 0xff) * depthMultiplier);
-      const finalColor = (r << 16) | (g << 8) | b;
+      // Cascata de Luz (A.3): Transição de tom frio (azul espectral) nos primeiros andares
+      // para vermelho sangrento infernal conforme o jogador aprofunda no calabouço.
+      const depthProgress = Math.min(1.0, Math.max(0, (floorDepth - 1) / 8));
 
-      lights.setAmbientColor(finalColor);
+      // Top floors (0x101b38 - Cold Spectral Blue) -> Deep floors (0x4a050d - Deep Infernal Crimson)
+      const rStart = 0x10, gStart = 0x1b, bStart = 0x38;
+      const rEnd = 0x4a, gEnd = 0x05, bEnd = 0x0d;
+
+      const r = Math.floor(rStart + (rEnd - rStart) * depthProgress);
+      const g = Math.floor(gStart + (gEnd - gStart) * depthProgress);
+      const b = Math.floor(bStart + (bEnd - bStart) * depthProgress);
+      const cascadeColor = (r << 16) | (g << 8) | b;
+
+      lights.setAmbientColor(cascadeColor);
     } catch (e) {
       this.enabled = false;
     }

@@ -21,6 +21,13 @@ class SoundEngine {
   private threatStaticGain: GainNode | null = null;
   private threatPanner: StereoPannerNode | null = null;
 
+  // Threat Tinnitus Synthesizer (High-frequency sine tone + low-pass dampening)
+  private tinnitusOsc: OscillatorNode | null = null;
+  private tinnitusModOsc: OscillatorNode | null = null;
+  private tinnitusGain: GainNode | null = null;
+  private masterLowPassFilter: BiquadFilterNode | null = null;
+  private isTinnitusActive: boolean = false;
+
   constructor() {
     // Lazy init audio context on first user interaction
   }
@@ -122,6 +129,84 @@ class SoundEngine {
     this.threatPanner = panner;
   }
 
+  private initTinnitus() {
+    if (!this.ctx || this.tinnitusOsc) return;
+
+    const now = this.ctx.currentTime;
+
+    // High frequency carrier sine wave (~3500 Hz)
+    const carrier = this.ctx.createOscillator();
+    carrier.type = 'sine';
+    carrier.frequency.setValueAtTime(3500, now);
+
+    // Low-frequency LFO modulator for subtle ring pulsing (~4.5 Hz)
+    const modulator = this.ctx.createOscillator();
+    modulator.type = 'sine';
+    modulator.frequency.setValueAtTime(4.5, now);
+
+    const modGain = this.ctx.createGain();
+    modGain.gain.setValueAtTime(45, now);
+    modulator.connect(carrier.frequency);
+
+    const mainGain = this.ctx.createGain();
+    mainGain.gain.setValueAtTime(0, now);
+
+    // Master low-pass filter to dampen ambient game audio during panic
+    const lowPass = this.ctx.createBiquadFilter();
+    lowPass.type = 'lowpass';
+    lowPass.frequency.setValueAtTime(20000, now);
+    lowPass.connect(this.ctx.destination);
+
+    if (this.bgmGain) {
+      try {
+        this.bgmGain.disconnect();
+      } catch (e) {}
+      this.bgmGain.connect(lowPass);
+    }
+
+    carrier.connect(mainGain);
+    mainGain.connect(this.ctx.destination);
+
+    carrier.start(now);
+    modulator.start(now);
+
+    this.tinnitusOsc = carrier;
+    this.tinnitusModOsc = modulator;
+    this.tinnitusGain = mainGain;
+    this.masterLowPassFilter = lowPass;
+  }
+
+  public updateTinnitusState(hpRatio: number, isEliteThreatClose: boolean) {
+    const isTinnitusEnabled = useGameStore.getState().settings.tinnitusEnabled ?? true;
+    const shouldBeActive = !this.isMuted && this.sfxVolume > 0 && isTinnitusEnabled && (hpRatio < 0.30 || isEliteThreatClose);
+
+    this.initCtx();
+    if (!this.ctx) return;
+    this.initTinnitus();
+
+    if (!this.tinnitusGain) return;
+
+    const now = this.ctx.currentTime;
+    if (shouldBeActive) {
+      this.isTinnitusActive = true;
+      const targetGain = this.sfxVolume * (hpRatio < 0.20 ? 0.08 : 0.04);
+      this.tinnitusGain.gain.linearRampToValueAtTime(targetGain, now + 0.3);
+
+      if (this.masterLowPassFilter) {
+        // Muffle game sound (low-pass filter down to 1200Hz)
+        this.masterLowPassFilter.frequency.linearRampToValueAtTime(1200, now + 0.3);
+      }
+    } else if (this.isTinnitusActive) {
+      this.isTinnitusActive = false;
+      this.tinnitusGain.gain.linearRampToValueAtTime(0, now + 0.5);
+
+      if (this.masterLowPassFilter) {
+        // Restore full audio frequency spectrum (20kHz)
+        this.masterLowPassFilter.frequency.linearRampToValueAtTime(20000, now + 0.5);
+      }
+    }
+  }
+
   public updateSpatialThreat(relativeX: number, relativeY: number, activeThreat: boolean) {
     if (this.isMuted || this.sfxVolume <= 0) {
       if (this.threatStaticGain) {
@@ -152,6 +237,10 @@ class SoundEngine {
     if (this.isMuted || this.sfxVolume <= 0) return;
     this.initCtx();
     if (!this.ctx) return;
+
+    if (typeof window !== 'undefined' && (window as any).__triggerFearDistortion) {
+      (window as any).__triggerFearDistortion(1400);
+    }
 
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
@@ -785,7 +874,11 @@ class SoundEngine {
     this.isBgmPlaying = true;
     this.bgmGain = this.ctx.createGain();
     this.bgmGain.gain.setValueAtTime(this.isMuted ? 0 : this.bgmVolume * 0.15, this.ctx.currentTime);
-    this.bgmGain.connect(this.ctx.destination);
+    if (this.masterLowPassFilter) {
+      this.bgmGain.connect(this.masterLowPassFilter);
+    } else {
+      this.bgmGain.connect(this.ctx.destination);
+    }
 
     const biome = useGameStore.getState().currentBiome;
 

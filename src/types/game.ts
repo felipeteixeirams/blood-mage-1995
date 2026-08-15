@@ -199,6 +199,8 @@ export interface GameSettings {
   joystickCurve?: number; // 0.5 to 3.0 (response curve exponent)
   screenShakeEnabled?: boolean;
   flashesEnabled?: boolean;
+  fearDistortionEnabled?: boolean; // toggle for panic wave screen distortion
+  tinnitusEnabled?: boolean; // toggle for threat high-frequency audio tinnitus
   atmosphereEffectsEnabled?: boolean; // threat indicator + danger vignette + directional audio
   lowPerformanceParticles?: boolean;
   highContrastDamageTexts?: boolean;
