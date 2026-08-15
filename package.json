@@ -14,7 +14,7 @@
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
     "e2e:update": "playwright test --update-snapshots",
-    "verify": "npm run typecheck && npm run build",
+    "verify": "node scripts/verify-assets.cjs && npm run typecheck && npm run build",
     "verify:all": "npm run typecheck && npm run typecheck:game && npm run test",
     "prepare": "husky"
   },

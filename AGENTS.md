@@ -81,3 +81,8 @@ When requested by the user to commit and push changes to the remote GitHub repos
    git commit -m "Your descriptive commit message here"
    git push origin main
    ```
+
+### 6. Binary Files Anti-Corruption Guardrail (CRITICAL)
+- **NEVER** use text-based editing tools (`edit_file`, `create_file`, `cat`, `sed`, `awk`, `echo`) on binary files (`.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.woff2`, `.mp3`, `.ogg`).
+- Doing so converts non-UTF-8 bytes to the replacement character `\uFFFD` (`EF BF BD`), corrupting the asset's binary header permanently.
+- If you need to generate, move, or download a binary asset, you MUST use pure binary stream handlers (e.g., `Buffer` in Node.js, `wget`, or `curl --output`) and verify its integrity using `file <path>` before proceeding.
