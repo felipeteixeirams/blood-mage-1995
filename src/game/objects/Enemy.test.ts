@@ -94,11 +94,16 @@ function makeScene() {
       existing: vi.fn(),
       image: vi.fn().mockReturnValue({
         setDepth: vi.fn().mockReturnThis(),
+        setRotation: vi.fn().mockReturnThis(),
+        setAlpha: vi.fn().mockReturnThis(),
+        setScale: vi.fn().mockReturnThis(),
+        setTint: vi.fn().mockReturnThis(),
         destroy: vi.fn(),
       }),
     },
     physics: { add: { existing: vi.fn() } },
-    time: { now: 1000, delayedCall: vi.fn() },
+    textures: { exists: vi.fn().mockReturnValue(true) },
+    time: { now: 1000, delayedCall: vi.fn(), addEvent: vi.fn().mockReturnValue({ repeatCount: 0 }) },
     tweens: { add: vi.fn() },
   } as any;
 }
@@ -166,5 +171,22 @@ describe('Enemy Monster Balancing & Scaling', () => {
       eliteAffix: 'spectral',
     });
     expect(spectral.eliteAffix).toBe('spectral');
+  });
+
+  it('handles advanced damage effects (flinch, knockback, hit flash) and gibs on overkill', () => {
+    const scene = makeScene();
+    const enemy = new Enemy(scene, 100, 100, 'bat_swarm');
+
+    // Take non-lethal damage with hit source position (bat_swarm maxHp is 38)
+    const isDead = enemy.takeDamage(20, 80, 100, false, false);
+    expect(isDead).toBe(false);
+    expect(enemy.hp).toBe(18);
+    expect(enemy.x).toBeGreaterThan(100); // Flinch shifted enemy away from x=80
+
+    // Take overkill lethal damage triggering gibs
+    const spawnGibsSpy = vi.spyOn(enemy, 'spawnGibs');
+    const isLethal = enemy.takeDamage(100, 80, 100, true, false);
+    expect(isLethal).toBe(true);
+    expect(spawnGibsSpy).toHaveBeenCalled();
   });
 });

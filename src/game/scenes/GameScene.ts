@@ -1980,7 +1980,7 @@ export class GameScene extends Phaser.Scene {
     const finalDamage = isCrit ? projectileDamage * 1.75 : projectileDamage;
 
     const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
-    const isDead = enemy.takeDamage(finalDamage);
+    const isDead = enemy.takeDamage(finalDamage, this.player.x, this.player.y, isCrit, false);
     CombatFeel.handleHitImpact(this, finalDamage, isCrit, false, enemy.hp / enemy.maxHp);
     if (isCrit && this.lightingPolish) {
       this.lightingPolish.addCriticalImpactGlow(enemy.x, enemy.y);

@@ -44,9 +44,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private fleeStartTime: number = 0;
   private reinforcementsCalled: boolean = false;
 
-  // Status Emote Icon
+  // Status Emote Icon & Visual Variants
   private emoteSprite?: Phaser.GameObjects.Image;
+  private eliteHaloGraphics?: Phaser.GameObjects.Graphics;
   private hoverOffsetY: number = 0;
+  private lastDamagedParticleTime: number = 0;
 
   // Individual AI Personality & Movement Enhancements
   private speedMultiplier: number = 1.0;
@@ -347,6 +349,39 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Keep emote centered
     if (this.emoteSprite && this.emoteSprite.active) {
       this.emoteSprite.setPosition(this.x, this.y - 28);
+    }
+
+    // 2.3 Variant: Elite Aura / Halo Ring
+    if (this.eliteAffix !== 'none' && this.scene) {
+      if (!this.eliteHaloGraphics) {
+        this.eliteHaloGraphics = this.scene.add.graphics();
+        let haloColor = 0xb8860b;
+        if (this.eliteAffix === 'frenzied') haloColor = 0xef4444;
+        else if (this.eliteAffix === 'vampiric') haloColor = 0xd97706;
+        else if (this.eliteAffix === 'cursed') haloColor = 0xa855f7;
+        else if (this.eliteAffix === 'spectral') haloColor = 0x38bdf8;
+
+        this.eliteHaloGraphics.lineStyle(2, haloColor, 0.8);
+        this.eliteHaloGraphics.strokeCircle(0, 0, 18);
+        this.eliteHaloGraphics.setDepth(Math.max(1, this.depth - 1));
+      }
+      this.eliteHaloGraphics.setPosition(this.x, this.y + 10);
+    }
+
+    // 2.3 Variant: Damaged (HP < 40%) Periodic Blood Emissions
+    const currentHpRatio = this.hp / this.maxHp;
+    if (currentHpRatio < 0.40 && time > this.lastDamagedParticleTime + 800) {
+      this.lastDamagedParticleTime = time;
+      (this.scene as any).spawnBloodBurst?.(this.x, this.y - 4, 1);
+    }
+
+    // 2.3 Variant: Furious Crimson Pulsing Tint in Frenzy State
+    if (this.aiState === 'frenzy' && this.attackPhase === 'none') {
+      const pulse = (Math.sin(time * 0.012) + 1) * 0.5; // 0 to 1
+      const gVal = Math.round(34 * (1 - pulse));
+      const bVal = Math.round(34 * (1 - pulse));
+      const pulsedTint = (0xff << 16) | (gVal << 8) | bVal;
+      this.setTint(pulsedTint);
     }
 
     // Ethereal gait floating effect
@@ -697,20 +732,33 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       }
     }
 
-    // Apply Organic Walk Cycle (Stretch & Squash, Dynamic Tilt)
+    // 2.1 8-Directional Procedural Isometric Skew & Depth Scaling (N, NE, E, SE, S, SW, W, NW)
+    // Map facingAngle to isometric scale factors
+    const normalizedAngle = Phaser.Math.Angle.Normalize(this.facingAngle); // 0 to 2PI
+    const isoCos = Math.abs(Math.cos(normalizedAngle)); // 0 (North/South) to 1 (East/West)
+    const isoSin = Math.abs(Math.sin(normalizedAngle)); // 1 (North/South) to 0 (East/West)
+
+    // Vertical axes (North/South) squash slightly (0.88x height, 0.94x width), horizontal (East/West) expand (1.06x width)
+    const isoScaleX = 0.94 + isoCos * 0.12;
+    const isoScaleY = 0.88 + isoSin * 0.12;
+
+    // Apply Organic Walk Cycle (Stretch & Squash, Dynamic Tilt, Damaged Limp)
     if (this.body) {
       const currentVel = this.body.velocity;
       const speed = currentVel.length();
       if (speed > 8) {
-        const walkPulse = Math.sin(time * 0.014 + this.personalPhase);
-        const stretchX = 1 + walkPulse * 0.08;
-        const stretchY = 1 - walkPulse * 0.08;
-        this.setScale(this.baseScale * stretchX, this.baseScale * stretchY);
+        // Asymmetric/limping gait wobble when damaged (HP < 40%)
+        const walkPulse = currentHpRatio < 0.40
+          ? Math.abs(Math.sin(time * 0.016 + this.personalPhase)) * 0.16 - 0.04
+          : Math.sin(time * 0.014 + this.personalPhase) * 0.08;
+        const stretchX = 1 + walkPulse;
+        const stretchY = 1 - walkPulse;
+        this.setScale(this.baseScale * isoScaleX * stretchX, this.baseScale * isoScaleY * stretchY);
 
-        const tiltAngle = (currentVel.x * 0.001) + Math.sin(time * 0.01 + this.personalPhase) * 0.06;
+        const tiltAngle = (currentVel.x * 0.001) + Math.sin(time * 0.01 + this.personalPhase) * (currentHpRatio < 0.40 ? 0.12 : 0.06);
         this.setRotation(tiltAngle);
       } else {
-        this.setScale(this.baseScale);
+        this.setScale(this.baseScale * isoScaleX, this.baseScale * isoScaleY);
         this.setRotation(0);
       }
     }
@@ -802,31 +850,187 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     return current + Math.sign(diff) * maxDelta;
   }
 
-  public takeDamage(amount: number): boolean {
+  public takeDamage(
+    amount: number,
+    sourceX?: number,
+    sourceY?: number,
+    isCrit: boolean = false,
+    isExecution: boolean = false
+  ): boolean {
     this.hp -= amount;
     this.isAngered = true;
 
     // Visual: blood burst particles
     if (this.active) {
-      (this.scene as any).spawnBloodBurst?.(this.x, this.y, 6);
+      (this.scene as any).spawnBloodBurst?.(this.x, this.y, isCrit ? 12 : 6);
     }
 
     // Alert instantly to combat when damaged!
     this.alertToCombat();
 
-    // Red damage flash
-    this.setTint(0xff0000);
-    this.scene.time.delayedCall(120, () => {
-      if (this.active) {
-        if (this.aiState === 'frenzy') {
-          this.setTint(0xff3333);
-        } else {
-          this.applyBaseTint();
+    // 2.2 Advanced Damage Effects: Hit Flash (33ms setTintFill) -> Red Flash -> Base Tint
+    if (typeof (this as any).setTintFill === 'function') {
+      (this as any).setTintFill(0xffffff);
+      this.scene.time.delayedCall(33, () => {
+        if (this.active) {
+          this.setTint(0xff0000);
+          this.scene.time.delayedCall(90, () => {
+            if (this.active) {
+              if (this.aiState === 'frenzy') {
+                this.setTint(0xff3333);
+              } else {
+                this.applyBaseTint();
+              }
+            }
+          });
         }
+      });
+    } else {
+      this.setTint(0xff0000);
+      this.scene.time.delayedCall(120, () => {
+        if (this.active) {
+          if (this.aiState === 'frenzy') {
+            this.setTint(0xff3333);
+          } else {
+            this.applyBaseTint();
+          }
+        }
+      });
+    }
+
+    // 2.2 Flinch & Mass-based Knockback
+    if (sourceX !== undefined && sourceY !== undefined && this.active && this.body) {
+      const dx = this.x - sourceX;
+      const dy = this.y - sourceY;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      const nx = dx / dist;
+      const ny = dy / dist;
+
+      // Flinch: momentary frame shift (2-4px) away from attack origin
+      const flinchDist = 3;
+      this.x += nx * flinchDist;
+      this.y += ny * flinchDist;
+
+      // Mass-based knockback impulse velocity
+      // Swarmers (e.g. bats/hounds): ~180px/s, Chasers (skeletons): ~100px/s, Chargers/Golems: ~20px/s, Boss: ~10px/s
+      let knockbackSpeed = 100;
+      switch (this.config.behavior) {
+        case 'swarmer':
+          knockbackSpeed = 180;
+          break;
+        case 'chaser':
+          knockbackSpeed = 100;
+          break;
+        case 'ranged':
+          knockbackSpeed = 110;
+          break;
+        case 'charger':
+          knockbackSpeed = 30;
+          break;
+        case 'boss':
+          knockbackSpeed = 15;
+          break;
       }
-    });
+      if (isCrit) knockbackSpeed *= 1.5;
+
+      this.moveVx += nx * knockbackSpeed;
+      this.moveVy += ny * knockbackSpeed;
+      this.setVelocity(this.moveVx, this.moveVy);
+    }
 
     soundEngine.playBloodSquish();
+
+    // 2.4 Ragdoll / Gib Explosion check on death
+    const isOverkill = this.hp <= -this.maxHp * 0.5 || amount >= this.maxHp * 1.5;
+    if (this.hp <= 0 && (isExecution || isCrit || isOverkill)) {
+      this.spawnGibs();
+    }
+
     return this.hp <= 0;
+  }
+
+  public destroy(fromScene?: boolean) {
+    if (this.eliteHaloGraphics) {
+      this.eliteHaloGraphics.destroy();
+      this.eliteHaloGraphics = undefined;
+    }
+    if (this.emoteSprite) {
+      this.emoteSprite.destroy();
+      this.emoteSprite = undefined;
+    }
+    super.destroy(fromScene);
+  }
+
+  /**
+   * 2.4 Ragdoll Gib Explosion & Floor Blood Decals
+   */
+  public spawnGibs() {
+    if (!this.scene) return;
+
+    // Spawn persistent blood stain on the floor tilemap
+    if (this.scene.textures.exists('blood_pool_stain')) {
+      const stain = this.scene.add.image(this.x, this.y, 'blood_pool_stain');
+      stain.setDepth(10); // Floor layer
+      stain.setRotation(Math.random() * Math.PI * 2);
+      stain.setAlpha(0.75 + Math.random() * 0.2);
+      stain.setScale(0.8 + Math.random() * 0.5);
+    }
+
+    // Slice sprite into 4 quadrant gib pieces
+    const quadSize = 14;
+    const offsets = [
+      { x: -quadSize / 2, y: -quadSize / 2, vx: -80, vy: -120 },
+      { x: quadSize / 2, y: -quadSize / 2, vx: 80, vy: -120 },
+      { x: -quadSize / 2, y: quadSize / 2, vx: -100, vy: -40 },
+      { x: quadSize / 2, y: quadSize / 2, vx: 100, vy: -40 },
+    ];
+
+    offsets.forEach((off) => {
+      const gibX = this.x + off.x;
+      const gibY = this.y + off.y;
+
+      const gib = this.scene.add.image(gibX, gibY, this.texture.key);
+      gib.setScale(this.baseScale * 0.5);
+      gib.setDepth(100);
+      if (this.isTinted) {
+        gib.setTint(this.tintTopLeft);
+      } else if (this.config.color) {
+        gib.setTint(parseInt(this.config.color.replace('#', '0x'), 16));
+      }
+
+      const vx = off.vx + (Math.random() - 0.5) * 60;
+      let vy = off.vy + (Math.random() - 0.5) * 60;
+      const angularVel = (Math.random() - 0.5) * 15;
+
+      // Animate gib flight with simulated 2.5D arc gravity
+      let elapsed = 0;
+      const gravity = 400; // px/s^2
+
+      const timer = this.scene.time.addEvent({
+        delay: 16,
+        repeat: 30, // ~500ms flight
+        callback: () => {
+          elapsed += 0.016;
+          vy += gravity * 0.016;
+          gib.x += vx * 0.016;
+          gib.y += vy * 0.016;
+          gib.rotation += angularVel * 0.016;
+
+          if (timer.repeatCount === 0) {
+            // Settle on floor
+            gib.setDepth(12);
+            gib.setAlpha(0.7);
+            // Fade out after 6 seconds
+            this.scene.tweens.add({
+              targets: gib,
+              alpha: 0,
+              duration: 2000,
+              delay: 4000,
+              onComplete: () => gib.destroy(),
+            });
+          }
+        },
+      });
+    });
   }
 }
