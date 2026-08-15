@@ -553,6 +553,11 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   });
   addTexture('spr_chest', chestCanvas);
 
+  const chestDirs = ['south', 'south_west', 'west', 'north_west', 'north', 'north_east', 'east', 'south_east'];
+  chestDirs.forEach((dir) => {
+    addTexture(`spr_chest_${dir}`, chestCanvas);
+  });
+
   // 19b. Skeleton Remains (Bones)
   const bonesCanvas = createPixelCanvas(24, 18, (ctx) => {
     ctx.fillStyle = '#e3dac9'; // Bone white

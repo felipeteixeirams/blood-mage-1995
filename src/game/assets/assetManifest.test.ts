@@ -17,6 +17,16 @@ describe('assetManifest', () => {
     const boltAsset = GAME_ASSET_MANIFEST.find((a) => a.key === 'proj_blood_bolt');
     expect(boltAsset).toBeDefined();
     expect(boltAsset?.type).toBe('image');
+
+    const chestAsset = GAME_ASSET_MANIFEST.find((a) => a.key === 'spr_chest');
+    expect(chestAsset).toBeDefined();
+
+    const chestDirs = ['south', 'south_west', 'west', 'north_west', 'north', 'north_east', 'east', 'south_east'];
+    chestDirs.forEach((dir) => {
+      const dirAsset = GAME_ASSET_MANIFEST.find((a) => a.key === `spr_chest_${dir}`);
+      expect(dirAsset).toBeDefined();
+      expect(dirAsset?.type).toBe('image');
+    });
   });
 
   it('correctly identifies physically available assets on disk', () => {
@@ -38,9 +48,9 @@ describe('assetManifest', () => {
       load: mockLoader,
     } as unknown as Phaser.Scene;
 
+    const expectedCount = GAME_ASSET_MANIFEST.filter((asset) => isAssetPhysicallyAvailable(asset.path)).length;
     const metrics = queueAssetLoading(mockScene);
-    // Only the existing bloodmage asset should be queued
-    expect(metrics.total).toBe(1);
+    expect(metrics.total).toBe(expectedCount);
     expect(mockLoader.spritesheet).toHaveBeenCalledWith(
       'spr_bloodmage',
       'assets/sprites/player/bloodmage.png',

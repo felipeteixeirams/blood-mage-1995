@@ -163,6 +163,51 @@ export const GAME_ASSET_MANIFEST: GameAssetConfig[] = [
     type: 'image',
     path: 'assets/tilesets/tile_wall_brick.png',
   },
+  {
+    key: 'spr_chest',
+    type: 'image',
+    path: 'assets/sprites/items/chest.png',
+  },
+  {
+    key: 'spr_chest_south',
+    type: 'image',
+    path: 'assets/sprites/items/chest/south.png',
+  },
+  {
+    key: 'spr_chest_south_west',
+    type: 'image',
+    path: 'assets/sprites/items/chest/south-west.png',
+  },
+  {
+    key: 'spr_chest_west',
+    type: 'image',
+    path: 'assets/sprites/items/chest/west.png',
+  },
+  {
+    key: 'spr_chest_north_west',
+    type: 'image',
+    path: 'assets/sprites/items/chest/north-west.png',
+  },
+  {
+    key: 'spr_chest_north',
+    type: 'image',
+    path: 'assets/sprites/items/chest/north.png',
+  },
+  {
+    key: 'spr_chest_north_east',
+    type: 'image',
+    path: 'assets/sprites/items/chest/north-east.png',
+  },
+  {
+    key: 'spr_chest_east',
+    type: 'image',
+    path: 'assets/sprites/items/chest/east.png',
+  },
+  {
+    key: 'spr_chest_south_east',
+    type: 'image',
+    path: 'assets/sprites/items/chest/south-east.png',
+  },
 ];
 
 export interface LoadMetrics {
