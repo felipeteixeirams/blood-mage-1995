@@ -377,6 +377,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       if (!this.hasTriggeredHowl && this.config.id === 'werewolf_lycan') {
         this.hasTriggeredHowl = true;
         soundEngine.playHowl();
+        if (typeof window !== 'undefined' && (window as any).__triggerFearDistortion) {
+          (window as any).__triggerFearDistortion(1200);
+        }
         this.baseScale = this.config.scale * 1.25;
         this.showEmote('icon_alert');
       }

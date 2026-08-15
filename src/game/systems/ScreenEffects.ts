@@ -94,6 +94,23 @@ export class ScreenEffects {
     this.easeDuration = duration;
   }
 
+  public triggerFearDistortion(durationMs: number = 1200): void {
+    this.setDistortion(0.35, 200);
+    this.setVignette(0.75, 200);
+    this.setTint('#581c87', 200);
+
+    setTimeout(() => {
+      this.setDistortion(0.15, 300);
+      this.setVignette(0.35, 300);
+    }, durationMs * 0.4);
+
+    setTimeout(() => {
+      this.setDistortion(0, 400);
+      this.setVignette(0, 400);
+      this.setTint('transparent', 400);
+    }, durationMs);
+  }
+
   /**
    * Aplicar tint de cor
    */

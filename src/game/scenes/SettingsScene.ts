@@ -94,6 +94,8 @@ export class SettingsScene extends Phaser.Scene {
       virtualControlsOpacity: 0.5,
       touchSensitivity: 1.0,
       crtFilter: true,
+      fearDistortionEnabled: true,
+      tinnitusEnabled: true,
       controlsMode: 'auto',
     };
 
@@ -286,21 +288,25 @@ export class SettingsScene extends Phaser.Scene {
   }
 
   private toggleDefs: { key: keyof GameSettings; label: string }[] = [
-    { key: "crtFilter", label: "SCANLINES CRT" },
+    { key: "crtFilter", label: "CRT" },
+    { key: "fearDistortionEnabled", label: "MEDO" },
+    { key: "tinnitusEnabled", label: "TINNITUS" },
   ];
 
   private buildToggles() {
     const y = 398;
-    const cx = BASE_W / 2;
+    const startX = BASE_W / 2 - 220;
+    const spacing = 220;
 
-    this.toggleDefs.forEach((def) => {
+    this.toggleDefs.forEach((def, index) => {
+      const cx = startX + index * spacing;
       const box = this.add.graphics().setDepth(6);
-      const gem = this.add.image(cx - 90, y, "uiGem").setDisplaySize(24, 24).setDepth(7);
+      const gem = this.add.image(cx - 70, y, "uiGem").setDisplaySize(20, 20).setDepth(7);
       
       this.add
-        .text(cx - 68, y, def.label, {
+        .text(cx - 52, y, def.label, {
           fontFamily: "monospace",
-          fontSize: "14px",
+          fontSize: "13px",
           color: "#ccc0a0",
           fontStyle: "bold",
         })
@@ -312,11 +318,11 @@ export class SettingsScene extends Phaser.Scene {
       this.renderToggle(t);
 
       this.add
-        .zone(cx, y, 220, 36)
+        .zone(cx, y, 190, 34)
         .setOrigin(0.5)
         .setInteractive({ useHandCursor: true })
         .on("pointerdown", () => {
-          (this.settingsState[t.key] as boolean) = !(this.settingsState[t.key] as boolean);
+          (this.settingsState[t.key] as boolean) = !(this.settingsState[t.key] ?? true);
           this.renderToggle(t);
           this.applyLive();
 
@@ -327,10 +333,10 @@ export class SettingsScene extends Phaser.Scene {
   }
 
   private renderToggle(t: Toggle) {
-    const on = this.settingsState[t.key] as boolean;
+    const on = (this.settingsState[t.key] ?? true) as boolean;
     t.box.clear();
-    t.box.fillStyle(0x0c0d11, 0.85).fillRoundedRect(t.x - 110, t.y - 15, 220, 30, 5);
-    t.box.lineStyle(2, on ? 0xc9a227 : 0x4a4740, 1).strokeRoundedRect(t.x - 110, t.y - 15, 220, 30, 5);
+    t.box.fillStyle(0x0c0d11, 0.85).fillRoundedRect(t.x - 95, t.y - 15, 190, 30, 5);
+    t.box.lineStyle(2, on ? 0xc9a227 : 0x4a4740, 1).strokeRoundedRect(t.x - 95, t.y - 15, 190, 30, 5);
     t.gem.setAlpha(on ? 1 : 0.28).setTint(on ? 0xffffff : 0x6a6a6a);
   }
 
@@ -360,6 +366,8 @@ export class SettingsScene extends Phaser.Scene {
             virtualControlsOpacity: 0.5,
             touchSensitivity: 1.0,
             crtFilter: true,
+            fearDistortionEnabled: true,
+            tinnitusEnabled: true,
             controlsMode: 'auto',
           };
           this.settingsState = { ...defaults };

@@ -220,6 +220,13 @@ export class GameScene extends Phaser.Scene {
     this.screenEffects = new ScreenEffects(this, this.cameras.main.width, this.cameras.main.height);
     this.postFX = new PostFXSystem(this);
     this.postFX.setEnabled(useGameStore.getState().settings.postProcessingEnabled !== false);
+    (window as any).__triggerFearDistortion = (durationMs?: number) => {
+      if (this.postFX) {
+        this.postFX.triggerFearDistortion(durationMs);
+      } else if (this.screenEffects) {
+        this.screenEffects.triggerFearDistortion(durationMs);
+      }
+    };
     this.lightingSystem = new LightingSystem(this);
     this.lightingSystem.setEnabled(useGameStore.getState().settings.postProcessingEnabled !== false);
 
@@ -1404,18 +1411,26 @@ export class GameScene extends Phaser.Scene {
           this.threatIndicatorGraphics.fillPath();
           this.threatIndicatorGraphics.strokePath();
 
-          // 4.2 — Distorção de Áudio Direcional (Silent Hill Radio Static)
+          // 4.2 — Distorção de Áudio Direcional & 4.4 Tinnitus de Ameaça
           const dx = enemy.x - this.player.x;
           const dy = enemy.y - this.player.y;
           const dist = Math.hypot(dx, dy);
           const relativeX = dist > 0 ? dx / dist : 0;
           const isCombatThreat = enemy.aiState === 'combat' || enemy.aiState === 'frenzy';
           soundEngine.updateSpatialThreat(relativeX, 0, isCombatThreat);
+
+          const isEliteOrBoss = enemy.config.behavior === 'boss' || enemy.eliteAffix !== 'none';
+          const hpRatio = this.player.stats.maxHp > 0 ? this.player.stats.hp / this.player.stats.maxHp : 1.0;
+          const isEliteThreatClose = isEliteOrBoss && dist < 220;
+          soundEngine.updateTinnitusState(hpRatio, isEliteThreatClose);
         } else {
           soundEngine.updateSpatialThreat(0, 0, false);
+          const hpRatio = this.player.stats.maxHp > 0 ? this.player.stats.hp / this.player.stats.maxHp : 1.0;
+          soundEngine.updateTinnitusState(hpRatio, false);
         }
       } else {
         soundEngine.updateSpatialThreat(0, 0, false);
+        soundEngine.updateTinnitusState(1.0, false);
       }
 
       // 4.3 & 4.4 — Vinheta Pulsante & Iluminação Dinâmica (WorldManager)
