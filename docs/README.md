@@ -29,7 +29,8 @@ docs/
 │   ├── 01_TECH_STACK.md
 │   ├── 02_CODE_ORGANIZATION.md
 │   ├── 03_PHASER_PATTERNS.md
-│   └── 04_STATE_MANAGEMENT.md
+│   ├── 04_STATE_MANAGEMENT.md
+│   └── SEAMLESS_OPEN_WORLD_FEASIBILITY.md
 ├── design/ (especificações de design)
 │   ├── 00_DESIGN_PHILOSOPHY.md
 │   ├── 01_VISUAL_IDENTITY.md
