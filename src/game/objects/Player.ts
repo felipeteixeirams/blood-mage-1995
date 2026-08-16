@@ -9,6 +9,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   public stats: PlayerStats;
   private moveVector: Phaser.Math.Vector2 = new Phaser.Math.Vector2(0, 0);
   private aimVector: Phaser.Math.Vector2 = new Phaser.Math.Vector2(1, 0);
+  private manualAimTimer: number = 0;
   private lastAutoShootTime: number = 0;
   private skillCooldowns: Record<string, number> = {};
   public isInvulnerable: boolean = false;
@@ -135,10 +136,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
     if (x !== 0 || y !== 0) {
       this.aimVector.set(x, y).normalize();
+      this.manualAimTimer = 350; // User explicitly aimed, grant manual priority for 350ms
     }
   }
 
   public updatePlayer(time: number, delta: number) {
+    // Manual aim timer countdown
+    if (this.manualAimTimer > 0) {
+      this.manualAimTimer -= delta;
+    }
+
     // Cooldown timers
     if (this.dashCooldownTimer > 0) {
       this.dashCooldownTimer -= delta;
@@ -236,13 +243,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Play directional walk or idle animation based on movement and aim
     const isMoving = this.moveVector.x !== 0 || this.moveVector.y !== 0;
-    const isAiming = this.aimVector.x !== 0 || this.aimVector.y !== 0;
+    const isAttackingOrManualAim = (time - this.lastAutoShootTime < 300) || this.manualAimTimer > 0;
 
     let dir = 'south';
-    if (isAiming) {
+    if (isAttackingOrManualAim) {
       dir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     } else if (isMoving) {
       dir = this.get8Direction(this.moveVector.x, this.moveVector.y);
+    } else {
+      dir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     }
 
     this.setFlipX(false);
@@ -352,31 +361,96 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
     });
 
-    // Auto Shoot Primary (Blood Bolt) if pointer is down or enemy in range (< 350px)
+    // Auto Shoot Primary (Blood Bolt) with Intelligent Directional Cone Aiming
     const bloodBoltConfig = (spellsData as Record<string, SpellConfig>)['blood_bolt'];
     const autoCd = bloodBoltConfig.cooldownMs * (1 - this.stats.cooldownReduction);
 
     const pointer = this.scene && this.scene.input && this.scene.input.activePointer;
     const isPointerDown = pointer && pointer.isDown;
 
-    let hasEnemyInRange = false;
-    if (this.scene && 'enemiesGroup' in this.scene) {
-      const enemiesGroup = (this.scene as any).enemiesGroup;
-      if (enemiesGroup && enemiesGroup.getChildren) {
-        enemiesGroup.getChildren().forEach((enemy: any) => {
-          if (enemy && enemy.active && enemy.hp > 0) {
-            const dist = Phaser.Math.Distance.Between(this.x, this.y, enemy.x, enemy.y);
-            if (dist < 350) {
-              hasEnemyInRange = true;
-            }
-          }
-        });
+    const targetEnemy = this.findBestTarget(380);
+    const hasEnemyInRange = targetEnemy !== null;
+
+    // If an enemy is found and user is not manually aiming with right stick/pointer,
+    // align aimVector towards the chosen target
+    if (this.manualAimTimer <= 0) {
+      if (targetEnemy) {
+        this.aimVector.set(targetEnemy.x - this.x, targetEnemy.y - this.y).normalize();
+      } else if (this.moveVector.lengthSq() > 0.01) {
+        // Face movement path
+        this.aimVector.set(this.moveVector.x, this.moveVector.y).normalize();
       }
     }
 
     if ((isPointerDown || hasEnemyInRange) && time > this.lastAutoShootTime + autoCd) {
       this.castBloodBolt(time);
     }
+  }
+
+  /**
+   * Intelligently selects the best target based on directional cone (forward path) and proximity.
+   * If moving, strongly weights enemies in the forward direction.
+   * If stationary, selects closest radial enemy.
+   */
+  public findBestTarget(maxRange: number = 380): any | null {
+    if (!this.scene || !('enemiesGroup' in this.scene)) return null;
+    const enemiesGroup = (this.scene as any).enemiesGroup;
+    if (!enemiesGroup || !enemiesGroup.getChildren) return null;
+
+    const isMoving = this.moveVector.lengthSq() > 0.01;
+    // Reference vector for forward cone
+    const refX = isMoving ? this.moveVector.x : this.aimVector.x;
+    const refY = isMoving ? this.moveVector.y : this.aimVector.y;
+    const refLen = Math.hypot(refX, refY) || 1;
+    const normRefX = refX / refLen;
+    const normRefY = refY / refLen;
+
+    let bestTarget: any = null;
+    let highestScore = -Infinity;
+
+    enemiesGroup.getChildren().forEach((enemy: any) => {
+      if (!enemy || !enemy.active || enemy.hp <= 0) return;
+
+      const dx = enemy.x - this.x;
+      const dy = enemy.y - this.y;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist > maxRange) return;
+
+      const normDx = dx / (dist || 1);
+      const normDy = dy / (dist || 1);
+
+      // Dot product: 1 = directly in front, 0 = 90 deg sideways, -1 = behind
+      const dot = normRefX * normDx + normRefY * normDy;
+
+      let dirMultiplier = 1.0;
+      if (isMoving) {
+        if (dot > 0.5) {
+          // Inside 120-degree frontal cone: strong bonus
+          dirMultiplier = 1.0 + dot * 2.2;
+        } else if (dot > 0) {
+          // Flanking (45-90 degrees)
+          dirMultiplier = 0.9 + dot * 0.5;
+        } else {
+          // Behind player: penalized unless in emergency melee range (< 140px)
+          dirMultiplier = dist < 140 ? 0.7 : 0.25;
+        }
+      } else {
+        // Stationary: slight preference for facing direction, mostly radial proximity
+        dirMultiplier = 1.0 + Math.max(0, dot) * 0.4;
+      }
+
+      // Proximity score: closer is higher
+      const distScore = 1000 / (dist + 40);
+      const totalScore = distScore * dirMultiplier;
+
+      if (totalScore > highestScore) {
+        highestScore = totalScore;
+        bestTarget = enemy;
+      }
+    });
+
+    return bestTarget;
   }
 
   private get8Direction(vx: number, vy: number): string {

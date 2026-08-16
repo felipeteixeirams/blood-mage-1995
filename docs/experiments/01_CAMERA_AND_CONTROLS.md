@@ -11,9 +11,12 @@ A câmera original estava distante demais, prejudicando a leitura do combate e a
 - **Câmera:**
   - Ajuste fino de Zoom (testar valores que equilibrem visão de ameaças vs imersão).
   - Testar deadzone/lerp (suavidade) da câmera seguindo o jogador.
-- **Controles Touch:**
-  - Área ativa do Virtual Joystick.
-  - Responsividade na mudança rápida de direção.
+- **Controles Touch & Mira (Aiming & Game Feel):**
+  - Área ativa do Virtual Joystick e responsividade na mudança rápida de direção.
+  - **Sistema de Mira Inteligente Híbrido (Cone Direcional + Proximidade):**
+    - Quando o jogador está se movendo (joystick/teclas ativas) ou apontando, a seleção de alvos prioriza inimigos no cone frontal de movimento/visão (calculado por produto escalar / diferença angular).
+    - Pontuação de alvo balanceia ângulo frontal com proximidade (alvo direto na frente tem prioridade sobre alvo atrás mesmo que ligeiramente mais próximo).
+    - Fallback: Quando parado e sem input direcional, prioriza o alvo mais próximo radialmente (< 350px).
   - Feedback visual no toque.
 
 ## Resultados Esperados
