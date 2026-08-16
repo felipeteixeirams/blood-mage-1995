@@ -32,6 +32,21 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     textureManager.addImage(key, canvas, normalMap);
   };
 
+  const addSpriteSheet = (key: string, canvas: HTMLCanvasElement, frameWidth: number, frameHeight: number) => {
+    if (!options.force && scene.textures.exists(key)) {
+      return;
+    }
+    if (scene.textures.exists(key)) {
+      scene.textures.remove(key);
+    }
+    const textureManager = scene.textures as any;
+    if (textureManager.addSpriteSheet) {
+      textureManager.addSpriteSheet(key, canvas, { frameWidth, frameHeight });
+    } else {
+      scene.textures.addCanvas(key, canvas);
+    }
+  };
+
   const createPixelCanvas = (width: number, height: number, drawFn: (ctx: CanvasRenderingContext2D) => void): HTMLCanvasElement => {
     const canvas = document.createElement('canvas');
     canvas.width = width;
@@ -80,6 +95,227 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     ctx.fillRect(30, 15, 5, 4);
   });
   addTextureWithNormalMap('tile_ground', tileCanvas);
+
+  // 2. Bloodmage Character Spritesheet (544x612: 8 columns x 9 rows of 68x68 frames)
+  const bloodmageCanvas = createPixelCanvas(544, 612, (ctx) => {
+    const FRAME_W = 68;
+    const FRAME_H = 68;
+
+    const renderFrame = (originX: number, originY: number, dir: number, isWalk: boolean, step: number) => {
+      const cx = originX + 34;
+      const cy = originY + 34;
+
+      const phase = step / 8;
+      const bobY = isWalk ? Math.round(Math.sin(phase * Math.PI * 2) * 1.5) : 0;
+      const legSwing = isWalk ? Math.sin(phase * Math.PI * 2) * 3 : 0;
+      const swayX = isWalk ? Math.round(Math.cos(phase * Math.PI * 2) * 1.2) : 0;
+
+      // 1. Soft Shadow
+      ctx.fillStyle = 'rgba(5, 5, 10, 0.45)';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy + 22, 13, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. Boots
+      const bootY = cy + 18 + bobY;
+      ctx.fillStyle = '#23140f';
+      if (dir === 4 || dir === 3 || dir === 5) {
+        ctx.fillRect(cx - 6 - Math.round(legSwing * 0.5), bootY, 4, 6);
+        ctx.fillRect(cx + 2 + Math.round(legSwing * 0.5), bootY, 4, 6);
+      } else if (dir === 2) {
+        ctx.fillRect(cx - 3 + Math.round(legSwing), bootY, 6, 6);
+        ctx.fillStyle = '#371e14';
+        ctx.fillRect(cx - 1 - Math.round(legSwing), bootY + 1, 5, 5);
+      } else if (dir === 6) {
+        ctx.fillRect(cx - 3 - Math.round(legSwing), bootY, 6, 6);
+        ctx.fillStyle = '#371e14';
+        ctx.fillRect(cx - 4 + Math.round(legSwing), bootY + 1, 5, 5);
+      } else {
+        ctx.fillStyle = '#371e14';
+        ctx.fillRect(cx - 6 + Math.round(legSwing), bootY, 4, 6);
+        ctx.fillRect(cx + 2 - Math.round(legSwing), bootY, 4, 6);
+        ctx.fillStyle = '#d97706';
+        ctx.fillRect(cx - 6 + Math.round(legSwing), bootY, 4, 2);
+        ctx.fillRect(cx + 2 - Math.round(legSwing), bootY, 4, 2);
+      }
+
+      // 3. Flowing Crimson Robe (Lower Body)
+      const robeTop = cy + 6 + bobY;
+      const robeBottom = cy + 20 + bobY;
+      for (let y = robeTop; y <= robeBottom; y++) {
+        const progress = (y - robeTop) / (robeBottom - robeTop);
+        const halfW = Math.round(5 + progress * 10);
+        const leftX = cx - halfW + swayX;
+        const rightX = cx + halfW + swayX;
+
+        for (let x = leftX; x <= rightX; x++) {
+          let col = '#991b1b';
+          if (x === leftX || x === rightX) {
+            col = '#450a0a';
+          } else if (y === robeBottom || y === robeBottom - 1) {
+            col = (x % 3 === 0) ? '#f59e0b' : '#b91c1c';
+          } else if (x === cx + swayX || x === cx + swayX - 1) {
+            col = (dir === 4) ? '#5c0b14' : '#dc2626';
+          } else if (x < cx + swayX - 2) {
+            col = (dir === 2 || dir === 3) ? '#450a0a' : '#b91c1c';
+          } else if (x > cx + swayX + 2) {
+            col = (dir === 6 || dir === 5) ? '#450a0a' : '#b91c1c';
+          }
+          ctx.fillStyle = col;
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+
+      // 4. Belt & Phials
+      const beltY = cy + 6 + bobY;
+      if (dir !== 4) {
+        ctx.fillStyle = '#18181b';
+        ctx.fillRect(cx - 6 + swayX, beltY, 12, 2);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(cx - 1 + swayX, beltY, 2, 2);
+
+        // Phials
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(cx - 5 + swayX, beltY + 2, 2, 3);
+        ctx.fillRect(cx + 3 + swayX, beltY + 2, 2, 3);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(cx - 5 + swayX, beltY + 1, 2, 1);
+        ctx.fillRect(cx + 3 + swayX, beltY + 1, 2, 1);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(cx - 5 + swayX, beltY + 2, 1, 1);
+      }
+
+      // 5. Torso & Mantle
+      const torsoTop = cy - 6 + bobY;
+      for (let y = torsoTop; y < beltY; y++) {
+        const halfW = 6;
+        for (let x = cx - halfW; x <= cx + halfW; x++) {
+          let col = '#b91c1c';
+          if (x === cx - halfW || x === cx + halfW) col = '#450a0a';
+          else if (x === cx || x === cx - 1) col = (dir === 4) ? '#450a0a' : '#dc2626';
+          ctx.fillStyle = col;
+          ctx.fillRect(x + swayX, y, 1, 1);
+        }
+      }
+
+      // Gold Brooch
+      if (dir !== 4) {
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(cx - 1 + swayX, torsoTop + 2, 2, 2);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(cx + swayX, torsoTop + 2, 1, 1);
+      }
+
+      // Pauldrons
+      ctx.fillStyle = '#450a0a';
+      ctx.fillRect(cx - 9 + swayX, torsoTop - 1, 4, 4);
+      ctx.fillRect(cx + 5 + swayX, torsoTop - 1, 4, 4);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(cx - 8 + swayX, torsoTop - 1, 2, 2);
+      ctx.fillRect(cx + 6 + swayX, torsoTop - 1, 2, 2);
+
+      // 6. Hood & Face
+      const headTop = cy - 18 + bobY;
+      const headBottom = torsoTop + 1;
+
+      for (let y = headTop; y <= headBottom; y++) {
+        const prog = (y - headTop) / (headBottom - headTop);
+        const halfW = Math.round(2 + prog * 6);
+        for (let x = cx - halfW; x <= cx + halfW; x++) {
+          let col = '#991b1b';
+          if (y === headTop || y === headTop + 1) col = '#dc2626';
+          else if (x === cx - halfW || x === cx + halfW) col = '#450a0a';
+          ctx.fillStyle = col;
+          ctx.fillRect(x + swayX, y, 1, 1);
+        }
+      }
+
+      if (dir === 4) {
+        for (let y = headTop + 4; y <= headBottom; y++) {
+          ctx.fillStyle = '#450a0a';
+          ctx.fillRect(cx + swayX, y, 1, 1);
+          ctx.fillStyle = '#5c0b14';
+          ctx.fillRect(cx - 1 + swayX, y, 1, 1);
+        }
+      } else {
+        const faceY = headTop + 6;
+        ctx.fillStyle = '#180914';
+        ctx.fillRect(cx - 4 + swayX, faceY, 8, 7);
+
+        ctx.fillStyle = '#e2d5c5';
+        ctx.fillRect(cx - 3 + swayX, faceY + 2, 6, 4);
+        ctx.fillStyle = '#b4a596';
+        ctx.fillRect(cx - 2 + swayX, faceY + 5, 4, 2);
+
+        // Glowing Crimson Eyes
+        ctx.fillStyle = '#ff143c';
+        if (dir === 0 || dir === 1 || dir === 7) {
+          ctx.fillRect(cx - 3 + swayX, faceY + 2, 2, 2);
+          ctx.fillRect(cx + 1 + swayX, faceY + 2, 2, 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(cx - 3 + swayX, faceY + 2, 1, 1);
+          ctx.fillRect(cx + 1 + swayX, faceY + 2, 1, 1);
+        } else if (dir === 2 || dir === 3) {
+          ctx.fillRect(cx + swayX, faceY + 2, 2, 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(cx + 1 + swayX, faceY + 2, 1, 1);
+        } else if (dir === 6 || dir === 5) {
+          ctx.fillRect(cx - 2 + swayX, faceY + 2, 2, 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(cx - 2 + swayX, faceY + 2, 1, 1);
+        }
+      }
+
+      // 7. Blood Staff with glowing Blood Orb
+      let staffX = cx + 11 + swayX;
+      const staffY = cy - 14 + bobY;
+      if (dir === 6 || dir === 5 || dir === 7) {
+        staffX = cx - 12 + swayX;
+      }
+
+      ctx.fillStyle = '#2d2830';
+      ctx.fillRect(staffX, staffY + 6, 2, 26);
+      ctx.fillStyle = '#4b4650';
+      ctx.fillRect(staffX + 1, staffY + 8, 1, 22);
+
+      // Gold claw
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(staffX - 2, staffY + 2, 6, 4);
+      ctx.fillRect(staffX - 3, staffY, 2, 3);
+      ctx.fillRect(staffX + 3, staffY, 2, 3);
+
+      // Glowing Blood Orb
+      ctx.fillStyle = '#991b1b';
+      ctx.beginPath();
+      ctx.arc(staffX + 1, staffY - 2, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(staffX + 1, staffY - 2, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fecaca';
+      ctx.fillRect(staffX, staffY - 3, 1, 1);
+
+      // Magic sparkles
+      ctx.fillStyle = 'rgba(248, 113, 113, 0.75)';
+      ctx.fillRect(staffX - 3, staffY - 5, 1, 1);
+      ctx.fillRect(staffX + 5, staffY - 3, 1, 1);
+    };
+
+    // Row 0: 8 Idle frames (1 per direction)
+    for (let dir = 0; dir < 8; dir++) {
+      renderFrame(dir * FRAME_W, 0, dir, false, 0);
+    }
+
+    // Rows 1..8: Walk animations (8 frames per direction)
+    for (let dir = 0; dir < 8; dir++) {
+      const rowY = (1 + dir) * FRAME_H;
+      for (let step = 0; step < 8; step++) {
+        renderFrame(step * FRAME_W, rowY, dir, true, step);
+      }
+    }
+  });
+  addSpriteSheet('spr_bloodmage', bloodmageCanvas, 68, 68);
 
 
 

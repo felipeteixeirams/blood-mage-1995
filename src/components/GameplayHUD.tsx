@@ -38,9 +38,11 @@ const JoystickVisual: React.FC<{
 }> = ({ state, variant, opacity }) => {
   if (!state.active || opacity === 0) return null;
 
-  const ringBg = "bg-gradient-to-br from-[#0c0a09]/90 to-[#1f1a17]/90";
-  const ringBorder = variant === 'move' ? "border-[#990000]/70" : "border-[#5a189a]/70";
-  const knobBg = variant === 'move' ? "from-[#ff3333] to-[#660000]" : "from-[#b388ff] to-[#3c096c]";
+  const ringBg = "bg-gradient-to-br from-[#0c0a09]/95 to-[#1f1a17]/95";
+  const ringBorder = variant === 'move' ? "border-[#dc2626]/80" : "border-[#7c3aed]/80";
+  const knobBg = variant === 'move' ? "from-[#ef4444] to-[#7f1d1d]" : "from-[#c084fc] to-[#4c1d95]";
+  const dist = Math.hypot(state.knobX, state.knobY);
+  const angleDeg = (Math.atan2(state.knobY, state.knobX) * 180) / Math.PI;
 
   return (
     <div
@@ -55,20 +57,34 @@ const JoystickVisual: React.FC<{
       }}
     >
       {/* Base ring with runic subdivided indicators */}
-      <div className={`w-28 h-28 rounded-full border-4 ${ringBorder} ${ringBg} shadow-[0_0_15px_rgba(0,0,0,0.85)] flex items-center justify-center relative`}>
-        {/* Draw simple crosshair runes */}
-        <div className="absolute top-1 w-1 h-3 bg-amber-600/50" />
-        <div className="absolute bottom-1 w-1 h-3 bg-amber-600/50" />
-        <div className="absolute left-1 w-3 h-1 bg-amber-600/50" />
-        <div className="absolute right-1 w-3 h-1 bg-amber-600/50" />
+      <div className={`w-28 h-28 rounded-full border-4 ${ringBorder} ${ringBg} shadow-[0_0_20px_rgba(220,38,38,0.35)] flex items-center justify-center relative`}>
+        {/* Cardinal Notches */}
+        <div className="absolute top-1 w-1.5 h-3.5 bg-amber-400 rounded-sm shadow-sm" />
+        <div className="absolute bottom-1 w-1.5 h-3.5 bg-amber-400 rounded-sm shadow-sm" />
+        <div className="absolute left-1 w-3.5 h-1.5 bg-amber-400 rounded-sm shadow-sm" />
+        <div className="absolute right-1 w-3.5 h-1.5 bg-amber-400 rounded-sm shadow-sm" />
 
-        {/* Tether lines */}
+        {/* Directional Chevron Pointer at outer edge */}
+        {dist > 4 && (
+          <div
+            className="absolute w-full h-full pointer-events-none flex items-center justify-end"
+            style={{
+              transform: `rotate(${angleDeg}deg)`,
+            }}
+          >
+            <div className="w-0 h-0 border-t-[7px] border-t-transparent border-b-[7px] border-b-transparent border-l-[11px] border-l-amber-400 drop-shadow-[0_0_6px_#f59e0b] translate-x-2" />
+          </div>
+        )}
+
+        {/* Tether line */}
         {state.active && (
           <svg className="absolute inset-0 w-full h-full pointer-events-none">
             <line
               x1="56" y1="56"
               x2={56 + state.knobX} y2={56 + state.knobY}
-              stroke="#990000" strokeWidth="2" strokeDasharray="3, 2"
+              stroke={variant === 'move' ? '#ef4444' : '#a855f7'}
+              strokeWidth="2.5"
+              strokeDasharray="4, 2"
             />
           </svg>
         )}
@@ -76,13 +92,22 @@ const JoystickVisual: React.FC<{
 
       {/* Inner stone beveled thumbstick knob */}
       <div
-        className={`absolute top-1/2 left-1/2 w-12 h-12 rounded-full bg-gradient-to-br ${knobBg} border-2 border-[#e8c76a] shadow-[2px_2px_4px_#000000] flex items-center justify-center`}
+        className={`absolute top-1/2 left-1/2 w-12 h-12 rounded-full bg-gradient-to-br ${knobBg} border-2 border-[#fbbf24] shadow-[0_0_10px_rgba(0,0,0,0.9)] flex items-center justify-center`}
         style={{
           transform: `translate(calc(-50% + ${state.knobX}px), calc(-50% + ${state.knobY}px))`,
         }}
       >
-        {/* Center runic gem */}
-        <div className="w-4 h-4 rounded-full bg-black/60 border border-amber-600/80" />
+        {/* Center runic gem with forward direction bead */}
+        <div className="w-4 h-4 rounded-full bg-black/70 border border-amber-400/90 relative flex items-center justify-center">
+          {dist > 4 && (
+            <div
+              className="w-1.5 h-1.5 rounded-full bg-amber-300 absolute"
+              style={{
+                transform: `rotate(${angleDeg}deg) translate(5px)`,
+              }}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

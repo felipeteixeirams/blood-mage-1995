@@ -9,6 +9,7 @@ export class CombatFeel {
    */
   public static triggerHitStop(scene: Phaser.Scene, durationMs: number) {
     if (this.isFreezeActive) return;
+    if (!scene || !scene.physics?.world || !scene.time?.addEvent) return;
     this.isFreezeActive = true;
 
     // Pause physics
@@ -18,7 +19,9 @@ export class CombatFeel {
     scene.time.addEvent({
       delay: durationMs,
       callback: () => {
-        scene.physics.world.resume();
+        if (scene.physics?.world) {
+          scene.physics.world.resume();
+        }
         this.isFreezeActive = false;
       }
     });
@@ -29,6 +32,7 @@ export class CombatFeel {
    * Respects user settings.
    */
   public static triggerScreenShake(scene: Phaser.Scene, intensity: number, durationMs: number) {
+    if (!scene || !scene.cameras?.main) return;
     const settings = useGameStore.getState().settings;
     if (settings.screenShakeEnabled === false) return;
 

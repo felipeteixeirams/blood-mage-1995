@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
-import { MonsterConfig, AIState, EliteAffix } from '../../types/game';
+import { MonsterConfig, AIState, EliteAffix, DismembermentResult } from '../../types/game';
 import monstersData from '../../data/monsters.json';
 import { soundEngine } from '../../utils/soundEngine';
 import { useGameStore } from '../../store/gameStore';
 import { safePlayAnimation } from '../animations/animationManager';
+import { DismembermentSystem } from '../systems/DismembermentSystem';
 
 export interface EnemyOptions {
   floorDepth?: number;
@@ -488,15 +489,16 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
           soundEngine.playSwing();
 
-          // Rapid forward lunge toward target position
-          const lungeAngle = Phaser.Math.Angle.Between(this.x, this.y, this.attackTargetPos.x, this.attackTargetPos.y);
-          const lungeSpeed = (this.config.speed || 100) * 2.6;
-          this.setVelocity(Math.cos(lungeAngle) * lungeSpeed, Math.sin(lungeAngle) * lungeSpeed);
-
-          // Hit check: Did player remain in the attack range during windup?
           if (this.attackType === 'ranged') {
+            // Ranged spellcasters stay stationary during cast release (no forward lunge)
+            this.setVelocity(0, 0);
             result = { attack: true, damage: this.damage, attackType: 'ranged' };
           } else {
+            // Rapid forward lunge toward target position for melee
+            const lungeAngle = Phaser.Math.Angle.Between(this.x, this.y, this.attackTargetPos.x, this.attackTargetPos.y);
+            const lungeSpeed = (this.config.speed || 100) * 2.4;
+            this.setVelocity(Math.cos(lungeAngle) * lungeSpeed, Math.sin(lungeAngle) * lungeSpeed);
+
             const currentDist = Phaser.Math.Distance.Between(this.x, this.y, playerX, playerY);
             if (currentDist <= this.config.attackRange + 22) {
               result = { attack: true, damage: this.damage, attackType: 'melee' };
@@ -692,29 +694,33 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
           case 'ranged':
           case 'boss': {
             let moveTargetVx = 0, moveTargetVy = 0;
-            if (distanceToPlayer > this.config.attackRange) {
-              // Approach with slight curve
-              const curveAngle = angleToPlayer + Math.sin(time * 0.003 + this.personalPhase) * 0.2;
+            const optimalMaxRange = this.config.attackRange;
+            const optimalMinRange = this.config.attackRange * 0.80;
+
+            if (distanceToPlayer > optimalMaxRange) {
+              // Advance with slight curved step toward optimal firing range
+              const curveAngle = angleToPlayer + Math.sin(time * 0.003 + this.personalPhase) * 0.15;
               moveTargetVx = Math.cos(curveAngle) * currentSpeed;
               moveTargetVy = Math.sin(curveAngle) * currentSpeed;
-            } else if (distanceToPlayer < this.config.attackRange * 0.55) {
-              // Tactical backing away with angled steps
-              const backAngle = angleToPlayer + Math.PI + Math.sin(time * 0.004 + this.personalPhase) * 0.35;
-              moveTargetVx = Math.cos(backAngle) * currentSpeed * 1.05;
-              moveTargetVy = Math.sin(backAngle) * currentSpeed * 1.05;
+            } else if (distanceToPlayer < optimalMinRange) {
+              // Tactical kiting: backpedal away while facing player to maintain standoff distance
+              const backAngle = angleToPlayer + Math.PI + Math.sin(time * 0.004 + this.personalPhase) * 0.25;
+              moveTargetVx = Math.cos(backAngle) * currentSpeed * 0.95;
+              moveTargetVy = Math.sin(backAngle) * currentSpeed * 0.95;
             } else {
-              // Tactical circle-strafing around player
+              // Sweet spot: hold ground or slow side-step
               const strafeDirection = Math.sin(time * 0.002 + this.personalPhase) > 0 ? 1 : -1;
               const strafeAngle = angleToPlayer + (strafeDirection * Math.PI) / 2;
-              moveTargetVx = Math.cos(strafeAngle) * currentSpeed * 0.6;
-              moveTargetVy = Math.sin(strafeAngle) * currentSpeed * 0.6;
+              moveTargetVx = Math.cos(strafeAngle) * currentSpeed * 0.35;
+              moveTargetVy = Math.sin(strafeAngle) * currentSpeed * 0.35;
             }
             this.accelerateToward(moveTargetVx, moveTargetVy, delta);
 
-            if (distanceToPlayer <= this.config.attackRange + 50) {
-              if (time > this.lastAttackTime + (this.aiState === 'frenzy' ? 1300 : 1900)) {
+            // Only fire ranged attack if within attack range AND line of sight is clear
+            if (distanceToPlayer <= optimalMaxRange && !hasWallBetweenPlayer) {
+              if (time > this.lastAttackTime + (this.aiState === 'frenzy' ? 1400 : 2100)) {
                 this.attackPhase = 'windup';
-                this.attackPhaseEndTime = time + 380;
+                this.attackPhaseEndTime = time + 400;
                 this.attackTargetPos = { x: playerX, y: playerY };
                 this.attackType = 'ranged';
                 soundEngine.playTelegraph();
@@ -980,7 +986,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     soundEngine.playBloodSquish();
 
-    // 2.4 Ragdoll / Gib Explosion check on death
+    // Dismemberment / Gib explosion check on death
     const isOverkill = this.hp <= -this.maxHp * 0.5 || amount >= this.maxHp * 1.5;
     if (this.hp <= 0 && (isExecution || isCrit || isOverkill)) {
       this.spawnGibs();
@@ -1002,84 +1008,35 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   /**
-   * 2.4 Ragdoll Gib Explosion & Floor Blood Decals
+   * 3-Factor Dismemberment & Gibs Execution
    */
-  public spawnGibs() {
+  public spawnGibs(result?: DismembermentResult) {
     const scene = this.scene;
-    if (!scene || !scene.add || !scene.time) return;
+    if (!scene || !scene.add) return;
 
-    // Spawn persistent blood stain on the floor tilemap
-    if (scene.textures && scene.textures.exists('blood_pool_stain')) {
-      const stain = scene.add.image(this.x, this.y, 'blood_pool_stain');
-      stain.setDepth(10); // Floor layer
-      stain.setRotation(Math.random() * Math.PI * 2);
-      stain.setAlpha(0.75 + Math.random() * 0.2);
-      stain.setScale(0.8 + Math.random() * 0.5);
-    }
-
-    // Slice sprite into 4 quadrant gib pieces
-    const quadSize = 14;
-    const offsets = [
-      { x: -quadSize / 2, y: -quadSize / 2, vx: -80, vy: -120 },
-      { x: quadSize / 2, y: -quadSize / 2, vx: 80, vy: -120 },
-      { x: -quadSize / 2, y: quadSize / 2, vx: -100, vy: -40 },
-      { x: quadSize / 2, y: quadSize / 2, vx: 100, vy: -40 },
-    ];
-
-    offsets.forEach((off) => {
-      const gibX = this.x + off.x;
-      const gibY = this.y + off.y;
-
-      const gib = scene.add.image(gibX, gibY, this.texture.key);
-      gib.setScale(this.baseScale * 0.5);
-      gib.setDepth(100);
-      if (this.isTinted) {
-        gib.setTint(this.tintTopLeft);
-      } else if (this.config.color) {
-        gib.setTint(parseInt(this.config.color.replace('#', '0x'), 16));
-      }
-
-      const vx = off.vx + (Math.random() - 0.5) * 60;
-      let vy = off.vy + (Math.random() - 0.5) * 60;
-      const angularVel = (Math.random() - 0.5) * 15;
-
-      // Animate gib flight with simulated 2.5D arc gravity
-      let elapsed = 0;
-      const gravity = 400; // px/s^2
-
-      const timer = scene.time.addEvent({
-        delay: 16,
-        repeat: 30, // ~500ms flight
-        callback: () => {
-          elapsed += 0.016;
-          vy += gravity * 0.016;
-          gib.x += vx * 0.016;
-          gib.y += vy * 0.016;
-          gib.rotation += angularVel * 0.016;
-
-          if (timer.repeatCount === 0) {
-            // Settle on floor
-            if (gib && gib.active) {
-              gib.setDepth(12);
-              gib.setAlpha(0.7);
-              // Fade out after 6 seconds
-              if (scene && scene.tweens) {
-                scene.tweens.add({
-                  targets: gib,
-                  alpha: 0,
-                  duration: 2000,
-                  delay: 4000,
-                  onComplete: () => {
-                    if (gib && gib.active) gib.destroy();
-                  },
-                });
-              } else {
-                gib.destroy();
-              }
-            }
-          }
-        },
+    const finalResult: DismembermentResult =
+      result ??
+      DismembermentSystem.calculateDismemberment({
+        monsterConfig: this.config,
+        damageAmount: this.maxHp * 0.8,
+        enemyMaxHp: this.maxHp,
+        enemyCurrentHp: this.hp,
+        isCrit: false,
+        isExecution: false,
       });
-    });
+
+    DismembermentSystem.executeDismemberment(
+      scene,
+      {
+        x: this.x,
+        y: this.y,
+        texture: this.texture,
+        scaleX: this.scaleX,
+        scaleY: this.scaleY,
+        config: this.config,
+        bloodEmitter: (scene as any).bloodEmitter,
+      },
+      finalResult
+    );
   }
 }

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { logger } from '../../utils/logger';
 
 export type AssetType = 'image' | 'spritesheet' | 'audio';
 
@@ -266,6 +267,23 @@ export function queueAssetLoading(
     metrics.failed += 1;
     if (fileObj && fileObj.key) {
       metrics.failedKeys.push(fileObj.key);
+      logger.warn('ASSET_LOADER', `Asset físico não encontrado: [${fileObj.key}] em '${fileObj.url}'. Fallback procedural ativado.`, {
+        key: fileObj.key,
+        url: fileObj.url,
+      });
+    }
+  });
+
+  scene.load.on('complete', () => {
+    if (metrics.failed > 0) {
+      logger.warn('ASSET_LOADER', `Carregamento de assets concluído com ${metrics.failed} fallback(s) procedurais necessários.`, {
+        total: metrics.total,
+        loaded: metrics.loaded,
+        failed: metrics.failed,
+        failedKeys: metrics.failedKeys,
+      });
+    } else if (metrics.total > 0) {
+      logger.info('ASSET_LOADER', `Todos os ${metrics.total} assets físicos foram carregados com sucesso.`);
     }
   });
 

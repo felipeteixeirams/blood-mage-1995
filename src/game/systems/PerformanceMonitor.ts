@@ -157,7 +157,8 @@ export class PerformanceMonitor {
    */
   public logMetrics(): void {
     const metrics = this.getMetrics();
-    logger.info('PERFORMANCE', 'Métricas de desempenho', {
+    const isDegraded = metrics.fps < 30 || metrics.avgFps < 30;
+    const logData = {
       currentFps: metrics.fps.toFixed(0),
       avgFps: metrics.avgFps.toFixed(0),
       minFps: metrics.minFps.toFixed(0),
@@ -165,7 +166,13 @@ export class PerformanceMonitor {
       frameTime: `${metrics.frameTime.toFixed(2)}ms`,
       memoryUsed: `${metrics.memoryUsed.toFixed(1)}MB`,
       memoryMax: `${metrics.memoryMax.toFixed(1)}MB`,
-    });
+    };
+
+    if (isDegraded) {
+      logger.warn('PERFORMANCE', 'Desempenho degradado detectado (< 30 FPS)', logData);
+    } else {
+      logger.debug('PERFORMANCE', 'Métricas de desempenho estáveis', logData);
+    }
   }
 
   /**

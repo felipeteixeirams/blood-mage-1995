@@ -120,7 +120,7 @@ describe('Enemy Monster Balancing & Scaling', () => {
     expect(cultist.damage).toBe(18);
 
     const zombie = new Enemy(makeScene(), 100, 100, 'zombie_shambler');
-    expect(zombie.config.speed).toBe(70);
+    expect(zombie.config.speed).toBe(48);
     expect(zombie.hp).toBe(110);
 
     const specter = new Enemy(makeScene(), 100, 100, 'blood_specter');

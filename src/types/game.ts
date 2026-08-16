@@ -69,6 +69,29 @@ export interface DroppedCorpse {
 
 export type MonsterGait = 'quadruped' | 'biped_fast' | 'biped_slow' | 'ethereal' | 'heavy';
 
+export type MonsterBodyType =
+  | 'fragile_flesh'
+  | 'brittle_bone'
+  | 'swarm_aerial'
+  | 'humanoid_cultist'
+  | 'beast_quadruped'
+  | 'vampiric_noble'
+  | 'dense_abomination'
+  | 'spectral_entity'
+  | 'boss';
+
+export type DismembermentType = 'total_destruction' | 'partial_dismemberment' | 'normal_collapse';
+
+export interface DismembermentResult {
+  type: DismembermentType;
+  gibScore: number;
+  fragility: number;
+  spellGibMultiplier: number;
+  overkillRatio: number;
+  isCrit: boolean;
+  isExecution: boolean;
+}
+
 export type AIState = 'idle' | 'patrol' | 'patrol_away_from_player' | 'investigating' | 'combat' | 'flee' | 'frenzy';
 
 export type EliteAffix = 'frenzied' | 'vampiric' | 'cursed' | 'spectral' | 'none';
@@ -87,6 +110,8 @@ export interface MonsterConfig {
   behavior: MonsterBehavior;
   temperament?: MonsterTemperament;
   gaitType?: MonsterGait;
+  bodyType?: MonsterBodyType;
+  fragility?: number; // 0.0 (dense/reinforced) to 1.0 (extremely fragile/gibbable)
   visionDistance?: number;
   visionConeDegrees?: number;
   hearingSensitivity?: number;
@@ -114,6 +139,7 @@ export interface SpellConfig {
   baseDamage: number;
   projectileSpeed: number;
   type: 'projectile' | 'nova' | 'shield' | 'drain' | 'beam';
+  gibPower?: number; // 0.2 to 2.5 (kinetic/explosive gore factor)
   icon: string;
   color: string;
   hotkey: string;

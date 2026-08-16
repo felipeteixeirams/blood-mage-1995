@@ -257,7 +257,53 @@ e avisos de:
 
 ---
 
-## 9. Tabela de Diagnóstico Rápido
+## 9. Classificação de Severidade de Logs (Assets Inexistentes e Fallbacks como WARN)
+
+### 🔴 Sintoma
+1. Mensagens informativas no console (`[INFO]`) mascaravam eventos de degradação como assets físicos ausentes ou falha em parses de schemas no `localStorage`.
+2. O servidor Vite exibia mensagens como `Assets in public directory cannot be imported from JavaScript` durante o arranque e pre-warming.
+
+### 🔍 Causa-Raiz
+1. **Logs de Fallback com Severidade Inadequada:** Quando assets físicos mapeados no `assetManifest.ts` não são encontrados no disco, o jogo ativa o fallback procedural. Tratar isso como `INFO` impedia que telemetrias e desenvolvedores identificassem quais assets físicos estavam faltando. Eventos de degradação controlada (como fallbacks procedurais, dados corrompidos no `localStorage` recuperados para defaults, ou quedas de FPS) pertencem estritamente ao nível `WARN`.
+2. **Arquivos Temporários de Teste no Root:** Arquivos de rascunho (como `test_glob.ts`) que utilizavam `import.meta.glob('/public/assets/...')` eram indexados pelo Vite Dev Server durante o pre-warming, disparando avisos do bundler.
+
+### 🛠️ Procedimento de Resolução
+1. **Classificação Rigorosa de Logs (`logger.ts`):**
+   - `ERROR`: Falhas não recuperáveis, exceções de I/O em disco/rede, erros críticos.
+   - `WARN`: Assets físicos ausentes (ativação de fallback procedural), schemas inválidos no `localStorage` recuperados para defaults, degradação de FPS (<30 FPS), expansão dinâmica de pools.
+   - `INFO`: Marcos de ciclo de vida (gamepads conectados, conclusão bem-sucedida de carregamento, inicialização de sistemas).
+   - `DEBUG`: Gravações e leituras rotineiras de persistência (cristais, mortes, settings) em runtime.
+2. **Remoção de Arquivos Temporários:** Remover scripts de rascunho do root (`test_glob.ts`, etc.) para manter o scanner do Vite limpo.
+
+---
+
+## 10. Sprite do Personagem Blood Mage Renderizando como Sombra Preta e Pacing de IA / Atiradores
+
+### 🔴 Sintoma
+1. O personagem Blood Mage é renderizado na tela de jogo como uma silhueta/sombra preta sem detalhes de textura visíveis.
+2. Inimigos aproximam-se muito rapidamente do jogador, e monstros atiradores (como o *Acólito Sombrio*) iniciam ataques à distância fora do campo visual da tela e aproximam-se excessivamente em vez de manter uma distância de combate tática (ritmo estilo Dungeon Siege 1).
+
+### 🔍 Causa-Raiz
+1. **Pipeline de Iluminação Light2D sem Normal Map / Dimensões do Spritesheet:** O `LightingSystem` aplica o pipeline `Light2D` ao jogador. Quando o spritesheet procedural ou carregado não possuía mapeamento de normal maps ou havia descompasso no tamanho dos frames do spritesheet de 8 direções (`68x68`), o shader de luz 2D renderizava a silhueta com albedo nulo/escuro.
+2. **Parâmetros de Velocidade, Visão e Lunge em Atiradores:**
+   - As velocidades base dos monstros estavam calibradas em faixas muito elevadas (ex: 95 a 165 px/s), comprimindo o tempo de reação tática do jogador.
+   - O raio de visão e alcance de ataque dos atiradores (`attackRange: 190`, `visionDistance: 360-500`) permitia que atacassem alvos fora do enquadramento da câmera.
+   - A fase de golpe (`strike`) da FSM de ataque executava um lunge para frente mesmo quando `attackType === 'ranged'`, fazendo os magos avançarem em direção ao jogador em vez de manter a posição.
+
+### 🛠️ Procedimento de Resolução
+1. **Spritesheet e Normal Map Procedurais para o Player:**
+   - Criado e injetado o gerador do spritesheet `spr_bloodmage` (544x612: grade 8x9 de frames 68x68 para as 8 direções em repouso e caminhada com cajado, orbe pulsante de sangue e túnica carmesim) em `src/utils/textureGenerator.ts` e exportado como PNG em `public/assets/sprites/player/bloodmage.png`.
+   - Ajustado o `hitbox` físico (`setSize(22, 28)`, `setOffset(23, 24)`) em `Player.ts`.
+2. **Calibração de Velocidade e Visão Estilo Dungeon Siege 1:**
+   - Reduzidas as velocidades em `src/data/monsters.json`: `skeleton_warrior` (95 -> 68), `cultist_acolyte` (65 -> 50), `hell_hound` (140 -> 95), `flesh_golem` (55 -> 42), `blood_specter` (110 -> 75), `zombie_shambler` (70 -> 48), `vampire_stalker` (135 -> 90), `werewolf_lycan` (120 -> 85), `bat_swarm` (165 -> 105), `gore_abomination` (60 -> 45), `necro_lord_boss` (65 -> 52).
+   - Reduzido o raio de visão dos monstros para 220–280px (boss para 320px) para garantir engajamento apenas dentro da tela.
+3. **IA Tática para Atiradores e Conjuradores (`Enemy.ts`):**
+   - Na fase de golpe (`strike`), conjuradores à distância não executam avanço físico (`setVelocity(0, 0)`).
+   - O comportamento `ranged` mantém a distância ótima entre 80% e 100% do alcance (`attackRange: 160`), recuando taticamente com kiting se o jogador se aproximar e só disparando caso haja linha de visão direta desobstruída por paredes (`!hasWallBetweenPlayer`).
+
+---
+
+## 11. Tabela de Diagnóstico Rápido
 
 | Sintoma | Causa Mais Provável | Ferramenta / Comando de Diagnóstico | Ação Imediata |
 |---|---|---|---|
@@ -269,6 +315,10 @@ e avisos de:
 | `Failed to process file ... spritesheet` no console | Arquivo externo listado no manifest não existe em `public/` | `isAssetPhysicallyAvailable` no `assetManifest.ts` | Filtrar assets no `queueAssetLoading` antes do `scene.load` |
 | Touchpad / Joystick Virtual não move o personagem | Zonas de toque sem `pointer-events-auto` no overlay | Inspecionar `#touchpad-move-zone` no DOM | Adicionar `pointer-events-auto` e estabilizar `useFloatingJoystick` |
 | `TypeError: undefined is not an object (evaluating 'this.scene.tweens')` | Inimigo destruído antes de callback de timer (`spawnGibs`, `delayedCall`) | Inspecionar stack trace no console | Capturar `const scene = this.scene` no escopo externo e usar guards `scene?.tweens` |
+| `Assets in public directory cannot be imported` no log do Vite | Arquivo de teste/rascunho no root importando via `import.meta.glob('/public/...')` | `grep -rn "public/assets" .` | Remover arquivos temporários e referenciar caminhos relativos ao `public/` sem `/public/` |
+| Fallbacks procedurais sem visibilidade no console | Falta de `logger.warn` em falhas de carregamento e no `localStorage` | Inspecionar Observability Modal | Usar `logger.warn('ASSET_LOADER', ...)` e `logger.warn('PERSISTENCE', ...)` |
+| Personagem Blood Mage como sombra preta | Spritesheet ausente / incompatível com shader Light2D | Inspecionar textura `spr_bloodmage` | Gerar spritesheet 544x612 e integrar no pipeline híbrido |
+| Atiradores atacando fora da tela / avançando demais | `visionDistance` e `attackRange` excessivos + lunge indevido | Inspecionar `monsters.json` e `Enemy.ts` | Calibrar velocidades, kiting tático a 80-100% de alcance e travar lunge para ranged |
 
 
 ---

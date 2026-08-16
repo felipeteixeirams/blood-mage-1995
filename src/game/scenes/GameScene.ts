@@ -33,6 +33,7 @@ import ViewportCuller from '../systems/ViewportCuller';
 import PerformanceMonitor from '../systems/PerformanceMonitor';
 import InputManager from '../systems/InputManager';
 import { VirtualJoystickSystem } from '../systems/VirtualJoystickSystem';
+import { DismembermentSystem } from '../systems/DismembermentSystem';
 
 export interface GameSceneCallbacks {
   onStatsUpdate: (stats: PlayerStats) => void;
@@ -2572,29 +2573,38 @@ export class GameScene extends Phaser.Scene {
       this.spawnFloatingText(enemy.x, enemy.y - 12, 'MORCEGOS LIBERTADOS!', '#a855f7', false);
     }
 
+    // 3. Dismemberment & Gore Execution (3-factor system)
     const isSacrificial = ['crimson_scythe', 'hellfire_nova', 'blood_ritual_circle', 'hemomancy_beam'].includes(killerSpellId || '');
-    if (isSacrificial && wasLowHp) {
-      this.spawnProceduralGore(enemy);
+    const isExecution = isSacrificial && wasLowHp;
+
+    const dismemberResult = DismembermentSystem.calculateDismemberment({
+      monsterConfig: enemy.config,
+      damageAmount: enemy.maxHp * 0.9,
+      enemyMaxHp: enemy.maxHp,
+      enemyCurrentHp: 0,
+      isCrit: wasLowHp,
+      isExecution,
+      killerSpellId,
+      playerLevel: this.player.stats.level,
+    });
+
+    DismembermentSystem.executeDismemberment(
+      this,
+      {
+        x: enemy.x,
+        y: enemy.y,
+        texture: enemy.texture,
+        scaleX: enemy.scaleX,
+        scaleY: enemy.scaleY,
+        config: enemy.config,
+        bloodEmitter: this.bloodEmitter,
+      },
+      dismemberResult,
+      killerSpellId
+    );
+
+    if (isExecution || dismemberResult.type === 'total_destruction') {
       ContractSystem.onExecutionDone(this);
-    } else {
-      // 3. Particle Splatter
-      for (let i = 0; i < 8; i++) {
-        const particle = this.add.image(enemy.x, enemy.y, 'particle_blood_red');
-        particle.setTint(enemy.config.goreEffect === 'bone_dust' ? 0xdcd3c1 : 0xb91c1c);
-        particle.setDepth(1600);
-
-        const targetX = enemy.x + (Math.random() - 0.5) * 80;
-        const targetY = enemy.y + (Math.random() - 0.5) * 80;
-
-        this.tweens.add({
-          targets: particle,
-          x: targetX,
-          y: targetY,
-          alpha: 0,
-          duration: 450 + Math.random() * 300,
-          onComplete: () => particle.destroy(),
-        });
-      }
     }
 
     // 4. Grant XP directly to player (no gems to collect)

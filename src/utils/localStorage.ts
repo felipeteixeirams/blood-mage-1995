@@ -17,8 +17,10 @@ export function loadBloodCrystals(): number {
       const parsed = parseInt(raw, 10);
       const validated = BloodCrystalsSchema.safeParse(Number.isNaN(parsed) ? 0 : parsed);
       if (validated.success) {
-        logger.info('PERSISTENCE', `Blood crystals loaded successfully: ${validated.data}`);
+        logger.debug('PERSISTENCE', `Blood crystals loaded successfully: ${validated.data}`);
         return validated.data;
+      } else {
+        logger.warn('PERSISTENCE', 'Valor inválido de cristais de sangue no localStorage. Restaurando para 0.', { raw });
       }
     }
   } catch (e) {
@@ -31,10 +33,13 @@ export function saveBloodCrystals(amount: number): void {
   try {
     const validated = BloodCrystalsSchema.safeParse(amount);
     const valueToSave = validated.success ? validated.data : 0;
+    if (!validated.success) {
+      logger.warn('PERSISTENCE', `Tentativa de salvar quantia inválida de cristais: ${amount}. Ajustando para 0.`);
+    }
     localStorage.setItem(BLOOD_CRYSTALS_KEY, valueToSave.toString());
-    logger.info('PERSISTENCE', `Blood crystals saved successfully: ${valueToSave}`);
+    logger.debug('PERSISTENCE', `Blood crystals saved successfully: ${valueToSave}`);
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to save blood crystals', e);
+    logger.error('PERSISTENCE', 'Failed to save blood crystals', e);
   }
 }
 
@@ -72,8 +77,10 @@ export function loadTalentLevels(): Record<string, number> {
       const parsed = JSON.parse(raw);
       const validated = TalentLevelsSchema.safeParse(parsed);
       if (validated.success) {
-        logger.info('PERSISTENCE', 'Talents loaded successfully from localStorage');
+        logger.debug('PERSISTENCE', 'Talents loaded successfully from localStorage');
         return validated.data;
+      } else {
+        logger.warn('PERSISTENCE', 'Estrutura de talentos inválida no localStorage. Restaurando padrões.', { raw });
       }
     }
   } catch (e) {
@@ -86,10 +93,13 @@ export function saveTalentLevels(talents: Record<string, number>): void {
   try {
     const validated = TalentLevelsSchema.safeParse(talents);
     const valueToSave = validated.success ? validated.data : defaultTalents;
+    if (!validated.success) {
+      logger.warn('PERSISTENCE', 'Tentativa de salvar talentos inválidos. Usando padrões.');
+    }
     localStorage.setItem(TALENTS_KEY, JSON.stringify(valueToSave));
-    logger.info('PERSISTENCE', 'Talents saved successfully to localStorage');
+    logger.debug('PERSISTENCE', 'Talents saved successfully to localStorage');
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to save talents', e);
+    logger.error('PERSISTENCE', 'Failed to save talents', e);
   }
 }
 
@@ -151,8 +161,10 @@ export function loadSettings(): GameSettings {
       const parsed = JSON.parse(raw);
       const validated = SettingsSchema.safeParse(parsed);
       if (validated.success) {
-        logger.info('PERSISTENCE', 'Game settings loaded successfully from localStorage');
+        logger.debug('PERSISTENCE', 'Game settings loaded successfully from localStorage');
         return validated.data;
+      } else {
+        logger.warn('PERSISTENCE', 'Configurações inválidas no localStorage. Restaurando padrões.', { raw });
       }
     }
   } catch (e) {
@@ -166,9 +178,9 @@ export function saveSettings(settings: GameSettings): void {
     const validated = SettingsSchema.safeParse(settings);
     const valueToSave = validated.success ? validated.data : defaultSettings;
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(valueToSave));
-    logger.info('PERSISTENCE', 'Game settings saved successfully to localStorage');
+    logger.debug('PERSISTENCE', 'Game settings saved successfully to localStorage');
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to save settings to localStorage', e);
+    logger.error('PERSISTENCE', 'Failed to save settings to localStorage', e);
   }
 }
 
@@ -213,8 +225,10 @@ export function loadHighScores(): HighScoreRecord[] {
       const parsed = JSON.parse(raw);
       const validated = HighScoresArraySchema.safeParse(parsed);
       if (validated.success) {
-        logger.info('PERSISTENCE', 'High scores loaded successfully from localStorage');
+        logger.debug('PERSISTENCE', 'High scores loaded successfully from localStorage');
         return validated.data;
+      } else {
+        logger.warn('PERSISTENCE', 'High scores inválidos no localStorage. Restaurando lista padrão.', { raw });
       }
     }
   } catch (e) {
@@ -239,9 +253,9 @@ export function saveHighScore(newRecord: Omit<HighScoreRecord, 'id' | 'date'>): 
     const validated = HighScoresArraySchema.safeParse(updated);
     const valueToSave = validated.success ? validated.data : defaultHighScores;
     localStorage.setItem(HIGHSCORES_KEY, JSON.stringify(valueToSave));
-    logger.info('PERSISTENCE', 'High score record saved successfully to localStorage');
+    logger.debug('PERSISTENCE', 'High score record saved successfully to localStorage');
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to save highscore', e);
+    logger.error('PERSISTENCE', 'Failed to save highscore', e);
   }
   return updated;
 }
@@ -263,8 +277,10 @@ export function loadOnboarding() {
       const parsed = JSON.parse(raw);
       const validated = OnboardingSchema.safeParse(parsed);
       if (validated.success) {
-        logger.info('PERSISTENCE', 'Onboarding loaded successfully');
+        logger.debug('PERSISTENCE', 'Onboarding loaded successfully');
         return validated.data;
+      } else {
+        logger.warn('PERSISTENCE', 'Onboarding data inválido no localStorage. Restaurando defaults.', { raw });
       }
     }
   } catch (e) {
@@ -282,9 +298,9 @@ export function loadOnboarding() {
 export function saveOnboarding(state: any): void {
   try {
     localStorage.setItem(ONBOARDING_KEY, JSON.stringify(state));
-    logger.info('PERSISTENCE', 'Onboarding saved successfully');
+    logger.debug('PERSISTENCE', 'Onboarding saved successfully');
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to save onboarding', e);
+    logger.error('PERSISTENCE', 'Failed to save onboarding', e);
   }
 }
 
@@ -303,9 +319,9 @@ export function saveDeathState(isDead: boolean, stats?: any): void {
       gameOverStats: stats || null
     };
     localStorage.setItem(DEATH_STATE_KEY, JSON.stringify(data));
-    logger.info('PERSISTENCE', `Death state saved successfully: ${isDead}`);
+    logger.debug('PERSISTENCE', `Death state saved successfully: ${isDead}`);
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to save death state', e);
+    logger.error('PERSISTENCE', 'Failed to save death state', e);
   }
 }
 
@@ -316,8 +332,10 @@ export function loadDeathState(): { isDefinitivelyDead: boolean; gameOverStats?:
       const parsed = JSON.parse(raw);
       const validated = DeathStateSchema.safeParse(parsed);
       if (validated.success) {
-        logger.info('PERSISTENCE', 'Death state loaded successfully');
+        logger.debug('PERSISTENCE', 'Death state loaded successfully');
         return validated.data;
+      } else {
+        logger.warn('PERSISTENCE', 'Death state inválido no localStorage. Restaurando default.', { raw });
       }
     }
   } catch (e) {
@@ -343,9 +361,9 @@ export function saveDroppedCorpseState(corpse: any): void {
     const validated = CorpseSchema.safeParse(corpse);
     const data = validated.success ? validated.data : corpse;
     localStorage.setItem(CORPSE_STATE_KEY, JSON.stringify(data));
-    logger.info('PERSISTENCE', 'Corpse state saved successfully');
+    logger.debug('PERSISTENCE', 'Corpse state saved successfully');
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to save corpse state', e);
+    logger.error('PERSISTENCE', 'Failed to save corpse state', e);
   }
 }
 
@@ -356,8 +374,10 @@ export function loadDroppedCorpseState(): any {
       const parsed = JSON.parse(raw);
       const validated = CorpseSchema.safeParse(parsed);
       if (validated.success) {
-        logger.info('PERSISTENCE', 'Corpse state loaded successfully');
+        logger.debug('PERSISTENCE', 'Corpse state loaded successfully');
         return validated.data;
+      } else {
+        logger.warn('PERSISTENCE', 'Corpse state inválido no localStorage. Restaurando default.', { raw });
       }
     }
   } catch (e) {

@@ -36,6 +36,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private readonly ACCELERATION = 1400;
   private readonly DECELERATION = 1000;
 
+  // Directional Indicator Ground Reticle
+  private directionReticleGraphics?: Phaser.GameObjects.Graphics;
+  private currentFacingAngle: number = Math.PI / 2; // Default facing south
+
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'spr_bloodmage');
     if ((scene as any).lightingSystem) { (scene as any).lightingSystem.applyLightPipeline(this); }
@@ -43,9 +47,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
 
     this.setCollideWorldBounds(true);
-    this.setSize(20, 24);
-    this.setOffset(14, 22);
-    (this as any).setLighting?.(true);
+    this.setSize(22, 28);
+    this.setOffset(23, 24);
 
     const typedSpellsData = spellsData as Record<string, SpellConfig>;
 
@@ -389,6 +392,100 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if ((isPointerDown || hasEnemyInRange) && time > this.lastAutoShootTime + autoCd) {
       this.castBloodBolt(time);
     }
+
+    // Directional indicator rendering
+    this.renderDirectionReticle();
+  }
+
+  /**
+   * Renders a high-contrast, polished gothic ground reticle under the player's feet
+   * indicating exact movement / facing / aim angle.
+   */
+  private renderDirectionReticle(): void {
+    if (!this.scene || !this.scene.add || this.stats.isUnconscious || this.stats.isDefinitivelyDead) {
+      if (this.directionReticleGraphics) {
+        this.directionReticleGraphics.clear();
+      }
+      return;
+    }
+
+    if (!this.directionReticleGraphics) {
+      this.directionReticleGraphics = this.scene.add.graphics();
+      this.directionReticleGraphics.setDepth(this.depth - 1);
+    }
+
+    const g = this.directionReticleGraphics;
+    g.clear();
+
+    const isMoving = this.moveVector.x !== 0 || this.moveVector.y !== 0;
+    const isAiming = this.manualAimTimer > 0;
+
+    // Determine target angle
+    let targetAngle = this.currentFacingAngle;
+    if (isAiming) {
+      targetAngle = Math.atan2(this.aimVector.y, this.aimVector.x);
+    } else if (isMoving) {
+      targetAngle = Math.atan2(this.moveVector.y, this.moveVector.x);
+    } else if (this.aimVector.x !== 0 || this.aimVector.y !== 0) {
+      targetAngle = Math.atan2(this.aimVector.y, this.aimVector.x);
+    }
+
+    // Smooth angle lerp (prevent sharp snapping)
+    const diff = Phaser.Math.Angle.Wrap(targetAngle - this.currentFacingAngle);
+    this.currentFacingAngle += diff * 0.25;
+
+    const angle = this.currentFacingAngle;
+    const alpha = isMoving || isAiming ? 0.9 : 0.45;
+    const px = this.x;
+    const py = this.y + 7; // Anchored at feet
+
+    // 1. Subtle Runic Ground Circle
+    g.lineStyle(1.5, 0x881337, alpha * 0.4);
+    g.strokeCircle(px, py, 14);
+
+    // 2. High-Contrast Golden Directional Arc
+    g.lineStyle(2.5, 0xffd700, alpha * 0.85);
+    g.beginPath();
+    g.arc(px, py, 14, angle - Math.PI / 4, angle + Math.PI / 4, false);
+    g.strokePath();
+
+    // 3. Directional Forward Pointer (Chevron)
+    const tipDist = 23;
+    const tipX = px + Math.cos(angle) * tipDist;
+    const tipY = py + Math.sin(angle) * tipDist;
+    const leftAngle = angle + 2.35;
+    const rightAngle = angle - 2.35;
+    const wingLen = 8;
+
+    g.lineStyle(2.5, 0xffffff, alpha * 0.95);
+    g.beginPath();
+    g.moveTo(tipX + Math.cos(leftAngle) * wingLen, tipY + Math.sin(leftAngle) * wingLen);
+    g.lineTo(tipX, tipY);
+    g.lineTo(tipX + Math.cos(rightAngle) * wingLen, tipY + Math.sin(rightAngle) * wingLen);
+    g.strokePath();
+
+    // Golden / Ruby Pointer Core
+    g.fillStyle(0xffd700, alpha);
+    g.fillTriangle(
+      tipX,
+      tipY,
+      tipX + Math.cos(leftAngle) * wingLen * 0.7,
+      tipY + Math.sin(leftAngle) * wingLen * 0.7,
+      tipX + Math.cos(rightAngle) * wingLen * 0.7,
+      tipY + Math.sin(rightAngle) * wingLen * 0.7
+    );
+
+    // Glowing tip bead
+    g.fillStyle(0xef4444, alpha);
+    g.fillCircle(tipX, tipY, 2.5);
+  }
+
+  public destroy(fromScene?: boolean): void {
+    if (this.directionReticleGraphics) {
+      this.directionReticleGraphics.destroy();
+      this.directionReticleGraphics = undefined;
+    }
+    super.destroy(fromScene);
   }
 
   /**
