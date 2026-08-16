@@ -7,6 +7,9 @@ vi.mock('phaser', () => {
       Math: {
         Linear: (p0: number, p1: number, t: number) => p0 + t * (p1 - p0),
       },
+      BlendModes: {
+        ADD: 1,
+      },
     },
   };
 });
@@ -17,6 +20,7 @@ function createMockScene() {
   const mockGraphics = {
     setScrollFactor: vi.fn().mockReturnThis(),
     setDepth: vi.fn().mockReturnThis(),
+    setBlendMode: vi.fn().mockReturnThis(),
     clear: vi.fn().mockReturnThis(),
     fillStyle: vi.fn().mockReturnThis(),
     fillCircle: vi.fn().mockReturnThis(),
