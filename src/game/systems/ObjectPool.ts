@@ -1,3 +1,5 @@
+import { logger } from '../../utils/logger';
+
 /**
  * ObjectPool (Fase 5)
  * Pool de objetos reutilizáveis para performance em 60+ FPS
@@ -46,7 +48,7 @@ export class ObjectPool<T extends PooledObject> {
     } else {
       // Se pool vazio, criar novo (expandir)
       obj = this.factory();
-      console.warn(`ObjectPool: Expandindo dinamicamente (tipo: ${obj.constructor.name})`);
+      logger.warn('OBJECT_POOL', `Expandindo dinamicamente pool (tipo: ${obj.constructor.name})`, { type: obj.constructor.name });
     }
 
     // Ativar objeto

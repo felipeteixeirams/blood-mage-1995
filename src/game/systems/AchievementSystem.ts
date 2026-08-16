@@ -23,6 +23,8 @@ export interface AchievementProgress {
   complete: boolean;
 }
 
+import { logger } from '../../utils/logger';
+
 export class AchievementSystem {
   private achievements: Map<string, Achievement> = new Map();
   private progress: Map<string, AchievementProgress> = new Map();
@@ -146,7 +148,7 @@ export class AchievementSystem {
         });
       }
     } catch (e) {
-      console.error('Erro ao carregar achievements:', e);
+      logger.error('ACHIEVEMENT', 'Erro ao carregar achievements', { error: e });
     }
   }
 
@@ -161,7 +163,7 @@ export class AchievementSystem {
       });
       localStorage.setItem('achievements_progress', JSON.stringify(data));
     } catch (e) {
-      console.error('Erro ao salvar achievements:', e);
+      logger.error('ACHIEVEMENT', 'Erro ao salvar achievements', { error: e });
     }
   }
 

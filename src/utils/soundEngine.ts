@@ -4,6 +4,7 @@
  */
 
 import { useGameStore } from '../store/gameStore';
+import { logger } from './logger';
 
 class SoundEngine {
   private ctx: AudioContext | null = null;
@@ -109,7 +110,7 @@ class SoundEngine {
         panner.pan.setValueAtTime(0, now);
       }
     } catch (e) {
-      console.warn('StereoPanner not supported by browser');
+      logger.warn('SOUND_ENGINE', 'StereoPanner not supported by browser', { error: e });
     }
 
     // Chain: Source -> Filter -> Gain -> Panner -> Destination

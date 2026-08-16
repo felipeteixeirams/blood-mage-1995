@@ -1,3 +1,5 @@
+import { logger } from '../../utils/logger';
+
 /**
  * Performance Monitor (Fase 5)
  * Monitor de FPS, memória e performance do jogo
@@ -155,14 +157,14 @@ export class PerformanceMonitor {
    */
   public logMetrics(): void {
     const metrics = this.getMetrics();
-    console.table({
-      'Current FPS': metrics.fps.toFixed(0),
-      'Average FPS': metrics.avgFps.toFixed(0),
-      'Min FPS': metrics.minFps.toFixed(0),
-      'Max FPS': metrics.maxFps.toFixed(0),
-      'Frame Time': `${metrics.frameTime.toFixed(2)}ms`,
-      'Memory Used': `${metrics.memoryUsed.toFixed(1)}MB`,
-      'Memory Max': `${metrics.memoryMax.toFixed(1)}MB`,
+    logger.info('PERFORMANCE', 'Métricas de desempenho', {
+      currentFps: metrics.fps.toFixed(0),
+      avgFps: metrics.avgFps.toFixed(0),
+      minFps: metrics.minFps.toFixed(0),
+      maxFps: metrics.maxFps.toFixed(0),
+      frameTime: `${metrics.frameTime.toFixed(2)}ms`,
+      memoryUsed: `${metrics.memoryUsed.toFixed(1)}MB`,
+      memoryMax: `${metrics.memoryMax.toFixed(1)}MB`,
     });
   }
 
