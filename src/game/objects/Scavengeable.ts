@@ -27,6 +27,7 @@ export class Scavengeable extends Phaser.Physics.Arcade.Sprite {
     }
 
     super(scene, x, y, spriteKey);
+    if ((scene as any).lightingSystem) { (scene as any).lightingSystem.applyLightPipeline(this); }
     this.scavengeType = type;
     this.duration = duration;
 

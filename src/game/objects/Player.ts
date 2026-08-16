@@ -37,6 +37,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'spr_bloodmage');
+    if ((scene as any).lightingSystem) { (scene as any).lightingSystem.applyLightPipeline(this); }
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
@@ -104,9 +105,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const activeId = useGameStore.getState().settings.activePaletteId || 'crimson';
     const palettes = [
       { id: "crimson", color: "#ffffff" },
-      { id: "corrupted", color: "#a855f7" },
-      { id: "golden", color: "#facc15" },
-      { id: "shadow", color: "#1e1b4b" }
+      { id: "corrupted", color: "#d8b4fe" },
+      { id: "golden", color: "#fef08a" },
+      { id: "shadow", color: "#ffffff" }
     ];
     const match = palettes.find(p => p.id === activeId);
     if (match && match.color !== '#ffffff') {

@@ -217,42 +217,20 @@ export interface LoadMetrics {
   failedKeys: string[];
 }
 
-/**
- * Physical asset files discovered at build/dev time by Vite.
- */
-const physicalAssetFiles: Record<string, unknown> =
-  typeof import.meta !== 'undefined' && typeof import.meta.glob === 'function'
-    ? import.meta.glob('/public/assets/**/*.{png,webp,jpg,jpeg,ogg,mp3,wav}', { eager: true })
-    : {};
-
-/**
- * Checks if a given physical asset path exists in the public assets directory.
- */
-export function isAssetPhysicallyAvailable(path: string): boolean {
-  if (!path) return false;
-  const normalized = path.startsWith('/') ? path : `/${path}`;
-  const publicPath = normalized.startsWith('/public/') ? normalized : `/public${normalized}`;
-  return Boolean(physicalAssetFiles[publicPath] || physicalAssetFiles[normalized]);
-}
-
 export interface QueueAssetOptions {
   checkAvailability?: boolean;
 }
 
 /**
- * Enqueues configured external assets into the Phaser loader if they exist on disk.
- * If an asset is missing or not present on disk, it is safely bypassed so that
- * the procedural texture generator can create its fallback without noisy loader errors.
+ * Enqueues configured external assets into the Phaser loader.
+ * Missing assets will fail to load and the procedural fallback will take over.
  */
 export function queueAssetLoading(
   scene: Phaser.Scene,
   manifest: GameAssetConfig[] = GAME_ASSET_MANIFEST,
   options?: QueueAssetOptions
 ): LoadMetrics {
-  const shouldCheck = options?.checkAvailability ?? (manifest === GAME_ASSET_MANIFEST);
-  const assetsToLoad = shouldCheck
-    ? manifest.filter((asset) => isAssetPhysicallyAvailable(asset.path))
-    : manifest;
+  const assetsToLoad = manifest;
 
   const metrics: LoadMetrics = {
     total: assetsToLoad.length,

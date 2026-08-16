@@ -71,6 +71,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     const monsterConfig = rawData[monsterId] || rawData['skeleton_warrior'];
 
     super(scene, x, y, monsterConfig.spriteKey);
+    if ((scene as any).lightingSystem) { (scene as any).lightingSystem.applyLightPipeline(this); }
     this.config = monsterConfig;
     this.floorDepth = options?.floorDepth ?? 1;
     this.eliteAffix = options?.eliteAffix ?? 'none';
@@ -883,6 +884,16 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     // Alert instantly to combat when damaged!
     this.alertToCombat();
+
+    // Set as current target in HUD
+    useGameStore.getState().setCurrentTarget({
+      id: this.config.id || 'enemy',
+      name: this.eliteAffix !== 'none' ? `${this.eliteAffix.toUpperCase()} ${this.config.name}` : this.config.name,
+      hp: Math.max(0, this.hp),
+      maxHp: this.maxHp,
+      level: this.floorDepth,
+      isBoss: this.config.behavior === 'boss' || this.eliteAffix !== 'none'
+    });
 
     // 2.2 Advanced Damage Effects: Hit Flash (33ms setTintFill) -> Red Flash -> Base Tint
     if (typeof (this as any).setTintFill === 'function') {

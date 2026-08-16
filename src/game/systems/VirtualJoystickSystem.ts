@@ -24,6 +24,7 @@ export interface JoystickVector {
 export class VirtualJoystickSystem {
   private scene: Phaser.Scene;
   private graphics: Phaser.GameObjects.Graphics | null = null;
+  private glowGraphics: Phaser.GameObjects.Graphics | null = null;
 
   // Configuration
   private maxRadius: number = 54;
@@ -63,8 +64,21 @@ export class VirtualJoystickSystem {
     if (this.scene.add && !this.graphics) {
       this.graphics = this.scene.add.graphics();
       this.graphics.setScrollFactor(0);
-      this.graphics.setDepth(9999);
+      this.graphics.setDepth(9998);
+
+      this.glowGraphics = this.scene.add.graphics();
+      this.glowGraphics.setScrollFactor(0);
+      this.glowGraphics.setDepth(9999);
+      this.glowGraphics.setBlendMode(Phaser.BlendModes.ADD); // ADD blend mode for neon/bloom
     }
+
+    // Set default idle position (bottom-left)
+    const width = this.scene.scale.width;
+    const height = this.scene.scale.height;
+    this.baseX = Math.min(width * 0.12, 100);
+    this.baseY = height - Math.min(height * 0.20, 100);
+    this.knobX = this.baseX;
+    this.knobY = this.baseY;
 
     // Register input listeners on the scene
     this.scene.input.on('pointerdown', this.handlePointerDown, this);
@@ -91,70 +105,109 @@ export class VirtualJoystickSystem {
   }
 
   public update(_time: number, delta: number): void {
-    if (!this.graphics) return;
+    if (!this.graphics || !this.glowGraphics || !this.enabled) return;
 
-    // Smooth alpha transition
-    this.targetAlpha = this.active ? this.opacity : 0;
+    // Smooth alpha transition - resting state is 40% of max opacity
+    this.targetAlpha = this.active ? this.opacity : this.opacity * 0.4;
     const lerpSpeed = this.active ? 0.25 : 0.15;
     this.currentAlpha = Phaser.Math.Linear(this.currentAlpha, this.targetAlpha, Math.min(1, lerpSpeed * (delta / 16.6)));
 
     this.graphics.clear();
+    this.glowGraphics.clear();
 
     if (this.currentAlpha > 0.01) {
-      this.renderJoystick(this.graphics, this.currentAlpha);
+      this.renderJoystick(this.graphics, this.glowGraphics, this.currentAlpha);
     }
   }
 
-  private renderJoystick(g: Phaser.GameObjects.Graphics, alpha: number): void {
+  private renderJoystick(g: Phaser.GameObjects.Graphics, glowG: Phaser.GameObjects.Graphics, alpha: number): void {
     const bx = this.baseX;
     const by = this.baseY;
     const kx = this.knobX;
     const ky = this.knobY;
 
-    // 1. Base Outer Dark Disc
-    g.fillStyle(0x0a0508, alpha * 0.45);
+    // Calculate dynamic stretch for glowing feedback
+    const dist = Phaser.Math.Distance.Between(bx, by, kx, ky);
+    const forceRatio = Math.min(dist / this.maxRadius, 1);
+
+    // ==========================================
+    // 1. BASE (OUTER RING)
+    // ==========================================
+    
+    // Outer ambient glow (Additive)
+    glowG.fillStyle(0xef4444, alpha * 0.15);
+    glowG.fillCircle(bx, by, this.baseRadius + 12);
+    glowG.fillStyle(0x881337, alpha * 0.25);
+    glowG.fillCircle(bx, by, this.baseRadius + 4);
+
+    // Glassmorphism background (dark ruby/black)
+    g.fillStyle(0x0a0508, alpha * 0.75);
     g.fillCircle(bx, by, this.baseRadius);
 
-    // 2. Base Outer Gold Ring
-    g.lineStyle(2, 0xb8860b, alpha * 0.75);
+    // Outer Border Glow (Additive)
+    glowG.lineStyle(4, 0xef4444, alpha * 0.2);
+    glowG.strokeCircle(bx, by, this.baseRadius);
+
+    // Inner Metallic Gold Ring
+    g.lineStyle(2, 0xd4af37, alpha * 0.8);
     g.strokeCircle(bx, by, this.baseRadius);
 
-    // 3. Inner Ruby Guide Ring
-    g.lineStyle(1.5, 0x881337, alpha * 0.5);
-    g.strokeCircle(bx, by, this.maxRadius);
+    // Deep Inner Track Ring
+    g.lineStyle(1.5, 0x881337, alpha * 0.4);
+    g.strokeCircle(bx, by, this.baseRadius * 0.6);
 
-    // 4. Directional Cardinal Notches (N, S, E, W)
-    const notchLen = 6;
-    g.lineStyle(1.5, 0xd4af37, alpha * 0.6);
-    // Up
-    g.lineBetween(bx, by - this.baseRadius + 2, bx, by - this.baseRadius + notchLen + 2);
-    // Down
-    g.lineBetween(bx, by + this.baseRadius - 2, bx, by + this.baseRadius - notchLen - 2);
-    // Left
-    g.lineBetween(bx - this.baseRadius + 2, by, bx - this.baseRadius + notchLen + 2, by);
-    // Right
-    g.lineBetween(bx + this.baseRadius - 2, by, bx + this.baseRadius - notchLen - 2, by);
+    // Directional Cardinal Notches (N, S, E, W)
+    const notchLen = 8;
+    g.lineStyle(2, 0xd4af37, alpha * 0.7);
+    g.lineBetween(bx, by - this.baseRadius + 2, bx, by - this.baseRadius + notchLen + 2); // N
+    g.lineBetween(bx, by + this.baseRadius - 2, bx, by + this.baseRadius - notchLen - 2); // S
+    g.lineBetween(bx - this.baseRadius + 2, by, bx - this.baseRadius + notchLen + 2, by); // W
+    g.lineBetween(bx + this.baseRadius - 2, by, bx + this.baseRadius - notchLen - 2, by); // E
 
-    // 5. Connecting tether line between Base & Knob
-    g.lineStyle(2, 0xdc2626, alpha * 0.35);
-    g.lineBetween(bx, by, kx, ky);
+    // ==========================================
+    // 2. CONNECTION TETHER
+    // ==========================================
+    if (forceRatio > 0.05) {
+      g.lineStyle(1 + (forceRatio * 3), 0xef4444, alpha * (0.3 + (forceRatio * 0.4)));
+      g.lineBetween(bx, by, kx, ky);
+      
+      // Additive glow on tether
+      glowG.lineStyle(4 + (forceRatio * 4), 0xef4444, alpha * (0.1 + (forceRatio * 0.2)));
+      glowG.lineBetween(bx, by, kx, ky);
+    }
 
-    // 6. Knob Outer Body (Dark Crimson Ruby)
-    const knobRadius = 22;
-    g.fillStyle(0x450a0a, alpha * 0.9);
+    // ==========================================
+    // 3. KNOB (THUMB)
+    // ==========================================
+    const knobRadius = 26;
+
+    // Dynamic Thumb Glow (expands and brightens based on movement force)
+    glowG.fillStyle(0xef4444, alpha * (0.2 + (forceRatio * 0.3)));
+    glowG.fillCircle(kx, ky, knobRadius + 8 + (forceRatio * 8));
+    glowG.fillStyle(0xf87171, alpha * (0.3 + (forceRatio * 0.3)));
+    glowG.fillCircle(kx, ky, knobRadius + 4);
+
+    // Knob Outer Body (Dark Crimson Ruby)
+    g.fillStyle(0x450a0a, alpha * 0.95);
     g.fillCircle(kx, ky, knobRadius);
 
-    // 7. Knob Golden Border
-    g.lineStyle(2, 0xd4af37, alpha * 0.85);
+    // Knob Mid-Core
+    g.fillStyle(0x991b1b, alpha * 0.9);
+    g.fillCircle(kx, ky, knobRadius * 0.7);
+
+    // Knob Inner Glowing Core
+    g.fillStyle(0xef4444, alpha * 0.95);
+    g.fillCircle(kx, ky, knobRadius * 0.4);
+
+    // Knob Golden Border
+    g.lineStyle(2.5, 0xffd700, alpha * 0.9);
     g.strokeCircle(kx, ky, knobRadius);
 
-    // 8. Knob Inner Glowing Core
-    g.fillStyle(0xef4444, alpha * 0.95);
-    g.fillCircle(kx, ky, knobRadius * 0.55);
-
-    // 9. Knob Specular Gem Highlight
-    g.fillStyle(0xffffff, alpha * 0.8);
-    g.fillCircle(kx - 4, ky - 4, 3);
+    // Knob Specular Gem Highlight (gives it a 3D glass dome look)
+    g.fillStyle(0xffffff, alpha * 0.6);
+    g.fillCircle(kx - 6, ky - 6, 5);
+    g.fillStyle(0xffffff, alpha * 0.3);
+    g.fillCircle(kx - 3, ky - 3, 2);
   }
 
   public handlePointerDown(pointer: Phaser.Input.Pointer): void {
@@ -233,6 +286,12 @@ export class VirtualJoystickSystem {
     this.pointerId = null;
     this.vector = { x: 0, y: 0 };
     this.rawVector = { x: 0, y: 0 };
+    
+    // Return to default position
+    const width = this.scene.scale.width;
+    const height = this.scene.scale.height;
+    this.baseX = Math.min(width * 0.12, 100);
+    this.baseY = height - Math.min(height * 0.20, 100);
     this.knobX = this.baseX;
     this.knobY = this.baseY;
   }
@@ -271,6 +330,10 @@ export class VirtualJoystickSystem {
     if (this.graphics) {
       this.graphics.destroy();
       this.graphics = null;
+    }
+    if (this.glowGraphics) {
+      this.glowGraphics.destroy();
+      this.glowGraphics = null;
     }
   }
 }

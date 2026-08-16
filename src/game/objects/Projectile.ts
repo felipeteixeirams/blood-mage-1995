@@ -14,6 +14,7 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
 
   constructor(scene: Phaser.Scene, x: number, y: number, key: string = 'proj_blood_bolt') {
     super(scene, x, y, key);
+    if ((scene as any).lightingSystem) { (scene as any).lightingSystem.applyLightPipeline(this); }
     scene.add.existing(this);
     scene.physics.add.existing(this);
   }

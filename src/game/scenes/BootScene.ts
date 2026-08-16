@@ -38,6 +38,16 @@ export class BootScene extends Phaser.Scene {
       })
       .setOrigin(0.5, 0.5);
 
+    // Temporarily suppress Phaser's console.error for missing assets
+    // so it doesn't spam the dev console when procedural fallbacks take over.
+    const originalConsoleError = console.error;
+    console.error = (...args) => {
+      if (args[0] && typeof args[0] === 'string' && args[0].includes('Failed to process file')) {
+        return;
+      }
+      originalConsoleError(...args);
+    };
+
     // Track loading progress
     this.load.on('progress', (value: number) => {
       if (this.progressBar) {
@@ -51,6 +61,11 @@ export class BootScene extends Phaser.Scene {
           boxH - padding * 2
         );
       }
+    });
+
+    this.load.on('complete', () => {
+      // Restore console.error once loader finishes
+      console.error = originalConsoleError;
     });
 
     // Enqueue registered external sprites and assets

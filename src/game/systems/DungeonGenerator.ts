@@ -43,7 +43,9 @@ export class DungeonGenerator {
         const tile = this.scene.add.image(x + (y % 48 === 0 ? 0 : 24), y, 'tile_ground');
         tile.setTint(tints.ground);
         tile.setDepth(1);
-        (tile as any).setLighting?.(true);
+        if ((this.scene as any).lightingSystem) {
+          (this.scene as any).lightingSystem.applyLightPipeline(tile);
+        }
       }
     }
 
@@ -105,8 +107,12 @@ export class DungeonGenerator {
       // Special Room Features
       if (room.type === 'boss') {
         // Pentagram Ritual Decal on Floor
-        this.scene.add.star(room.centerX, room.centerY, 5, 25, 55, 0xdc2626, 0.35).setDepth(2);
-        this.scene.add.circle(room.centerX, room.centerY, 60).setStrokeStyle(3, 0xf43f5e, 0.8).setDepth(2);
+        const star = this.scene.add.star(room.centerX, room.centerY, 5, 25, 55, 0xdc2626, 0.35).setDepth(2);
+        const circle = this.scene.add.circle(room.centerX, room.centerY, 60).setStrokeStyle(3, 0xf43f5e, 0.8).setDepth(2);
+        if ((this.scene as any).lightingSystem) {
+          (this.scene as any).lightingSystem.applyLightPipeline(star);
+          (this.scene as any).lightingSystem.applyLightPipeline(circle);
+        }
       } else if (room.type === 'secret_treasure') {
         // Guarantee 2 chests in secret treasure room with directional facing
         const key1 = this.getChestTextureKey('south_east');
@@ -115,12 +121,19 @@ export class DungeonGenerator {
         const chest2 = this.chestsGroup.create(room.centerX + 50, room.centerY, key2);
         chest1.setDepth(room.centerY);
         chest2.setDepth(room.centerY);
+        if ((this.scene as any).lightingSystem) {
+          (this.scene as any).lightingSystem.applyLightPipeline(chest1);
+          (this.scene as any).lightingSystem.applyLightPipeline(chest2);
+        }
       } else if (room.type !== 'spawn' && Math.random() < 0.65) {
         const chestX = room.x + 40 + Math.random() * (room.width - 80);
         const chestY = room.y + 40 + Math.random() * (room.height - 80);
         const chestKey = this.getChestTextureKey();
         const chest = this.chestsGroup.create(chestX, chestY, chestKey);
         chest.setDepth(chestY);
+        if ((this.scene as any).lightingSystem) {
+          (this.scene as any).lightingSystem.applyLightPipeline(chest);
+        }
       }
     });
 
@@ -150,6 +163,9 @@ export class DungeonGenerator {
       wall.setSize(32, 32);
       wall.setDepth(wy + 16);
       wall.refreshBody();
+      if ((this.scene as any).lightingSystem) {
+        (this.scene as any).lightingSystem.applyLightPipeline(wall);
+      }
     }
   }
 

@@ -6,7 +6,8 @@ export class LootSprite extends Phaser.Physics.Arcade.Sprite {
   private floatTween: Phaser.Tweens.Tween;
 
   constructor(scene: Phaser.Scene, x: number, y: number, lootData: LootItem) {
-    super(scene, x, y, 'particle_orb_blue'); // We can reuse some sprite, maybe generate one dynamically
+    super(scene, x, y, 'particle_orb_blue');
+    if ((scene as any).lightingSystem) { (scene as any).lightingSystem.applyLightPipeline(this); } // We can reuse some sprite, maybe generate one dynamically
     scene.add.existing(this);
     scene.physics.add.existing(this);
     this.lootData = lootData;

@@ -9,6 +9,7 @@ export class Collectible extends Phaser.Physics.Arcade.Sprite {
   constructor(scene: Phaser.Scene, x: number, y: number, type: CollectibleType, amount: number) {
     const key = type === 'hp' ? 'orb_hp' : 'orb_mana';
     super(scene, x, y, key);
+    if ((scene as any).lightingSystem) { (scene as any).lightingSystem.applyLightPipeline(this); }
     this.type = type;
     this.amount = amount;
 

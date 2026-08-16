@@ -114,6 +114,10 @@ interface GameStore {
   setActiveNPC: (npc: 'cleric' | 'alchemist' | 'blacksmith' | 'elder' | null) => void;
   closestNPCType: 'cleric' | 'alchemist' | 'blacksmith' | 'elder' | null;
   setClosestNPCType: (type: 'cleric' | 'alchemist' | 'blacksmith' | 'elder' | null) => void;
+
+  currentTarget: { id: string; name: string; hp: number; maxHp: number; level?: number; isBoss?: boolean; lastAttacked: number } | null;
+  setCurrentTarget: (target: { id: string; name: string; hp: number; maxHp: number; level?: number; isBoss?: boolean } | null) => void;
+  clearStaleTarget: (timeNow: number) => void;
 }
 
 const defaultPlayerStats: PlayerStats = {
@@ -416,4 +420,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setActiveNPC: (npc) => set({ activeNPC: npc }),
   closestNPCType: null,
   setClosestNPCType: (type) => set({ closestNPCType: type }),
+
+  currentTarget: null,
+  setCurrentTarget: (target) => set({ 
+    currentTarget: target ? { ...target, lastAttacked: Date.now() } : null 
+  }),
+  clearStaleTarget: (timeNow) => set((state) => {
+    if (state.currentTarget && timeNow - state.currentTarget.lastAttacked > 5000) {
+      return { currentTarget: null };
+    }
+    return state;
+  }),
 }));

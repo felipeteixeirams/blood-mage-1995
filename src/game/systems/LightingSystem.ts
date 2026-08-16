@@ -96,6 +96,24 @@ export class LightingSystem {
     }
   }
 
+  /** Aplica o pipeline Light2D a um sprite/image se o sistema estiver ativo. */
+  public applyLightPipeline(gameObject: Phaser.GameObjects.GameObject): void {
+    if (this.enabled && (gameObject as any).setPipeline) {
+      try {
+        const sprite = gameObject as Phaser.GameObjects.Sprite;
+        if (sprite.texture && sprite.texture.key) {
+          const texture = this.scene.textures.get(sprite.texture.key);
+          // Only apply Light2D if the texture has a normal map (dataSource[1] or customData.normalMap)
+          if (texture && (texture.dataSource.length > 1 || ((texture as any).customData && (texture as any).customData.normalMap))) {
+            (gameObject as any).setPipeline('Light2D');
+          }
+        }
+      } catch (e) {
+        // Fallback or ignore if pipeline fails
+      }
+    }
+  }
+
   /** Cria a luz que segue o player, com raio por HP. */
   public createPlayerLight(): void {
     if (!this.enabled || !this.scene.player) return;

@@ -4,6 +4,7 @@ import { GameStats } from './hud/GameStats';
 import { ActionButtons } from './hud/ActionButtons';
 import { LootLog } from './hud/LootLog';
 import { SkillsOverlay } from './hud/SkillsOverlay';
+import { TargetFrame } from './hud/TargetFrame';
 import { ContractHUD } from './hud/ContractHUD';
 import { RecordsDisplay } from './hud/RecordsDisplay';
 import palettesData from '../data/palettes.json';
@@ -246,6 +247,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
 
   return (
     <div className="absolute inset-0 pointer-events-none z-20 select-none overflow-hidden font-pixel">
+      <TargetFrame />
 
       {/* ── Unconscious Tunnel Vision & Desaturation Overlay ── */}
       {stats.isUnconscious && (

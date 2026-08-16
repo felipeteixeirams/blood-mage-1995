@@ -452,8 +452,10 @@ export class GameScene extends Phaser.Scene {
     // Usa o menor eixo (altura em landscape) como referência para não cortar verticalmente.
     const screenH = this.cameras.main.height || window.innerHeight;
     const screenW = this.cameras.main.width || window.innerWidth;
-    // Referência: altura de 700px → zoom 1.0; escala proporcional + clamp
-    const adaptiveZoom = Math.max(0.50, Math.min(1.15, screenH / 700));
+    
+    // Referência de zoom muito mais próxima (estilo Action RPG / Diablo)
+    // Aumentamos agressivamente a base do zoom para trazer a câmera para perto do personagem.
+    const adaptiveZoom = Math.max(1.8, Math.min(3.0, screenH / 300));
     this.cameras.main.setZoom(adaptiveZoom);
 
     // 4. Mobile / Touch Virtual Joystick (Canvas-Native, 60 FPS)
@@ -745,7 +747,7 @@ export class GameScene extends Phaser.Scene {
     this.depthGroup.add(cleric);
 
     // 2. Alchemist (Alquimista)
-    const alchemist = this.npcsGroup.create(spawnRoom.centerX + 120, spawnRoom.centerY - 80, 'spr_bloodmage');
+    const alchemist = this.npcsGroup.create(spawnRoom.centerX + 120, spawnRoom.centerY - 80, 'spr_cultist');
     alchemist.setTint(0xc084fc); // Purple glow
     alchemist.setData('npcType', 'alchemist');
     this.depthGroup.add(alchemist);

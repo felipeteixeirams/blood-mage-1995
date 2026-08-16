@@ -153,7 +153,16 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
 
     // Layout values
     const layout = settings.hudLayout?.[spellId];
-    const size = layout?.size || 'medium';
+    
+    // Find index in preset to determine default arc position
+    const presetIndex = skillPreset.indexOf(spellId);
+    
+    // Size logic
+    let size = layout?.size;
+    if (!size) {
+      // Default: First skill (index 0) is large (primary attack), others are small
+      size = presetIndex === 0 ? 'large' : 'medium';
+    }
 
     let sizeClasses = 'w-14 h-14 md:w-16 md:h-16 text-[9px]';
     let iconSize = 'w-5 h-5 md:w-6 md:h-6';
@@ -161,8 +170,23 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
       sizeClasses = 'w-11 h-11 md:w-12 md:h-12 text-[8px]';
       iconSize = 'w-4 h-4 md:w-5 md:h-5';
     } else if (size === 'large') {
-      sizeClasses = 'w-16 h-16 md:w-20 md:h-20 text-xs';
-      iconSize = 'w-6 h-6 md:w-7 md:h-7';
+      sizeClasses = 'w-20 h-20 md:w-24 md:h-24 text-xs'; // Made it slightly larger for the main attack
+      iconSize = 'w-8 h-8 md:w-10 md:h-10';
+    }
+
+    // Determine default absolute positioning if no custom layout is set
+    // This creates the Diablo-like arc layout
+    let defaultPositionStyle: React.CSSProperties = { position: 'relative' };
+    if (!layout && presetIndex >= 0) {
+      if (presetIndex === 0) {
+        defaultPositionStyle = { position: 'absolute', bottom: '0px', right: '0px' };
+      } else if (presetIndex === 1) {
+        defaultPositionStyle = { position: 'absolute', bottom: '10px', right: '100px' };
+      } else if (presetIndex === 2) {
+        defaultPositionStyle = { position: 'absolute', bottom: '70px', right: '80px' };
+      } else if (presetIndex === 3) {
+        defaultPositionStyle = { position: 'absolute', bottom: '110px', right: '20px' };
+      }
     }
 
     if (isEditingHUD) {
@@ -172,8 +196,8 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
           onPointerDown={(e) => handleEditPointerDown(e, spellId)}
           onPointerMove={(e) => handleEditPointerMove(e, spellId)}
           onPointerUp={(e) => handleEditPointerUp(e, spellId)}
-          className={`relative border-2 border-dashed border-[#b8860b] bg-[#1e1713] text-[#e8c76a] flex flex-col items-center justify-center gap-0.5 select-none cursor-move rounded-full ${sizeClasses}`}
-          style={layout ? { position: 'fixed', left: layout.x, top: layout.y, zIndex: 100 } : undefined}
+          className={`absolute border-2 border-dashed border-[#b8860b] bg-[#1e1713] text-[#e8c76a] flex flex-col items-center justify-center gap-0.5 select-none cursor-move rounded-full ${sizeClasses}`}
+          style={layout ? { position: 'fixed', left: layout.x, top: layout.y, zIndex: 100 } : { ...defaultPositionStyle, zIndex: 100 }}
         >
           <Icon className={iconSize} />
           <span className="text-[6px] font-pixel block font-sans">MOVER</span>
@@ -273,13 +297,13 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
             }
           }));
         }}
-        className={`relative rounded-full border-2 flex flex-col items-center justify-center gap-0.5
+        className={`absolute rounded-full border-2 flex flex-col items-center justify-center gap-0.5
           transition-all active:scale-95 cursor-pointer touch-manipulation select-none
           ${!canCast
             ? 'bg-black/80 border-gray-900 text-gray-700 opacity-50'
             : `${activeCls} hover:brightness-110`
           } ${sizeClasses}`}
-        style={layout ? { position: 'fixed', left: layout.x, top: layout.y, zIndex: 100 } : undefined}
+        style={layout ? { position: 'fixed', left: layout.x, top: layout.y, zIndex: 100 } : { ...defaultPositionStyle, zIndex: 100 }}
         title={`${spell.name}: ${spell.description}`}
         aria-label={spell.name}
       >
@@ -320,20 +344,30 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
       {/* Hide Preset Editor button in edit mode */}
       {!isEditingHUD && <SkillPresetEditor />}
 
-      {/* 2×2 skill grid */}
-      <div className="grid grid-cols-2 gap-2">
-        {slots.map((spellId, idx) =>
-          spellId ? (
-            renderSkill(spellId)
-          ) : (
+      {/* Arc layout container */}
+      <div className="relative w-48 h-48 sm:w-56 sm:h-56">
+        {slots.map((spellId, idx) => {
+          if (spellId) {
+            return renderSkill(spellId);
+          }
+          
+          // Empty slot positioning matching default arc
+          let posStyle: React.CSSProperties = {};
+          if (idx === 0) posStyle = { position: 'absolute', bottom: '0px', right: '0px' };
+          else if (idx === 1) posStyle = { position: 'absolute', bottom: '10px', right: '100px' };
+          else if (idx === 2) posStyle = { position: 'absolute', bottom: '70px', right: '80px' };
+          else if (idx === 3) posStyle = { position: 'absolute', bottom: '110px', right: '20px' };
+
+          return (
             <div
               key={`empty-${idx}`}
-              className="w-14 h-14 md:w-16 md:h-16 rounded-full border-2 border-dashed border-gray-800 bg-black/35 flex items-center justify-center text-gray-700 font-bold text-xs"
+              className={`absolute rounded-full border-2 border-dashed border-gray-800 bg-black/35 flex items-center justify-center text-gray-700 font-bold ${idx === 0 ? 'w-20 h-20 md:w-24 md:h-24 text-lg' : 'w-11 h-11 md:w-12 md:h-12 text-xs'}`}
+              style={posStyle}
             >
               +
             </div>
-          ),
-        )}
+          );
+        })}
       </div>
     </div>
   );
