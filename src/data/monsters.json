@@ -334,5 +334,37 @@
     "executionFragments": 6,
     "executionImpulse": 240,
     "executionBloodScale": 5.0
+  },
+  "skeletal_archwarden": {
+    "id": "skeletal_archwarden",
+    "name": "Guardião Arcano Esquelético (SUB-BOSS)",
+    "description": "Atirador e comandante esquelético ancestral. Dispara projéteis à distância com movimentação tática e invoca maldições de sangue.",
+    "hp": 280,
+    "speed": 62,
+    "damage": 26,
+    "spriteKey": "spr_skeletal_archwarden",
+    "goreEffect": "bone_dust",
+    "xpDrop": 85,
+    "attackRange": 185,
+    "behavior": "ranged",
+    "temperament": "tactical",
+    "gaitType": "biped_fast",
+    "bodyType": "brittle_bone",
+    "fragility": 0.50,
+    "visionDistance": 290,
+    "visionConeDegrees": 140,
+    "hearingSensitivity": 1.4,
+    "dodgeChance": 0.30,
+    "courage": 0.85,
+    "color": "#7e22ce",
+    "scale": 1.25,
+    "scoreValue": 750,
+    "executionFragments": 5,
+    "executionImpulse": 190,
+    "executionBloodScale": 3.0,
+    "statusEffectOnHit": {
+      "type": "bleeding",
+      "chance": 0.35
+    }
   }
 }
