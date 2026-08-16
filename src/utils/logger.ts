@@ -86,6 +86,10 @@ class LoggerService {
   }
 
   public debug(namespace: string, message: string, data?: any) {
+    // Suppress debug logs in production to avoid CPU/Console bottlenecks
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.PROD) {
+      return;
+    }
     this.log('DEBUG', namespace, message, data);
   }
 

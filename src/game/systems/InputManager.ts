@@ -1,3 +1,5 @@
+import { logger } from '../../utils/logger';
+
 /**
  * InputManager (Fase 5)
  * Abstração unificada para entrada do jogador
@@ -163,12 +165,12 @@ export class InputManager {
   }
 
   private static onGamepadConnected(e: GamepadEvent): void {
-    console.log(`Gamepad conectado: ${e.gamepad.id}`);
+    logger.info('INPUT', `Gamepad conectado: ${e.gamepad.id}`, { gamepadId: e.gamepad.id });
     this.gamepadState.isConnected = true;
   }
 
   private static onGamepadDisconnected(e: GamepadEvent): void {
-    console.log(`Gamepad desconectado: ${e.gamepad.id}`);
+    logger.info('INPUT', `Gamepad desconectado: ${e.gamepad.id}`, { gamepadId: e.gamepad.id });
     this.gamepadState.isConnected = false;
   }
 

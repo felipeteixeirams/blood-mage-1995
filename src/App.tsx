@@ -19,6 +19,7 @@ import { PlayerStats, UpgradeOption } from './types/game';
 import { soundEngine } from './utils/soundEngine';
 import { useGameStore } from './store/gameStore';
 import { telemetry } from './utils/telemetry';
+import { logger } from './utils/logger';
 
 export default function App() {
   const [isBooting, setIsBooting] = useState(true);
@@ -80,7 +81,7 @@ export default function App() {
         setIsUpdateReady(true);
       },
       onOfflineReady() {
-        console.log('PWA offline ready');
+        logger.info('PWA', 'PWA offline ready');
       },
     });
   }, []);
