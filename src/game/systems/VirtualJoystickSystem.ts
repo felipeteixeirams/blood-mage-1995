@@ -69,7 +69,8 @@ export class VirtualJoystickSystem {
       this.glowGraphics = this.scene.add.graphics();
       this.glowGraphics.setScrollFactor(0);
       this.glowGraphics.setDepth(9999);
-      this.glowGraphics.setBlendMode(Phaser.BlendModes.ADD); // ADD blend mode for neon/bloom
+      const addBlendMode = (Phaser.BlendModes && Phaser.BlendModes.ADD !== undefined) ? Phaser.BlendModes.ADD : 1;
+      this.glowGraphics.setBlendMode(addBlendMode); // ADD blend mode for neon/bloom
     }
 
     // Set default idle position (bottom-left)

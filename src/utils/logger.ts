@@ -11,6 +11,8 @@ export interface LogEntry {
 }
 
 const MAX_BUFFER_SIZE = 250;
+const FLUSH_INTERVAL_MS = 1000;
+const MAX_QUEUE_BATCH = 10;
 
 class LoggerService {
   private sessionId: string;
@@ -18,9 +20,17 @@ class LoggerService {
   private listeners: Set<(logs: LogEntry[]) => void> = new Set();
   private errorCount: number = 0;
 
+  // Remote log ingestion parameters for Vercel Runtime Logs integration
+  private remoteEndpoint: string = '/api/log';
+  private remoteEnabled: boolean = true;
+  private remoteQueue: LogEntry[] = [];
+  private flushTimer: any = null;
+  private isFlushing: boolean = false;
+
   constructor() {
     this.sessionId = `sess_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 7)}`;
     this.setupGlobalHandlers();
+    this.setupUnloadHandlers();
   }
 
   public getSessionId(): string {
@@ -33,6 +43,22 @@ class LoggerService {
 
   public getLogs(): LogEntry[] {
     return [...this.buffer];
+  }
+
+  public setRemoteEndpoint(endpoint: string) {
+    this.remoteEndpoint = endpoint;
+  }
+
+  public setRemoteEnabled(enabled: boolean) {
+    this.remoteEnabled = enabled;
+  }
+
+  public isRemoteEnabled(): boolean {
+    return this.remoteEnabled;
+  }
+
+  public getRemoteQueueLength(): number {
+    return this.remoteQueue.length;
   }
 
   public subscribe(listener: (logs: LogEntry[]) => void): () => void {
@@ -83,6 +109,61 @@ class LoggerService {
     }
 
     this.notify();
+
+    // Ingest into remote queue for Vercel Runtime Logs forwarding
+    // By default, forward ERROR and WARN logs (and telemetry INFO events)
+    if (this.remoteEnabled && (level === 'ERROR' || level === 'WARN' || namespace.startsWith('TELEMETRY') || namespace.startsWith('EVENT:'))) {
+      this.enqueueRemote(entry);
+    }
+  }
+
+  private enqueueRemote(entry: LogEntry) {
+    this.remoteQueue.push(entry);
+
+    if (this.remoteQueue.length >= MAX_QUEUE_BATCH) {
+      this.flushRemote();
+    } else if (!this.flushTimer) {
+      this.flushTimer = setTimeout(() => {
+        this.flushTimer = null;
+        this.flushRemote();
+      }, FLUSH_INTERVAL_MS);
+    }
+  }
+
+  public async flushRemote(): Promise<void> {
+    if (!this.remoteEnabled || this.remoteQueue.length === 0 || this.isFlushing) {
+      return;
+    }
+
+    this.isFlushing = true;
+    const batch = [...this.remoteQueue];
+    this.remoteQueue = [];
+
+    try {
+      if (typeof fetch !== 'undefined') {
+        const response = await fetch(this.remoteEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ logs: batch }),
+        });
+
+        if (!response.ok) {
+          // If remote request failed, re-queue logs up to limit to prevent loss
+          if (this.remoteQueue.length < MAX_BUFFER_SIZE) {
+            this.remoteQueue.unshift(...batch);
+          }
+        }
+      }
+    } catch {
+      // Fail silently to prevent throwing unhandled rejections during network outages
+      if (this.remoteQueue.length < MAX_BUFFER_SIZE) {
+        this.remoteQueue.unshift(...batch);
+      }
+    } finally {
+      this.isFlushing = false;
+    }
   }
 
   public debug(namespace: string, message: string, data?: any) {
@@ -107,7 +188,12 @@ class LoggerService {
 
   public clear() {
     this.buffer = [];
+    this.remoteQueue = [];
     this.errorCount = 0;
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer);
+      this.flushTimer = null;
+    }
     this.notify();
   }
 
@@ -141,6 +227,30 @@ class LoggerService {
         reason: event.reason,
       });
     };
+  }
+
+  private setupUnloadHandlers() {
+    if (typeof window === 'undefined') return;
+
+    const handleUnload = () => {
+      if (this.remoteQueue.length > 0 && typeof navigator !== 'undefined' && navigator.sendBeacon) {
+        try {
+          const blob = new Blob([JSON.stringify({ logs: this.remoteQueue })], { type: 'application/json' });
+          navigator.sendBeacon(this.remoteEndpoint, blob);
+          this.remoteQueue = [];
+        } catch {
+          // Ignore beacon delivery errors on unload
+        }
+      }
+    };
+
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        handleUnload();
+      }
+    });
+
+    window.addEventListener('beforeunload', handleUnload);
   }
 }
 
