@@ -259,20 +259,26 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private showEmote(key: string) {
     if (this.emoteSprite) {
       this.emoteSprite.destroy();
+      this.emoteSprite = undefined;
     }
-    this.emoteSprite = this.scene.add.image(this.x, this.y - 28, key).setDepth(2000);
-    this.scene.tweens.add({
-      targets: this.emoteSprite,
-      y: this.y - 38,
-      alpha: 0,
-      duration: 1800,
-      onComplete: () => {
-        if (this.emoteSprite) {
-          this.emoteSprite.destroy();
-          this.emoteSprite = undefined;
-        }
-      },
-    });
+    const scene = this.scene;
+    if (!scene || !scene.add) return;
+
+    this.emoteSprite = scene.add.image(this.x, this.y - 28, key).setDepth(2000);
+    if (scene.tweens) {
+      scene.tweens.add({
+        targets: this.emoteSprite,
+        y: this.y - 38,
+        alpha: 0,
+        duration: 1800,
+        onComplete: () => {
+          if (this.emoteSprite) {
+            this.emoteSprite.destroy();
+            this.emoteSprite = undefined;
+          }
+        },
+      });
+    }
   }
 
   /**
@@ -309,9 +315,16 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.setVelocity(this.dodgeVector.x * this.config.speed * 1.8, this.dodgeVector.y * this.config.speed * 1.8);
 
       // Reset dodge velocity after 220ms
-      this.scene.time.delayedCall(220, () => {
+      const scene = this.scene;
+      if (scene && scene.time) {
+        scene.time.delayedCall(220, () => {
+          if (this.active) {
+            this.isDodging = false;
+          }
+        });
+      } else {
         this.isDodging = false;
-      });
+      }
     }
   }
 
@@ -895,34 +908,34 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       isBoss: this.config.behavior === 'boss' || this.eliteAffix !== 'none'
     });
 
-    // 2.2 Advanced Damage Effects: Hit Flash (33ms setTintFill) -> Red Flash -> Base Tint
-    if (typeof (this as any).setTintFill === 'function') {
-      (this as any).setTintFill(0xffffff);
-      this.scene.time.delayedCall(33, () => {
+    // 2.2 Advanced Damage Effects: Hit Flash -> Red Flash -> Base Tint
+    const scene = this.scene;
+    if (scene && scene.time) {
+      this.setTint(0xffffff);
+      if (typeof (this as any).setTintMode === 'function' && (Phaser as any).TintModes?.FILL !== undefined) {
+        (this as any).setTintMode((Phaser as any).TintModes.FILL);
+      }
+      scene.time.delayedCall(33, () => {
         if (this.active) {
           this.setTint(0xff0000);
-          this.scene.time.delayedCall(90, () => {
-            if (this.active) {
-              if (this.aiState === 'frenzy') {
-                this.setTint(0xff3333);
-              } else {
-                this.applyBaseTint();
+          if (typeof (this as any).setTintMode === 'function' && (Phaser as any).TintModes?.MULTIPLY !== undefined) {
+            (this as any).setTintMode((Phaser as any).TintModes.MULTIPLY);
+          }
+          if (scene && scene.time) {
+            scene.time.delayedCall(90, () => {
+              if (this.active) {
+                if (this.aiState === 'frenzy') {
+                  this.setTint(0xff3333);
+                } else {
+                  this.applyBaseTint();
+                }
               }
-            }
-          });
+            });
+          }
         }
       });
     } else {
       this.setTint(0xff0000);
-      this.scene.time.delayedCall(120, () => {
-        if (this.active) {
-          if (this.aiState === 'frenzy') {
-            this.setTint(0xff3333);
-          } else {
-            this.applyBaseTint();
-          }
-        }
-      });
     }
 
     // 2.2 Flinch & Mass-based Knockback
@@ -992,11 +1005,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
    * 2.4 Ragdoll Gib Explosion & Floor Blood Decals
    */
   public spawnGibs() {
-    if (!this.scene) return;
+    const scene = this.scene;
+    if (!scene || !scene.add || !scene.time) return;
 
     // Spawn persistent blood stain on the floor tilemap
-    if (this.scene.textures.exists('blood_pool_stain')) {
-      const stain = this.scene.add.image(this.x, this.y, 'blood_pool_stain');
+    if (scene.textures && scene.textures.exists('blood_pool_stain')) {
+      const stain = scene.add.image(this.x, this.y, 'blood_pool_stain');
       stain.setDepth(10); // Floor layer
       stain.setRotation(Math.random() * Math.PI * 2);
       stain.setAlpha(0.75 + Math.random() * 0.2);
@@ -1016,7 +1030,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       const gibX = this.x + off.x;
       const gibY = this.y + off.y;
 
-      const gib = this.scene.add.image(gibX, gibY, this.texture.key);
+      const gib = scene.add.image(gibX, gibY, this.texture.key);
       gib.setScale(this.baseScale * 0.5);
       gib.setDepth(100);
       if (this.isTinted) {
@@ -1033,7 +1047,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       let elapsed = 0;
       const gravity = 400; // px/s^2
 
-      const timer = this.scene.time.addEvent({
+      const timer = scene.time.addEvent({
         delay: 16,
         repeat: 30, // ~500ms flight
         callback: () => {
@@ -1045,16 +1059,24 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
           if (timer.repeatCount === 0) {
             // Settle on floor
-            gib.setDepth(12);
-            gib.setAlpha(0.7);
-            // Fade out after 6 seconds
-            this.scene.tweens.add({
-              targets: gib,
-              alpha: 0,
-              duration: 2000,
-              delay: 4000,
-              onComplete: () => gib.destroy(),
-            });
+            if (gib && gib.active) {
+              gib.setDepth(12);
+              gib.setAlpha(0.7);
+              // Fade out after 6 seconds
+              if (scene && scene.tweens) {
+                scene.tweens.add({
+                  targets: gib,
+                  alpha: 0,
+                  duration: 2000,
+                  delay: 4000,
+                  onComplete: () => {
+                    if (gib && gib.active) gib.destroy();
+                  },
+                });
+              } else {
+                gib.destroy();
+              }
+            }
           }
         },
       });

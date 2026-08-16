@@ -202,7 +202,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
       // Spawn ghost trail (simple throttle)
       if (Math.floor(time / 20) % 2 === 0) {
-        if (this.scene && this.scene.add) {
+        if (this.scene && this.scene.add && this.scene.tweens) {
           const trail = this.scene.add.image(this.x, this.y, this.texture.key);
           trail.setTint(0xef4444);
           trail.setAlpha(0.5);
@@ -212,7 +212,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             targets: trail,
             alpha: 0,
             duration: 200,
-            onComplete: () => trail.destroy()
+            onComplete: () => {
+              if (trail && trail.active) trail.destroy();
+            }
           });
         }
       }
@@ -259,7 +261,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const animState = isMoving ? 'walk' : 'idle';
     const animKey = `bloodmage_${animState}_${dir}`;
 
-    if (this.scene && this.scene.anims.exists(animKey)) {
+    if (this.scene && this.scene.anims && this.scene.anims.exists(animKey)) {
       safePlayAnimation(this, animKey);
     } else {
       safePlayAnimation(this, isMoving ? 'bloodmage_walk_south' : 'bloodmage_idle_south');
@@ -289,7 +291,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         // Leave blood droplets on the floor while walking with bleeding status
         if ((this.moveVector.x !== 0 || this.moveVector.y !== 0) && Math.floor(time / 250) % 2 === 0) {
-          if (this.scene && this.scene.add) {
+          if (this.scene && this.scene.add && this.scene.tweens) {
             const drop = this.scene.add.image(this.x + (Math.random() - 0.5) * 8, this.y + 8, 'particle_blood_red');
             drop.setTint(0x990000);
             drop.setDepth(3);
@@ -298,7 +300,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
               targets: drop,
               alpha: 0,
               duration: 1800,
-              onComplete: () => drop.destroy()
+              onComplete: () => {
+                if (drop && drop.active) drop.destroy();
+              }
             });
           }
         }

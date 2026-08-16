@@ -22,7 +22,8 @@ tags: [critical, troubleshooting, known-issues, assets, phaser]
 5. [Remoção de Limitação de Visão e Overlay de Escuridão](#5-remoção-de-limitação-de-visão-e-overlay-de-escuridão)
 6. [Erros de Carregamento de Sprites Inexistentes no Loader Phaser (`Failed to process file`)](#6-erros-de-carregamento-de-sprites-inexistentes-no-loader-phaser)
 7. [Controles de Toque / Touchpad / Joystick Virtual Não Respondendo](#7-controles-de-toque--touchpad--joystick-virtual-não-respondendo)
-8. [Tabela de Diagnóstico Rápido](#8-tabela-de-diagnóstico-rápido)
+8. [Erro de Execução em Callbacks Assíncronos (`this.scene.tweens`) e `setTintFill` no Phaser 4](#8-erro-de-execução-em-callbacks-assíncronos-thisscenetweens-e-settintfill-no-phaser-4)
+9. [Tabela de Diagnóstico Rápido](#9-tabela-de-diagnóstico-rápido)
 
 ---
 
@@ -237,7 +238,26 @@ O jogador tenta mover ou mirar usando a tela de toque, touchpad de notebook ou a
 
 ---
 
-## 8. Tabela de Diagnóstico Rápido
+## 8. Erro de Execução em Callbacks Assíncronos (`this.scene.tweens`) e `setTintFill` no Phaser 4
+
+### 🔴 Sintoma
+Durante o combate (morte de inimigos, execução de gibs/ragdoll ou acerto de projéteis), o jogo trava com a seguinte exceção no console:
+`[ERROR] [GLOBAL_EXCEPTION] TypeError: undefined is not an object (evaluating 'this.scene.tweens')`
+e avisos de:
+``setTintFill(color)` is removed as of Phaser 4. Use setTint(color).setTintMode(Phaser.TintModes.FILL)` instead.`
+
+### 🔍 Causa-Raiz
+1. **Desvinculação do `scene` no Ciclo de Vida do Sprite (`this.destroy()`):** Quando um inimigo (`Enemy`) morre ou sofre dano letal excessivo, métodos como `spawnGibs()` ou `takeDamage()` agendam callbacks assíncronos (`time.addEvent`, `time.delayedCall`). Quando o timer atinge seu término (~500ms a 4s depois), o Sprite do inimigo já foi destruído (`this.destroy()`) pela cena ou pelo pool de objetos. A destruição no Phaser redefine `this.scene = undefined` na instância. Se a função dentro da closure tentar acessar `this.scene.tweens.add()`, ocorre um `TypeError` fatal que congela o loop de update do Phaser.
+2. **Descontinuação do `setTintFill` no Phaser 4:** O método `setTintFill` foi substituído no pipeline de renderização WebGL do Phaser 4 por `setTint(color)` combinado com `setTintMode(Phaser.TintModes.FILL)`.
+
+### 🛠️ Procedimento de Resolução
+1. **Captura Local Imutável do `scene`:** Em qualquer método que crie partículas, efeitos ou timers assíncronos que sobrevivam à entidade, capture `const scene = this.scene; if (!scene || !scene.add || !scene.time) return;` no escopo da função antes de criar o evento.
+2. **Guarda Defensiva de Objetos e Tweens:** No corpo de callbacks e timers, utilize a referência capturada `scene.tweens.add(...)` com verificações `if (scene && scene.tweens && gib.active)` e garanta a destruição segura `if (gib && gib.active) gib.destroy()`.
+3. **Compatibilidade com Phaser 4 Tint Modes:** Substituir chamadas diretas a `setTintFill(0xffffff)` por `this.setTint(0xffffff)` e condicionar `setTintMode(Phaser.TintModes.FILL)` somente quando suportado pelo objeto.
+
+---
+
+## 9. Tabela de Diagnóstico Rápido
 
 | Sintoma | Causa Mais Provável | Ferramenta / Comando de Diagnóstico | Ação Imediata |
 |---|---|---|---|
@@ -248,6 +268,8 @@ O jogador tenta mover ou mirar usando a tela de toque, touchpad de notebook ou a
 | Cenário escuro / vinheta vermelha | Overlay de escuridão ativo em `GameScene` | Inspecionar `darknessOverlay` | Limpar overlay e remover restrições de visão |
 | `Failed to process file ... spritesheet` no console | Arquivo externo listado no manifest não existe em `public/` | `isAssetPhysicallyAvailable` no `assetManifest.ts` | Filtrar assets no `queueAssetLoading` antes do `scene.load` |
 | Touchpad / Joystick Virtual não move o personagem | Zonas de toque sem `pointer-events-auto` no overlay | Inspecionar `#touchpad-move-zone` no DOM | Adicionar `pointer-events-auto` e estabilizar `useFloatingJoystick` |
+| `TypeError: undefined is not an object (evaluating 'this.scene.tweens')` | Inimigo destruído antes de callback de timer (`spawnGibs`, `delayedCall`) | Inspecionar stack trace no console | Capturar `const scene = this.scene` no escopo externo e usar guards `scene?.tweens` |
+
 
 ---
 
