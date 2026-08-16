@@ -81,40 +81,7 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   });
   addTextureWithNormalMap('tile_ground', tileCanvas);
 
-  // 2. Bloodmage Player (32x48)
-  const playerCanvas = createPixelCanvas(32, 48, (ctx) => {
-    // Dark red hood & robe
-    ctx.fillStyle = '#110507'; // Shadow
-    ctx.fillRect(8, 8, 16, 38);
 
-    ctx.fillStyle = '#7a121d'; // Crimson Cape
-    ctx.fillRect(10, 10, 12, 36);
-
-    // Hood & Shoulders
-    ctx.fillStyle = '#a81c2b';
-    ctx.fillRect(10, 4, 12, 12);
-    ctx.fillRect(8, 14, 16, 8);
-
-    // Glowing Crimson Eyes
-    ctx.fillStyle = '#ff3344';
-    ctx.fillRect(12, 9, 3, 2);
-    ctx.fillRect(17, 9, 3, 2);
-
-    // Staff of Blood
-    ctx.fillStyle = '#3a271d'; // Wood
-    ctx.fillRect(24, 6, 3, 38);
-
-    // Staff Ruby Orb
-    ctx.fillStyle = '#ff1133';
-    ctx.beginPath();
-    ctx.arc(25.5, 6, 4, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Golden Trim
-    ctx.fillStyle = '#d4af37';
-    ctx.fillRect(11, 20, 10, 2);
-  });
-  addTextureWithNormalMap('spr_bloodmage', playerCanvas);
 
   // 3. Skeleton Warrior (32x40)
   const skeletonCanvas = createPixelCanvas(32, 40, (ctx) => {

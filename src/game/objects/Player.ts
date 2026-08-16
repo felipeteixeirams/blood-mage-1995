@@ -352,10 +352,29 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
     });
 
-    // Auto Shoot Primary (Blood Bolt) if aiming
+    // Auto Shoot Primary (Blood Bolt) if pointer is down or enemy in range (< 350px)
     const bloodBoltConfig = (spellsData as Record<string, SpellConfig>)['blood_bolt'];
     const autoCd = bloodBoltConfig.cooldownMs * (1 - this.stats.cooldownReduction);
-    if (time > this.lastAutoShootTime + autoCd) {
+
+    const pointer = this.scene && this.scene.input && this.scene.input.activePointer;
+    const isPointerDown = pointer && pointer.isDown;
+
+    let hasEnemyInRange = false;
+    if (this.scene && 'enemiesGroup' in this.scene) {
+      const enemiesGroup = (this.scene as any).enemiesGroup;
+      if (enemiesGroup && enemiesGroup.getChildren) {
+        enemiesGroup.getChildren().forEach((enemy: any) => {
+          if (enemy && enemy.active && enemy.hp > 0) {
+            const dist = Phaser.Math.Distance.Between(this.x, this.y, enemy.x, enemy.y);
+            if (dist < 350) {
+              hasEnemyInRange = true;
+            }
+          }
+        });
+      }
+    }
+
+    if ((isPointerDown || hasEnemyInRange) && time > this.lastAutoShootTime + autoCd) {
       this.castBloodBolt(time);
     }
   }
