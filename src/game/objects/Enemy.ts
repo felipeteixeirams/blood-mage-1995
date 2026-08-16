@@ -808,7 +808,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     const key = this.config.spriteKey;
     let prefix = '';
 
-    if (key === 'spr_skeleton') prefix = 'skeleton';
+    if (key === 'spr_skeleton' || key === 'spr_skeletal_archwarden') prefix = 'skeleton';
     else if (key === 'spr_cultist') prefix = 'cultist';
     else if (key === 'spr_hound') prefix = 'hound';
     else if (key === 'spr_golem') prefix = 'golem';

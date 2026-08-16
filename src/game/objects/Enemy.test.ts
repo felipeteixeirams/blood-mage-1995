@@ -7,7 +7,13 @@ vi.mock('phaser', () => {
     public visible = true;
     public x = 0;
     public y = 0;
-    public body: any = { velocity: { x: 0, y: 0 } };
+    public body: any = {
+      velocity: {
+        x: 0,
+        y: 0,
+        length: function () { return Math.hypot(this.x, this.y); },
+      },
+    };
     public tintTopLeft = 0;
     public isTinted = false;
     public scaleX = 1;
@@ -79,7 +85,9 @@ vi.mock('phaser', () => {
         },
         Angle: {
           Between: (x1: number, y1: number, x2: number, y2: number) => Math.atan2(y2 - y1, x2 - x1),
+          Normalize: (angle: number) => ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2),
         },
+        DegToRad: (deg: number) => (deg * Math.PI) / 180,
         Clamp: (v: number, min: number, max: number) => Math.max(min, Math.min(max, v)),
       },
     },
@@ -128,6 +136,25 @@ describe('Enemy Monster Balancing & Scaling', () => {
 
     const abomination = new Enemy(makeScene(), 100, 100, 'gore_abomination');
     expect(abomination.hp).toBe(200);
+
+    const archwarden = new Enemy(makeScene(), 100, 100, 'skeletal_archwarden');
+    expect(archwarden.hp).toBe(280);
+    expect(archwarden.damage).toBe(26);
+    expect(archwarden.config.behavior).toBe('ranged');
+    expect(archwarden.config.temperament).toBe('tactical');
+    expect(archwarden.config.statusEffectOnHit?.type).toBe('bleeding');
+  });
+
+  it('handles ranged sub-boss tactical behavior and line of sight checks without touch damage', () => {
+    const scene = makeScene();
+    const archwarden = new Enemy(scene, 100, 100, 'skeletal_archwarden');
+    archwarden.alertToCombat();
+
+    // Player within range and no wall between
+    const res = archwarden.updateEnemy(2000, 16, 200, 100, false);
+    // Should enter windup or approach
+    expect(archwarden.config.behavior).toBe('ranged');
+    expect(archwarden.aiState).toBe('combat');
   });
 
   it('scales stats progressively per floor depth (+6% HP, +4% Damage)', () => {
