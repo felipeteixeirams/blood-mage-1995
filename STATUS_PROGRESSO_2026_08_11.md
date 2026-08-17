@@ -1,16 +1,16 @@
 ---
 title: Status de Progresso - Bloodmage 1995
-date: 2026-08-11
-status: 75% COMPLETO
-last_updated: Após Pull Felipe (Suite de Testes + Evolução Gráfica)
+date: 2026-08-16
+status: 90% COMPLETO (Relics & Artifacts System Integrado)
+last_updated: Atualização Pós-Merge Jules (Sistema de Relíquias Passivas + Proteção de Assets Binários)
 ---
 
 # 📊 Status Geral do Projeto - Bloodmage 1995
 
-**Data:** 2026-08-11  
-**Status Geral:** 75% Completo (Core Gameplay Finalizado)  
-**Build Status:** ✅ Compilando sem erros  
-**Regressão Funcional:** NENHUMA  
+**Data:** 2026-08-16  
+**Status Geral:** 90% Completo (Core Gameplay + Sistema de Relíquias e Artefatos Passivos Finalizado)  
+**Build Status:** ✅ Compilando sem erros (188 testes unitários passando)  
+**Regressão Funcional:** NENHUMA (Assets binários de UI protegidos contra corrupção)  
 
 ---
 
@@ -103,6 +103,18 @@ last_updated: Após Pull Felipe (Suite de Testes + Evolução Gráfica)
 - ✅ PWA Manifest melhorado (icons maskable, screenshots, shortcuts)
 - ✅ Service Worker gerado
 - ✅ Deploy-ready em Vercel
+
+**Relics & Artifacts System (Jules Merge - 2026-08-16):**
+- ✅ 8 relíquias passivas góticas estruturadas em `src/data/relics.json`
+- ✅ Validação Zod e persistência segura via `src/utils/localStorage.ts`
+- ✅ Ações de estado Zustand para equipamentos e modificadores (`src/store/gameStore.ts`)
+- ✅ Integração de modificadores passivos no Player e em combate (`GameScene.ts`, `Player.ts`)
+- ✅ Interface interativa de gerenciamento de relíquias e galeria de desbloqueio em `InventoryModal.tsx`
+- ✅ Testes unitários completos (`RelicSystem.test.ts`, `gameStore.test.ts`, `localStorage.test.ts`)
+
+**Binary Asset Integrity & Guardrails:**
+- ✅ Resolução definitiva e documentação da Seção 1 (`05_TROUBLESHOOTING_KNOWN_ISSUES.md`) sobre corrupção UTF-8 em binários PNG/JPG
+- ✅ Restauração bem-sucedida de todos os assets gráficos do menu principal e altar gótico
 
 **Documentação:**
 - ✅ Empacotamento completo (PWA → TWA → Steam)
