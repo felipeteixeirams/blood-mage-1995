@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, BiomeType, DroppedCorpse } from '../types/game';
-import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding, loadUnlockedRelics, saveUnlockedRelics, loadEquippedRelicIds, saveEquippedRelicIds } from '../utils/localStorage';
+import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, BiomeType, DroppedCorpse, CodexState } from '../types/game';
+import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding, loadUnlockedRelics, saveUnlockedRelics, loadEquippedRelicIds, saveEquippedRelicIds, loadCodexState, saveCodexState } from '../utils/localStorage';
 import { soundEngine } from '../utils/soundEngine';
+import { CodexSystem } from '../game/systems/CodexSystem';
 import relicsData from '../data/relics.json';
 
 type GameStateStatus = 'menu' | 'playing' | 'paused';
@@ -26,6 +27,8 @@ interface GameStore {
   // Modals & UI overlays
   isBestiaryOpen: boolean;
   setBestiaryOpen: (isOpen: boolean) => void;
+  isCodexOpen: boolean;
+  setCodexOpen: (isOpen: boolean) => void;
   isSettingsOpen: boolean;
   setSettingsOpen: (isOpen: boolean) => void;
   isHighScoresOpen: boolean;
@@ -65,6 +68,13 @@ interface GameStore {
   addBloodCrystals: (amount: number) => void;
   talentLevels: Record<string, number>;
   upgradeTalent: (talentId: string, cost: number) => boolean;
+
+  // Codex & Lore System
+  codexState: CodexState;
+  onEnemyKilled: (monsterId: string) => void;
+  claimCodexMilestone: (entryId: string, killCount: number) => boolean;
+  unlockCodexEntry: (entryId: string) => void;
+  getLoreCompletionPercentage: () => number;
 
   // Relic System & Metagame
   unlockedRelics: string[];
@@ -185,7 +195,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   isBestiaryOpen: false,
-  setBestiaryOpen: (isOpen) => set({ isBestiaryOpen: isOpen }),
+  setBestiaryOpen: (isOpen) => set({ isBestiaryOpen: isOpen, isCodexOpen: isOpen }),
+  isCodexOpen: false,
+  setCodexOpen: (isOpen) => set({ isCodexOpen: isOpen, isBestiaryOpen: isOpen }),
   isSettingsOpen: false,
   setSettingsOpen: (isOpen) => set({ isSettingsOpen: isOpen }),
   isHighScoresOpen: false,
@@ -258,6 +270,34 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const next = current + finalAmount;
     saveBloodCrystals(next);
     set({ bloodCrystals: next });
+  },
+
+  codexState: loadCodexState(),
+  onEnemyKilled: (monsterId) => {
+    const currentState = get().codexState;
+    const { nextState } = CodexSystem.recordKill(monsterId, currentState);
+    saveCodexState(nextState);
+    set({ codexState: nextState });
+  },
+  claimCodexMilestone: (entryId, killCount) => {
+    const currentState = get().codexState;
+    const { success, rewardCrystals, nextState } = CodexSystem.claimMilestone(entryId, killCount, currentState);
+    if (success) {
+      saveCodexState(nextState);
+      set({ codexState: nextState });
+      get().addBloodCrystals(rewardCrystals);
+      soundEngine.playOrbPickup();
+    }
+    return success;
+  },
+  unlockCodexEntry: (entryId) => {
+    const currentState = get().codexState;
+    const nextState = CodexSystem.unlockEntry(entryId, currentState);
+    saveCodexState(nextState);
+    set({ codexState: nextState });
+  },
+  getLoreCompletionPercentage: () => {
+    return CodexSystem.calculateCompletionPercentage(get().codexState);
   },
 
   unlockedRelics: loadUnlockedRelics(),

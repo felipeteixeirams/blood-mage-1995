@@ -7,6 +7,7 @@ vi.mock('../utils/soundEngine', () => ({
     setVolumes: vi.fn(),
     toggleMute: vi.fn(() => true),
     playEquipLoot: vi.fn(),
+    playOrbPickup: vi.fn(),
   },
 }));
 
@@ -31,6 +32,34 @@ function makeItem(partial: Partial<LootItem>): LootItem {
 describe('gameStore', () => {
   beforeEach(() => {
     resetStore();
+  });
+
+  describe('codex system & actions', () => {
+    it('records enemy kill and unlocks codex entry', () => {
+      useGameStore.getState().onEnemyKilled('skeleton_warrior');
+      const state = useGameStore.getState();
+      expect(state.codexState.enemyKills.skeleton_warrior).toBe(1);
+      expect(state.codexState.unlockedEntries).toContain('skeleton_warrior');
+    });
+
+    it('claims milestone reward and adds blood crystals', () => {
+      // Record 10 kills
+      for (let i = 0; i < 10; i++) {
+        useGameStore.getState().onEnemyKilled('skeleton_warrior');
+      }
+
+      const initialCrystals = useGameStore.getState().bloodCrystals;
+      const claimed = useGameStore.getState().claimCodexMilestone('skeleton_warrior', 10);
+      expect(claimed).toBe(true);
+      expect(useGameStore.getState().bloodCrystals).toBeGreaterThan(initialCrystals);
+      expect(useGameStore.getState().codexState.claimedMilestones['skeleton_warrior']).toContain(10);
+    });
+
+    it('calculates completion percentage', () => {
+      const pct = useGameStore.getState().getLoreCompletionPercentage();
+      expect(pct).toBeGreaterThanOrEqual(0);
+      expect(pct).toBeLessThanOrEqual(100);
+    });
   });
 
   describe('bloodCrystals & talents', () => {

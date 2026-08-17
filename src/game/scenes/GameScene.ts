@@ -2446,6 +2446,7 @@ export class GameScene extends Phaser.Scene {
     this.floorMonstersKilled++;
     this.registerKillCombo(enemy.x, enemy.y);
     ContractSystem.onEnemyKilled(enemy, this);
+    useGameStore.getState().onEnemyKilled(enemy.config.id);
 
     // Fase 5: Advanced Visual Effect on kill
     if (this.advancedParticles) {
