@@ -43,6 +43,9 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
       height: containerRef.current.clientHeight || window.innerHeight,
       backgroundColor: '#0a0508',
       pixelArt: true,
+      audio: {
+        noAudio: true,
+      },
       input: {
         activePointers: 3,
       },

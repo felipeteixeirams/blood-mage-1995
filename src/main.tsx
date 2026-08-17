@@ -3,19 +3,44 @@ import { createRoot } from 'react-dom/client';
 import * as Sentry from '@sentry/react';
 import App from './App';
 
-// Monkey-patch AudioContext to prevent unhandled promise rejections from Phaser
-if (typeof window !== 'undefined' && (window.AudioContext || (window as any).webkitAudioContext)) {
-  const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-  const originalResume = AudioCtx.prototype.resume;
-  AudioCtx.prototype.resume = function() {
-    const promise = originalResume.call(this);
-    if (promise && promise.catch) {
-      return promise.catch((e: any) => {
-        // Ignore unhandled DOMExceptions from AudioContext.resume()
-      });
+// Monkey-patch AudioContext and HTMLMediaElement to prevent unhandled promise rejections
+if (typeof window !== 'undefined') {
+  if (window.AudioContext || (window as any).webkitAudioContext) {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    const originalResume = AudioCtx.prototype.resume;
+    if (originalResume) {
+      AudioCtx.prototype.resume = function() {
+        try {
+          const promise = originalResume.call(this);
+          if (promise && typeof promise.catch === 'function') {
+            return promise.catch((_e: any) => {
+              // Ignore unhandled DOMExceptions from AudioContext.resume()
+            });
+          }
+          return promise;
+        } catch {
+          return Promise.resolve();
+        }
+      };
     }
-    return promise;
-  };
+  }
+
+  if (typeof HTMLMediaElement !== 'undefined' && HTMLMediaElement.prototype.play) {
+    const originalPlay = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function() {
+      try {
+        const promise = originalPlay.call(this);
+        if (promise && typeof promise.catch === 'function') {
+          return promise.catch((_e: any) => {
+            // Ignore unhandled autoplay restriction rejections
+          });
+        }
+        return promise;
+      } catch {
+        return Promise.resolve();
+      }
+    };
+  }
 }
 
 import './index.css';

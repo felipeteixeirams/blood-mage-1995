@@ -116,4 +116,18 @@ describe('LoggerService (Vercel Runtime Logs Integration)', () => {
     expect(parsed.sessionId).toBe(logger.getSessionId());
     expect(parsed.logs.length).toBe(1);
   });
+
+  it('properly formats error and rejection details when logged', () => {
+    const customError = new Error('Database connection failed');
+    logger.error('DATABASE', 'Operation failed', {
+      name: customError.name,
+      message: customError.message,
+      stack: customError.stack,
+    });
+
+    const logs = logger.getLogs();
+    expect(logs.length).toBe(1);
+    expect(logs[0].data.message).toBe('Database connection failed');
+    expect(logs[0].data.name).toBe('Error');
+  });
 });

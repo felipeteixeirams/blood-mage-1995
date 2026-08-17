@@ -11,6 +11,7 @@ import { HighScoresModal } from './components/HighScoresModal';
 import { GameOverModal } from './components/GameOverModal';
 import { InventoryModal } from './components/InventoryModal';
 import { TalentsModal } from './components/TalentsModal';
+import { AchievementsModal } from './components/AchievementsModal';
 import { ObservabilityModal } from './components/ObservabilityModal';
 import { RotateDeviceOverlay } from './components/RotateDeviceOverlay';
 import { PhaserGame } from './game/PhaserGame';
@@ -40,6 +41,7 @@ export default function App() {
     isBestiaryOpen, setBestiaryOpen,
     isSettingsOpen, setSettingsOpen,
     isHighScoresOpen, setHighScoresOpen,
+    isAchievementsOpen, setAchievementsOpen,
     isInventoryOpen, setInventoryOpen,
     isTalentsOpen, setTalentsOpen,
     isObservabilityOpen, setObservabilityOpen,
@@ -82,14 +84,21 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    updateSWRef.current = registerSW({
-      onNeedRefresh() {
-        setIsUpdateReady(true);
-      },
-      onOfflineReady() {
-        logger.info('PWA', 'PWA offline ready');
-      },
-    });
+    try {
+      updateSWRef.current = registerSW({
+        onNeedRefresh() {
+          setIsUpdateReady(true);
+        },
+        onOfflineReady() {
+          logger.info('PWA', 'PWA offline ready');
+        },
+        onRegisterError(error: any) {
+          logger.warn('PWA', 'Service worker registration failed or ignored', { error });
+        },
+      });
+    } catch (e) {
+      logger.warn('PWA', 'Failed to register service worker', { error: e });
+    }
   }, []);
 
   // Keyboard hotkeys for modals
@@ -211,6 +220,7 @@ export default function App() {
           onContinueGame={handleContinueGame}
           onOpenSettings={() => setSettingsOpen(true)}
           onOpenHighScores={() => setHighScoresOpen(true)}
+          onOpenAchievements={() => setAchievementsOpen(true)}
           isMuted={isMuted}
           onToggleMute={toggleMute}
         />
@@ -292,6 +302,9 @@ export default function App() {
             scores={highScores}
             onClose={() => setHighScoresOpen(false)}
           />
+        )}
+        {isAchievementsOpen && (
+          <AchievementsModal onClose={() => setAchievementsOpen(false)} />
         )}
         {isInventoryOpen && (
           <InventoryModal onClose={() => setInventoryOpen(false)} />

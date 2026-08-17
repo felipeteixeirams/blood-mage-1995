@@ -23,7 +23,10 @@ tags: [critical, troubleshooting, known-issues, assets, phaser]
 6. [Erros de Carregamento de Sprites Inexistentes no Loader Phaser (`Failed to process file`)](#6-erros-de-carregamento-de-sprites-inexistentes-no-loader-phaser)
 7. [Controles de Toque / Touchpad / Joystick Virtual Não Respondendo](#7-controles-de-toque--touchpad--joystick-virtual-não-respondendo)
 8. [Erro de Execução em Callbacks Assíncronos (`this.scene.tweens`) e `setTintFill` no Phaser 4](#8-erro-de-execução-em-callbacks-assíncronos-thisscenetweens-e-settintfill-no-phaser-4)
-9. [Tabela de Diagnóstico Rápido](#9-tabela-de-diagnóstico-rápido)
+9. [Classificação de Severidade de Logs (Assets Inexistentes e Fallbacks como WARN)](#9-classificação-de-severidade-de-logs-assets-inexistentes-e-fallbacks-como-warn)
+10. [Sprite do Personagem Blood Mage Renderizando como Sombra Preta e Pacing de IA / Atiradores](#10-sprite-do-personagem-blood-mage-renderizando-como-sombra-preta-e-pacing-de-ia--atiradores)
+11. [Sobreposição Indevida de Menus React DOM sobre o Logotipo e Arte do TitleScene](#11-sobreposição-indevida-de-menus-react-dom-sobre-o-logotipo-e-arte-do-titlescene)
+12. [Tabela de Diagnóstico Rápido](#12-tabela-de-diagnóstico-rápido)
 
 ---
 
@@ -303,11 +306,62 @@ e avisos de:
 
 ---
 
-## 11. Tabela de Diagnóstico Rápido
+## 11. Camada Duplicada de Menu React DOM sobre a Tela Inicial do Lovable
+
+### 🔴 Sintoma
+Ao carregar a tela inicial, botões de React DOM ("INICIAR JORNADA", "CONTINUAR", "RECORDES", "CONQUISTAS", "GRIMÓRIO", "AJUSTES", etc.) eram desenhados por cima do canvas Phaser, gerando uma camada duplicada de interface sobre a tela gótica original gerada pelo Lovable.
+
+### 🔍 Causa-Raiz
+1. **Duplicação de UI em Camadas Diferentes:** O Lovable implementou a tela inicial inteiramente dentro do Phaser Canvas em `TitleScene.ts` (`buildHud` com os badges interativos `[C] CONTINUAR`, `[P] JOGAR`, `[O] OPÇÕES`, o troféu dourado `RECORDES` e o texto pulsante `PRESSIONE PARA INICIAR`, além do submenu `buildMenu`).
+2. **Overlay DOM React Sobressalente em `MainMenu.tsx`:** Durante iterações anteriores, uma pilha de botões HTML/Tailwind foi adicionada ao `MainMenu.tsx`, ocultando e concorrendo diretamente com a tela inicial original em pixel art.
+
+### 🛠️ Procedimento de Resolução
+1. **Restauração Completa do `TitleScene.ts` (Motor Lovable):**
+   - Reativadas as funções `buildHud()` e `buildMenu()`, provendo navegação 100% integrada no canvas com atalhos de teclado (`C`, `P`, `O`, `Space`, `Enter`, `Escape`), suporte a Gamepad e cliques diretos nos elementos góticos (altar, prompt, badges e troféu).
+   - O submenu embutido "GRIMÓRIO & OPÇÕES" despacha as ações para abrir os modais React quando acionado (Bestiário, Conquistas, Recordes e Ajustes).
+2. **Limpeza do `MainMenu.tsx`:**
+   - Removidos todos os botões DOM sobrepostos ("INICIAR JORNADA", "CONTINUAR", etc.).
+   - O `MainMenu.tsx` atua estritamente como montador do canvas de proporção 16:9 (`BASE_W = 960`, `BASE_H = 540`) com controles discretos de cabeçalho (badge de versão e alternador de áudio no canto).
+
+---
+
+## 12. Unhandled Promise Rejection com Objeto Vazio (`reason: {}`) no Logger
+
+### 🔴 Sintoma
+O console/logger exibia o erro:
+```text
+[17:22:37.624] [ERROR] [UNHANDLED_REJECTION] Unhandled Promise Rejection
+{
+  "reason": {}
+}
+```
+
+### 🔍 Causa-Raiz
+1. **Serialização de Objetos `Error` e `DOMException`:**
+   - No JavaScript, instâncias nativas de `Error` e `DOMException` têm propriedades como `name`, `message`, `stack` e `code` definidas como não-enumeráveis (`enumerable: false`).
+   - Quando o `logger.ts` encapsulava o evento como `{ reason: event.reason }` e repassava ao `JSON.stringify` ou `console.error`, os campos nativos do erro eram ignorados, gerando o objeto vazio `{ "reason": {} }` e ocultando a causa real.
+2. **Rejeição de Promises por Políticas de Autoplay de Áudio do Navegador:**
+   - Navegadores modernos (Chrome, Safari, Firefox) bloqueiam chamadas a `AudioContext.resume()` ou `HTMLMediaElement.play()` disparadas antes do primeiro gesto/clique do usuário no documento (`NotAllowedError`).
+   - Múltiplas instâncias do Phaser (`MainMenu.tsx`, `PhaserGame.tsx`, `SettingsModal.tsx`, `HighScoresModal.tsx`) criavam SoundManagers internos por padrão. Como o jogo utiliza seu próprio sintetizador Web Audio independente (`src/utils/soundEngine.ts`), os SoundManagers redundantes do Phaser tentavam desbloquear contextos de áudio e geravam rejeições de promessa não capturadas.
+
+### 🛠️ Procedimento de Resolução
+1. **Extração e Formatação Completa de Erros no `LoggerService` (`src/utils/logger.ts`):**
+   - Implementado extrator explícito no listener `window.onunhandledrejection` que extrai `name`, `message`, `stack`, `code`, `cause` e todas as propriedades próprias de `event.reason`.
+   - Adicionado filtro de supressão para rejeições inofensivas de autoplay ou loop de redimensionamento do navegador (`The play() request was interrupted`, `ResizeObserver loop`, etc.).
+2. **Monkey-Patch Global de Áudio e Mídia (`src/main.tsx`):**
+   - Adicionada blindagem com captura de exceções `.catch(() => {})` em `AudioContext.prototype.resume`, `AudioContext.prototype.suspend` e `HTMLMediaElement.prototype.play`.
+3. **Desativação de Áudio Nativo Redundante no Phaser:**
+   - Adicionada a propriedade `audio: { noAudio: true }` a todas as instâncias do `Phaser.Game` (`MainMenu.tsx`, `PhaserGame.tsx`, `SettingsModal.tsx`, `HighScoresModal.tsx`), delegando 100% da síntese de áudio de forma segura para o `soundEngine.ts`.
+4. **Tratamento no Registro de Service Worker (`src/App.tsx`):**
+   - Adicionado callback `onRegisterError` e bloco `try/catch` ao `registerSW` do PWA.
+
+---
+
+## 13. Tabela de Diagnóstico Rápido
 
 | Sintoma | Causa Mais Provável | Ferramenta / Comando de Diagnóstico | Ação Imediata |
 |---|---|---|---|
-| Menu retrô com formas geométricas em vez de texturas | PNG/JPG corrompidos em `src/assets/ui/` | `file src/assets/ui/*` | Reextrair do zip original |
+| Menu retrô com formas geométricas em vez de texturas | PNG/JPG corrompidos em `src/assets/ui/` | `file src/assets/ui/*` | Reextrair do zip original ou restaurar via binary stream |
 | Modal Phaser invisível / tela preta | Container pai com `height: 0` | Inspecionar DOM (`computed style`) | Adicionar `h-[540px] aspect-[16/9]` |
 | Game duplicando canvas | Dependências instáveis no `useEffect` | Checar array de deps no React | Isolar ciclo de vida do Phaser em `[]` |
 | Erro de Lockfile na Vercel | `pnpm-lock.yaml` desincronizado com `package.json` | Logs da Vercel | Rodar `pnpm install` e commitar o lockfile |
@@ -319,6 +373,8 @@ e avisos de:
 | Fallbacks procedurais sem visibilidade no console | Falta de `logger.warn` em falhas de carregamento e no `localStorage` | Inspecionar Observability Modal | Usar `logger.warn('ASSET_LOADER', ...)` e `logger.warn('PERSISTENCE', ...)` |
 | Personagem Blood Mage como sombra preta | Spritesheet ausente / incompatível com shader Light2D | Inspecionar textura `spr_bloodmage` | Gerar spritesheet 544x612 e integrar no pipeline híbrido |
 | Atiradores atacando fora da tela / avançando demais | `visionDistance` e `attackRange` excessivos + lunge indevido | Inspecionar `monsters.json` e `Enemy.ts` | Calibrar velocidades, kiting tático a 80-100% de alcance e travar lunge para ranged |
+| Botões do React DOM sobrepondo tela inicial do Lovable | Camada redundante de botões HTML em `MainMenu.tsx` | Inspecionar DOM em `MainMenu.tsx` | Remover botões DOM sobrepostos e restaurar `buildHud()` / `buildMenu()` nativos do `TitleScene.ts` |
+| `[UNHANDLED_REJECTION] Unhandled Promise Rejection {"reason": {}}` | Propriedades não-enumeráveis de `Error` no logger + conflito de SoundManager do Phaser / autoplay | Inspecionar `logger.ts` e logs de áudio | Extrair propriedades completas de `Error`, monkey-patch em `resume()` e configurar `audio: { noAudio: true }` no Phaser |
 
 
 ---

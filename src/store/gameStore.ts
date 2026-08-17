@@ -1,9 +1,10 @@
 import { create } from 'zustand';
-import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, BiomeType, DroppedCorpse, CodexState } from '../types/game';
-import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding, loadUnlockedRelics, saveUnlockedRelics, loadEquippedRelicIds, saveEquippedRelicIds, loadCodexState, saveCodexState } from '../utils/localStorage';
+import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, BiomeType, DroppedCorpse, CodexState, AchievementState, RunStats } from '../types/game';
+import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding, loadUnlockedRelics, saveUnlockedRelics, loadEquippedRelicIds, saveEquippedRelicIds, loadCodexState, saveCodexState, loadAchievements, saveAchievements, loadRunStats, saveRunStats } from '../utils/localStorage';
 import { soundEngine } from '../utils/soundEngine';
 import { CodexSystem } from '../game/systems/CodexSystem';
 import relicsData from '../data/relics.json';
+import achievementsData from '../data/achievements.json';
 
 type GameStateStatus = 'menu' | 'playing' | 'paused';
 
@@ -33,6 +34,8 @@ interface GameStore {
   setSettingsOpen: (isOpen: boolean) => void;
   isHighScoresOpen: boolean;
   setHighScoresOpen: (isOpen: boolean) => void;
+  isAchievementsOpen: boolean;
+  setAchievementsOpen: (isOpen: boolean) => void;
   isTalentsOpen: boolean;
   setTalentsOpen: (isOpen: boolean) => void;
   isInventoryOpen: boolean;
@@ -136,6 +139,14 @@ interface GameStore {
   currentTarget: { id: string; name: string; hp: number; maxHp: number; level?: number; isBoss?: boolean; lastAttacked: number } | null;
   setCurrentTarget: (target: { id: string; name: string; hp: number; maxHp: number; level?: number; isBoss?: boolean } | null) => void;
   clearStaleTarget: (timeNow: number) => void;
+
+  // Achievements & Stats
+  achievements: Record<string, AchievementState>;
+  runStats: RunStats;
+  redeemAchievement: (id: string, rewardAmount: number) => void;
+  unlockAchievement: (id: string) => void;
+  incrementRunStat: (metric: keyof RunStats, amount: number) => void;
+  resetRunStats: () => void;
 }
 
 const defaultPlayerStats: PlayerStats = {
@@ -202,6 +213,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setSettingsOpen: (isOpen) => set({ isSettingsOpen: isOpen }),
   isHighScoresOpen: false,
   setHighScoresOpen: (isOpen) => set({ isHighScoresOpen: isOpen }),
+  isAchievementsOpen: false,
+  setAchievementsOpen: (isOpen) => set({ isAchievementsOpen: isOpen }),
   isTalentsOpen: false,
   setTalentsOpen: (isOpen) => set({ isTalentsOpen: isOpen }),
   isInventoryOpen: false,
@@ -559,4 +572,90 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
     return state;
   }),
+
+  achievements: loadAchievements(),
+  runStats: loadRunStats(),
+  
+  redeemAchievement: (id, rewardAmount) => set((state) => {
+    const ach = state.achievements[id];
+    if (ach && ach.unlocked && !ach.redeemed) {
+      const nextAchievements = {
+        ...state.achievements,
+        [id]: { ...ach, redeemed: true }
+      };
+      saveAchievements(nextAchievements);
+      
+      const nextCrystals = state.bloodCrystals + rewardAmount;
+      saveBloodCrystals(nextCrystals);
+      
+      return {
+        achievements: nextAchievements,
+        bloodCrystals: nextCrystals
+      };
+    }
+    return state;
+  }),
+  
+  unlockAchievement: (id) => set((state) => {
+    const ach = state.achievements[id] || { id, unlocked: false, redeemed: false };
+    if (!ach.unlocked) {
+      const nextAchievements = {
+        ...state.achievements,
+        [id]: { ...ach, unlocked: true }
+      };
+      saveAchievements(nextAchievements);
+      return { achievements: nextAchievements };
+    }
+    return state;
+  }),
+  
+  incrementRunStat: (metric, amount) => set((state) => {
+    const nextStats = {
+      ...state.runStats,
+      [metric]: (state.runStats[metric] || 0) + amount
+    };
+    
+    // Check achievements
+    const unlockedNow: Record<string, AchievementState> = {};
+    let achievementUnlocked = false;
+    
+    for (const achData of achievementsData) {
+      if (achData.metric === metric) {
+        const achState = state.achievements[achData.id] || { id: achData.id, unlocked: false, redeemed: false };
+        if (!achState.unlocked && nextStats[metric] >= achData.target) {
+          unlockedNow[achData.id] = { ...achState, unlocked: true };
+          achievementUnlocked = true;
+          // Optionally notify player here via soundEngine or toast
+          console.log(`Achievement unlocked: ${achData.title}`);
+        }
+      }
+    }
+    
+    saveRunStats(nextStats);
+    
+    if (achievementUnlocked) {
+      const nextAchievements = { ...state.achievements, ...unlockedNow };
+      saveAchievements(nextAchievements);
+      return { runStats: nextStats, achievements: nextAchievements };
+    }
+    
+    return { runStats: nextStats };
+  }),
+  
+  resetRunStats: () => {
+    const emptyStats: RunStats = {
+      bloodless_floor: 0,
+      kills_total: 0,
+      kills_gargoyle: 0,
+      speedrun_f3: 0,
+      deaths_total: 0,
+      hp_healed_magic: 0,
+      dismemberments_total: 0,
+      mana_orbs_run: 0,
+      crystals_hoarded: 0,
+      survival_time_run: 0
+    };
+    saveRunStats(emptyStats);
+    set({ runStats: emptyStats });
+  }
 }));

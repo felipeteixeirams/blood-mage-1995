@@ -506,3 +506,110 @@ export function saveCodexState(state: CodexState): void {
     logger.error('PERSISTENCE', 'Failed to save codex state', e);
   }
 }
+
+import { AchievementState, RunStats } from '../types/game';
+
+const ACHIEVEMENTS_KEY = 'bloodmage_1995_achievements';
+const RUN_STATS_KEY = 'bloodmage_1995_run_stats';
+
+const AchievementStateSchema = z.record(z.string(), z.object({
+  id: z.string(),
+  unlocked: z.boolean(),
+  redeemed: z.boolean(),
+})).catch({});
+
+export function loadAchievements(): Record<string, AchievementState> {
+  try {
+    const raw = localStorage.getItem(ACHIEVEMENTS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const validated = AchievementStateSchema.safeParse(parsed);
+      if (validated.success) return validated.data;
+    }
+  } catch (e) {
+    logger.warn('PERSISTENCE', 'Failed to load achievements', e);
+  }
+  return {};
+}
+
+export function saveAchievements(achievements: Record<string, AchievementState>): void {
+  try {
+    const validated = AchievementStateSchema.safeParse(achievements);
+    const valueToSave = validated.success ? validated.data : {};
+    localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(valueToSave));
+    logger.debug('PERSISTENCE', 'Achievements saved successfully');
+  } catch (e) {
+    logger.error('PERSISTENCE', 'Failed to save achievements', e);
+  }
+}
+
+const RunStatsSchema = z.object({
+  bloodless_floor: z.number().catch(0),
+  kills_total: z.number().catch(0),
+  kills_gargoyle: z.number().catch(0),
+  speedrun_f3: z.number().catch(0),
+  deaths_total: z.number().catch(0),
+  hp_healed_magic: z.number().catch(0),
+  dismemberments_total: z.number().catch(0),
+  mana_orbs_run: z.number().catch(0),
+  crystals_hoarded: z.number().catch(0),
+  survival_time_run: z.number().catch(0),
+}).catch({
+  bloodless_floor: 0,
+  kills_total: 0,
+  kills_gargoyle: 0,
+  speedrun_f3: 0,
+  deaths_total: 0,
+  hp_healed_magic: 0,
+  dismemberments_total: 0,
+  mana_orbs_run: 0,
+  crystals_hoarded: 0,
+  survival_time_run: 0,
+});
+
+export function loadRunStats(): RunStats {
+  try {
+    const raw = localStorage.getItem(RUN_STATS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const validated = RunStatsSchema.safeParse(parsed);
+      if (validated.success) return validated.data;
+    }
+  } catch (e) {
+    logger.warn('PERSISTENCE', 'Failed to load run stats', e);
+  }
+  return {
+    bloodless_floor: 0,
+    kills_total: 0,
+    kills_gargoyle: 0,
+    speedrun_f3: 0,
+    deaths_total: 0,
+    hp_healed_magic: 0,
+    dismemberments_total: 0,
+    mana_orbs_run: 0,
+    crystals_hoarded: 0,
+    survival_time_run: 0,
+  };
+}
+
+export function saveRunStats(stats: RunStats): void {
+  try {
+    const validated = RunStatsSchema.safeParse(stats);
+    const valueToSave = validated.success ? validated.data : {
+      bloodless_floor: 0,
+      kills_total: 0,
+      kills_gargoyle: 0,
+      speedrun_f3: 0,
+      deaths_total: 0,
+      hp_healed_magic: 0,
+      dismemberments_total: 0,
+      mana_orbs_run: 0,
+      crystals_hoarded: 0,
+      survival_time_run: 0,
+    };
+    localStorage.setItem(RUN_STATS_KEY, JSON.stringify(valueToSave));
+    logger.debug('PERSISTENCE', 'Run stats saved successfully');
+  } catch (e) {
+    logger.error('PERSISTENCE', 'Failed to save run stats', e);
+  }
+}

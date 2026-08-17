@@ -306,3 +306,22 @@ export interface CodexState {
   unlockedEntries: string[];
   claimedMilestones: Record<string, number[]>; // entryId -> array of completed milestone killCounts
 }
+
+export interface AchievementState {
+  id: string;
+  unlocked: boolean;
+  redeemed: boolean;
+}
+
+export interface RunStats {
+  bloodless_floor: number;
+  kills_total: number;
+  kills_gargoyle: number;
+  speedrun_f3: number;
+  deaths_total: number;
+  hp_healed_magic: number;
+  dismemberments_total: number;
+  mana_orbs_run: number;
+  crystals_hoarded: number;
+  survival_time_run: number;
+}

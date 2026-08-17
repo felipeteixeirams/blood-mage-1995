@@ -218,13 +218,56 @@ class LoggerService {
         source,
         lineno,
         colno,
+        message: error?.message || (typeof message === 'string' ? message : 'Unknown Error'),
         stack: error?.stack,
       });
     };
 
     window.onunhandledrejection = (event) => {
+      const reason = event?.reason;
+      let formattedReason: any = reason;
+
+      if (reason instanceof Error || (typeof reason === 'object' && reason !== null && 'message' in reason)) {
+        formattedReason = {
+          name: reason.name || 'Error',
+          message: reason.message,
+          stack: reason.stack,
+          code: (reason as any).code,
+          ...reason,
+        };
+      } else if (typeof reason === 'object' && reason !== null) {
+        try {
+          const props: Record<string, any> = {};
+          for (const key of Object.getOwnPropertyNames(reason)) {
+            props[key] = (reason as any)[key];
+          }
+          formattedReason = Object.keys(props).length > 0 ? props : String(reason);
+        } catch {
+          formattedReason = String(reason);
+        }
+      }
+
+      const messageStr = typeof formattedReason?.message === 'string' 
+        ? formattedReason.message 
+        : typeof reason === 'string' 
+          ? reason 
+          : '';
+
+      // Ignore benign browser rejections (autoplay restrictions before user gesture, interrupted media play, resize loop)
+      const isBenign = 
+        messageStr.includes('The play() request was interrupted') ||
+        messageStr.includes("user didn't interact") ||
+        messageStr.includes('ResizeObserver loop') ||
+        messageStr.includes("Failed to execute 'play' on 'HTMLMediaElement'") ||
+        messageStr.includes('audio context');
+
+      if (isBenign) {
+        this.debug('UNHANDLED_REJECTION', 'Benign browser rejection suppressed', formattedReason);
+        return;
+      }
+
       this.error('UNHANDLED_REJECTION', 'Unhandled Promise Rejection', {
-        reason: event.reason,
+        reason: formattedReason ?? 'Unknown rejection reason',
       });
     };
   }

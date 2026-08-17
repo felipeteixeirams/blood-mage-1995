@@ -1,15 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { Play, Settings, Trophy, Volume2, VolumeX, ShieldAlert } from 'lucide-react';
+import { Volume2, VolumeX, ShieldAlert } from 'lucide-react';
 import { motion } from 'motion/react';
 import { soundEngine } from '../utils/soundEngine';
 import Phaser from 'phaser';
 import { useGameStore } from '../store/gameStore';
-
-const MODIFIERS = [
-  { id: 'blood_tide', name: 'Maré de Sangue', desc: '+40% monstros nas ondas, +30% chance de loot', color: 'border-red-800 bg-red-950/20 text-red-200' },
-  { id: 'rune_famine', name: 'Penúria Rúnica', desc: 'Skills custam 2x Mana, Cristais recebidos +100%', color: 'border-purple-800 bg-purple-950/20 text-purple-200' },
-  { id: 'fury_pit', name: 'Fúria do Fosso', desc: 'Inimigos nascem furiosos, XP concedida +50%', color: 'border-orange-800 bg-orange-950/20 text-orange-200' }
-];
 import { TitleScene, BASE_W, BASE_H } from '../game/scenes/TitleScene';
 
 interface MainMenuProps {
@@ -17,6 +11,7 @@ interface MainMenuProps {
   onContinueGame: () => void;
   onOpenSettings: () => void;
   onOpenHighScores: () => void;
+  onOpenAchievements: () => void;
   onOpenBestiary?: () => void;
   isMuted: boolean;
   onToggleMute: () => void;
@@ -27,11 +22,12 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   onContinueGame,
   onOpenSettings,
   onOpenHighScores,
+  onOpenAchievements,
   onOpenBestiary,
   isMuted,
   onToggleMute,
 }) => {
-  const { activeModifiers, toggleModifier, setBestiaryOpen } = useGameStore();
+  const { setBestiaryOpen } = useGameStore();
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
 
@@ -49,6 +45,9 @@ export const MainMenu: React.FC<MainMenuProps> = ({
       backgroundColor: "#0b0a09",
       pixelArt: true,
       roundPixels: true,
+      audio: {
+        noAudio: true,
+      },
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -60,6 +59,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
     game.registry.set("onContinueGame", onContinueGame);
     game.registry.set("onOpenSettings", onOpenSettings);
     game.registry.set("onOpenHighScores", onOpenHighScores);
+    game.registry.set("onOpenAchievements", onOpenAchievements);
     game.registry.set("onOpenBestiary", handleOpenBestiary);
 
     gameRef.current = game;
@@ -77,30 +77,29 @@ export const MainMenu: React.FC<MainMenuProps> = ({
       gameRef.current.registry.set("onContinueGame", onContinueGame);
       gameRef.current.registry.set("onOpenSettings", onOpenSettings);
       gameRef.current.registry.set("onOpenHighScores", onOpenHighScores);
+      gameRef.current.registry.set("onOpenAchievements", onOpenAchievements);
       gameRef.current.registry.set("onOpenBestiary", handleOpenBestiary);
     }
-  }, [onStartGame, onContinueGame, onOpenSettings, onOpenHighScores, handleOpenBestiary]);
+  }, [onStartGame, onContinueGame, onOpenSettings, onOpenHighScores, onOpenAchievements, handleOpenBestiary]);
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      className="relative w-full h-full min-h-screen bg-[#0b0a09] flex flex-col items-center justify-center overflow-hidden select-none"
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="relative w-full h-full min-h-screen bg-[#0b0a09] flex items-center justify-center overflow-hidden select-none"
     >
-      {/* 1. Animated Phaser Title Scene Background & Frame */}
+      {/* 1. Animated Phaser Title Scene Canvas (Original Lovable Title Screen & HUD) */}
       <div
         ref={containerRef}
         className="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-auto z-0"
       />
 
-      {/* 2. Top Header Controls (Mute & PWA Version) */}
+      {/* 2. Ambient Header Overlay (Discreet Mute & Version Tag) */}
       <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-start pointer-events-none">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2 bg-black/80 px-3 py-1.5 rounded border border-gray-800 shadow-black">
-            <ShieldAlert className="w-4 h-4 text-red-500 animate-pulse" />
-            <span className="text-xs font-pixel text-gray-400">BLOODMAGE 1995</span>
-          </div>
+        <div className="flex items-center gap-2 bg-black/80 px-3 py-1.5 rounded border border-[#3a2d1d] shadow-sm pointer-events-auto">
+          <ShieldAlert className="w-4 h-4 text-red-500 animate-pulse" />
+          <span className="text-xs font-pixel text-[#a88d5b]">BLOODMAGE 1995</span>
         </div>
 
         <button
@@ -116,10 +115,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             e.stopPropagation();
             e.nativeEvent.stopImmediatePropagation();
           }}
-          className="p-3 stone-btn rounded cursor-pointer pointer-events-auto shadow-lg hover:scale-105 transition-transform"
+          className="p-2.5 bg-black/85 hover:bg-black border border-[#6b5a3a] hover:border-[#a88d5b] rounded cursor-pointer pointer-events-auto shadow-md transition-colors"
           title="Alternar Áudio"
         >
-          {isMuted ? <VolumeX className="w-5 h-5 text-red-400" /> : <Volume2 className="w-5 h-5 text-[#d4af37]" />}
+          {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-[#d4af37]" />}
         </button>
       </div>
     </motion.div>

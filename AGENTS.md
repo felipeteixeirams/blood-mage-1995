@@ -86,3 +86,10 @@ When requested by the user to commit and push changes to the remote GitHub repos
 - **NEVER** use text-based editing tools (`edit_file`, `create_file`, `cat`, `sed`, `awk`, `echo`) on binary files (`.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.woff2`, `.mp3`, `.ogg`).
 - Doing so converts non-UTF-8 bytes to the replacement character `\uFFFD` (`EF BF BD`), corrupting the asset's binary header permanently.
 - If you need to generate, move, or download a binary asset, you MUST use pure binary stream handlers (e.g., `Buffer` in Node.js, `wget`, or `curl --output`) and verify its integrity using `file <path>` before proceeding.
+
+### 7. Strict UI Layering (React DOM vs Phaser Canvas) - CRITICAL
+- **NEVER render user interface elements (Buttons, Menus, Text, Modals, HUDs) inside Phaser Scenes.**
+- The Phaser engine (`<canvas>`) is STRICTLY reserved for the game world, entities, environment, combat, and background effects.
+- **ALL UI MUST be built as React overlays (`.tsx` files)** using Tailwind CSS and HTML DOM elements floating over the canvas.
+- If you are asked to build a Menu, Inventory, Pause Screen, or HUD, you MUST create or modify a React component (e.g., `src/components/...`) and use Zustand (`src/store/gameStore.ts`) to communicate with Phaser.
+- **Forbidden Phaser methods for UI**: Do not use `this.add.text()`, `this.add.dom()`, or interactive `this.add.rectangle()` to simulate UI buttons in any Scene.

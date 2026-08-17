@@ -30,6 +30,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       backgroundColor: "#07080b",
       pixelArt: true,
       roundPixels: true,
+      audio: {
+        noAudio: true,
+      },
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
