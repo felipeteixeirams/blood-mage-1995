@@ -226,7 +226,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       let changed = false;
 
       // Update values from Phaser remaining cooldowns
-      ['hellfire_nova', 'bone_shield', 'syphon_soul', 'crimson_scythe', 'blood_ritual_circle', 'hemomancy_beam'].forEach(spellId => {
+      ['hellfire_nova', 'bone_shield', 'syphon_soul', 'crimson_scythe', 'blood_ritual_circle', 'hemomancy_beam', 'hemocyte_shield', 'vampiric_touch'].forEach(spellId => {
         const remaining = getCooldownRemaining(spellId);
         if (remaining > 0) {
           updated[spellId] = remaining;
@@ -243,7 +243,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
   }, [getCooldownRemaining, activeCooldowns]);
 
   // Skill click and dreno stats hook
-  const handleSkillAction = (skillKey: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam') => {
+  const handleSkillAction = (skillKey: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | 'hemocyte_shield' | 'vampiric_touch') => {
     let hpCost = 0;
     let manaCost = 0;
 
@@ -252,6 +252,8 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       case 'bone_shield': manaCost = 20; break;
       case 'syphon': manaCost = 15; break;
       case 'crimson_scythe': hpCost = 10; break;
+      case 'hemocyte_shield': manaCost = 15; break;
+      case 'vampiric_touch': manaCost = 2; break;
     }
 
     if (stats.hp <= hpCost && hpCost > 0) return;

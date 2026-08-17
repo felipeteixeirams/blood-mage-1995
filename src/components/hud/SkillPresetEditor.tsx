@@ -24,6 +24,8 @@ const COLOR_MAP: Record<string, string> = {
   crimson_scythe: 'border-red-500 text-red-300',
   blood_ritual_circle: 'border-rose-500 text-rose-300',
   hemomancy_beam: 'border-orange-400 text-orange-300',
+  hemocyte_shield: 'border-rose-500 text-rose-300',
+  vampiric_touch: 'border-red-400 text-red-300',
 };
 
 const MAX_SLOTS = 4;

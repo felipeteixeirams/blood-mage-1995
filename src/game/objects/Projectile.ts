@@ -8,6 +8,7 @@ import Phaser from 'phaser';
 export class Projectile extends Phaser.Physics.Arcade.Sprite {
   public damage: number = 20;
   public isEnemyProjectile: boolean = false;
+  public isVampiricTouch: boolean = false;
   public statusEffectOnHit?: { type: 'bleeding' | 'poison' | 'infection'; chance: number };
   private lifespanTimer: number = 3000;
   private onExpired?: (proj: Projectile) => void;
@@ -52,6 +53,7 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
   public reset(): void {
     this.damage = 20;
     this.isEnemyProjectile = false;
+    this.isVampiricTouch = false;
     this.statusEffectOnHit = undefined;
     this.lifespanTimer = 2500;
   }
@@ -63,13 +65,15 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     speed: number,
     damage: number,
     isEnemy: boolean = false,
-    statusEffectOnHit?: { type: 'bleeding' | 'poison' | 'infection'; chance: number }
+    statusEffectOnHit?: { type: 'bleeding' | 'poison' | 'infection'; chance: number },
+    isVampiricTouch: boolean = false
   ) {
     this.setPosition(x, y);
     this.setActive(true);
     this.setVisible(true);
     this.damage = damage;
     this.isEnemyProjectile = isEnemy;
+    this.isVampiricTouch = isVampiricTouch;
     this.statusEffectOnHit = statusEffectOnHit;
     this.lifespanTimer = 2500;
 

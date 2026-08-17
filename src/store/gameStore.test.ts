@@ -54,6 +54,18 @@ describe('gameStore', () => {
       expect(useGameStore.getState().bloodCrystals).toBe(60);
       expect(useGameStore.getState().talentLevels.hemomancy_power).toBe(1);
     });
+
+    it('upgradeTalent unlocks hemocyte_shield and vampiric_touch spells', () => {
+      useGameStore.getState().addBloodCrystals(100);
+      const ok = useGameStore.getState().upgradeTalent('escudo_de_hemocito', 30);
+      expect(ok).toBe(true);
+      expect(useGameStore.getState().talentLevels.escudo_de_hemocito).toBe(1);
+      expect(useGameStore.getState().playerStats.unlockedSpells).toContain('hemocyte_shield');
+
+      useGameStore.getState().upgradeTalent('toque_vampirico', 30);
+      expect(useGameStore.getState().talentLevels.toque_vampirico).toBe(1);
+      expect(useGameStore.getState().playerStats.unlockedSpells).toContain('vampiric_touch');
+    });
   });
 
   describe('contracts', () => {

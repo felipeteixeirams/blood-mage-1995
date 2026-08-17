@@ -9,7 +9,7 @@ import { SkillPresetEditor } from './SkillPresetEditor';
 import { soundEngine } from '../../utils/soundEngine';
 import { CombatFeel } from '../../game/systems/CombatFeel';
 
-type SkillKey = 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam';
+type SkillKey = 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | 'hemocyte_shield' | 'vampiric_touch';
 
 const SPELL_TO_SKILLKEY: Record<string, SkillKey> = {
   hellfire_nova: 'nova',
@@ -18,6 +18,8 @@ const SPELL_TO_SKILLKEY: Record<string, SkillKey> = {
   crimson_scythe: 'crimson_scythe',
   blood_ritual_circle: 'blood_ritual_circle',
   hemomancy_beam: 'hemomancy_beam',
+  hemocyte_shield: 'hemocyte_shield',
+  vampiric_touch: 'vampiric_touch',
 };
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -36,6 +38,8 @@ const COLOR_ACTIVE: Record<string, string> = {
   crimson_scythe: 'bg-red-950/80 border-red-700 text-red-300 shadow-[0_0_12px_rgba(239,68,68,0.4)]',
   blood_ritual_circle: 'bg-rose-950/80 border-rose-700 text-rose-300 shadow-[0_0_12px_rgba(244,63,94,0.4)]',
   hemomancy_beam: 'bg-orange-950/80 border-orange-600 text-orange-200 shadow-[0_0_12px_rgba(251,146,60,0.4)]',
+  hemocyte_shield: 'bg-rose-950/90 border-rose-600 text-rose-200 shadow-[0_0_12px_rgba(225,29,72,0.4)]',
+  vampiric_touch: 'bg-red-950/90 border-red-500 text-red-200 shadow-[0_0_12px_rgba(225,29,72,0.4)]',
 };
 
 interface SkillsOverlayProps {
