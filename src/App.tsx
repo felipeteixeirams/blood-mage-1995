@@ -5,7 +5,7 @@ import { SplashScreen } from './components/SplashScreen';
 import { MainMenu } from './components/MainMenu';
 import { GameplayHUD } from './components/GameplayHUD';
 import { LevelUpModal } from './components/LevelUpModal';
-import { BestiaryModal } from './components/BestiaryModal';
+import { CodexModal } from './components/CodexModal';
 import { SettingsModal } from './components/SettingsModal';
 import { HighScoresModal } from './components/HighScoresModal';
 import { GameOverModal } from './components/GameOverModal';
@@ -279,7 +279,7 @@ export default function App() {
 
       {/* 6. Aux Modals */}
       <AnimatePresence>
-        {isBestiaryOpen && <BestiaryModal onClose={() => setBestiaryOpen(false)} />}
+        {isBestiaryOpen && <CodexModal onClose={() => setBestiaryOpen(false)} />}
         {isSettingsOpen && (
           <SettingsModal
             settings={settings}

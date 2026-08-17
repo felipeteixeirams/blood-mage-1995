@@ -278,3 +278,31 @@ export interface HighScoreRecord {
   timeSurvived: string;
   levelReached: number;
 }
+
+export type CodexCategory = 'enemies' | 'relics' | 'lore';
+
+export interface CodexMilestone {
+  killCount: number;
+  rewardCrystals: number;
+  description: string;
+}
+
+export interface CodexEntry {
+  id: string;
+  category: CodexCategory;
+  title: string;
+  subtitle?: string;
+  lore: string;
+  icon?: string;
+  monsterId?: string;
+  relicId?: string;
+  unlockCriteria?: string;
+  milestones?: CodexMilestone[];
+  statsOverview?: Record<string, string | number>;
+}
+
+export interface CodexState {
+  enemyKills: Record<string, number>;
+  unlockedEntries: string[];
+  claimedMilestones: Record<string, number[]>; // entryId -> array of completed milestone killCounts
+}

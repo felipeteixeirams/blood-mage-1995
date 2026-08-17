@@ -460,3 +460,49 @@ export function saveEquippedRelicIds(relicIds: string[]): void {
     logger.error('PERSISTENCE', 'Failed to save equipped relic IDs', e);
   }
 }
+
+import { CodexState } from '../types/game';
+
+const CODEX_STATE_KEY = 'bloodmage_1995_codex';
+
+export const defaultCodexState: CodexState = {
+  enemyKills: {},
+  unlockedEntries: ['lore_origem_hemomancia', 'relic_selo_hemorragico'],
+  claimedMilestones: {},
+};
+
+const CodexStateSchema = z.object({
+  enemyKills: z.record(z.string(), z.number().int().nonnegative().max(10_000_000)).catch({}),
+  unlockedEntries: z.array(z.string().max(100)).max(200).catch(['lore_origem_hemomancia', 'relic_selo_hemorragico']),
+  claimedMilestones: z.record(z.string(), z.array(z.number().int().nonnegative())).catch({}),
+}).strict();
+
+export function loadCodexState(): CodexState {
+  try {
+    const raw = localStorage.getItem(CODEX_STATE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const validated = CodexStateSchema.safeParse(parsed);
+      if (validated.success) {
+        logger.debug('PERSISTENCE', 'Codex state loaded successfully');
+        return validated.data;
+      } else {
+        logger.warn('PERSISTENCE', 'Estrutura do códice inválida no localStorage. Restaurando padrão.', { raw });
+      }
+    }
+  } catch (e) {
+    logger.warn('PERSISTENCE', 'Failed to load codex state', e);
+  }
+  return { ...defaultCodexState };
+}
+
+export function saveCodexState(state: CodexState): void {
+  try {
+    const validated = CodexStateSchema.safeParse(state);
+    const valueToSave = validated.success ? validated.data : defaultCodexState;
+    localStorage.setItem(CODEX_STATE_KEY, JSON.stringify(valueToSave));
+    logger.debug('PERSISTENCE', 'Codex state saved successfully');
+  } catch (e) {
+    logger.error('PERSISTENCE', 'Failed to save codex state', e);
+  }
+}
