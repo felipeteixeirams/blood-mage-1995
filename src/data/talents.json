@@ -103,27 +103,5 @@
     "statKey": "moveSpeed",
     "bonusPerLevel": 16,
     "exclusive_with": ["sobrecarga_runica"]
-  },
-  {
-    "id": "escudo_de_hemocito",
-    "name": "Escudo de Hemocito",
-    "description": "Desbloqueia o feitiço ativo Escudo de Hemocito, criando uma barreira que absorve dano.",
-    "category": "defense",
-    "icon": "shield",
-    "maxLevel": 5,
-    "costPerLevel": 30,
-    "statKey": "maxHp",
-    "bonusPerLevel": 10
-  },
-  {
-    "id": "toque_vampirico",
-    "name": "Toque Vampírico",
-    "description": "Desbloqueia o feitiço primário Toque Vampírico, disparando projéteis vitais que drenam vida dos inimigos.",
-    "category": "offense",
-    "icon": "droplet",
-    "maxLevel": 5,
-    "costPerLevel": 30,
-    "statKey": "lifesteal",
-    "bonusPerLevel": 0.02
   }
 ]

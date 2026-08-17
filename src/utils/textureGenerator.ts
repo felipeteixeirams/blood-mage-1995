@@ -546,64 +546,6 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   });
   addTexture('spr_gore_abomination', abomCanvas);
 
-  // 8g. Skeletal Archwarden Sub-Boss (36x48) - Elite Skeletal Commander & Archer
-  const archwardenCanvas = createPixelCanvas(36, 48, (ctx) => {
-    // Dark purple/indigo cape & hood
-    ctx.fillStyle = '#2e1065';
-    ctx.fillRect(4, 12, 28, 32);
-    ctx.fillStyle = '#4c1d95';
-    ctx.fillRect(8, 6, 20, 12);
-
-    // Ancient bone ribcage & skull
-    ctx.fillStyle = '#e3dac9';
-    ctx.fillRect(12, 18, 12, 14);
-    ctx.fillRect(12, 6, 12, 10);
-
-    // Dark rib gaps
-    ctx.fillStyle = '#1e1b4b';
-    ctx.fillRect(13, 21, 10, 2);
-    ctx.fillRect(13, 25, 10, 2);
-
-    // Ornate Golden Crown & Shoulder Spikes
-    ctx.fillStyle = '#facc15';
-    ctx.fillRect(11, 4, 14, 3);
-    ctx.fillRect(11, 2, 2, 3);
-    ctx.fillRect(17, 1, 2, 4);
-    ctx.fillRect(23, 2, 2, 3);
-
-    // Shoulder Pauldrons
-    ctx.fillStyle = '#b45309';
-    ctx.fillRect(2, 14, 8, 8);
-    ctx.fillRect(26, 14, 8, 8);
-    ctx.fillStyle = '#facc15';
-    ctx.fillRect(3, 15, 6, 2);
-    ctx.fillRect(27, 15, 6, 2);
-
-    // Glowing Crimson Eyes with White Focus
-    ctx.fillStyle = '#ef4444';
-    ctx.fillRect(14, 9, 3, 3);
-    ctx.fillRect(19, 9, 3, 3);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(15, 10, 1, 1);
-    ctx.fillRect(20, 10, 1, 1);
-
-    // Bone Bow & Shadow Arrow
-    ctx.fillStyle = '#78350f';
-    ctx.fillRect(28, 8, 3, 32); // Bow body
-    ctx.fillStyle = '#fef08a';
-    ctx.fillRect(28, 8, 3, 2);
-    ctx.fillRect(28, 38, 3, 2);
-    ctx.fillStyle = '#c084fc'; // Bowstring / Shadow aura
-    ctx.fillRect(27, 10, 1, 28);
-
-    // Shadow Arrow Core
-    ctx.fillStyle = '#a855f7';
-    ctx.fillRect(16, 26, 14, 2);
-    ctx.fillStyle = '#ef4444';
-    ctx.fillRect(30, 25, 3, 4);
-  });
-  addTexture('spr_skeletal_archwarden', archwardenCanvas);
-
   // 9. Projectile: Blood Bolt (16x16)
   const boltCanvas = createPixelCanvas(16, 16, (ctx) => {
     ctx.fillStyle = '#ef4444';

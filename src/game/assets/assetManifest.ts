@@ -123,13 +123,6 @@ export const GAME_ASSET_MANIFEST: GameAssetConfig[] = [
     frameWidth: 52,
     frameHeight: 60,
   },
-  {
-    key: 'spr_skeletal_archwarden',
-    type: 'spritesheet',
-    path: 'assets/sprites/enemies/skeletal_archwarden.png',
-    frameWidth: 36,
-    frameHeight: 48,
-  },
 
   // --- PROJECTILES & VFX ---
   {

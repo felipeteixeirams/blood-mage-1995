@@ -15,8 +15,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   public isInvulnerable: boolean = false;
   private invulnerableTimer: number = 0;
   public equippedLoot: LootItem[] = [];
-  public hemocyteShieldHp: number = 0;
-  public hemocyteShieldMaxHp: number = 0;
 
   // Status condition DoT timers
   private bleedTimer: number = 0;
@@ -723,42 +721,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     return true;
   }
 
-  public castHemocyteShield(): boolean {
-    if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
-    const spell = (spellsData as Record<string, SpellConfig>)['hemocyte_shield'];
-    if (this.getCooldownRemaining('hemocyte_shield') > 0) return false;
-    const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
-    const cost = hasRuneFamine ? spell.manaCost * 2 : spell.manaCost;
-    if (this.stats.mana < cost) return false;
-
-    this.stats.mana -= cost;
-    const cd = spell.cooldownMs * (1 - this.stats.cooldownReduction);
-    this.skillCooldowns['hemocyte_shield'] = cd;
-
-    const lvl = useGameStore.getState().talentLevels['escudo_de_hemocito'] || 1;
-    this.hemocyteShieldMaxHp = 50 + lvl * 15;
-    this.hemocyteShieldHp = this.hemocyteShieldMaxHp;
-
-    soundEngine.playBoneShield();
-    if (this.scene && 'spawnFloatingText' in this.scene) {
-      (this.scene as any).spawnFloatingText(this.x, this.y - 18, `ESCUDO +${this.hemocyteShieldHp}`, '#f43f5e', true);
-    }
-    return true;
-  }
-
-  public castVampiricTouch(time: number): boolean {
-    if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
-    const spell = (spellsData as Record<string, SpellConfig>)['vampiric_touch'];
-    const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
-    const cost = hasRuneFamine ? spell.manaCost * 2 : spell.manaCost;
-    if (this.stats.mana < cost) return false;
-
-    this.stats.mana -= cost;
-    this.lastAutoShootTime = time;
-    soundEngine.playSyphonSoul();
-    return true;
-  }
-
   /**
    * Fase 3: Survival Status Conditions (Dead Frontier 2 style).
    * Non-brutal, gradual tension damage. Never triggers invulnerability frames
@@ -825,22 +787,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Infection increases damage taken by 20%
     if (this.stats.statusConditions?.infection) {
       amount *= 1.2;
-    }
-
-    if (this.hemocyteShieldHp > 0) {
-      if (this.hemocyteShieldHp >= amount) {
-        this.hemocyteShieldHp -= amount;
-        if (this.scene && 'spawnFloatingText' in this.scene) {
-          (this.scene as any).spawnFloatingText(this.x, this.y - 12, `ABSORVIDO -${Math.round(amount)}`, '#fb7185', false);
-        }
-        return false;
-      } else {
-        amount -= this.hemocyteShieldHp;
-        this.hemocyteShieldHp = 0;
-        if (this.scene && 'spawnFloatingText' in this.scene) {
-          (this.scene as any).spawnFloatingText(this.x, this.y - 12, `ESCUDO QUEBRADO!`, '#e11d48', true);
-        }
-      }
     }
 
     this.stats.hp = Math.max(0, this.stats.hp - amount);

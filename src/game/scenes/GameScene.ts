@@ -925,7 +925,7 @@ export class GameScene extends Phaser.Scene {
     this.touchAimVector.y = aimY;
   }
 
-  public triggerSkill(skillKey: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | 'hemocyte_shield' | 'vampiric_touch') {
+  public triggerSkill(skillKey: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam') {
     if (this.isPaused) return;
 
     let success = false;
@@ -959,39 +959,11 @@ export class GameScene extends Phaser.Scene {
       this.emitSound(this.player.x, this.player.y, 520);
       ContractSystem.onSpellCasted('hemomancy_beam', this);
       success = true;
-    } else if (skillKey === 'hemocyte_shield' && this.player.castHemocyteShield()) {
-      this.emitSound(this.player.x, this.player.y, 350);
-      ContractSystem.onSpellCasted('hemocyte_shield', this);
-      success = true;
-    } else if (skillKey === 'vampiric_touch' && this.player.castVampiricTouch(this.time.now)) {
-      this.firePlayerVampiricTouch();
-      this.emitSound(this.player.x, this.player.y, 380);
-      ContractSystem.onSpellCasted('vampiric_touch', this);
-      success = true;
     }
 
     if (success) {
       useGameStore.getState().triggerOnboardingEvent('firstSkillCast', 'DICA: Acompanhe o indicador de cooldown piscante sobre cada habilidade!');
     }
-  }
-
-  private firePlayerVampiricTouch() {
-    const aimVec = this.player.getAimVector();
-    const baseAngle = Math.atan2(aimVec.y, aimVec.x);
-    const spellCfg = (spellsData as Record<string, SpellConfig>)['vampiric_touch'];
-    const proj = this.playerProjectilePool.get(this.player.x, this.player.y);
-    proj.fire(
-      this.player.x,
-      this.player.y,
-      baseAngle,
-      spellCfg.projectileSpeed,
-      spellCfg.baseDamage * this.player.stats.damageMultiplier,
-      false,
-      undefined,
-      true
-    );
-    proj.setTint(0xe11d48);
-    this.lightingPolish?.addSpellGlow(proj, 'vampiric_touch');
   }
 
   public applyUpgradeChoice(upgrade: UpgradeOption) {
@@ -2135,14 +2107,6 @@ export class GameScene extends Phaser.Scene {
     // Floating damage numbers
     const dmgText = Math.round(finalDamage).toString();
     this.spawnFloatingText(enemy.x, enemy.y, isCrit ? `${dmgText}!` : dmgText, isCrit ? '#facc15' : '#ffffff', isCrit);
-
-    // Vampiric Touch direct heal
-    if (proj.isVampiricTouch) {
-      const healAmt = 4;
-      this.player.heal(healAmt);
-      this.spawnFloatingText(this.player.x, this.player.y - 12, `+${healAmt} HP`, '#22c55e', false);
-      this.lightingPolish?.addHealGlow(this.player.x, this.player.y);
-    }
 
     // Vampirism life steal
     if (this.player.stats.vampirism > 0) {

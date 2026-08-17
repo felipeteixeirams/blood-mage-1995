@@ -53,8 +53,6 @@ const defaultTalents: Record<string, number> = {
   abyssal_haste: 0,
   sobrecarga_runica: 0,
   tempestade_continua: 0,
-  escudo_de_hemocito: 0,
-  toque_vampirico: 0,
 };
 
 // Schema for Talent levels validation
@@ -68,8 +66,6 @@ const TalentLevelsSchema = z.object({
   abyssal_haste: z.number().int().nonnegative().max(100).catch(0),
   sobrecarga_runica: z.number().int().nonnegative().max(100).catch(0),
   tempestade_continua: z.number().int().nonnegative().max(100).catch(0),
-  escudo_de_hemocito: z.number().int().nonnegative().max(100).catch(0).optional(),
-  toque_vampirico: z.number().int().nonnegative().max(100).catch(0).optional(),
   vampiric_thirst: z.number().int().nonnegative().max(100).catch(0).optional(),
   sacrifice_mastery: z.number().int().nonnegative().max(100).catch(0).optional(),
 }).strict(); // strict() prevents prototype pollution and extra keys
