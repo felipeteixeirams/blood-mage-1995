@@ -98,8 +98,8 @@ interface GameStore {
   setTouchMoveInput: (x: number, y: number) => void;
   touchAimInput: { x: number; y: number };
   setTouchAimInput: (x: number, y: number) => void;
-  activeSkillTrigger: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | null;
-  setActiveSkillTrigger: (skill: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | null) => void;
+  activeSkillTrigger: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | 'hemocyte_shield' | 'vampiric_touch' | null;
+  setActiveSkillTrigger: (skill: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | 'hemocyte_shield' | 'vampiric_touch' | null) => void;
 
   /** 4 spell IDs the player has pinned to the HUD skill bar */
   skillPreset: string[];
@@ -252,12 +252,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   talentLevels: loadTalentLevels(),
   upgradeTalent: (talentId, cost) => {
-    const { bloodCrystals, talentLevels } = get();
+    const { bloodCrystals, talentLevels, playerStats } = get();
     if (bloodCrystals < cost) return false;
 
     const nextCrystals = bloodCrystals - cost;
     const currentLvl = talentLevels[talentId] || 0;
     const nextTalents = { ...talentLevels, [talentId]: currentLvl + 1 };
+
+    // Auto unlock associated spell when buying talent level 1
+    const currentUnlocked = playerStats.unlockedSpells || [];
+    let updatedUnlocked = [...currentUnlocked];
+    if (talentId === 'escudo_de_hemocito' && !updatedUnlocked.includes('hemocyte_shield')) {
+      updatedUnlocked.push('hemocyte_shield');
+    }
+    if (talentId === 'toque_vampirico' && !updatedUnlocked.includes('vampiric_touch')) {
+      updatedUnlocked.push('vampiric_touch');
+    }
 
     saveBloodCrystals(nextCrystals);
     saveTalentLevels(nextTalents);
@@ -265,6 +275,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({
       bloodCrystals: nextCrystals,
       talentLevels: nextTalents,
+      playerStats: {
+        ...playerStats,
+        unlockedSpells: updatedUnlocked,
+      },
     });
     return true;
   },

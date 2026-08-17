@@ -110,5 +110,37 @@
     "color": "#f43f5e",
     "hotkey": "Skill 6 (F)",
     "level": 1
+  },
+  "vampiric_touch": {
+    "id": "vampiric_touch",
+    "name": "Toque Vampírico",
+    "description": "Ataque primário alternativo de dreno que dispara energia vital extraindo pequenos fragmentos de HP dos alvos.",
+    "manaCost": 2,
+    "hpCost": 0,
+    "cooldownMs": 250,
+    "baseDamage": 12,
+    "projectileSpeed": 600,
+    "type": "projectile",
+    "gibPower": 0.5,
+    "icon": "droplet",
+    "color": "#e11d48",
+    "hotkey": "LMB / Auto (Alt)",
+    "level": 1
+  },
+  "hemocyte_shield": {
+    "id": "hemocyte_shield",
+    "name": "Escudo de Hemocito",
+    "description": "Cria uma barreira densa de células sanguíneas que absorve dano e concede barreira de proteção.",
+    "manaCost": 15,
+    "hpCost": 0,
+    "cooldownMs": 50000,
+    "baseDamage": 0,
+    "projectileSpeed": 0,
+    "type": "shield",
+    "gibPower": 0.0,
+    "icon": "shield",
+    "color": "#be123c",
+    "hotkey": "Skill 7 (G)",
+    "level": 1
   }
 }
