@@ -1,6 +1,39 @@
 export type ItemRarity = 'common' | 'rare' | 'epic' | 'legendary';
 export type ItemType = 'weapon' | 'armor' | 'relic';
 
+export interface RelicEffect {
+  damageMultiplier?: number;
+  maxHpBonus?: number;
+  speedBonus?: number;
+  lifestealBonus?: number;
+  cooldownReductionBonus?: number;
+  hpRegenBonus?: number;
+  bloodCrystalMultiplier?: number;
+  bleedChanceOnHit?: number;
+  bleedDamagePerSecond?: number;
+  spellCostDiscount?: number;
+}
+
+export interface RelicItem {
+  id: string;
+  name: string;
+  type: 'relic';
+  rarity: ItemRarity;
+  description: string;
+  lore?: string;
+  icon?: string;
+  effect: RelicEffect;
+  stats?: {
+    damageMultiplier?: number;
+    maxHpBonus?: number;
+    speedBonus?: number;
+    lifestealBonus?: number;
+    cooldownReductionBonus?: number;
+    critChanceBonus?: number;
+    hpRegenBonus?: number;
+  };
+}
+
 export interface LootItem {
   id: string;
   name: string;
@@ -16,12 +49,13 @@ export interface LootItem {
     critChanceBonus?: number;
     hpRegenBonus?: number;
   };
+  effect?: RelicEffect;
 }
 
 export interface EquipmentSlots {
   weapon: LootItem | null;
   armor: LootItem | null;
-  relics: LootItem[];
+  relics: (LootItem | RelicItem)[];
 }
 
 export type BiomeType = 'fosso_chagas' | 'catacumbas_martires' | 'santuario_sangue';

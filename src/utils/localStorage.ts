@@ -306,6 +306,8 @@ export function saveOnboarding(state: any): void {
 
 const DEATH_STATE_KEY = 'bloodmage_1995_death_state';
 const CORPSE_STATE_KEY = 'bloodmage_1995_corpse_state';
+const UNLOCKED_RELICS_KEY = 'bloodmage_1995_unlocked_relics';
+const EQUIPPED_RELIC_IDS_KEY = 'bloodmage_1995_equipped_relic_ids';
 
 const DeathStateSchema = z.object({
   isDefinitivelyDead: z.boolean().catch(false),
@@ -391,4 +393,70 @@ export function loadDroppedCorpseState(): any {
     droppedTimestamp: 0,
     itemsInside: []
   };
+}
+
+const defaultUnlockedRelics = ['selo_hemorragico', 'olho_de_carmim', 'anel_do_pacto_sanguineo'];
+const UnlockedRelicsSchema = z.array(z.string().max(100)).max(50);
+
+export function loadUnlockedRelics(): string[] {
+  try {
+    const raw = localStorage.getItem(UNLOCKED_RELICS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const validated = UnlockedRelicsSchema.safeParse(parsed);
+      if (validated.success) {
+        logger.debug('PERSISTENCE', 'Unlocked relics loaded successfully');
+        return validated.data;
+      } else {
+        logger.warn('PERSISTENCE', 'Relíquias desbloqueadas inválidas no localStorage. Restaurando padrão.', { raw });
+      }
+    }
+  } catch (e) {
+    logger.warn('PERSISTENCE', 'Failed to load unlocked relics', e);
+  }
+  return defaultUnlockedRelics;
+}
+
+export function saveUnlockedRelics(relicIds: string[]): void {
+  try {
+    const validated = UnlockedRelicsSchema.safeParse(relicIds);
+    const valueToSave = validated.success ? validated.data : defaultUnlockedRelics;
+    localStorage.setItem(UNLOCKED_RELICS_KEY, JSON.stringify(valueToSave));
+    logger.debug('PERSISTENCE', 'Unlocked relics saved successfully');
+  } catch (e) {
+    logger.error('PERSISTENCE', 'Failed to save unlocked relics', e);
+  }
+}
+
+const defaultEquippedRelicIds = ['selo_hemorragico'];
+const EquippedRelicIdsSchema = z.array(z.string().max(100)).max(3);
+
+export function loadEquippedRelicIds(): string[] {
+  try {
+    const raw = localStorage.getItem(EQUIPPED_RELIC_IDS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const validated = EquippedRelicIdsSchema.safeParse(parsed);
+      if (validated.success) {
+        logger.debug('PERSISTENCE', 'Equipped relic IDs loaded successfully');
+        return validated.data;
+      } else {
+        logger.warn('PERSISTENCE', 'Relíquias equipadas inválidas no localStorage. Restaurando padrão.', { raw });
+      }
+    }
+  } catch (e) {
+    logger.warn('PERSISTENCE', 'Failed to load equipped relic IDs', e);
+  }
+  return defaultEquippedRelicIds;
+}
+
+export function saveEquippedRelicIds(relicIds: string[]): void {
+  try {
+    const validated = EquippedRelicIdsSchema.safeParse(relicIds);
+    const valueToSave = validated.success ? validated.data : defaultEquippedRelicIds;
+    localStorage.setItem(EQUIPPED_RELIC_IDS_KEY, JSON.stringify(valueToSave));
+    logger.debug('PERSISTENCE', 'Equipped relic IDs saved successfully');
+  } catch (e) {
+    logger.error('PERSISTENCE', 'Failed to save equipped relic IDs', e);
+  }
 }

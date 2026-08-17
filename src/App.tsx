@@ -23,6 +23,12 @@ import { logger } from './utils/logger';
 
 export default function App() {
   const [isBooting, setIsBooting] = useState(true);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).useGameStore = useGameStore;
+    }
+  }, []);
   const [isUpdateReady, setIsUpdateReady] = useState(false);
   const updateSWRef = useRef<((reloadPage?: boolean) => Promise<void>) | null>(null);
 

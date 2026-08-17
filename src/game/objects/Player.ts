@@ -143,6 +143,32 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
+  public getEffectiveDamageMultiplier(): number {
+    const relicMods = useGameStore.getState().getRelicModifiers();
+    return this.stats.damageMultiplier + (relicMods.damageMultiplier || 0);
+  }
+
+  public getEffectiveVampirism(): number {
+    const relicMods = useGameStore.getState().getRelicModifiers();
+    return this.stats.vampirism + (relicMods.lifestealBonus || 0);
+  }
+
+  public getEffectiveMoveSpeed(): number {
+    const relicMods = useGameStore.getState().getRelicModifiers();
+    const base = this.stats.moveSpeed + (relicMods.speedBonus || 0);
+    return Math.max(40, base * (this.stats.statusConditions?.bleeding ? 0.8 : 1.0));
+  }
+
+  public getEffectiveMaxHp(): number {
+    const relicMods = useGameStore.getState().getRelicModifiers();
+    return Math.max(10, this.stats.maxHp + (relicMods.maxHpBonus || 0));
+  }
+
+  public getEffectiveCooldownReduction(): number {
+    const relicMods = useGameStore.getState().getRelicModifiers();
+    return Math.min(0.75, Math.max(0, this.stats.cooldownReduction + (relicMods.cooldownReductionBonus || 0)));
+  }
+
   public updatePlayer(time: number, delta: number) {
     // Manual aim timer countdown
     if (this.manualAimTimer > 0) {
@@ -165,11 +191,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       // Regenerate passive HP while unconscious (2% of Max HP per second)
       // Infection blocks natural regeneration (Discovery Seção 2.4)
       if (!this.stats.statusConditions.infection) {
-        const regenAmount = (0.02 * this.stats.maxHp * delta) / 1000;
-        this.stats.hp = Math.min(this.stats.maxHp, this.stats.hp + regenAmount);
+        const regenAmount = (0.02 * this.getEffectiveMaxHp() * delta) / 1000;
+        this.stats.hp = Math.min(this.getEffectiveMaxHp(), this.stats.hp + regenAmount);
       }
 
-      const threshold = 0.05 * this.stats.maxHp;
+      const threshold = 0.05 * this.getEffectiveMaxHp();
       if (this.stats.hp >= threshold) {
         this.stats.isUnconscious = false;
         this.stats.hp = Math.ceil(threshold);
@@ -194,8 +220,22 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       return;
     }
 
-    // Fase 3: Survival Status Conditions tick (Dead Frontier 2 style tension, non-lethal-to-invuln DoT)
+    // Fase 3: Survival Status Conditions tick
     this.updateStatusConditions(delta);
+
+    // Relic Passive HP Regen Bonus / Penalty (e.g. Cálice Amaldiçoado -0.5 HP/s)
+    if (!this.stats.isUnconscious && !this.stats.isDefinitivelyDead) {
+      const relicMods = useGameStore.getState().getRelicModifiers();
+      if (relicMods.hpRegenBonus && relicMods.hpRegenBonus !== 0) {
+        const effMaxHp = this.getEffectiveMaxHp();
+        const regenAmount = (relicMods.hpRegenBonus * delta) / 1000;
+        if (regenAmount < 0) {
+          this.stats.hp = Math.max(1, this.stats.hp + regenAmount);
+        } else {
+          this.stats.hp = Math.min(effMaxHp, this.stats.hp + regenAmount);
+        }
+      }
+    }
 
     if (this.isDashing) {
       this.dashTimer -= delta;
@@ -230,7 +270,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
     } else {
       // Movement Physics — acceleration-based for smooth start/stop
-      const speed = this.stats.moveSpeed * (this.stats.statusConditions?.bleeding ? 0.8 : 1.0);
+      const speed = this.getEffectiveMoveSpeed();
       const dt = delta / 1000;
       const targetVx = this.moveVector.x * speed;
       const targetVy = this.moveVector.y * speed;
@@ -370,7 +410,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Auto Shoot Primary (Blood Bolt) with Intelligent Directional Cone Aiming
     const bloodBoltConfig = (spellsData as Record<string, SpellConfig>)['blood_bolt'];
-    const autoCd = bloodBoltConfig.cooldownMs * (1 - this.stats.cooldownReduction);
+    const autoCd = bloodBoltConfig.cooldownMs * (1 - this.getEffectiveCooldownReduction());
 
     const pointer = this.scene && this.scene.input && this.scene.input.activePointer;
     const isPointerDown = pointer && pointer.isDown;
@@ -602,7 +642,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     // Cooldown reducible by CDR (talent and stats)
-    const cd = this.DASH_COOLDOWN * (1 - this.stats.cooldownReduction);
+    const cd = this.DASH_COOLDOWN * (1 - this.getEffectiveCooldownReduction());
     this.dashCooldownTimer = cd;
 
     soundEngine.playDash();
@@ -613,7 +653,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
     const spell = (spellsData as Record<string, SpellConfig>)['blood_bolt'];
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
-    const cost = hasRuneFamine ? spell.manaCost * 2 : spell.manaCost;
+    const relicMods = useGameStore.getState().getRelicModifiers();
+    const discount = relicMods.spellCostDiscount || 0;
+    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
     if (this.stats.mana < cost) return false;
 
     this.stats.mana -= cost;
@@ -627,11 +669,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const spell = (spellsData as Record<string, SpellConfig>)['hellfire_nova'];
     if (this.getCooldownRemaining('hellfire_nova') > 0) return false;
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
-    const cost = hasRuneFamine ? spell.manaCost * 2 : spell.manaCost;
+    const relicMods = useGameStore.getState().getRelicModifiers();
+    const discount = relicMods.spellCostDiscount || 0;
+    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
     if (this.stats.mana < cost) return false;
 
     this.stats.mana -= cost;
-    const cd = spell.cooldownMs * (1 - this.stats.cooldownReduction);
+    const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
     this.skillCooldowns['hellfire_nova'] = cd;
     soundEngine.playNova();
     return true;
@@ -642,11 +686,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const spell = (spellsData as Record<string, SpellConfig>)['syphon_soul'];
     if (this.getCooldownRemaining('syphon_soul') > 0) return false;
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
-    const cost = hasRuneFamine ? spell.manaCost * 2 : spell.manaCost;
+    const relicMods = useGameStore.getState().getRelicModifiers();
+    const discount = relicMods.spellCostDiscount || 0;
+    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
     if (this.stats.mana < cost) return false;
 
     this.stats.mana -= cost;
-    const cd = spell.cooldownMs * (1 - this.stats.cooldownReduction);
+    const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
     this.skillCooldowns['syphon_soul'] = cd;
     soundEngine.playSyphonSoul();
     return true;
@@ -657,11 +703,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const spell = (spellsData as Record<string, SpellConfig>)['bone_shield'];
     if (this.getCooldownRemaining('bone_shield') > 0) return false;
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
-    const cost = hasRuneFamine ? spell.manaCost * 2 : spell.manaCost;
+    const relicMods = useGameStore.getState().getRelicModifiers();
+    const discount = relicMods.spellCostDiscount || 0;
+    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
     if (this.stats.mana < cost) return false;
 
     this.stats.mana -= cost;
-    const cd = spell.cooldownMs * (1 - this.stats.cooldownReduction);
+    const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
     this.skillCooldowns['bone_shield'] = cd;
     soundEngine.playBoneShield();
     return true;
@@ -672,14 +720,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const spell = (spellsData as Record<string, SpellConfig>)['crimson_scythe'];
     if (this.getCooldownRemaining('crimson_scythe') > 0) return false;
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
-    const cost = hasRuneFamine ? spell.manaCost * 2 : spell.manaCost;
+    const relicMods = useGameStore.getState().getRelicModifiers();
+    const discount = relicMods.spellCostDiscount || 0;
+    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
+    const hpCost = Math.max(0, Math.round((spell.hpCost || 0) * (1 - discount)));
     if (this.stats.mana < cost) return false;
-    const hpCost = spell.hpCost || 0;
     if (this.stats.hp <= hpCost) return false;
 
     this.stats.mana -= cost;
     this.stats.hp -= hpCost;
-    const cd = spell.cooldownMs * (1 - this.stats.cooldownReduction);
+    const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
     this.skillCooldowns['crimson_scythe'] = cd;
     soundEngine.playScytheSlash();
     return true;
@@ -690,14 +740,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const spell = (spellsData as Record<string, SpellConfig>)['blood_ritual_circle'];
     if (this.getCooldownRemaining('blood_ritual_circle') > 0) return false;
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
-    const cost = hasRuneFamine ? spell.manaCost * 2 : spell.manaCost;
+    const relicMods = useGameStore.getState().getRelicModifiers();
+    const discount = relicMods.spellCostDiscount || 0;
+    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
+    const hpCost = Math.max(0, Math.round((spell.hpCost || 0) * (1 - discount)));
     if (this.stats.mana < cost) return false;
-    const hpCost = spell.hpCost || 0;
     if (this.stats.hp <= hpCost) return false;
 
     this.stats.mana -= cost;
     this.stats.hp -= hpCost;
-    const cd = spell.cooldownMs * (1 - this.stats.cooldownReduction);
+    const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
     this.skillCooldowns['blood_ritual_circle'] = cd;
     soundEngine.playRitualCircle();
     return true;
@@ -708,14 +760,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const spell = (spellsData as Record<string, SpellConfig>)['hemomancy_beam'];
     if (this.getCooldownRemaining('hemomancy_beam') > 0) return false;
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
-    const cost = hasRuneFamine ? spell.manaCost * 2 : spell.manaCost;
+    const relicMods = useGameStore.getState().getRelicModifiers();
+    const discount = relicMods.spellCostDiscount || 0;
+    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
+    const hpCost = Math.max(0, Math.round((spell.hpCost || 0) * (1 - discount)));
     if (this.stats.mana < cost) return false;
-    const hpCost = spell.hpCost || 0;
     if (this.stats.hp <= hpCost) return false;
 
     this.stats.mana -= cost;
     this.stats.hp -= hpCost;
-    const cd = spell.cooldownMs * (1 - this.stats.cooldownReduction);
+    const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
     this.skillCooldowns['hemomancy_beam'] = cd;
     soundEngine.playHemomancyBeam();
     return true;

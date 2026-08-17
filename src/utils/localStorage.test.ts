@@ -14,6 +14,10 @@ import {
   saveDeathState,
   loadDroppedCorpseState,
   saveDroppedCorpseState,
+  loadUnlockedRelics,
+  saveUnlockedRelics,
+  loadEquippedRelicIds,
+  saveEquippedRelicIds,
   defaultSettings,
   defaultHighScores,
 } from './localStorage';
@@ -173,6 +177,31 @@ describe('localStorage persistence', () => {
       expect(loaded.hasDroppedCorpse).toBe(true);
       expect(loaded.zone).toBe('fosso_chagas');
       expect(loaded.itemsInside[0].quantity).toBe(2);
+    });
+  });
+
+  describe('Relics Persistence', () => {
+    it('loads default unlocked relics when nothing is stored', () => {
+      const unlocked = loadUnlockedRelics();
+      expect(unlocked).toContain('selo_hemorragico');
+      expect(unlocked).toContain('olho_de_carmim');
+    });
+
+    it('round-trips unlocked relics', () => {
+      saveUnlockedRelics(['selo_hemorragico', 'calice_amaldicoado', 'coracao_abissal']);
+      const loaded = loadUnlockedRelics();
+      expect(loaded).toEqual(['selo_hemorragico', 'calice_amaldicoado', 'coracao_abissal']);
+    });
+
+    it('loads default equipped relic IDs when nothing is stored', () => {
+      const equipped = loadEquippedRelicIds();
+      expect(equipped).toEqual(['selo_hemorragico']);
+    });
+
+    it('round-trips equipped relic IDs', () => {
+      saveEquippedRelicIds(['selo_hemorragico', 'olho_de_carmim']);
+      const loaded = loadEquippedRelicIds();
+      expect(loaded).toEqual(['selo_hemorragico', 'olho_de_carmim']);
     });
   });
 });

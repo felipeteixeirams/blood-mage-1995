@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, EquipmentSlots, BiomeType, DroppedCorpse } from '../types/game';
-import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding } from '../utils/localStorage';
+import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, BiomeType, DroppedCorpse } from '../types/game';
+import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding, loadUnlockedRelics, saveUnlockedRelics, loadEquippedRelicIds, saveEquippedRelicIds } from '../utils/localStorage';
 import { soundEngine } from '../utils/soundEngine';
+import relicsData from '../data/relics.json';
 
 type GameStateStatus = 'menu' | 'playing' | 'paused';
 
@@ -65,9 +66,16 @@ interface GameStore {
   talentLevels: Record<string, number>;
   upgradeTalent: (talentId: string, cost: number) => boolean;
 
+  // Relic System & Metagame
+  unlockedRelics: string[];
+  unlockRelic: (relicId: string) => void;
+  equipRelicById: (relicId: string) => boolean;
+  unequipRelicById: (relicId: string) => void;
+  getRelicModifiers: () => RelicEffect;
+
   // Equipment & Loot
   equipment: EquipmentSlots;
-  equipItem: (item: LootItem) => void;
+  equipItem: (item: LootItem | RelicItem) => void;
   clearInventoryOnDeath: () => void;
   retrieveCorpseLoot: () => void;
   recentLootLog: string[];
@@ -245,9 +253,86 @@ export const useGameStore = create<GameStore>((set, get) => ({
   bloodCrystals: loadBloodCrystals(),
   addBloodCrystals: (amount) => {
     const current = get().bloodCrystals;
-    const next = current + amount;
+    const mult = get().getRelicModifiers().bloodCrystalMultiplier || 1.0;
+    const finalAmount = amount > 0 ? Math.round(amount * mult) : amount;
+    const next = current + finalAmount;
     saveBloodCrystals(next);
     set({ bloodCrystals: next });
+  },
+
+  unlockedRelics: loadUnlockedRelics(),
+  unlockRelic: (relicId) => {
+    const current = get().unlockedRelics;
+    if (!current.includes(relicId)) {
+      const next = [...current, relicId];
+      saveUnlockedRelics(next);
+      set({ unlockedRelics: next });
+    }
+  },
+
+  equipRelicById: (relicId) => {
+    const relic = (relicsData as RelicItem[]).find((r) => r.id === relicId);
+    if (!relic) return false;
+
+    const { equipment } = get();
+    const currentRelics = equipment.relics as RelicItem[];
+
+    // If already equipped, return true
+    if (currentRelics.some((r) => r.id === relicId)) return true;
+
+    let updatedRelics: RelicItem[] = [];
+    if (currentRelics.length < 3) {
+      updatedRelics = [...currentRelics, relic];
+    } else {
+      updatedRelics = [currentRelics[1], currentRelics[2], relic];
+    }
+
+    const nextEquipment = { ...equipment, relics: updatedRelics };
+    saveEquippedRelicIds(updatedRelics.map((r) => r.id));
+    set({ equipment: nextEquipment });
+    soundEngine.playEquipLoot();
+    return true;
+  },
+
+  unequipRelicById: (relicId) => {
+    const { equipment } = get();
+    const currentRelics = equipment.relics as RelicItem[];
+    const updatedRelics = currentRelics.filter((r) => r.id !== relicId);
+    const nextEquipment = { ...equipment, relics: updatedRelics };
+    saveEquippedRelicIds(updatedRelics.map((r) => r.id));
+    set({ equipment: nextEquipment });
+  },
+
+  getRelicModifiers: () => {
+    const { equipment } = get();
+    const combined: RelicEffect = {
+      damageMultiplier: 0,
+      maxHpBonus: 0,
+      speedBonus: 0,
+      lifestealBonus: 0,
+      cooldownReductionBonus: 0,
+      hpRegenBonus: 0,
+      bloodCrystalMultiplier: 1.0,
+      bleedChanceOnHit: 0,
+      bleedDamagePerSecond: 0,
+      spellCostDiscount: 0,
+    };
+
+    equipment.relics.forEach((r) => {
+      const effect = (r as RelicItem).effect || {};
+      if (effect.damageMultiplier) combined.damageMultiplier! += effect.damageMultiplier;
+      if (effect.maxHpBonus) combined.maxHpBonus! += effect.maxHpBonus;
+      if (effect.speedBonus) combined.speedBonus! += effect.speedBonus;
+      if (effect.lifestealBonus) combined.lifestealBonus! += effect.lifestealBonus;
+      if (effect.cooldownReductionBonus) combined.cooldownReductionBonus! += effect.cooldownReductionBonus;
+      if (effect.hpRegenBonus) combined.hpRegenBonus! += effect.hpRegenBonus;
+      if (effect.bloodCrystalMultiplier) combined.bloodCrystalMultiplier! *= effect.bloodCrystalMultiplier;
+      if (effect.bleedChanceOnHit) combined.bleedChanceOnHit! = Math.max(combined.bleedChanceOnHit!, effect.bleedChanceOnHit);
+      if (effect.bleedDamagePerSecond) combined.bleedDamagePerSecond! += effect.bleedDamagePerSecond;
+      if (effect.spellCostDiscount) combined.spellCostDiscount! += effect.spellCostDiscount;
+    });
+
+    return combined;
   },
 
   talentLevels: loadTalentLevels(),
@@ -272,15 +357,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
   equipment: {
     weapon: null,
     armor: null,
-    relics: [],
+    relics: loadEquippedRelicIds()
+      .map((id) => (relicsData as RelicItem[]).find((r) => r.id === id))
+      .filter((r): r is RelicItem => Boolean(r)),
   },
   equipItem: (item) => {
     const { equipment } = get();
     const updated = { ...equipment };
     if (item.type === 'weapon') {
-      updated.weapon = item;
+      updated.weapon = item as LootItem;
     } else if (item.type === 'armor') {
-      updated.armor = item;
+      updated.armor = item as LootItem;
     } else if (item.type === 'relic') {
       // Up to 3 relics, replaces oldest if full
       if (updated.relics.length < 3) {
@@ -288,6 +375,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       } else {
         updated.relics = [updated.relics[1], updated.relics[2], item];
       }
+      saveEquippedRelicIds(updated.relics.map((r) => r.id));
     }
     set({ equipment: updated });
   },

@@ -92,6 +92,38 @@ describe('gameStore', () => {
     });
   });
 
+  describe('relics system', () => {
+    it('unlocks a relic', () => {
+      useGameStore.getState().unlockRelic('coracao_abissal');
+      expect(useGameStore.getState().unlockedRelics).toContain('coracao_abissal');
+    });
+
+    it('equips and unequips relic by ID', () => {
+      const ok = useGameStore.getState().equipRelicById('selo_hemorragico');
+      expect(ok).toBe(true);
+      expect(useGameStore.getState().equipment.relics.some((r) => r.id === 'selo_hemorragico')).toBe(true);
+
+      useGameStore.getState().unequipRelicById('selo_hemorragico');
+      expect(useGameStore.getState().equipment.relics.some((r) => r.id === 'selo_hemorragico')).toBe(false);
+    });
+
+    it('calculates combined relic modifiers', () => {
+      useGameStore.getState().equipRelicById('selo_hemorragico');
+      useGameStore.getState().equipRelicById('calice_amaldicoado');
+
+      const mods = useGameStore.getState().getRelicModifiers();
+      expect(mods.bleedChanceOnHit).toBe(0.30);
+      expect(mods.bloodCrystalMultiplier).toBe(1.50);
+      expect(mods.hpRegenBonus).toBe(-0.5);
+    });
+
+    it('applies bloodCrystalMultiplier to addBloodCrystals', () => {
+      useGameStore.getState().equipRelicById('calice_amaldicoado'); // 1.5x multiplier
+      useGameStore.getState().addBloodCrystals(100);
+      expect(useGameStore.getState().bloodCrystals).toBe(150);
+    });
+  });
+
   describe('equipment', () => {
     it('equips a weapon', () => {
       const weapon = makeItem({ type: 'weapon', stats: { damageMultiplier: 0.5 } });
