@@ -1,0 +1,105 @@
+[
+  {
+    "id": "selo_hemorragico",
+    "name": "Selo Hemorrágico",
+    "type": "relic",
+    "rarity": "epic",
+    "description": "Causa sangramento nos inimigos atingidos por seus ataques e feitiços (30% chance).",
+    "lore": "Gravação rúnica encharcada com sangue ancestral que fere as artérias das vítimas.",
+    "icon": "Sparkles",
+    "effect": {
+      "bleedChanceOnHit": 0.30,
+      "bleedDamagePerSecond": 10,
+      "damageMultiplier": 0.10
+    }
+  },
+  {
+    "id": "calice_amaldicoado",
+    "name": "Cálice Amaldiçoado",
+    "type": "relic",
+    "rarity": "epic",
+    "description": "Aumenta os Cristais de Sangue obtidos em +50%, mas reduz a regeneração de HP em -0.5/s.",
+    "lore": "Um cálice de ferro negro retorcido. A promessa de riquezas custa a vitalidade da alma.",
+    "icon": "Sparkles",
+    "effect": {
+      "bloodCrystalMultiplier": 1.50,
+      "hpRegenBonus": -0.5
+    }
+  },
+  {
+    "id": "olho_de_carmim",
+    "name": "Olho de Carmim",
+    "type": "relic",
+    "rarity": "rare",
+    "description": "Concede +20 na velocidade de movimento e +5% de Vampirismo (roubo de vida).",
+    "lore": "Órgão cristalizado de uma besta abissal que reage ao calor arterial dos caçados.",
+    "icon": "Sparkles",
+    "effect": {
+      "speedBonus": 20,
+      "lifestealBonus": 0.05
+    }
+  },
+  {
+    "id": "coracao_abissal",
+    "name": "Coração Abissal",
+    "type": "relic",
+    "rarity": "legendary",
+    "description": "Concede +40 de HP Máximo e reduz em -15% o cooldown de todas as habilidades.",
+    "lore": "Um artefato orgânico que ainda pulsa lentamente, emanando trevas ressonantes.",
+    "icon": "Sparkles",
+    "effect": {
+      "maxHpBonus": 40,
+      "cooldownReductionBonus": 0.15
+    }
+  },
+  {
+    "id": "amuleto_do_martir",
+    "name": "Amuleto do Mártir",
+    "type": "relic",
+    "rarity": "rare",
+    "description": "Reduz o custo de sangue e mana dos feitiços em -20%, mas reduz a velocidade em -10.",
+    "lore": "Relíquia gasta por orações desesperadas no altar dos enforcados.",
+    "icon": "Sparkles",
+    "effect": {
+      "spellCostDiscount": 0.20,
+      "speedBonus": -10
+    }
+  },
+  {
+    "id": "anel_do_pacto_sanguineo",
+    "name": "Anel do Pacto Sanguíneo",
+    "type": "relic",
+    "rarity": "common",
+    "description": "Eleva o dano total de todas as artes hemomânticas em +15%.",
+    "lore": "Simples anel de latão fundido com o veneno vermelho de rituais de sangue.",
+    "icon": "Sparkles",
+    "effect": {
+      "damageMultiplier": 0.15
+    }
+  },
+  {
+    "id": "fragmento_abissal",
+    "name": "Fragmento Abissal",
+    "type": "relic",
+    "rarity": "legendary",
+    "description": "Eleva o ganho de Cristais de Sangue em +75% e o Dano em +20%.",
+    "lore": "Pedra negra extraída das profundezas do Fosso das Chagas, vibrando com poder puro.",
+    "icon": "Sparkles",
+    "effect": {
+      "bloodCrystalMultiplier": 1.75,
+      "damageMultiplier": 0.20
+    }
+  },
+  {
+    "id": "manta_vampirica",
+    "name": "Manta Vampírica",
+    "type": "relic",
+    "rarity": "common",
+    "description": "Aumenta o Vampirismo em +8% ao ferir inimigos com feitiços.",
+    "lore": "Tecido escuro trançado com cerdas impregnadas por necromancia vampírica.",
+    "icon": "Sparkles",
+    "effect": {
+      "lifestealBonus": 0.08
+    }
+  }
+]

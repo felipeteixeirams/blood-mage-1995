@@ -1666,6 +1666,14 @@ export class GameScene extends Phaser.Scene {
     this.lastGamepadButtonStates = currentStates;
   }
 
+  private applyRelicOnHitEffects(enemy: Enemy) {
+    if (!enemy || !enemy.active) return;
+    const relicMods = useGameStore.getState().getRelicModifiers();
+    if (relicMods.bleedChanceOnHit && Math.random() < relicMods.bleedChanceOnHit) {
+      this.statusEffectSystem?.applyStatus(enemy, 'bleeding', 4000, relicMods.bleedDamagePerSecond || 10);
+    }
+  }
+
   private firePlayerBloodBolt() {
     const aimVec = this.player.getAimVector();
     const baseAngle = Math.atan2(aimVec.y, aimVec.x);
@@ -1683,7 +1691,7 @@ export class GameScene extends Phaser.Scene {
         this.player.y,
         angle,
         boltCfg.projectileSpeed,
-        boltCfg.baseDamage * this.player.stats.damageMultiplier,
+        boltCfg.baseDamage * this.player.getEffectiveDamageMultiplier(),
         false
       );
       this.lightingPolish?.addSpellGlow(proj, 'blood_bolt');
@@ -1713,11 +1721,12 @@ export class GameScene extends Phaser.Scene {
         if (dist <= 200) {
           if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 15);
           const novaDmgCfg = (spellsData as Record<string, SpellConfig>)['hellfire_nova'].baseDamage;
-          const novaDamage = Math.round(novaDmgCfg * this.player.stats.damageMultiplier);
+          const novaDamage = Math.round(novaDmgCfg * this.player.getEffectiveDamageMultiplier());
 
           const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
           const isDead = enemy.takeDamage(novaDamage);
           CombatFeel.handleHitImpact(this, novaDamage, false, true, enemy.hp / enemy.maxHp);
+          this.applyRelicOnHitEffects(enemy);
 
           this.spawnFloatingText(enemy.x, enemy.y, `${novaDamage}!`, '#f97316', true);
           const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, enemy.x, enemy.y);
@@ -1753,11 +1762,12 @@ export class GameScene extends Phaser.Scene {
         if (dist <= 150) {
           if (this.bloodEmitter) this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 8);
           const syphonDmgCfg = (spellsData as Record<string, SpellConfig>)['syphon_soul'].baseDamage;
-          const syphonDmg = Math.round(syphonDmgCfg * this.player.stats.damageMultiplier);
+          const syphonDmg = Math.round(syphonDmgCfg * this.player.getEffectiveDamageMultiplier());
 
           const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
           const isDead = enemy.takeDamage(syphonDmg);
           CombatFeel.handleHitImpact(this, syphonDmg, false, true, enemy.hp / enemy.maxHp);
+          this.applyRelicOnHitEffects(enemy);
 
           this.spawnFloatingText(enemy.x, enemy.y, syphonDmg.toString(), '#a855f7', false);
           totalStolenHp += 8;
@@ -1806,10 +1816,11 @@ export class GameScene extends Phaser.Scene {
             if (enemy.active) {
               const dist = Phaser.Math.Distance.Between(bone.x, bone.y, enemy.x, enemy.y);
               if (dist < 25) {
-                const boneDmg = Math.round(12 * this.player.stats.damageMultiplier);
+                const boneDmg = Math.round(12 * this.player.getEffectiveDamageMultiplier());
                 const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
                 const isDead = enemy.takeDamage(boneDmg);
                 CombatFeel.handleHitImpact(this, boneDmg, false, false, enemy.hp / enemy.maxHp);
+                this.applyRelicOnHitEffects(enemy);
                 if (isDead) this.handleEnemyDeath(enemy, 'bone_shield', wasLowHp);
               }
             }
@@ -1865,7 +1876,7 @@ export class GameScene extends Phaser.Scene {
 
     // Damage enemies in arc
     const scytheDmgCfg = (spellsData as Record<string, SpellConfig>)['crimson_scythe'].baseDamage;
-    const scytheDmg = Math.round(scytheDmgCfg * this.player.stats.damageMultiplier);
+    const scytheDmg = Math.round(scytheDmgCfg * this.player.getEffectiveDamageMultiplier());
     this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
       const enemy = enemyObj as Enemy;
       if (enemy.active) {
@@ -1877,6 +1888,7 @@ export class GameScene extends Phaser.Scene {
             const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
             const isDead = enemy.takeDamage(scytheDmg);
             CombatFeel.handleHitImpact(this, scytheDmg, false, true, enemy.hp / enemy.maxHp);
+            this.applyRelicOnHitEffects(enemy);
             this.spawnFloatingText(enemy.x, enemy.y, `${scytheDmg}!`, '#dc2626', true);
             // Knockback
             enemy.x += Math.cos(enemyAngle) * 35;
@@ -1922,10 +1934,11 @@ export class GameScene extends Phaser.Scene {
               enemy.y += Math.sin(pullAngle) * 8;
 
               // Tick damage
-              const tickDmg = Math.round(10 * this.player.stats.damageMultiplier);
+              const tickDmg = Math.round(10 * this.player.getEffectiveDamageMultiplier());
               const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
               const isDead = enemy.takeDamage(tickDmg);
               CombatFeel.handleHitImpact(this, tickDmg, false, true, enemy.hp / enemy.maxHp);
+              this.applyRelicOnHitEffects(enemy);
               if (ticks % 2 === 0) {
                 this.spawnFloatingText(enemy.x, enemy.y, `${tickDmg}`, '#e11d48', false);
               }
@@ -1985,7 +1998,7 @@ export class GameScene extends Phaser.Scene {
     // Beam Line Segment collision check against enemies
     const beamLine = new Phaser.Geom.Line(startX, startY, endX, endY);
     const beamDmgCfg = (spellsData as Record<string, SpellConfig>)['hemomancy_beam'].baseDamage;
-    const beamDmg = Math.round(beamDmgCfg * this.player.stats.damageMultiplier);
+    const beamDmg = Math.round(beamDmgCfg * this.player.getEffectiveDamageMultiplier());
 
     this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
       const enemy = enemyObj as Enemy;
@@ -1996,6 +2009,7 @@ export class GameScene extends Phaser.Scene {
           const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
           const isDead = enemy.takeDamage(beamDmg);
           CombatFeel.handleHitImpact(this, beamDmg, false, true, enemy.hp / enemy.maxHp);
+          this.applyRelicOnHitEffects(enemy);
           this.spawnFloatingText(enemy.x, enemy.y, `${beamDmg}!`, '#f43f5e', true);
 
           if (!isDead) {
@@ -2100,6 +2114,8 @@ export class GameScene extends Phaser.Scene {
     const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
     const isDead = enemy.takeDamage(finalDamage, this.player.x, this.player.y, isCrit, false);
     CombatFeel.handleHitImpact(this, finalDamage, isCrit, false, enemy.hp / enemy.maxHp);
+    this.applyRelicOnHitEffects(enemy);
+
     if (isCrit && this.lightingPolish) {
       this.lightingPolish.addCriticalImpactGlow(enemy.x, enemy.y);
     }
@@ -2109,8 +2125,9 @@ export class GameScene extends Phaser.Scene {
     this.spawnFloatingText(enemy.x, enemy.y, isCrit ? `${dmgText}!` : dmgText, isCrit ? '#facc15' : '#ffffff', isCrit);
 
     // Vampirism life steal
-    if (this.player.stats.vampirism > 0) {
-      const stolen = finalDamage * this.player.stats.vampirism;
+    const effVamp = this.player.getEffectiveVampirism();
+    if (effVamp > 0) {
+      const stolen = finalDamage * effVamp;
       this.player.heal(stolen);
       this.spawnFloatingText(this.player.x, this.player.y - 12, `+${Math.round(stolen)}`, '#22c55e', false);
       this.lightingPolish?.addHealGlow(this.player.x, this.player.y);
