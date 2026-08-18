@@ -1,30 +1,40 @@
 import { z } from 'zod';
-import { GameSettings, HighScoreRecord } from '../types/game';
+import { GameSettings, HighScoreRecord, CodexState, AchievementState, RunStats, DroppedCorpse } from '../types/game';
 import { logger } from './logger';
 
 const SETTINGS_KEY = 'bloodmage_1995_settings';
 const HIGHSCORES_KEY = 'bloodmage_1995_highscores';
 const BLOOD_CRYSTALS_KEY = 'bloodmage_1995_blood_crystals';
 const TALENTS_KEY = 'bloodmage_1995_talents';
+const ONBOARDING_KEY = 'bloodmage_1995_onboarding';
+const DEATH_STATE_KEY = 'bloodmage_1995_death_state';
+const CORPSE_STATE_KEY = 'bloodmage_1995_corpse_state';
+const UNLOCKED_RELICS_KEY = 'bloodmage_1995_unlocked_relics';
+const EQUIPPED_RELIC_IDS_KEY = 'bloodmage_1995_equipped_relic_ids';
+const CODEX_STATE_KEY = 'bloodmage_1995_codex';
+const ACHIEVEMENTS_KEY = 'bloodmage_1995_achievements';
+const ACHIEVEMENTS_PROGRESS_KEY = 'achievements_progress';
+const RUN_STATS_KEY = 'bloodmage_1995_run_stats';
 
-// Schema for Blood Crystals validation
+// --- Blood Crystals ---
 const BloodCrystalsSchema = z.number().int().nonnegative().max(1_000_000_000);
 
 export function loadBloodCrystals(): number {
   try {
     const raw = localStorage.getItem(BLOOD_CRYSTALS_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = parseInt(raw, 10);
-      const validated = BloodCrystalsSchema.safeParse(Number.isNaN(parsed) ? 0 : parsed);
+      const validated = BloodCrystalsSchema.safeParse(Number.isNaN(parsed) ? null : parsed);
       if (validated.success) {
         logger.debug('PERSISTENCE', `Blood crystals loaded successfully: ${validated.data}`);
         return validated.data;
-      } else {
-        logger.warn('PERSISTENCE', 'Valor inválido de cristais de sangue no localStorage. Restaurando para 0.', { raw });
       }
+      logger.warn('PERSISTENCE', 'Valor inválido de cristais de sangue no localStorage. Restaurando para 0.', { raw });
+      saveBloodCrystals(0);
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load blood crystals', e);
+    logger.warn('PERSISTENCE', 'Failed to load blood crystals, restoring default', e);
+    saveBloodCrystals(0);
   }
   return 0;
 }
@@ -43,6 +53,7 @@ export function saveBloodCrystals(amount: number): void {
   }
 }
 
+// --- Talents ---
 const defaultTalents: Record<string, number> = {
   hemomancy_power: 0,
   vampirismo_profundo: 0,
@@ -55,36 +66,36 @@ const defaultTalents: Record<string, number> = {
   tempestade_continua: 0,
 };
 
-// Schema for Talent levels validation
 const TalentLevelsSchema = z.object({
-  hemomancy_power: z.number().int().nonnegative().max(100).catch(0),
-  vampirismo_profundo: z.number().int().nonnegative().max(100).catch(0),
-  execucoes_em_area: z.number().int().nonnegative().max(100).catch(0),
-  martyr_vitality: z.number().int().nonnegative().max(100).catch(0),
-  escudo_ossos_aprimorado: z.number().int().nonnegative().max(100).catch(0),
-  aura_de_medo: z.number().int().nonnegative().max(100).catch(0),
-  abyssal_haste: z.number().int().nonnegative().max(100).catch(0),
-  sobrecarga_runica: z.number().int().nonnegative().max(100).catch(0),
-  tempestade_continua: z.number().int().nonnegative().max(100).catch(0),
-  vampiric_thirst: z.number().int().nonnegative().max(100).catch(0).optional(),
-  sacrifice_mastery: z.number().int().nonnegative().max(100).catch(0).optional(),
-}).strict(); // strict() prevents prototype pollution and extra keys
+  hemomancy_power: z.number().int().min(0).max(100).catch(0),
+  vampirismo_profundo: z.number().int().min(0).max(100).catch(0),
+  execucoes_em_area: z.number().int().min(0).max(100).catch(0),
+  martyr_vitality: z.number().int().min(0).max(100).catch(0),
+  escudo_ossos_aprimorado: z.number().int().min(0).max(100).catch(0),
+  aura_de_medo: z.number().int().min(0).max(100).catch(0),
+  abyssal_haste: z.number().int().min(0).max(100).catch(0),
+  sobrecarga_runica: z.number().int().min(0).max(100).catch(0),
+  tempestade_continua: z.number().int().min(0).max(100).catch(0),
+  vampiric_thirst: z.number().int().min(0).max(100).catch(0).optional(),
+  sacrifice_mastery: z.number().int().min(0).max(100).catch(0).optional(),
+}).strict();
 
 export function loadTalentLevels(): Record<string, number> {
   try {
     const raw = localStorage.getItem(TALENTS_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
       const validated = TalentLevelsSchema.safeParse(parsed);
       if (validated.success) {
         logger.debug('PERSISTENCE', 'Talents loaded successfully from localStorage');
         return validated.data;
-      } else {
-        logger.warn('PERSISTENCE', 'Estrutura de talentos inválida no localStorage. Restaurando padrões.', { raw });
       }
+      logger.warn('PERSISTENCE', 'Estrutura de talentos inválida no localStorage. Restaurando padrões.', { raw });
+      saveTalentLevels(defaultTalents);
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load talents', e);
+    logger.warn('PERSISTENCE', 'Failed to load talents, self-healing default', e);
+    saveTalentLevels(defaultTalents);
   }
   return { ...defaultTalents };
 }
@@ -103,6 +114,7 @@ export function saveTalentLevels(talents: Record<string, number>): void {
   }
 }
 
+// --- Settings ---
 export const defaultSettings: GameSettings = {
   minimapVisible: true,
   minimapAlpha: 0.65,
@@ -125,7 +137,6 @@ export const defaultSettings: GameSettings = {
   postProcessingEnabled: true,
 };
 
-// Schema for Settings validation
 const SettingsSchema = z.object({
   minimapVisible: z.boolean().catch(true),
   minimapAlpha: z.number().min(0).max(1).catch(0.65),
@@ -152,31 +163,35 @@ const SettingsSchema = z.object({
     size: z.enum(['small', 'medium', 'large'])
   })).optional(),
   activePaletteId: z.string().catch('crimson').optional(),
-}).strict(); // strict() prevents prototype pollution and extra keys
+}).strict();
 
 export function loadSettings(): GameSettings {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
       const validated = SettingsSchema.safeParse(parsed);
       if (validated.success) {
         logger.debug('PERSISTENCE', 'Game settings loaded successfully from localStorage');
         return validated.data;
-      } else {
-        logger.warn('PERSISTENCE', 'Configurações inválidas no localStorage. Restaurando padrões.', { raw });
       }
+      logger.warn('PERSISTENCE', 'Configurações inválidas no localStorage. Restaurando padrões.', { raw });
+      saveSettings(defaultSettings);
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load settings from localStorage', e);
+    logger.warn('PERSISTENCE', 'Failed to load settings from localStorage, self-healing default', e);
+    saveSettings(defaultSettings);
   }
-  return defaultSettings;
+  return { ...defaultSettings };
 }
 
 export function saveSettings(settings: GameSettings): void {
   try {
     const validated = SettingsSchema.safeParse(settings);
     const valueToSave = validated.success ? validated.data : defaultSettings;
+    if (!validated.success) {
+      logger.warn('PERSISTENCE', 'Tentativa de salvar configurações inválidas. Usando padrões.');
+    }
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(valueToSave));
     logger.debug('PERSISTENCE', 'Game settings saved successfully to localStorage');
   } catch (e) {
@@ -184,6 +199,7 @@ export function saveSettings(settings: GameSettings): void {
   }
 }
 
+// --- High Scores ---
 export const defaultHighScores: HighScoreRecord[] = [
   {
     id: 'default-1',
@@ -205,7 +221,6 @@ export const defaultHighScores: HighScoreRecord[] = [
   }
 ];
 
-// Schema for HighScoreRecord validation
 const HighScoreSchema = z.object({
   id: z.string().max(100).catch(() => `hs_${Date.now()}`),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).catch(() => new Date().toISOString().split('T')[0]),
@@ -214,27 +229,38 @@ const HighScoreSchema = z.object({
   wave: z.number().int().nonnegative().max(1_000).catch(1),
   timeSurvived: z.string().max(20).catch('00:00'),
   levelReached: z.number().int().nonnegative().max(100).catch(1),
-}).strict(); // strict() prevents prototype pollution and extra keys
+}).strict();
 
-const HighScoresArraySchema = z.array(HighScoreSchema);
+const HighScoresArraySchema = z.array(HighScoreSchema).max(50);
 
 export function loadHighScores(): HighScoreRecord[] {
   try {
     const raw = localStorage.getItem(HIGHSCORES_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
       const validated = HighScoresArraySchema.safeParse(parsed);
       if (validated.success) {
         logger.debug('PERSISTENCE', 'High scores loaded successfully from localStorage');
         return validated.data;
-      } else {
-        logger.warn('PERSISTENCE', 'High scores inválidos no localStorage. Restaurando lista padrão.', { raw });
       }
+      logger.warn('PERSISTENCE', 'High scores inválidos no localStorage. Restaurando lista padrão.', { raw });
+      saveHighScoresList(defaultHighScores);
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load highscores', e);
+    logger.warn('PERSISTENCE', 'Failed to load highscores, self-healing default', e);
+    saveHighScoresList(defaultHighScores);
   }
-  return defaultHighScores;
+  return [...defaultHighScores];
+}
+
+function saveHighScoresList(scores: HighScoreRecord[]): void {
+  try {
+    const validated = HighScoresArraySchema.safeParse(scores);
+    const valueToSave = validated.success ? validated.data : defaultHighScores;
+    localStorage.setItem(HIGHSCORES_KEY, JSON.stringify(valueToSave));
+  } catch (e) {
+    logger.error('PERSISTENCE', 'Failed to save high scores list', e);
+  }
 }
 
 export function saveHighScore(newRecord: Omit<HighScoreRecord, 'id' | 'date'>): HighScoreRecord[] {
@@ -247,20 +273,21 @@ export function saveHighScore(newRecord: Omit<HighScoreRecord, 'id' | 'date'>): 
 
   const updated = [...currentScores, record]
     .sort((a, b) => b.score - a.score)
-    .slice(0, 10); // Keep top 10
+    .slice(0, 10);
 
-  try {
-    const validated = HighScoresArraySchema.safeParse(updated);
-    const valueToSave = validated.success ? validated.data : defaultHighScores;
-    localStorage.setItem(HIGHSCORES_KEY, JSON.stringify(valueToSave));
-    logger.debug('PERSISTENCE', 'High score record saved successfully to localStorage');
-  } catch (e) {
-    logger.error('PERSISTENCE', 'Failed to save highscore', e);
-  }
+  saveHighScoresList(updated);
+  logger.debug('PERSISTENCE', 'High score record saved successfully to localStorage');
   return updated;
 }
 
-const ONBOARDING_KEY = 'bloodmage_1995_onboarding';
+// --- Onboarding ---
+const defaultOnboarding = {
+  firstKillDone: false,
+  firstLevelUpDone: false,
+  firstEquipDone: false,
+  firstBossSeen: false,
+  firstSkillCast: false
+};
 
 const OnboardingSchema = z.object({
   firstKillDone: z.boolean().catch(false),
@@ -273,46 +300,44 @@ const OnboardingSchema = z.object({
 export function loadOnboarding() {
   try {
     const raw = localStorage.getItem(ONBOARDING_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
       const validated = OnboardingSchema.safeParse(parsed);
       if (validated.success) {
         logger.debug('PERSISTENCE', 'Onboarding loaded successfully');
         return validated.data;
-      } else {
-        logger.warn('PERSISTENCE', 'Onboarding data inválido no localStorage. Restaurando defaults.', { raw });
       }
+      logger.warn('PERSISTENCE', 'Onboarding data inválido no localStorage. Restaurando defaults.', { raw });
+      saveOnboarding(defaultOnboarding);
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load onboarding', e);
+    logger.warn('PERSISTENCE', 'Failed to load onboarding, self-healing default', e);
+    saveOnboarding(defaultOnboarding);
   }
-  return {
-    firstKillDone: false,
-    firstLevelUpDone: false,
-    firstEquipDone: false,
-    firstBossSeen: false,
-    firstSkillCast: false
-  };
+  return { ...defaultOnboarding };
 }
 
 export function saveOnboarding(state: any): void {
   try {
-    localStorage.setItem(ONBOARDING_KEY, JSON.stringify(state));
+    const validated = OnboardingSchema.safeParse(state);
+    const valueToSave = validated.success ? validated.data : defaultOnboarding;
+    if (!validated.success) {
+      logger.warn('PERSISTENCE', 'Tentativa de salvar estado de onboarding inválido. Usando padrão.');
+    }
+    localStorage.setItem(ONBOARDING_KEY, JSON.stringify(valueToSave));
     logger.debug('PERSISTENCE', 'Onboarding saved successfully');
   } catch (e) {
     logger.error('PERSISTENCE', 'Failed to save onboarding', e);
   }
 }
 
-const DEATH_STATE_KEY = 'bloodmage_1995_death_state';
-const CORPSE_STATE_KEY = 'bloodmage_1995_corpse_state';
-const UNLOCKED_RELICS_KEY = 'bloodmage_1995_unlocked_relics';
-const EQUIPPED_RELIC_IDS_KEY = 'bloodmage_1995_equipped_relic_ids';
-
+// --- Death & Corpse State ---
 const DeathStateSchema = z.object({
   isDefinitivelyDead: z.boolean().catch(false),
   gameOverStats: z.any().nullable().optional(),
-});
+}).strict();
+
+const defaultDeathState = { isDefinitivelyDead: false, gameOverStats: null };
 
 export function saveDeathState(isDead: boolean, stats?: any): void {
   try {
@@ -320,7 +345,12 @@ export function saveDeathState(isDead: boolean, stats?: any): void {
       isDefinitivelyDead: isDead,
       gameOverStats: stats || null
     };
-    localStorage.setItem(DEATH_STATE_KEY, JSON.stringify(data));
+    const validated = DeathStateSchema.safeParse(data);
+    const valueToSave = validated.success ? validated.data : defaultDeathState;
+    if (!validated.success) {
+      logger.warn('PERSISTENCE', 'Tentativa de salvar estado de morte inválido. Usando padrão.');
+    }
+    localStorage.setItem(DEATH_STATE_KEY, JSON.stringify(valueToSave));
     logger.debug('PERSISTENCE', `Death state saved successfully: ${isDead}`);
   } catch (e) {
     logger.error('PERSISTENCE', 'Failed to save death state', e);
@@ -330,21 +360,46 @@ export function saveDeathState(isDead: boolean, stats?: any): void {
 export function loadDeathState(): { isDefinitivelyDead: boolean; gameOverStats?: any } {
   try {
     const raw = localStorage.getItem(DEATH_STATE_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
       const validated = DeathStateSchema.safeParse(parsed);
       if (validated.success) {
         logger.debug('PERSISTENCE', 'Death state loaded successfully');
         return validated.data;
-      } else {
-        logger.warn('PERSISTENCE', 'Death state inválido no localStorage. Restaurando default.', { raw });
       }
+      logger.warn('PERSISTENCE', 'Death state inválido no localStorage. Restaurando default.', { raw });
+      saveDeathState(false, null);
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load death state', e);
+    logger.warn('PERSISTENCE', 'Failed to load death state, self-healing default', e);
+    saveDeathState(false, null);
   }
-  return { isDefinitivelyDead: false, gameOverStats: null };
+  return { ...defaultDeathState };
 }
+
+const LootItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.enum(['weapon', 'armor', 'relic']),
+  rarity: z.enum(['common', 'rare', 'epic', 'legendary']),
+  description: z.string().optional(),
+  stats: z.object({
+    damageMultiplier: z.number().optional(),
+    maxHpBonus: z.number().optional(),
+    speedBonus: z.number().optional(),
+    lifestealBonus: z.number().optional(),
+    cooldownReductionBonus: z.number().optional(),
+    critChanceBonus: z.number().optional(),
+    hpRegenBonus: z.number().optional(),
+  }).catch({}),
+  effect: z.any().optional(),
+});
+
+const EquipmentSlotsSchema = z.object({
+  weapon: LootItemSchema.nullable().catch(null),
+  armor: LootItemSchema.nullable().catch(null),
+  relics: z.array(LootItemSchema).max(3).catch([]),
+}).strict();
 
 const CorpseSchema = z.object({
   hasDroppedCorpse: z.boolean().catch(false),
@@ -352,16 +407,47 @@ const CorpseSchema = z.object({
   x: z.number().catch(0),
   y: z.number().catch(0),
   droppedTimestamp: z.number().catch(0),
+  equipment: EquipmentSlotsSchema.optional().catch({ weapon: null, armor: null, relics: [] }),
+  curatives: z.object({
+    bandages: z.number().int().nonnegative().catch(0),
+    antidotes: z.number().int().nonnegative().catch(0),
+    antibiotics: z.number().int().nonnegative().catch(0),
+  }).optional().catch({ bandages: 0, antidotes: 0, antibiotics: 0 }),
   itemsInside: z.array(z.object({
     id: z.string(),
     quantity: z.number()
-  })).catch([]),
+  })).optional().catch([]),
 });
+
+const defaultCorpseState = {
+  hasDroppedCorpse: false,
+  zone: '',
+  x: 0,
+  y: 0,
+  droppedTimestamp: 0,
+  equipment: { weapon: null, armor: null, relics: [] },
+  curatives: { bandages: 0, antidotes: 0, antibiotics: 0 },
+  itemsInside: [],
+};
 
 export function saveDroppedCorpseState(corpse: any): void {
   try {
     const validated = CorpseSchema.safeParse(corpse);
-    const data = validated.success ? validated.data : corpse;
+    const data = validated.success
+      ? {
+          hasDroppedCorpse: validated.data.hasDroppedCorpse,
+          zone: validated.data.zone,
+          x: validated.data.x,
+          y: validated.data.y,
+          droppedTimestamp: validated.data.droppedTimestamp,
+          equipment: validated.data.equipment || defaultCorpseState.equipment,
+          curatives: validated.data.curatives || defaultCorpseState.curatives,
+          itemsInside: validated.data.itemsInside || [],
+        }
+      : defaultCorpseState;
+    if (!validated.success) {
+      logger.warn('PERSISTENCE', 'Tentativa de salvar cadáver inválido. Usando padrão saneado.');
+    }
     localStorage.setItem(CORPSE_STATE_KEY, JSON.stringify(data));
     logger.debug('PERSISTENCE', 'Corpse state saved successfully');
   } catch (e) {
@@ -369,58 +455,66 @@ export function saveDroppedCorpseState(corpse: any): void {
   }
 }
 
-export function loadDroppedCorpseState(): any {
+export function loadDroppedCorpseState(): DroppedCorpse & { itemsInside: any[] } {
   try {
     const raw = localStorage.getItem(CORPSE_STATE_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
       const validated = CorpseSchema.safeParse(parsed);
       if (validated.success) {
         logger.debug('PERSISTENCE', 'Corpse state loaded successfully');
-        return validated.data;
-      } else {
-        logger.warn('PERSISTENCE', 'Corpse state inválido no localStorage. Restaurando default.', { raw });
+        return {
+          hasDroppedCorpse: validated.data.hasDroppedCorpse,
+          zone: validated.data.zone,
+          x: validated.data.x,
+          y: validated.data.y,
+          droppedTimestamp: validated.data.droppedTimestamp,
+          equipment: validated.data.equipment || defaultCorpseState.equipment,
+          curatives: validated.data.curatives || defaultCorpseState.curatives,
+          itemsInside: validated.data.itemsInside || [],
+        };
       }
+      logger.warn('PERSISTENCE', 'Corpse state inválido no localStorage. Restaurando default.', { raw });
+      saveDroppedCorpseState(defaultCorpseState);
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load corpse state', e);
+    logger.warn('PERSISTENCE', 'Failed to load corpse state, self-healing default', e);
+    saveDroppedCorpseState(defaultCorpseState);
   }
-  return {
-    hasDroppedCorpse: false,
-    zone: '',
-    x: 0,
-    y: 0,
-    droppedTimestamp: 0,
-    itemsInside: []
-  };
+  return { ...defaultCorpseState };
 }
 
+// --- Relics ---
 const defaultUnlockedRelics = ['selo_hemorragico', 'olho_de_carmim', 'anel_do_pacto_sanguineo'];
 const UnlockedRelicsSchema = z.array(z.string().max(100)).max(50);
 
 export function loadUnlockedRelics(): string[] {
   try {
     const raw = localStorage.getItem(UNLOCKED_RELICS_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
       const validated = UnlockedRelicsSchema.safeParse(parsed);
       if (validated.success) {
         logger.debug('PERSISTENCE', 'Unlocked relics loaded successfully');
         return validated.data;
-      } else {
-        logger.warn('PERSISTENCE', 'Relíquias desbloqueadas inválidas no localStorage. Restaurando padrão.', { raw });
       }
+      logger.warn('PERSISTENCE', 'Relíquias desbloqueadas inválidas no localStorage. Restaurando padrão.', { raw });
+      saveUnlockedRelics(defaultUnlockedRelics);
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load unlocked relics', e);
+    logger.warn('PERSISTENCE', 'Failed to load unlocked relics, self-healing default', e);
+    saveUnlockedRelics(defaultUnlockedRelics);
   }
-  return defaultUnlockedRelics;
+  return [...defaultUnlockedRelics];
 }
 
 export function saveUnlockedRelics(relicIds: string[]): void {
   try {
     const validated = UnlockedRelicsSchema.safeParse(relicIds);
     const valueToSave = validated.success ? validated.data : defaultUnlockedRelics;
+    if (!validated.success) {
+      logger.warn('PERSISTENCE', 'Tentativa de salvar relíquias desbloqueadas inválidas. Usando padrões.');
+    }
     localStorage.setItem(UNLOCKED_RELICS_KEY, JSON.stringify(valueToSave));
     logger.debug('PERSISTENCE', 'Unlocked relics saved successfully');
   } catch (e) {
@@ -434,26 +528,30 @@ const EquippedRelicIdsSchema = z.array(z.string().max(100)).max(3);
 export function loadEquippedRelicIds(): string[] {
   try {
     const raw = localStorage.getItem(EQUIPPED_RELIC_IDS_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
       const validated = EquippedRelicIdsSchema.safeParse(parsed);
       if (validated.success) {
         logger.debug('PERSISTENCE', 'Equipped relic IDs loaded successfully');
         return validated.data;
-      } else {
-        logger.warn('PERSISTENCE', 'Relíquias equipadas inválidas no localStorage. Restaurando padrão.', { raw });
       }
+      logger.warn('PERSISTENCE', 'Relíquias equipadas inválidas no localStorage. Restaurando padrão.', { raw });
+      saveEquippedRelicIds(defaultEquippedRelicIds);
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load equipped relic IDs', e);
+    logger.warn('PERSISTENCE', 'Failed to load equipped relic IDs, self-healing default', e);
+    saveEquippedRelicIds(defaultEquippedRelicIds);
   }
-  return defaultEquippedRelicIds;
+  return [...defaultEquippedRelicIds];
 }
 
 export function saveEquippedRelicIds(relicIds: string[]): void {
   try {
     const validated = EquippedRelicIdsSchema.safeParse(relicIds);
     const valueToSave = validated.success ? validated.data : defaultEquippedRelicIds;
+    if (!validated.success) {
+      logger.warn('PERSISTENCE', 'Tentativa de salvar relíquias equipadas inválidas. Usando padrão.');
+    }
     localStorage.setItem(EQUIPPED_RELIC_IDS_KEY, JSON.stringify(valueToSave));
     logger.debug('PERSISTENCE', 'Equipped relic IDs saved successfully');
   } catch (e) {
@@ -461,10 +559,7 @@ export function saveEquippedRelicIds(relicIds: string[]): void {
   }
 }
 
-import { CodexState } from '../types/game';
-
-const CODEX_STATE_KEY = 'bloodmage_1995_codex';
-
+// --- Codex ---
 export const defaultCodexState: CodexState = {
   enemyKills: {},
   unlockedEntries: ['lore_origem_hemomancia', 'relic_selo_hemorragico'],
@@ -480,18 +575,19 @@ const CodexStateSchema = z.object({
 export function loadCodexState(): CodexState {
   try {
     const raw = localStorage.getItem(CODEX_STATE_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
       const validated = CodexStateSchema.safeParse(parsed);
       if (validated.success) {
         logger.debug('PERSISTENCE', 'Codex state loaded successfully');
         return validated.data;
-      } else {
-        logger.warn('PERSISTENCE', 'Estrutura do códice inválida no localStorage. Restaurando padrão.', { raw });
       }
+      logger.warn('PERSISTENCE', 'Estrutura do códice inválida no localStorage. Restaurando padrão.', { raw });
+      saveCodexState(defaultCodexState);
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load codex state', e);
+    logger.warn('PERSISTENCE', 'Failed to load codex state, self-healing default', e);
+    saveCodexState(defaultCodexState);
   }
   return { ...defaultCodexState };
 }
@@ -500,6 +596,9 @@ export function saveCodexState(state: CodexState): void {
   try {
     const validated = CodexStateSchema.safeParse(state);
     const valueToSave = validated.success ? validated.data : defaultCodexState;
+    if (!validated.success) {
+      logger.warn('PERSISTENCE', 'Tentativa de salvar estado de códice inválido. Usando padrão.');
+    }
     localStorage.setItem(CODEX_STATE_KEY, JSON.stringify(valueToSave));
     logger.debug('PERSISTENCE', 'Codex state saved successfully');
   } catch (e) {
@@ -507,27 +606,26 @@ export function saveCodexState(state: CodexState): void {
   }
 }
 
-import { AchievementState, RunStats } from '../types/game';
-
-const ACHIEVEMENTS_KEY = 'bloodmage_1995_achievements';
-const RUN_STATS_KEY = 'bloodmage_1995_run_stats';
-
+// --- Achievements State & Progress ---
 const AchievementStateSchema = z.record(z.string(), z.object({
-  id: z.string(),
+  id: z.string().max(100),
   unlocked: z.boolean(),
   redeemed: z.boolean(),
-})).catch({});
+}).strict()).catch({});
 
 export function loadAchievements(): Record<string, AchievementState> {
   try {
     const raw = localStorage.getItem(ACHIEVEMENTS_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
       const validated = AchievementStateSchema.safeParse(parsed);
       if (validated.success) return validated.data;
+      logger.warn('PERSISTENCE', 'Achievements inválidos no localStorage. Restaurando vazio.', { raw });
+      saveAchievements({});
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load achievements', e);
+    logger.warn('PERSISTENCE', 'Failed to load achievements, self-healing default', e);
+    saveAchievements({});
   }
   return {};
 }
@@ -536,12 +634,69 @@ export function saveAchievements(achievements: Record<string, AchievementState>)
   try {
     const validated = AchievementStateSchema.safeParse(achievements);
     const valueToSave = validated.success ? validated.data : {};
+    if (!validated.success) {
+      logger.warn('PERSISTENCE', 'Tentativa de salvar conquistas inválidas. Usando vazio.');
+    }
     localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(valueToSave));
     logger.debug('PERSISTENCE', 'Achievements saved successfully');
   } catch (e) {
     logger.error('PERSISTENCE', 'Failed to save achievements', e);
   }
 }
+
+const SingleAchievementProgressSchema = z.object({
+  id: z.string().max(100),
+  unlockedAt: z.number().nullable().catch(null),
+  progress: z.number().min(0).max(100).catch(0),
+  complete: z.boolean().catch(false),
+}).strict();
+
+const AchievementProgressRecordSchema = z.record(z.string(), SingleAchievementProgressSchema);
+
+export function loadAchievementsProgress(): Record<string, { id: string; unlockedAt: number | null; progress: number; complete: boolean }> {
+  try {
+    const raw = localStorage.getItem(ACHIEVEMENTS_PROGRESS_KEY);
+    if (raw !== null) {
+      const parsed = JSON.parse(raw);
+      const validated = AchievementProgressRecordSchema.safeParse(parsed);
+      if (validated.success) return validated.data;
+      logger.warn('PERSISTENCE', 'Progresso de conquistas inválido no localStorage. Restaurando vazio.', { raw });
+      saveAchievementsProgress({});
+    }
+  } catch (e) {
+    logger.warn('PERSISTENCE', 'Failed to load achievements progress, self-healing default', e);
+    saveAchievementsProgress({});
+  }
+  return {};
+}
+
+export function saveAchievementsProgress(progressMap: Record<string, any>): void {
+  try {
+    const validated = AchievementProgressRecordSchema.safeParse(progressMap);
+    const valueToSave = validated.success ? validated.data : {};
+    if (!validated.success) {
+      logger.warn('PERSISTENCE', 'Tentativa de salvar progresso de conquistas inválido. Usando vazio.');
+    }
+    localStorage.setItem(ACHIEVEMENTS_PROGRESS_KEY, JSON.stringify(valueToSave));
+    logger.debug('PERSISTENCE', 'Achievements progress saved successfully');
+  } catch (e) {
+    logger.error('PERSISTENCE', 'Failed to save achievements progress', e);
+  }
+}
+
+// --- Run Stats ---
+const defaultRunStats: RunStats = {
+  bloodless_floor: 0,
+  kills_total: 0,
+  kills_gargoyle: 0,
+  speedrun_f3: 0,
+  deaths_total: 0,
+  hp_healed_magic: 0,
+  dismemberments_total: 0,
+  mana_orbs_run: 0,
+  crystals_hoarded: 0,
+  survival_time_run: 0,
+};
 
 const RunStatsSchema = z.object({
   bloodless_floor: z.number().catch(0),
@@ -554,59 +709,32 @@ const RunStatsSchema = z.object({
   mana_orbs_run: z.number().catch(0),
   crystals_hoarded: z.number().catch(0),
   survival_time_run: z.number().catch(0),
-}).catch({
-  bloodless_floor: 0,
-  kills_total: 0,
-  kills_gargoyle: 0,
-  speedrun_f3: 0,
-  deaths_total: 0,
-  hp_healed_magic: 0,
-  dismemberments_total: 0,
-  mana_orbs_run: 0,
-  crystals_hoarded: 0,
-  survival_time_run: 0,
-});
+}).strict().catch(defaultRunStats);
 
 export function loadRunStats(): RunStats {
   try {
     const raw = localStorage.getItem(RUN_STATS_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
       const validated = RunStatsSchema.safeParse(parsed);
       if (validated.success) return validated.data;
+      logger.warn('PERSISTENCE', 'Estatísticas da corrida inválidas no localStorage. Restaurando default.', { raw });
+      saveRunStats(defaultRunStats);
     }
   } catch (e) {
-    logger.warn('PERSISTENCE', 'Failed to load run stats', e);
+    logger.warn('PERSISTENCE', 'Failed to load run stats, self-healing default', e);
+    saveRunStats(defaultRunStats);
   }
-  return {
-    bloodless_floor: 0,
-    kills_total: 0,
-    kills_gargoyle: 0,
-    speedrun_f3: 0,
-    deaths_total: 0,
-    hp_healed_magic: 0,
-    dismemberments_total: 0,
-    mana_orbs_run: 0,
-    crystals_hoarded: 0,
-    survival_time_run: 0,
-  };
+  return { ...defaultRunStats };
 }
 
 export function saveRunStats(stats: RunStats): void {
   try {
     const validated = RunStatsSchema.safeParse(stats);
-    const valueToSave = validated.success ? validated.data : {
-      bloodless_floor: 0,
-      kills_total: 0,
-      kills_gargoyle: 0,
-      speedrun_f3: 0,
-      deaths_total: 0,
-      hp_healed_magic: 0,
-      dismemberments_total: 0,
-      mana_orbs_run: 0,
-      crystals_hoarded: 0,
-      survival_time_run: 0,
-    };
+    const valueToSave = validated.success ? validated.data : defaultRunStats;
+    if (!validated.success) {
+      logger.warn('PERSISTENCE', 'Tentativa de salvar estatísticas da corrida inválidas. Usando default.');
+    }
     localStorage.setItem(RUN_STATS_KEY, JSON.stringify(valueToSave));
     logger.debug('PERSISTENCE', 'Run stats saved successfully');
   } catch (e) {

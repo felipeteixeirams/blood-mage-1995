@@ -24,6 +24,7 @@ export interface AchievementProgress {
 }
 
 import { logger } from '../../utils/logger';
+import { loadAchievementsProgress, saveAchievementsProgress } from '../../utils/localStorage';
 
 export class AchievementSystem {
   private achievements: Map<string, Achievement> = new Map();
@@ -140,13 +141,10 @@ export class AchievementSystem {
    */
   private loadProgress(): void {
     try {
-      const saved = localStorage.getItem('achievements_progress');
-      if (saved) {
-        const data = JSON.parse(saved);
-        Object.entries(data).forEach(([id, prog]: [string, any]) => {
-          this.progress.set(id, prog);
-        });
-      }
+      const saved = loadAchievementsProgress();
+      Object.entries(saved).forEach(([id, prog]) => {
+        this.progress.set(id, prog);
+      });
     } catch (e) {
       logger.error('ACHIEVEMENT', 'Erro ao carregar achievements', { error: e });
     }
@@ -161,7 +159,7 @@ export class AchievementSystem {
       this.progress.forEach((prog, id) => {
         data[id] = prog;
       });
-      localStorage.setItem('achievements_progress', JSON.stringify(data));
+      saveAchievementsProgress(data);
     } catch (e) {
       logger.error('ACHIEVEMENT', 'Erro ao salvar achievements', { error: e });
     }
