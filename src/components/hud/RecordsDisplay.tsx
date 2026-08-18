@@ -1,38 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import type { RecordEntry } from '../../game/scenes/RecordsScene';
+import { loadHighScores } from '../../utils/localStorage';
 
 interface RecordsDisplayProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const STORE_KEY = 'bloodmage.records';
-
-const DEMO: RecordEntry[] = [
-  { name: 'VORTHAK', score: 98450, level: 12 },
-  { name: 'MORWENNA', score: 87120, level: 11 },
-  { name: 'GRIMHOLD', score: 74300, level: 10 },
-  { name: 'SELVARA', score: 61980, level: 8 },
-  { name: 'DRAKKEN', score: 53040, level: 7 },
-  { name: 'ISOLDE', score: 41220, level: 6 },
-  { name: 'KHARN', score: 32770, level: 5 },
-  { name: 'NYX', score: 21050, level: 4 },
-];
-
-function loadRecords(): RecordEntry[] {
-  try {
-    const raw = localStorage.getItem(STORE_KEY);
-    if (raw) {
-      const list = JSON.parse(raw) as RecordEntry[];
-      if (Array.isArray(list) && list.length) {
-        return [...list].sort((a, b) => b.score - a.score).slice(0, 8);
-      }
-    }
-  } catch {
-    // ignore
-  }
-  return DEMO;
+function getFormattedRecords(): RecordEntry[] {
+  const highScores = loadHighScores();
+  return highScores.map((item, idx) => ({
+    name: `BRUXO #${idx + 1}`,
+    score: item.score || 0,
+    level: item.levelReached || item.wave || 1,
+  })).sort((a, b) => b.score - a.score).slice(0, 8);
 }
 
 export const RecordsDisplay: React.FC<RecordsDisplayProps> = ({ isOpen, onClose }) => {
@@ -40,7 +22,7 @@ export const RecordsDisplay: React.FC<RecordsDisplayProps> = ({ isOpen, onClose 
 
   useEffect(() => {
     if (isOpen) {
-      setRecords(loadRecords());
+      setRecords(getFormattedRecords());
     }
   }, [isOpen]);
 

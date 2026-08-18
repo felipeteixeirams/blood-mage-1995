@@ -7,24 +7,12 @@ import { generateUITextures } from "../../utils/textureGenerator";
 import rockTileUrl from "../../assets/ui/rock-tile.jpg";
 import cornerUrl from "../../assets/ui/ui-corner.png";
 import plaqueUrl from "../../assets/ui/ui-plaque.png";
+import { loadHighScores } from "../../utils/localStorage";
 
 export const BASE_W = 960;
 export const BASE_H = 540;
 
-const STORE_KEY = "bloodmage.records";
-
 export type RecordEntry = { name: string; score: number; level: number };
-
-const DEMO: RecordEntry[] = [
-  { name: "VORTHAK", score: 98450, level: 12 },
-  { name: "MORWENNA", score: 87120, level: 11 },
-  { name: "GRIMHOLD", score: 74300, level: 10 },
-  { name: "SELVARA", score: 61980, level: 8 },
-  { name: "DRAKKEN", score: 53040, level: 7 },
-  { name: "ISOLDE", score: 41220, level: 6 },
-  { name: "KHARN", score: 32770, level: 5 },
-  { name: "NYX", score: 21050, level: 4 },
-];
 
 function loadRecords(scene: Phaser.Scene): RecordEntry[] {
   const reg = scene.registry.get("scores");
@@ -35,22 +23,13 @@ function loadRecords(scene: Phaser.Scene): RecordEntry[] {
       level: item.levelReached || item.wave || 1,
     })).sort((a, b) => b.score - a.score).slice(0, 8);
   }
-  try {
-    const raw = localStorage.getItem("bloodmage_1995_high_scores") || localStorage.getItem(STORE_KEY);
-    if (raw) {
-      const list = JSON.parse(raw);
-      if (Array.isArray(list) && list.length) {
-        return list.map((item: any, idx: number) => ({
-          name: item.name || `BRUXO #${idx + 1}`,
-          score: item.score || 0,
-          level: item.levelReached || item.wave || 1,
-        })).sort((a: any, b: any) => b.score - a.score).slice(0, 8);
-      }
-    }
-  } catch {
-    /* ignore */
-  }
-  return DEMO;
+
+  const highScores = loadHighScores();
+  return highScores.map((item, idx) => ({
+    name: `BRUXO #${idx + 1}`,
+    score: item.score || 0,
+    level: item.levelReached || item.wave || 1,
+  })).sort((a, b) => b.score - a.score).slice(0, 8);
 }
 
 function flicker(t: number, seed: number) {

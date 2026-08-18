@@ -18,6 +18,10 @@ import {
   saveUnlockedRelics,
   loadEquippedRelicIds,
   saveEquippedRelicIds,
+  loadAchievementsProgress,
+  saveAchievementsProgress,
+  loadCodexState,
+  saveCodexState,
   defaultSettings,
   defaultHighScores,
 } from './localStorage';
@@ -57,6 +61,17 @@ describe('localStorage persistence', () => {
     it('clamps invalid saved amounts to 0', () => {
       saveBloodCrystals(-5);
       expect(loadBloodCrystals()).toBe(0);
+    });
+
+    it('clamps amounts exceeding maximum limit to 0', () => {
+      saveBloodCrystals(2_000_000_000);
+      expect(loadBloodCrystals()).toBe(0);
+    });
+
+    it('heals corrupted json in blood crystals', () => {
+      localStorage.setItem('bloodmage_1995_blood_crystals', '{invalid_json}');
+      expect(loadBloodCrystals()).toBe(0);
+      expect(localStorage.getItem('bloodmage_1995_blood_crystals')).toBe('0');
     });
   });
 
@@ -126,6 +141,13 @@ describe('localStorage persistence', () => {
       const loaded = loadTalentLevels();
       expect(loaded.hemomancy_power).toBe(0);
     });
+
+    it('heals corrupted json in talent levels', () => {
+      localStorage.setItem('bloodmage_1995_talents', 'corrupted_string');
+      const loaded = loadTalentLevels();
+      expect(loaded.hemomancy_power).toBe(0);
+      expect(localStorage.getItem('bloodmage_1995_talents')).toContain('hemomancy_power');
+    });
   });
 
   describe('Onboarding', () => {
@@ -177,6 +199,26 @@ describe('localStorage persistence', () => {
       expect(loaded.hasDroppedCorpse).toBe(true);
       expect(loaded.zone).toBe('fosso_chagas');
       expect(loaded.itemsInside[0].quantity).toBe(2);
+    });
+  });
+
+  describe('Achievements Progress', () => {
+    it('returns empty object when nothing is stored', () => {
+      expect(loadAchievementsProgress()).toEqual({});
+    });
+
+    it('round-trips achievement progress', () => {
+      const progress = {
+        first_blood: { id: 'first_blood', unlockedAt: 123456, progress: 100, complete: true },
+      };
+      saveAchievementsProgress(progress);
+      expect(loadAchievementsProgress()).toEqual(progress);
+    });
+
+    it('heals corrupted achievement progress JSON', () => {
+      localStorage.setItem('achievements_progress', 'invalid_json');
+      expect(loadAchievementsProgress()).toEqual({});
+      expect(localStorage.getItem('achievements_progress')).toBe('{}');
     });
   });
 
