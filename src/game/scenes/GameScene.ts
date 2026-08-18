@@ -162,6 +162,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
+    (window as any).gameScene = this;
+
     // 1. Set World Bounds for Dungeon (1920 x 1440)
     const mapW = 1920;
     const mapH = 1440;
