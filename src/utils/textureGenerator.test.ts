@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { generateNormalMap } from './textureGenerator';
+import { generateGameTextures, generateUITextures, generateNormalMap } from './textureGenerator';
+import { GAME_ASSET_MANIFEST } from '../game/assets/assetManifest';
 
 // jsdom não implementa o contexto 2d real; mockamos no prototype do canvas
 // com um buffer de pixels RGBA por canvas.
@@ -11,6 +12,19 @@ function makeContext(buffer: PixelBuffer) {
   const ctx = {
     fillStyle: '#000000',
     fillRect: vi.fn(),
+    beginPath: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    closePath: vi.fn(),
+    fill: vi.fn(),
+    stroke: vi.fn(),
+    ellipse: vi.fn(),
+    arc: vi.fn(),
+    strokeRect: vi.fn(),
+    fillText: vi.fn(),
+    createRadialGradient: vi.fn(() => ({
+      addColorStop: vi.fn(),
+    })),
     getImageData: (_x: number, _y: number, w: number, h: number) => {
       return {
         width: w,
@@ -51,7 +65,6 @@ function makeCanvas(width: number, height: number, fill: { r: number; g: number;
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
-  // Força a criação do buffer via getContext (mock do prototype).
   canvas.getContext('2d');
   const buffer = buffers.get(canvas)!;
   for (let i = 0; i < width * height; i++) {
@@ -97,7 +110,6 @@ describe('generateNormalMap', () => {
     const normalMap = generateNormalMap(canvas);
     const px = pixelAt(normalMap, 8, 8);
     expect(px[3]).toBe(255);
-    // Canal B (elevação) sempre >= 128 (normal apontando para a tela).
     expect(px[2]).toBeGreaterThanOrEqual(128);
   });
 
@@ -113,7 +125,6 @@ describe('generateNormalMap', () => {
 
   it('higher strength amplifies the normal deviation', () => {
     const canvas = makeCanvas(16, 16);
-    // Mancha clara no canto esquerdo -> gradiente horizontal forte.
     const ctx = canvas.getContext('2d')!;
     const data = ctx.getImageData(0, 0, 16, 16).data;
     for (let y = 0; y < 16; y++) {
@@ -153,7 +164,77 @@ describe('generateNormalMap', () => {
     const px = pixelAt(normal, 6, 8);
     const pxInv = pixelAt(inverted, 6, 8);
 
-    // Direções opostas: se normal tem R<128, invertida deve ter R>128 (e vice-versa).
     expect(px[0] !== pxInv[0]).toBe(true);
+  });
+});
+
+describe('generateGameTextures & generateUITextures Fallbacks', () => {
+  let mockScene: any;
+  let addedTextures: Map<string, any>;
+  let existingTextures: Set<string>;
+
+  beforeEach(() => {
+    buffers.clear();
+    mockCanvasPrototype();
+    addedTextures = new Map();
+    existingTextures = new Set();
+
+    mockScene = {
+      textures: {
+        exists: vi.fn((key: string) => existingTextures.has(key)),
+        remove: vi.fn((key: string) => existingTextures.delete(key)),
+        addCanvas: vi.fn((key: string, canvas: HTMLCanvasElement) => {
+          addedTextures.set(key, canvas);
+          existingTextures.add(key);
+        }),
+        addImage: vi.fn((key: string, canvas: HTMLCanvasElement, normalMap: HTMLCanvasElement) => {
+          addedTextures.set(key, { canvas, normalMap });
+          existingTextures.add(key);
+        }),
+        addSpriteSheet: vi.fn((key: string, canvas: HTMLCanvasElement, config: any) => {
+          addedTextures.set(key, { canvas, config });
+          existingTextures.add(key);
+        }),
+      },
+    };
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('generates procedural textures for all keys in GAME_ASSET_MANIFEST when force is true', () => {
+    generateGameTextures(mockScene, { force: true });
+
+    GAME_ASSET_MANIFEST.forEach((asset) => {
+      expect(addedTextures.has(asset.key)).toBe(true);
+    });
+  });
+
+  it('skips existing textures when force is false (preserving successfully loaded physical assets)', () => {
+    existingTextures.add('spr_skeleton');
+
+    generateGameTextures(mockScene, { force: false });
+
+    // spr_skeleton was pre-existing (loaded physically), so force: false shouldn't overwrite it
+    expect(mockScene.textures.remove).not.toHaveBeenCalledWith('spr_skeleton');
+  });
+
+  it('overwrites pre-existing textures when force is true', () => {
+    existingTextures.add('spr_skeleton');
+
+    generateGameTextures(mockScene, { force: true });
+
+    expect(mockScene.textures.remove).toHaveBeenCalledWith('spr_skeleton');
+    expect(addedTextures.has('spr_skeleton')).toBe(true);
+  });
+
+  it('generates procedural UI textures cleanly without errors', () => {
+    generateUITextures(mockScene);
+
+    const expectedUIKeys = ['uiGem', 'uiCap', 'uiCorner', 'uiPlaque', 'logo'];
+    expectedUIKeys.forEach((key) => {
+      expect(addedTextures.has(key)).toBe(true);
+    });
   });
 });
