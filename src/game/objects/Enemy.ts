@@ -329,6 +329,39 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
+  public getWindupDuration(): number {
+    switch (this.config.behavior) {
+      case 'swarmer': return 220;
+      case 'chaser': return 350;
+      case 'charger': return 520;
+      case 'boss': return 550;
+      case 'ranged': return 400;
+      default: return 350;
+    }
+  }
+
+  public getStrikeDuration(): number {
+    switch (this.config.behavior) {
+      case 'swarmer': return 100;
+      case 'chaser': return 110;
+      case 'charger': return 140;
+      case 'boss': return 150;
+      case 'ranged': return 110;
+      default: return 110;
+    }
+  }
+
+  public getRecoveryDuration(): number {
+    switch (this.config.behavior) {
+      case 'swarmer': return 150;
+      case 'chaser': return 200;
+      case 'charger': return 400;
+      case 'boss': return 450;
+      case 'ranged': return 250;
+      default: return 200;
+    }
+  }
+
   /**
    * Main AI Update Loop with state machine, gait & natural behaviors
    */
@@ -485,7 +518,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
         if (time >= this.attackPhaseEndTime) {
           this.attackPhase = 'strike';
-          this.attackPhaseEndTime = time + 110;
+          this.attackPhaseEndTime = time + this.getStrikeDuration();
 
           soundEngine.playSwing();
 
@@ -524,7 +557,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
         if (time >= this.attackPhaseEndTime) {
           this.attackPhase = 'recovery';
-          this.attackPhaseEndTime = time + 220;
+          this.attackPhaseEndTime = time + this.getRecoveryDuration();
           this.applyBaseTint();
         }
         return result;
@@ -634,10 +667,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
             const waveAngle = angleToPlayer + Math.sin(time * 0.007 + this.personalPhase) * 0.42;
             this.accelerateToward(Math.cos(waveAngle) * currentSpeed, Math.sin(waveAngle) * currentSpeed, delta);
 
-            if (distanceToPlayer <= this.config.attackRange) {
+            if (distanceToPlayer <= this.config.attackRange && !hasWallBetweenPlayer) {
               if (time > this.lastAttackTime + 900) {
                 this.attackPhase = 'windup';
-                this.attackPhaseEndTime = time + 180;
+                this.attackPhaseEndTime = time + this.getWindupDuration();
                 this.attackTargetPos = { x: playerX, y: playerY };
                 this.attackType = 'melee';
                 soundEngine.playTelegraph();
@@ -654,10 +687,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
             const chaseVy = Math.sin(weaveAngle) * currentSpeed * huntingBoost;
             this.accelerateToward(chaseVx, chaseVy, delta);
 
-            if (distanceToPlayer <= this.config.attackRange) {
+            if (distanceToPlayer <= this.config.attackRange && !hasWallBetweenPlayer) {
               if (time > this.lastAttackTime + 1100) {
                 this.attackPhase = 'windup';
-                this.attackPhaseEndTime = time + 300;
+                this.attackPhaseEndTime = time + this.getWindupDuration();
                 this.attackTargetPos = { x: playerX, y: playerY };
                 this.attackType = 'melee';
                 soundEngine.playTelegraph();
@@ -679,11 +712,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
             } else {
               this.scene.physics.moveTo(this, playerX, playerY, currentSpeed);
             }
-            if (distanceToPlayer <= this.config.attackRange) {
+            if (distanceToPlayer <= this.config.attackRange && !hasWallBetweenPlayer) {
               if (time > this.lastAttackTime + 900) {
                 this.isCharging = false;
                 this.attackPhase = 'windup';
-                this.attackPhaseEndTime = time + 420;
+                this.attackPhaseEndTime = time + this.getWindupDuration();
                 this.attackTargetPos = { x: playerX, y: playerY };
                 this.attackType = 'melee';
                 soundEngine.playTelegraph();
@@ -720,7 +753,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
             if (distanceToPlayer <= optimalMaxRange && !hasWallBetweenPlayer) {
               if (time > this.lastAttackTime + (this.aiState === 'frenzy' ? 1400 : 2100)) {
                 this.attackPhase = 'windup';
-                this.attackPhaseEndTime = time + 400;
+                this.attackPhaseEndTime = time + this.getWindupDuration();
                 this.attackTargetPos = { x: playerX, y: playerY };
                 this.attackType = 'ranged';
                 soundEngine.playTelegraph();

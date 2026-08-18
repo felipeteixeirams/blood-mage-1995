@@ -7,7 +7,7 @@ vi.mock('phaser', () => {
     public visible = true;
     public x = 0;
     public y = 0;
-    public body: any = { velocity: { x: 0, y: 0 } };
+    public body: any = { velocity: { x: 0, y: 0, length: function() { return Math.hypot(this.x, this.y); } } };
     public tintTopLeft = 0;
     public isTinted = false;
     public scaleX = 1;
@@ -73,13 +73,22 @@ vi.mock('phaser', () => {
             this.y = y;
             return this;
           }
+          length() {
+            return Math.hypot(this.x, this.y);
+          }
         },
         Distance: {
           Between: (x1: number, y1: number, x2: number, y2: number) => Math.hypot(x2 - x1, y2 - y1),
         },
         Angle: {
           Between: (x1: number, y1: number, x2: number, y2: number) => Math.atan2(y2 - y1, x2 - x1),
+          Normalize: (a: number) => ((a % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI),
+          Wrap: (a: number) => {
+            const r = (a + Math.PI) % (2 * Math.PI);
+            return (r < 0 ? r + Math.PI * 2 : r) - Math.PI;
+          },
         },
+        DegToRad: (deg: number) => deg * (Math.PI / 180),
         Clamp: (v: number, min: number, max: number) => Math.max(min, Math.min(max, v)),
       },
     },
@@ -188,5 +197,61 @@ describe('Enemy Monster Balancing & Scaling', () => {
     const isLethal = enemy.takeDamage(100, 80, 100, true, false);
     expect(isLethal).toBe(true);
     expect(spawnGibsSpy).toHaveBeenCalled();
+  });
+
+  it('guarantees zero passive touch damage when attackPhase is none', () => {
+    const scene = makeScene();
+    const enemy = new Enemy(scene, 100, 100, 'skeleton_warrior');
+    enemy.aiState = 'combat';
+    enemy.attackPhase = 'none';
+
+    // Call updateEnemy with player close enough to overlap, but attack on cooldown/not in strike phase
+    const res = enemy.updateEnemy(1000, 16, 100, 100, false);
+    expect(res.attack).toBe(false);
+    expect(res.damage).toBe(0);
+  });
+
+  it('executes full telegraphed attack FSM cycle (windup -> strike -> recovery -> none)', () => {
+    const scene = makeScene();
+    const enemy = new Enemy(scene, 100, 100, 'skeleton_warrior');
+    enemy.aiState = 'combat';
+
+    // 1. Initial state: none
+    expect(enemy.attackPhase).toBe('none');
+
+    // 2. Trigger attack -> enters windup
+    const res1 = enemy.updateEnemy(2000, 16, 105, 100, false);
+    expect(enemy.attackPhase).toBe('windup');
+    expect(res1.attack).toBe(false);
+
+    // 3. Advance time beyond windup duration -> enters strike phase
+    const windupEnd = 2000 + enemy.getWindupDuration();
+    const res2 = enemy.updateEnemy(windupEnd + 1, 16, 105, 100, false);
+    expect(enemy.attackPhase).toBe('strike');
+    expect(res2.attack).toBe(true);
+    expect(res2.damage).toBe(enemy.damage);
+
+    // 4. Advance time beyond strike duration -> enters recovery phase
+    const strikeEnd = windupEnd + 1 + enemy.getStrikeDuration();
+    const res3 = enemy.updateEnemy(strikeEnd + 1, 16, 105, 100, false);
+    expect(enemy.attackPhase).toBe('recovery');
+    expect(res3.attack).toBe(false);
+
+    // 5. Advance time beyond recovery duration -> returns to none
+    const recoveryEnd = strikeEnd + 1 + enemy.getRecoveryDuration();
+    const res4 = enemy.updateEnemy(recoveryEnd + 1, 16, 105, 100, false);
+    expect(enemy.attackPhase).toBe('none');
+  });
+
+  it('does not initiate attack if Line of Sight is blocked by a wall (hasWallBetween = true)', () => {
+    const scene = makeScene();
+    const enemy = new Enemy(scene, 100, 100, 'skeleton_warrior');
+    enemy.aiState = 'combat';
+    enemy.attackPhase = 'none';
+
+    // Call updateEnemy with player close enough, but blocked by a wall
+    const res = enemy.updateEnemy(2000, 16, 105, 100, true); // hasWallBetween = true
+    expect(enemy.attackPhase).toBe('none');
+    expect(res.attack).toBe(false);
   });
 });

@@ -510,6 +510,7 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.wallsGroup);
     this.physics.add.collider(this.enemiesGroup, this.wallsGroup);
     this.physics.add.collider(this.enemiesGroup, this.enemiesGroup);
+    this.physics.add.collider(this.player, this.enemiesGroup);
     this.physics.add.collider(this.player, this.chestsGroup, this.handlePlayerOpenChest as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback, undefined, this);
 
     // Projectile collisions against walls
@@ -584,13 +585,6 @@ export class GameScene extends Phaser.Scene {
       if (this.flickerTimer) this.flickerTimer.destroy();
     });
 
-    this.physics.add.overlap(
-      this.player,
-      this.enemiesGroup,
-      this.handleEnemyTouchPlayer as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
-      undefined,
-      this
-    );
 
     this.physics.add.overlap(
       this.player,
@@ -1341,10 +1335,12 @@ export class GameScene extends Phaser.Scene {
 
         if (updateResult.attack) {
           if (updateResult.attackType === 'ranged' || enemy.config.behavior === 'ranged' || enemy.config.behavior === 'boss') {
-            // Fire ranged energy bolt (pooled)
-            const proj = this.enemyProjectilePool.get(0, 0);
+            // Fire ranged energy bolt (pooled) with safe offset to avoid spawning inside wall/enemy physics body
             const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, this.player.x, this.player.y);
-            proj.fire(enemy.x, enemy.y, angle, 220, enemy.config.damage, true, enemy.config.statusEffectOnHit);
+            const spawnX = enemy.x + Math.cos(angle) * 18;
+            const spawnY = enemy.y + Math.sin(angle) * 18;
+            const proj = this.enemyProjectilePool.get(spawnX, spawnY);
+            proj.fire(spawnX, spawnY, angle, 220, enemy.config.damage, true, enemy.config.statusEffectOnHit);
           } else {
             // Melee hit player
             this.playerHitByEnemy(updateResult.damage, enemy.config.statusEffectOnHit);
@@ -1687,10 +1683,12 @@ export class GameScene extends Phaser.Scene {
       const angle = baseAngle + offset;
 
       const boltCfg = (spellsData as Record<string, SpellConfig>)['blood_bolt'];
-      const proj = this.playerProjectilePool.get(this.player.x, this.player.y);
+      const spawnX = this.player.x + Math.cos(angle) * 18;
+      const spawnY = this.player.y + Math.sin(angle) * 18;
+      const proj = this.playerProjectilePool.get(spawnX, spawnY);
       proj.fire(
-        this.player.x,
-        this.player.y,
+        spawnX,
+        spawnY,
         angle,
         boltCfg.projectileSpeed,
         boltCfg.baseDamage * this.player.getEffectiveDamageMultiplier(),
@@ -2370,13 +2368,6 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private handleEnemyTouchPlayer(playerObj: any, enemyObj: any) {
-    const enemy = enemyObj as Enemy;
-    if (enemy.active) {
-      const touchDamage = (enemy.damage ?? enemy.config.damage) * 0.4;
-      this.playerHitByEnemy(touchDamage, enemy.config.statusEffectOnHit);
-    }
-  }
 
   private handleEnemyProjectileHitPlayer(playerObj: any, projObj: any) {
     const proj = projObj as Projectile;

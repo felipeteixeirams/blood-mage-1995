@@ -17,6 +17,7 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     if ((scene as any).lightingSystem) { (scene as any).lightingSystem.applyLightPipeline(this); }
     scene.add.existing(this);
     scene.physics.add.existing(this);
+    this.setSize(12, 12);
   }
 
   /**
@@ -66,6 +67,9 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     statusEffectOnHit?: { type: 'bleeding' | 'poison' | 'infection'; chance: number }
   ) {
     this.setPosition(x, y);
+    if (this.body) {
+      this.body.reset(x, y);
+    }
     this.setActive(true);
     this.setVisible(true);
     this.damage = damage;

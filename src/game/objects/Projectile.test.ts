@@ -15,6 +15,7 @@ vi.mock('phaser', () => {
     setVisible(v: boolean) { this.visible = v; return this; }
     setPosition(x: number, y: number) { this.x = x; this.y = y; return this; }
     setRotation() { return this; }
+    setSize() { return this; }
     setVelocity(x: number, y: number) { this.velocityX = x; this.velocityY = y; return this; }
     getVelocityX() { return this.velocityX; }
     getVelocityY() { return this.velocityY; }
