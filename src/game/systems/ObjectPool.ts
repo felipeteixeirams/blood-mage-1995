@@ -6,14 +6,17 @@ import { logger } from '../../utils/logger';
  * Reduz garbage collection e alocação de memória
  */
 
-export interface PooledObject {
+export interface PooledObject<TArgs extends unknown[] = unknown[]> {
   active: boolean;
   reset(): void;
-  activate(x: number, y: number, ...args: any[]): void;
+  activate(x: number, y: number, ...args: TArgs): void;
   deactivate(): void;
 }
 
-export class ObjectPool<T extends PooledObject> {
+export class ObjectPool<
+  T extends PooledObject<TArgs>,
+  TArgs extends unknown[] = unknown[]
+> {
   private pool: T[] = [];
   private active: Set<T> = new Set();
   private factory: () => T;
@@ -39,7 +42,7 @@ export class ObjectPool<T extends PooledObject> {
   /**
    * Obter objeto do pool ou criar novo
    */
-  public get(x: number, y: number, ...args: any[]): T {
+  public get(x: number, y: number, ...args: TArgs): T {
     let obj: T;
 
     // Procurar objeto inativo no pool
@@ -74,10 +77,16 @@ export class ObjectPool<T extends PooledObject> {
 
   /**
    * Liberar todos os objetos ativos
+   * Otimizado para Zero GC: itera diretamente sem Array.from / alocações na heap.
    */
   public releaseAll(): void {
-    const toRelease = Array.from(this.active);
-    toRelease.forEach((obj) => this.release(obj));
+    this.active.forEach((obj) => {
+      obj.active = false;
+      obj.deactivate();
+      obj.reset();
+      this.pool.push(obj);
+    });
+    this.active.clear();
   }
 
   /**

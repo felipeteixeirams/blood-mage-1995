@@ -1,17 +1,24 @@
 import { describe, it, expect } from 'vitest';
-import { ViewportCuller } from './ViewportCuller';
+import { ViewportCuller, CullableObject } from './ViewportCuller';
 
-function makeObj(x: number, y: number, width = 32, height = 32) {
+function makeObj(x: number, y: number, width = 32, height = 32): CullableObject {
   const state = { x, y, width, height, active: true, visible: true };
   return {
-    ...state,
-    setActive: (v: boolean) => { state.active = v; },
-    setVisible: (v: boolean) => { state.visible = v; },
+    get x() { return state.x; },
+    set x(v: number) { state.x = v; },
+    get y() { return state.y; },
+    set y(v: number) { state.y = v; },
+    get width() { return state.width; },
+    set width(v: number) { state.width = v; },
+    get height() { return state.height; },
+    set height(v: number) { state.height = v; },
     get active() { return state.active; },
     set active(v: boolean) { state.active = v; },
     get visible() { return state.visible; },
     set visible(v: boolean) { state.visible = v; },
-  } as any;
+    setActive: (v: boolean) => { state.active = v; },
+    setVisible: (v: boolean) => { state.visible = v; },
+  };
 }
 
 describe('ViewportCuller', () => {
@@ -67,5 +74,24 @@ describe('ViewportCuller', () => {
     culler.reset();
     expect(obj.visible).toBe(true);
     expect(culler.getCulledCount()).toBe(0);
+  });
+
+  it('descarta objetos muito distantes via pruning rápido de distância ao quadrado', () => {
+    const culler = new ViewportCuller(50);
+    // Câmera: 0, 0, 800, 600 -> Centro: (400, 300), Raio circunscrito + margem = 450^2 + 350^2 = 325,000
+    const objFar = makeObj(3000, 3000); // Distância ao quadrado imensa
+    culler.update(0, 0, 800, 600, [objFar]);
+    expect(objFar.visible).toBe(false);
+    expect(culler.isCulled(objFar)).toBe(true);
+    expect(culler.getCulledCount()).toBe(1);
+  });
+
+  it('nunca altera a propriedade active dos objetos (somente visible)', () => {
+    const culler = new ViewportCuller(50);
+    const obj = makeObj(1500, 1500);
+    expect(obj.active).toBe(true);
+    culler.update(0, 0, 800, 600, [obj]);
+    expect(obj.visible).toBe(false);
+    expect(obj.active).toBe(true); // Permanece ativo no jogo
   });
 });
