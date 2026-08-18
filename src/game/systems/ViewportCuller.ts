@@ -38,16 +38,39 @@ export class ViewportCuller {
     const viewportTop = cameraY - this.margin;
     const viewportBottom = cameraY + cameraHeight + this.margin;
 
+    // Etapa 1: Centro da câmera e raio circunscrito ao quadrado (viewport + margem)
+    const centerX = cameraX + cameraWidth / 2;
+    const centerY = cameraY + cameraHeight / 2;
+    const halfW = cameraWidth / 2 + this.margin;
+    const halfH = cameraHeight / 2 + this.margin;
+    const maxRadiusSq = halfW * halfW + halfH * halfH;
+
     objects.forEach((obj) => {
       if (!obj.active) return;
 
+      const wasCulled = this.culledObjects.has(obj);
+
+      // Descarte rápido via distância ao quadrado do centro do objeto até o centro da câmera
+      const objCenterX = obj.x + obj.width / 2;
+      const objCenterY = obj.y + obj.height / 2;
+      const dx = objCenterX - centerX;
+      const dy = objCenterY - centerY;
+      const distSq = dx * dx + dy * dy;
+
+      if (distSq > maxRadiusSq) {
+        if (!wasCulled) {
+          obj.setVisible(false);
+          this.culledObjects.add(obj);
+        }
+        return;
+      }
+
+      // Etapa 2: Verificação AABB detalhada dentro do raio circunscrito
       const isInViewport =
         obj.x + obj.width > viewportLeft &&
         obj.x < viewportRight &&
         obj.y + obj.height > viewportTop &&
         obj.y < viewportBottom;
-
-      const wasCulled = this.culledObjects.has(obj);
 
       if (isInViewport && wasCulled) {
         // Objeto entrando na viewport
