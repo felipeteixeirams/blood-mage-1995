@@ -1,0 +1,235 @@
+[
+  {
+    "id": "skeleton_warrior",
+    "category": "enemies",
+    "monsterId": "skeleton_warrior",
+    "title": "Guerreiro Esqueleto",
+    "subtitle": "Ossada Animada das Catacumbas",
+    "lore": "Guerreiros caídos em eras antigas cujos ossos foram selados por magia profana de hemomancia. Movidos por um rancor cego, eles rondam os corredores úmidos das catacumbas segurando espadas enferrujadas. Quando severamente danificados, a estrutura de seus ossos entra em colapso momentâneo.",
+    "icon": "Skull",
+    "unlockCriteria": "Derrote 1 Guerreiro Esqueleto para registrar no Códice.",
+    "milestones": [
+      { "killCount": 1, "rewardCrystals": 15, "description": "Descubra as estatísticas e origem dos Guerreiros Esqueletos." },
+      { "killCount": 10, "rewardCrystals": 30, "description": "Identifique a fragilidade dos ossos ressuscitados." },
+      { "killCount": 25, "rewardCrystals": 60, "description": "Domine as técnicas de estilhaçar carcaças antigas." },
+      { "killCount": 50, "rewardCrystals": 120, "description": "Mestre da Purificação dos Caídos." }
+    ]
+  },
+  {
+    "id": "cultist_acolyte",
+    "category": "enemies",
+    "monsterId": "cultist_acolyte",
+    "title": "Acólito Sombrio",
+    "subtitle": "Devoto da Ordem do Sangue Escuro",
+    "lore": "Membros fanáticos que abdicaram da humanidade para comungar com o Mestre das Chagas. Treinados nas artes de conjuração distante e esquivas táticas, eles atacam com projéteis de energia vital e recuam estrategicamente ao sofrerem danos.",
+    "icon": "Flame",
+    "unlockCriteria": "Derrote 1 Acólito Sombrio para registrar no Códice.",
+    "milestones": [
+      { "killCount": 1, "rewardCrystals": 20, "description": "Revele os rituais e táticas de esquiva dos acólitos." },
+      { "killCount": 10, "rewardCrystals": 40, "description": "Intercepte projéteis de magia sombria com facilidade." },
+      { "killCount": 25, "rewardCrystals": 80, "description": "Corte as preces macabras antes que sejam conjuradas." },
+      { "killCount": 50, "rewardCrystals": 150, "description": "Flagelo do Culto Escuro." }
+    ]
+  },
+  {
+    "id": "hell_hound",
+    "category": "enemies",
+    "monsterId": "hell_hound",
+    "title": "Cão Infernal",
+    "subtitle": "Besta Voraz do Abismo",
+    "lore": "Criaturas quadrúpedes deformadas pela corrupção abissal. Dotadas de olfato apurado para o cheiro de sangramento humano, os Cães Infernais entram em fúria desenfreada ao sinal de ferimentos, avançando com investidas letais e mordidas que provocam hemorragias.",
+    "icon": "Dog",
+    "unlockCriteria": "Derrote 1 Cão Infernal para registrar no Códice.",
+    "milestones": [
+      { "killCount": 1, "rewardCrystals": 20, "description": "Catalogue o comportamento raivoso e o alcance dos Cães Infernais." },
+      { "killCount": 10, "rewardCrystals": 45, "description": "Antecipe o bote e estanque feridas de mordida rapidamente." },
+      { "killCount": 25, "rewardCrystals": 90, "description": "Anule a fúria das bestas com contra-ataques precisos." },
+      { "killCount": 50, "rewardCrystals": 180, "description": "Dominador de Caninos do Inferno." }
+    ]
+  },
+  {
+    "id": "flesh_golem",
+    "category": "enemies",
+    "monsterId": "flesh_golem",
+    "title": "Golem de Carne",
+    "subtitle": "Colosso de Membros Costurados",
+    "lore": "Uma monstruosidade maciça moldada com cadáveres retalhados e runas de sustentação. Imune ao pânico e à dor convencional, o Golem de Carne marcha implacavelmente esmagando qualquer intromissão em seu território.",
+    "icon": "ShieldAlert",
+    "unlockCriteria": "Derrote 1 Golem de Carne para registrar no Códice.",
+    "milestones": [
+      { "killCount": 1, "rewardCrystals": 35, "description": "Análise da carcaça colossal e resiliência a impactos." },
+      { "killCount": 5, "rewardCrystals": 70, "description": "Descubra as suturas fracas no torso da criatura." },
+      { "killCount": 15, "rewardCrystals": 140, "description": "Desmantele o colosso antes que feche o cerco." },
+      { "killCount": 30, "rewardCrystals": 250, "description": "Destruidor de Gigantes de Carne." }
+    ]
+  },
+  {
+    "id": "blood_specter",
+    "category": "enemies",
+    "monsterId": "blood_specter",
+    "title": "Espectro de Sangue",
+    "subtitle": "Entidade Etérea Incorpórea",
+    "lore": "Espíritos aprisionados no limbo entre a vida e o sacrifício. Sem corpo físico fixo, flutuam com desvios imprevisíveis através das paredes e causam contaminação venosa profunda em quem ousar tocá-los.",
+    "icon": "Ghost",
+    "unlockCriteria": "Derrote 1 Espectro de Sangue para registrar no Códice.",
+    "milestones": [
+      { "killCount": 1, "rewardCrystals": 25, "description": "Estude a manifestação ectoplasmática e venenos do Espectro." },
+      { "killCount": 10, "rewardCrystals": 50, "description": "Dissipe a névoa imaterial com feitiços de área." },
+      { "killCount": 25, "rewardCrystals": 100, "description": "Purgatório dos espíritos imortais." },
+      { "killCount": 50, "rewardCrystals": 200, "description": "Exorcista do Sangue Abissal." }
+    ]
+  },
+  {
+    "id": "zombie_shambler",
+    "category": "enemies",
+    "monsterId": "zombie_shambler",
+    "title": "Zumbi Rastejante",
+    "subtitle": "Cadáver Podre do Fosso",
+    "lore": "Corpos em avançado estado de putrefação revividos pela miasma das catacumbas. Embora lentos, a pele endurecida e a contaminação bacteriana tornam seus golpes extremamente infeciosos.",
+    "icon": "Biohazard",
+    "unlockCriteria": "Derrote 1 Zumbi Rastejante para registrar no Códice.",
+    "milestones": [
+      { "killCount": 1, "rewardCrystals": 15, "description": "Descubra os perigos do contágio da podridão." },
+      { "killCount": 10, "rewardCrystals": 35, "description": "Corte os membros putrefatos com magia cortar-sangue." },
+      { "killCount": 25, "rewardCrystals": 70, "description": "Limpe as hordas fétidas sem sofrer infecções." },
+      { "killCount": 50, "rewardCrystals": 140, "description": "Exterminador da Podridão." }
+    ]
+  },
+  {
+    "id": "vampire_stalker",
+    "category": "enemies",
+    "monsterId": "vampire_stalker",
+    "title": "Vampiro Predador",
+    "subtitle": "Nobre Vampírico das Sombras",
+    "lore": "Predadores aristocráticos que se alimentam do pulso vital dos necromantes. Suas investidas são ultrarrápidas, e cada gota de sangue derramada de suas vítimas restaura suas próprias forças.",
+    "icon": "Sword",
+    "unlockCriteria": "Derrote 1 Vampiro Predador para registrar no Códice.",
+    "milestones": [
+      { "killCount": 1, "rewardCrystals": 30, "description": "Compreenda a sede hemomântica dos nobres vampíricos." },
+      { "killCount": 10, "rewardCrystals": 60, "description": "Anule a regeneração de vida vampírica durante os combates." },
+      { "killCount": 25, "rewardCrystals": 120, "description": "Caçador dos Senhores das Sombras." },
+      { "killCount": 50, "rewardCrystals": 220, "description": "Lorde algoz das linhagens puras." }
+    ]
+  },
+  {
+    "id": "werewolf_lycan",
+    "category": "enemies",
+    "monsterId": "werewolf_lycan",
+    "title": "Lobisomem Feral",
+    "subtitle": "Besta Licantrópica em Frenesi",
+    "lore": "Monstruosidades híbridas com garras dilacerantes. Quando atingidas por magia, entram em frenesi desmedido, saltando e aumentando drasticamente a velocidade e a fúria de seus golpes.",
+    "icon": "Skull",
+    "unlockCriteria": "Derrote 1 Lobisomem Feral para registrar no Códice.",
+    "milestones": [
+      { "killCount": 1, "rewardCrystals": 30, "description": "Análise da transformação e garras cortantes." },
+      { "killCount": 10, "rewardCrystals": 60, "description": "Sobreviva e esquive dos frenesis da matilha." },
+      { "killCount": 25, "rewardCrystals": 120, "description": "Corte o urro licantrópico antes da fúria máxima." },
+      { "killCount": 50, "rewardCrystals": 220, "description": "Domador de Feras da Lua Vermelha." }
+    ]
+  },
+  {
+    "id": "bat_swarm",
+    "category": "enemies",
+    "monsterId": "bat_swarm",
+    "title": "Enxame de Morcegos",
+    "subtitle": "Praga Voadora das Cavernas",
+    "lore": "Criaturas aladas caóticas que habitam as abóbadas mais escuras. Atacam em revoadas rápidas e manobras evasivas para confundir o campo de visão dos invasores.",
+    "icon": "Feather",
+    "unlockCriteria": "Derrote 1 Enxame de Morcegos para registrar no Códice.",
+    "milestones": [
+      { "killCount": 1, "rewardCrystals": 10, "description": "Mapeie o vôo errático do enxame." },
+      { "killCount": 10, "rewardCrystals": 25, "description": "Dimea a revoada usando explosões de magia em área." },
+      { "killCount": 25, "rewardCrystals": 50, "description": "Vassoura das Abóbadas." },
+      { "killCount": 50, "rewardCrystals": 100, "description": "Mestre dos Céus Subterrâneos." }
+    ]
+  },
+  {
+    "id": "gore_abomination",
+    "category": "enemies",
+    "monsterId": "gore_abomination",
+    "title": "Abominação de Sangue",
+    "subtitle": "Massa Tóxica Insuflada",
+    "lore": "Experimento falho de coagulação abissal. Suas entranhas estão repletas de bile tóxica em alta pressão; ao morrer, explode expelindo um raio veneno devastador.",
+    "icon": "Skull",
+    "unlockCriteria": "Derrote 1 Abominação de Sangue para registrar no Códice.",
+    "milestones": [
+      { "killCount": 1, "rewardCrystals": 40, "description": "Aprenda a distância segura para evitar a explosão bileal." },
+      { "killCount": 5, "rewardCrystals": 80, "description": "Neutralize as pústulas antes do colapso fatal." },
+      { "killCount": 15, "rewardCrystals": 160, "description": "Mestre da Desativação de Abominações." },
+      { "killCount": 30, "rewardCrystals": 300, "description": "Aniquilador do Sangue Corrompido." }
+    ]
+  },
+  {
+    "id": "necro_lord_boss",
+    "category": "enemies",
+    "monsterId": "necro_lord_boss",
+    "title": "Senhor das Sombras",
+    "subtitle": "Soberano Supremo do Abismo",
+    "lore": "O arquiteto da corrupção hemomântica do calabouço. Um necromante ancestral com milhares de almas aprisionadas em seu manto, detentor de magias devastadoras de feixes de sangue e invocações contínuas.",
+    "icon": "Crown",
+    "unlockCriteria": "Derrote o Senhor das Sombras no andar final.",
+    "milestones": [
+      { "killCount": 1, "rewardCrystals": 100, "description": "Derrote o Soberano Supremo pela primeira vez." },
+      { "killCount": 3, "rewardCrystals": 250, "description": "Quebre o manto sombrio e os rituais imortais." },
+      { "killCount": 5, "rewardCrystals": 500, "description": "Libertador do Calabouço de 1995." },
+      { "killCount": 10, "rewardCrystals": 1000, "description": "Lenda Suprema do Códice do Sangue." }
+    ]
+  },
+  {
+    "id": "relic_selo_hemorragico",
+    "category": "relics",
+    "relicId": "selo_hemorragico",
+    "title": "Selo Hemorrágico",
+    "subtitle": "Artefato Ancestral de Sacrificio",
+    "lore": "Um amuleto entalhado em rubi e osso humano. Quando sintonizado com o fluxo sangrento do Bloodmage, intensifica em +15% todo dano causado a inimigos que estejam sangrando.",
+    "icon": "Shield",
+    "unlockCriteria": "Desbloqueado por padrão no início da jornada."
+  },
+  {
+    "id": "relic_olho_de_carmim",
+    "category": "relics",
+    "relicId": "olho_de_carmim",
+    "title": "Olho de Carmim",
+    "subtitle": "Gema da Percepção Sombria",
+    "lore": "O olho mumificado de um antigo arqui-mago da Ordem. Concede +10% de Vampirismo adicional e permite enxergar a aura de inimigos ocultos atrás das paredes.",
+    "icon": "Eye",
+    "unlockCriteria": "Encontrado em baús do 2º andar em diante."
+  },
+  {
+    "id": "relic_anel_do_pacto_sanguineo",
+    "category": "relics",
+    "relicId": "anel_do_pacto_sanguineo",
+    "title": "Anel do Pacto Sanguíneo",
+    "subtitle": "Aliança de Sangue Imortal",
+    "lore": "Uma aliança de ferro escuro cravada com runas que aumentam o ganho de Cristais de Sangue em +50% por cada abominação executada.",
+    "icon": "Coins",
+    "unlockCriteria": "Conquistado após alcançar 100 abates totais."
+  },
+  {
+    "id": "lore_origem_hemomancia",
+    "category": "lore",
+    "title": "Origem da Hemomancia",
+    "subtitle": "Manuscrito I - O Ano de 1995",
+    "lore": "No outono de 1995, as selas do Abismo de Chagas cederam. O Sangue dos Antigos emergiu do solo da fortaleza abandonada, infundindo os corpos dos vivos e mortos com uma fome inextinguível de poder hemomântico. Os poucos magos que sobreviveram aprenderam a canalizar o próprio sangue como combustível para feitiços devastadores.",
+    "icon": "BookOpen",
+    "unlockCriteria": "Inicie sua jornada no jogo."
+  },
+  {
+    "id": "lore_ordem_dos_martires",
+    "category": "lore",
+    "title": "A Ordem dos Mártires",
+    "subtitle": "Manuscrito II - Sacrifício Essencial",
+    "lore": "Aqueles que dominam a arte do Bloodmage entendem que a dor é a chave da sobrevivência. Para conjurar as maiores tempestades de Hellfire Nova e Raios Hemomânticos, o mago deve oferecer frações de sua própria essência vital ao Grimório ancestral.",
+    "icon": "Scroll",
+    "unlockCriteria": "Alcance o nível 5 com o Bloodmage."
+  },
+  {
+    "id": "lore_santuario_sangue",
+    "category": "lore",
+    "title": "O Santuário do Sangue",
+    "subtitle": "Manuscrito III - O Trono Sombrio",
+    "lore": "Nas profundezas do 5º andar repousa o Santuário do Sangue. É lá que o Senhor das Sombras orquestra o pesadelo das catacumbas, drenando as almas dos necromantes derrotados para manter o ciclo eterno de ressurreição profana.",
+    "icon": "BookMarked",
+    "unlockCriteria": "Alcance o 5º andar do calabouço."
+  }
+]

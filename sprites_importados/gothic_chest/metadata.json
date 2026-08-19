@@ -1,0 +1,36 @@
+{
+  "group_id": "5074ffbf-b410-42e6-a5f2-99da98598ba2",
+  "states": [
+    {
+      "character": {
+        "id": "d4fdb3bf-8f76-4380-985d-c2620fdb6460",
+        "name": "Idle",
+        "prompt": "Ornate gothic treasure chest prop, dark reinforced oak wood, tarnished brass skull latch and iron reinforcement bands, top-down 45 degree angle, 16-bit ARPG dungeon prop, transparent background",
+        "size": {
+          "width": 48,
+          "height": 48
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-08-15T22:00:52.279895+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {}
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-08-19T03:43:52.613883"
+}
