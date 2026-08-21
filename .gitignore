@@ -62,3 +62,6 @@ pnpm-debug.log*
 
 # Package manager specific (local lockfile ignore as requested)
 bun.lock
+
+# Scratch imports / one-off exports that shouldn't be committed
+temp_lovable/

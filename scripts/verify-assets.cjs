@@ -8,6 +8,14 @@ const EXTENSIONS = {
   '.jpeg': [0xff, 0xd8, 0xff]
 };
 
+// .webp's signature isn't one contiguous run of bytes like PNG/JPG: it's
+// 'RIFF' at offset 0, a 4-byte little-endian file size at offset 4, then
+// 'WEBP' at offset 8. AGENTS.md explicitly allows .webp for compressed
+// assets, so it needs the same corruption/header check as PNG/JPG.
+const WEBP_EXTENSIONS = new Set(['.webp']);
+const RIFF_MAGIC = [0x52, 0x49, 0x46, 0x46]; // 'RIFF'
+const WEBP_MAGIC = [0x57, 0x45, 0x42, 0x50]; // 'WEBP'
+
 const MANIFEST_PATH = path.resolve(process.cwd(), 'src/game/assets/assetManifest.json');
 const PUBLIC_DIR = path.resolve(process.cwd(), 'public');
 
@@ -35,8 +43,21 @@ function scanDirectory(directory) {
   }
 }
 
+function bytesMatch(buffer, offset, expected) {
+  for (let i = 0; i < expected.length; i++) {
+    if (buffer[offset + i] !== expected[i]) return false;
+  }
+  return true;
+}
+
 function checkFileIntegrity(filePath) {
   const ext = path.extname(filePath).toLowerCase();
+
+  if (WEBP_EXTENSIONS.has(ext)) {
+    checkWebpIntegrity(filePath);
+    return;
+  }
+
   const expectedMagicBytes = EXTENSIONS[ext];
 
   if (!expectedMagicBytes) return; // Ignora outros tipos
@@ -64,16 +85,37 @@ function checkFileIntegrity(filePath) {
   }
 
   // Verifica se o magic byte bate com o esperado
-  let isValid = true;
-  for (let i = 0; i < expectedMagicBytes.length; i++) {
-    if (buffer[i] !== expectedMagicBytes[i]) {
-      isValid = false;
-      break;
-    }
+  if (!bytesMatch(buffer, 0, expectedMagicBytes)) {
+    console.error(`❌ HEADER INVÁLIDO: O arquivo ${filePath} não é um ${ext} válido.`);
+    hasError = true;
+  }
+}
+
+function checkWebpIntegrity(filePath) {
+  const stat = fs.statSync(filePath);
+  if (stat.size < 12) {
+    console.error(`❌ ERRO: O arquivo ${filePath} está vazio ou curto demais (${stat.size} bytes).`);
+    hasError = true;
+    return;
   }
 
-  if (!isValid) {
-    console.error(`❌ HEADER INVÁLIDO: O arquivo ${filePath} não é um ${ext} válido.`);
+  const buffer = Buffer.alloc(12);
+  const fd = fs.openSync(filePath, 'r');
+  fs.readSync(fd, buffer, 0, 12, 0);
+  fs.closeSync(fd);
+
+  if (buffer[0] === 0xef && buffer[1] === 0xbf && buffer[2] === 0xbd) {
+    console.error(`🚨 CORRUPÇÃO CRÍTICA (UTF-8 REPLACEMENT DETECTADO): ${filePath}`);
+    console.error(`   Este arquivo foi salvo indevidamente como texto. Restaure-o do repositório.`);
+    hasError = true;
+    return;
+  }
+
+  const hasRiff = bytesMatch(buffer, 0, RIFF_MAGIC);
+  const hasWebp = bytesMatch(buffer, 8, WEBP_MAGIC);
+
+  if (!hasRiff || !hasWebp) {
+    console.error(`❌ HEADER INVÁLIDO: O arquivo ${filePath} não é um .webp válido (esperado 'RIFF'...'WEBP').`);
     hasError = true;
   }
 }

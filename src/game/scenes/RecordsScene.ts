@@ -4,6 +4,13 @@ import {
   createScanlineTexture,
 } from "../../utils/uiTextures";
 import { generateUITextures } from "../../utils/textureGenerator";
+import { logger } from "../../utils/logger";
+
+// Hybrid asset architecture (AGENTS.md): try the real physical asset first;
+// create() falls back to the procedural generator only for keys that fail.
+import rockTileUrl from "../../assets/ui/rock-tile.jpg";
+import cornerUrl from "../../assets/ui/ui-corner.png";
+import plaqueUrl from "../../assets/ui/ui-plaque.png";
 
 export const BASE_W = 960;
 export const BASE_H = 540;
@@ -89,13 +96,23 @@ export class RecordsScene extends Phaser.Scene {
   }
 
   preload() {
-    generateUITextures(this);
+    this.load.image("rockTile", rockTileUrl);
+    this.load.image("uiCorner", cornerUrl);
+    this.load.image("uiPlaque", plaqueUrl);
+
+    this.load.on("loaderror", (fileObj: Phaser.Loader.File) => {
+      logger.warn("ASSET_LOADER", `RecordsScene: asset físico não encontrado [${fileObj?.key}] em '${fileObj?.url}'. Fallback procedural ativado.`, {
+        key: fileObj?.key,
+        url: fileObj?.url,
+      });
+    });
   }
 
   create() {
     const uiKeys = ["rockTile", "uiCorner", "uiPlaque"];
     const missingKeys = uiKeys.filter((k) => !this.textures.exists(k));
     if (missingKeys.length > 0) {
+      logger.warn("ASSET_LOADER", `RecordsScene: ${missingKeys.length} asset(s) de UI usando fallback procedural.`, { missingKeys });
       generateUITextures(this, missingKeys);
     }
 

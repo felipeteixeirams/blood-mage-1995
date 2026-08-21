@@ -376,6 +376,20 @@ Como `generateUITextures(this)` (sem filtro de chaves) roda incondicionalmente n
 
 Esse mesmo commit também corrompeu (texto UTF-8 sobre binário) `src/assets/ui/*`, `public/assets/sprites/player/bloodmage.png` e `public/assets/sprites/items/chest*` — e reduziu o histórico do repositório para 2 commits, então `git restore`/`git log` não ajudam a recuperar versões anteriores. A causa raiz completa do incidente de 2026-08-21 teve portanto duas partes independentes: (1) binários corrompidos, resolvido restaurando a arte original do export do Lovable (`temp_lovable/`) e regenerando `bloodmage.png`/baú via os scripts em `scripts/`; (2) o código de carregamento removido, resolvido restaurando os `this.load.image(...)` com imports Vite (`import x from "../../assets/ui/nome.png"`, com os `declare module '*.png'` já presentes em `src/vite-env.d.ts`).
 
+### 🧬 Cadeia Completa de Culpados (scripts ad-hoc na raiz do projeto)
+A remoção do carregamento real não foi um evento único — foi uma sequência de scripts de patch avulsos, todos rastreados no repositório, cada um removendo mais uma peça do pipeline correto:
+
+| Script | O que fez |
+|---|---|
+| `update_assets.cjs` / `update_assets.js` | Substituiu as variáveis dos imports Vite (`altarUrl`, `torchUrl`, …) por **strings literais** `"/assets/ui/altar.png"`. Esses caminhos apontam para `public/assets/ui/`, que **não existe** — a arte vive em `src/assets/ui/` e só é resolvida via `import`. Resultado: todo `load.image` passou a dar 404. `update_assets.js` ainda removia os `import ... from "@/assets/ui/..."` antes disso. |
+| `fix_scenes.cjs` | Removeu os `import \w+Url from "@/assets/ui/..."` restantes **e** o handler de `loaderror` que fazia fallback seletivo por chave — apagando justamente a visibilidade do problema. |
+| `fix_remaining.cjs` | Removeu as chamadas `this.load.image("uiCorner"/"uiPlaque"/"uiGem"/"uiCap", ...)` de `SettingsScene.ts` e `RecordsScene.ts`. |
+| `fix_imports.cjs` | Tentativa posterior de reverter, reinserindo os imports com alias `@/assets/ui/...`. |
+
+Com os caminhos quebrados, o menu caía em fallback de forma legítima (404 real). O commit `fca4fa5` então "resolveu" o sintoma da pior maneira possível: em vez de consertar os caminhos, removeu o carregamento por completo e deixou `generateUITextures(this)` incondicional no `preload()`.
+
+**Ação:** esses 7 scripts (`fix_imports.cjs`, `fix_remaining.cjs`, `fix_scenes.cjs`, `patch_audio.cjs`, `patch_pipelines.cjs`, `update_assets.cjs`, `update_assets.js`) devem ser removidos do repositório (`git rm`). Scripts de patch descartáveis que reescrevem código-fonte com regex não devem ser versionados — qualquer alteração estrutural em cenas deve ser feita e revisada como diff normal.
+
 ### 🛠️ Procedimento de Resolução
 1. Em cada cena afetada, importe os assets via Vite (`import altarUrl from "../../assets/ui/altar.png";` etc.) e enfileire-os em `preload()` com `this.load.image(chave, url)` — **nunca** chame `generateUITextures(this)` sem filtro no `preload()`.
 2. Mantenha a lógica de `create()` como está: `const missingKeys = uiKeys.filter(k => !this.textures.exists(k))` seguido de `generateUITextures(this, missingKeys)` — isso já implementa corretamente o fallback seletivo, só precisa que o `preload()` dê ao asset real a chance de carregar primeiro.
@@ -423,7 +437,9 @@ O `dist/assets/*.png|jpg` também continha os 12 assets de UI com hash idêntico
 
 ### 🛡️ Prevenção
 - `.gitattributes` já marca `*.png`/`*.jpg`/`*.webp` como `binary` — mantenha, mas saiba que isso protege o Git, **não** protege contra um script Node que leia/escreva o arquivo como string UTF-8.
-- Nenhum script deve usar `fs.readFileSync(path, 'utf8')` seguido de `fs.writeFileSync` em arquivos de mídia. Os scripts do pipeline (`pixellab_client.cjs`, `fetch-spritecook-sprite.cjs`, `generate-asset.mjs`) já usam `Buffer` corretamente; scripts ad-hoc de patch na raiz do projeto (`fix_*.cjs`, `patch_*.cjs`, `update_assets.*`) são os suspeitos prováveis e devem ser removidos após o uso.
+- Nenhum script deve usar `fs.readFileSync(path, 'utf8')` seguido de `fs.writeFileSync` em arquivos de mídia. Os scripts do pipeline (`pixellab_client.cjs`, `fetch-spritecook-sprite.cjs`, `generate-asset.mjs`) já usam `Buffer` corretamente.
+- **Os scripts de patch da raiz foram auditados e NÃO são a origem da corrupção binária.** Todos os 7 (`fix_imports.cjs`, `fix_remaining.cjs`, `fix_scenes.cjs`, `patch_audio.cjs`, `patch_pipelines.cjs`, `update_assets.cjs`, `update_assets.js`) usam `readFileSync(file, 'utf8')`, mas operam **exclusivamente sobre arquivos `.ts`/`.tsx`** — nenhum deles abre PNG ou JPG. Eles são responsáveis pela regressão de *carregamento* (item 13), não pela corrupção de *bytes*.
+- A origem da corrupção binária permanece não atribuída a um script versionado; o padrão (`EF BF BD` substituindo bytes não-UTF-8, em lote, em vários diretórios ao mesmo tempo) é consistente com uma ferramenta de edição/agente que gravou os arquivos como texto. A defesa prática é o `scripts/verify-assets.cjs` no `pre-commit`, que barra o commit assim que isso acontecer.
 - `scripts/verify-assets.cjs` (rodando no `pre-commit`) detecta exatamente esse padrão — trate qualquer falha dele como bloqueante, nunca como falso positivo.
 
 ---

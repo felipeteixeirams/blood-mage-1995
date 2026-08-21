@@ -7,6 +7,21 @@ import {
 } from "../../utils/uiTextures";
 import { generateUITextures } from "../../utils/textureGenerator";
 import InputManager from "../systems/InputManager";
+import { logger } from "../../utils/logger";
+
+// Hybrid asset architecture (AGENTS.md): always try the real physical asset
+// first. Vite resolves these to hashed URLs at build time; if a file is
+// missing, corrupted, or fails to decode, Phaser's loader fires 'loaderror'
+// for that key and create() below falls back to the procedural generator
+// under the same texture key — never both at once.
+import titleLogoUrl from "../../assets/ui/title-logo.png";
+import gargoyleTopUrl from "../../assets/ui/gargoyle-top.png";
+import gargoyleBottomUrl from "../../assets/ui/gargoyle-bottom.png";
+import torchUrl from "../../assets/ui/torch.png";
+import altarUrl from "../../assets/ui/altar.png";
+import runeArchUrl from "../../assets/ui/rune-arch.png";
+import stoneTileUrl from "../../assets/ui/stone-tile.jpg";
+import rockTileUrl from "../../assets/ui/rock-tile.jpg";
 
 export const BASE_W = 960;
 export const BASE_H = 540;
@@ -80,7 +95,27 @@ export class TitleScene extends Phaser.Scene {
   }
 
   preload() {
-    generateUITextures(this);
+    // Try the real Lovable art first — same pattern as GAME_ASSET_MANIFEST /
+    // queueAssetLoading for the gameplay sprites. Do NOT call
+    // generateUITextures() unconditionally here: that would occupy these
+    // texture keys before the real load even runs, and Phaser refuses to
+    // overwrite an existing texture key, so the fallback would win every
+    // time regardless of whether the physical asset is valid.
+    this.load.image("logo", titleLogoUrl);
+    this.load.image("gargoyleTop", gargoyleTopUrl);
+    this.load.image("gargoyleBottom", gargoyleBottomUrl);
+    this.load.image("torch", torchUrl);
+    this.load.image("altar", altarUrl);
+    this.load.image("runeArch", runeArchUrl);
+    this.load.image("stoneTile", stoneTileUrl);
+    this.load.image("rockTile", rockTileUrl);
+
+    this.load.on("loaderror", (fileObj: Phaser.Loader.File) => {
+      logger.warn("ASSET_LOADER", `TitleScene: asset físico não encontrado [${fileObj?.key}] em '${fileObj?.url}'. Fallback procedural ativado.`, {
+        key: fileObj?.key,
+        url: fileObj?.url,
+      });
+    });
   }
 
   create() {
@@ -89,6 +124,7 @@ export class TitleScene extends Phaser.Scene {
     ];
     const missingKeys = uiKeys.filter((k) => !this.textures.exists(k));
     if (missingKeys.length > 0) {
+      logger.warn("ASSET_LOADER", `TitleScene: ${missingKeys.length} asset(s) de UI usando fallback procedural.`, { missingKeys });
       generateUITextures(this, missingKeys);
     }
 
