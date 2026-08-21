@@ -6,7 +6,7 @@ import { Projectile } from '../objects/Projectile';
 import { Collectible } from '../objects/Collectible';
 import { LootSprite } from '../objects/Loot';
 import { LootSystem } from '../systems/LootSystem';
-import { PlayerStats, WaveConfig, UpgradeOption, BiomeType, EliteAffix } from '../../types/game';
+import { PlayerStats, WaveConfig, UpgradeOption } from '../../types/game';
 import wavesData from '../../data/waves.json';
 import upgradesData from '../../data/upgrades.json';
 import { soundEngine } from '../../utils/soundEngine';
@@ -24,7 +24,6 @@ import AchievementNotification from '../systems/AchievementNotification';
 import { useGameStore } from '../../store/gameStore';
 import { telemetry } from '../../utils/telemetry';
 import { CombatFeel } from '../systems/CombatFeel';
-import { worldManager } from '../systems/WorldManager';
 import { ContractSystem } from '../systems/ContractSystem';
 import AchievementSystem from '../systems/AchievementSystem';
 import ObjectPool from '../systems/ObjectPool';
@@ -34,6 +33,8 @@ import InputManager from '../systems/InputManager';
 import { VirtualJoystickSystem } from '../systems/VirtualJoystickSystem';
 import { DismembermentSystem } from '../systems/DismembermentSystem';
 import { PlayerSkillSystem } from '../systems/PlayerSkillSystem';
+import { CollisionHandlers } from '../systems/CollisionHandlers';
+import { DungeonFlowController } from '../systems/DungeonFlowController';
 
 export interface GameSceneCallbacks {
   onStatsUpdate: (stats: PlayerStats) => void;
@@ -45,39 +46,39 @@ import { DungeonGenerator, RoomData } from '../systems/DungeonGenerator';
 
 export class GameScene extends Phaser.Scene {
   public player!: Player;
-  private depthGroup!: Phaser.GameObjects.Group;
+  public depthGroup!: Phaser.GameObjects.Group; // público: usado por DungeonFlowController
   // Público: acessado por PlayerSkillSystem (extraído do GameScene — item 4
   // do roadmap de refatoração). Mudança de visibilidade apenas, sem
   // alteração de comportamento em runtime.
   public enemiesGroup!: Phaser.Physics.Arcade.Group;
-  private scavengeablesGroup!: Phaser.Physics.Arcade.StaticGroup;
-  private npcsGroup!: Phaser.Physics.Arcade.StaticGroup;
+  public scavengeablesGroup!: Phaser.Physics.Arcade.StaticGroup; // público: usado por DungeonFlowController
+  public npcsGroup!: Phaser.Physics.Arcade.StaticGroup; // público: usado por DungeonFlowController
   private currentScavengeable: Scavengeable | null = null;
   private scavengeTimeElapsed: number = 0;
-  private isScavenging: boolean = false;
+  public isScavenging: boolean = false; // público: usado por CollisionHandlers
   private playerProjectilesGroup!: Phaser.Physics.Arcade.Group;
-  private enemyProjectilesGroup!: Phaser.Physics.Arcade.Group;
-  private collectiblesGroup!: Phaser.Physics.Arcade.Group;
-  private lootGroup!: Phaser.Physics.Arcade.Group;
-  private bloodStainsGroup!: Phaser.GameObjects.Group;
-  private wallsGroup!: Phaser.Physics.Arcade.StaticGroup;
-  private chestsGroup!: Phaser.Physics.Arcade.StaticGroup;
+  public enemyProjectilesGroup!: Phaser.Physics.Arcade.Group; // público: usado por DungeonFlowController
+  public collectiblesGroup!: Phaser.Physics.Arcade.Group; // público: usado por DungeonFlowController
+  public lootGroup!: Phaser.Physics.Arcade.Group; // público: usado por CollisionHandlers
+  public bloodStainsGroup!: Phaser.GameObjects.Group; // público: usado por CollisionHandlers
+  public wallsGroup!: Phaser.Physics.Arcade.StaticGroup; // público: usado por DungeonFlowController
+  public chestsGroup!: Phaser.Physics.Arcade.StaticGroup; // público: usado por DungeonFlowController
   public dungeonGenerator!: DungeonGenerator;
 
   // --- Visual improvements ---
-  private rooms: RoomData[] = [];
-  private achievements: AchievementSystem = new AchievementSystem();
-  private screenEffects: ScreenEffects | null = null;
-  private postFX: PostFXSystem | null = null;
-  private lightingSystem: LightingSystem | null = null;
-  private advancedParticles: AdvancedParticles | null = null;
-  private screenShake: ScreenShake | null = null;
+  public rooms: RoomData[] = []; // público: usado por CollisionHandlers
+  public achievements: AchievementSystem = new AchievementSystem(); // público: usado por DungeonFlowController
+  public screenEffects: ScreenEffects | null = null; // público: usado por CollisionHandlers
+  public postFX: PostFXSystem | null = null; // público: usado por CollisionHandlers
+  public lightingSystem: LightingSystem | null = null; // público: usado por DungeonFlowController
+  public advancedParticles: AdvancedParticles | null = null; // público: usado por CollisionHandlers
+  public screenShake: ScreenShake | null = null; // público: usado por CollisionHandlers
   public lightingPolish: LightingPolish | null = null; // público: usado por PlayerSkillSystem
   public statusEffectSystem: StatusEffectSystem | null = null;
   public shadowSystem: ShadowSystem | null = null;
   public reflectionSystem: ReflectionSystem | null = null;
   public virtualJoystick: VirtualJoystickSystem | null = null;
-  private achievementNotification: AchievementNotification | null = null;
+  public achievementNotification: AchievementNotification | null = null; // público: usado por DungeonFlowController
   private darknessOverlay!: Phaser.GameObjects.Graphics;
 
   // Fase 5: Pooling, culling e monitor de performance
@@ -91,15 +92,15 @@ export class GameScene extends Phaser.Scene {
   private flickerTimer?: Phaser.Time.TimerEvent;
 
   // Floor Depth Progression
-  private currentFloorDepth: number = 1;
-  private totalFloorMonsters: number = 0;
-  private floorMonstersKilled: number = 0;
-  private portalSprite?: Phaser.GameObjects.Sprite;
-  private isPortalActive: boolean = false;
+  public currentFloorDepth: number = 1; // público: usado por CollisionHandlers e DungeonFlowController
+  public totalFloorMonsters: number = 0; // público: usado por DungeonFlowController
+  public floorMonstersKilled: number = 0; // público: usado por DungeonFlowController
+  public portalSprite?: Phaser.GameObjects.Sprite; // público: usado por DungeonFlowController
+  public isPortalActive: boolean = false; // público: usado por DungeonFlowController
   private corpsePointer?: Phaser.GameObjects.Sprite;
 
   private currentWaveIndex: number = 0;
-  private waveConfigs: WaveConfig[] = wavesData as WaveConfig[];
+  public waveConfigs: WaveConfig[] = wavesData as WaveConfig[]; // público: usado por DungeonFlowController
 
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private touchMoveVector = { x: 0, y: 0 };
@@ -114,7 +115,7 @@ export class GameScene extends Phaser.Scene {
   private lastFootstepNoiseTime: number = 0;
 
   // Spawn queue for density throttling
-  private pendingEnemySpawns: { x: number; y: number; monsterId: string; room: RoomData }[] = [];
+  public pendingEnemySpawns: { x: number; y: number; monsterId: string; room: RoomData }[] = []; // público: usado por DungeonFlowController
 
   // Drag-to-Aim States
   // Públicos: lidos/escritos tanto aqui (renderização do reticle em update())
@@ -141,6 +142,14 @@ export class GameScene extends Phaser.Scene {
   // scythe, ritual circle, hemomancy beam, blood bolt, drag-to-aim, input de
   // skills via gamepad) — extraído para systems/PlayerSkillSystem.ts.
   private skillSystem!: PlayerSkillSystem;
+
+  // Handlers de colisão/hit (projétil x parede/inimigo, baú, dano ao jogador,
+  // coleta de orbs/loot) — extraído para systems/CollisionHandlers.ts.
+  private collisionHandlers!: CollisionHandlers;
+
+  // Geração de masmorra/piso, spawn de inimigos, portal de descida e avanço
+  // de andar — extraído para systems/DungeonFlowController.ts.
+  private dungeonFlow!: DungeonFlowController;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -245,6 +254,9 @@ export class GameScene extends Phaser.Scene {
     };
     this.lightingSystem = new LightingSystem(this);
     this.lightingSystem.setEnabled(useGameStore.getState().settings.postProcessingEnabled !== false);
+
+    // Geração de masmorra/piso, spawn e avanço de andar (extraído do GameScene)
+    this.dungeonFlow = new DungeonFlowController(this);
 
     // 3. Generate Dungeon Map Layout
     this.buildDungeonMap(mapW, mapH, this.currentFloorDepth);
@@ -430,6 +442,7 @@ export class GameScene extends Phaser.Scene {
 
     // Sistema de execução de habilidades do jogador (extraído do GameScene)
     this.skillSystem = new PlayerSkillSystem(this);
+    this.collisionHandlers = new CollisionHandlers(this);
 
     // Spec 10 (Parte 3): Shaders & Efeitos de Status, Sombras Direcionais e Reflexos Líquidos
     this.statusEffectSystem = new StatusEffectSystem(this);
@@ -639,246 +652,23 @@ export class GameScene extends Phaser.Scene {
     soundEngine.startGothicAmbientBGM();
   }
 
-  private getActiveEnemyCap(): number {
-    const depth = this.currentFloorDepth;
-    if (depth >= 5) return 30;
-    if (depth === 4) return 24;
-    return 18;
-  }
-
+  // --- Geração de masmorra/piso ---
+  // Implementação completa movida para systems/DungeonFlowController.ts
+  // (continuação da extração do GameScene.ts). getActiveEnemyCap,
+  // registerEntityEffects e showFloorBanner foram junto (só eram usados
+  // dentro deste bloco). Wrappers finos preservam os nomes usados em
+  // create(), update() e handleEnemyDeath.
   private checkAndSpawnPendingEnemies() {
-    const cap = this.getActiveEnemyCap();
-    while (this.enemiesGroup.countActive(true) < cap && this.pendingEnemySpawns.length > 0) {
-      const pending = this.pendingEnemySpawns.shift();
-      if (pending) {
-        let affix: EliteAffix = 'none';
-        if (this.currentFloorDepth >= 2 && Math.random() < Math.min(0.22, 0.08 + (this.currentFloorDepth - 1) * 0.025)) {
-          const possibleAffixes: EliteAffix[] = ['frenzied', 'vampiric', 'cursed', 'spectral'];
-          affix = Phaser.Utils.Array.GetRandom(possibleAffixes);
-        }
-
-        const enemy = new Enemy(this, pending.x, pending.y, pending.monsterId, {
-          floorDepth: this.currentFloorDepth,
-          eliteAffix: affix
-        });
-        // Set room patrol boundaries
-        enemy.patrolP1 = { x: pending.room.x + 40, y: pending.room.y + 40 };
-        enemy.patrolP2 = { x: pending.room.x + pending.room.width - 40, y: pending.room.y + pending.room.height - 40 };
-
-        this.enemiesGroup.add(enemy);
-        this.depthGroup.add(enemy);
-        this.lightingPolish?.addMonsterGlow(enemy, pending.monsterId);
-        this.registerEntityEffects(enemy);
-      }
-    }
-  }
-
-  private registerEntityEffects(entity: any): void {
-    if (this.shadowSystem) this.shadowSystem.registerEntity(entity);
-    if (this.reflectionSystem) this.reflectionSystem.registerEntity(entity);
+    this.dungeonFlow.checkAndSpawnPendingEnemies();
   }
 
   /**
    * Builds procedural 3x3 interconnected Dungeon Map with Rooms, Corridors, Walls, Chests & Enemies
    */
   private buildDungeonMap(mapW: number, mapH: number, floorDepth: number) {
-    // Clear pending spawns
-    this.pendingEnemySpawns = [];
-
-    // Initialize contracts on first floor
-    if (floorDepth === 1) {
-      ContractSystem.initRunContracts();
-    }
-
-    // Determine Biome based on Floor Depth
-    let biome: BiomeType = 'fosso_chagas';
-    if (floorDepth >= 5) {
-      biome = 'santuario_sangue';
-    } else if (floorDepth >= 3) {
-      biome = 'catacumbas_martires';
-    }
-
-    useGameStore.getState().setCurrentBiome(biome);
-
-    // Apply WorldManager environmental biome changes (Lighting & Audio transitions)
-    const { isTransitionIndoorOutdoor, previousIndoorState } = worldManager.setBiome(biome);
-    const envConfig = worldManager.getCurrentConfig();
-    soundEngine.updateEnvironmentAudio(envConfig.isIndoor, envConfig.reverbLevel);
-    if (this.postFX) {
-      this.postFX.setBiome(biome);
-    }
-    if (this.lightingSystem) {
-      this.lightingSystem.enable(biome, this.currentFloorDepth);
-      this.lightingSystem.clearTorchLights();
-    }
-
-    // Efeito de Adaptação de Pupila (Pupil Light Adaptation): Flash ao mudar de caverna/ambiente fechado para espaço aberto
-    if (isTransitionIndoorOutdoor) {
-      if (!envConfig.isIndoor) {
-        // Entrando em ambiente aberto ensolarado/iluminado: Flash brilhante de adaptação
-        this.cameras.main.flash(350, 255, 255, 240);
-      } else {
-        // Entrando em subterrâneo/caverna fechada: Flash escuro de íris dilantando
-        this.cameras.main.flash(300, 20, 10, 15);
-      }
-    }
-
-    const rooms = this.dungeonGenerator.generate(mapW, mapH, biome);
-    this.rooms = rooms;
-
-    telemetry.trackEvent('floor_start', { floor: floorDepth, biome, rooms: rooms.length });
-
-    // Create Player in Spawn Room 0
-    const spawnRoom = rooms[0];
-    if (!this.player) {
-      this.player = new Player(this, spawnRoom.centerX, spawnRoom.centerY);
-      this.depthGroup.add(this.player);
-    } else {
-      this.player.setPosition(spawnRoom.centerX, spawnRoom.centerY);
-    }
-    this.player.stats.floorDepth = floorDepth;
-
-    // Eixo A: luz real seguindo o player (WebGL)
-    if (this.lightingSystem) {
-      this.lightingSystem.createPlayerLight();
-    }
-    
-    if (this.lightingPolish) {
-      this.lightingPolish.addPlayerStaffGlow(this.player);
-    }
-
-    // Clear old NPCs
-    this.npcsGroup.clear(true, true);
-
-    // Spawn Safe Village NPCs in Spawn Room (Room 0)
-    // 1. Cleric (Curandeiro)
-    const cleric = this.npcsGroup.create(spawnRoom.centerX - 120, spawnRoom.centerY - 80, 'spr_cultist');
-    cleric.setTint(0x38bdf8); // Blue glow
-    cleric.setData('npcType', 'cleric');
-    this.depthGroup.add(cleric);
-
-    // 2. Alchemist (Alquimista)
-    const alchemist = this.npcsGroup.create(spawnRoom.centerX + 120, spawnRoom.centerY - 80, 'spr_cultist');
-    alchemist.setTint(0xc084fc); // Purple glow
-    alchemist.setData('npcType', 'alchemist');
-    this.depthGroup.add(alchemist);
-
-    // 3. Blacksmith (Ferreiro)
-    const blacksmith = this.npcsGroup.create(spawnRoom.centerX - 120, spawnRoom.centerY + 80, 'spr_skeleton');
-    blacksmith.setTint(0xfacc15); // Golden glow
-    blacksmith.setData('npcType', 'blacksmith');
-    this.depthGroup.add(blacksmith);
-
-    // 4. Elder (Ancião)
-    const elder = this.npcsGroup.create(spawnRoom.centerX + 120, spawnRoom.centerY + 80, 'spr_boss');
-    elder.setTint(0xf87171); // Soft Red glow
-    elder.setData('npcType', 'elder');
-    this.depthGroup.add(elder);
-
-    // Populate Enemies across Chambers & Boss Room
-    this.totalFloorMonsters = 0;
-    this.floorMonstersKilled = 0;
-
-    const currentWave = this.waveConfigs[Math.min(floorDepth - 1, this.waveConfigs.length - 1)];
-
-    rooms.forEach((room) => {
-      if (room.type === 'spawn') return; // Spawn room is safe!
-
-      if (room.type === 'boss') {
-        // Boss Sanctum Room
-        const bossId = currentWave.isBossWave && currentWave.bossMonsterId ? currentWave.bossMonsterId : 'necro_lord_boss';
-        const boss = new Enemy(this, room.centerX, room.centerY, bossId, { floorDepth, eliteAffix: 'none' });
-        this.enemiesGroup.add(boss);
-        this.depthGroup.add(boss);
-        this.lightingPolish?.addMonsterGlow(boss, bossId);
-        this.registerEntityEffects(boss);
-        this.totalFloorMonsters++;
-
-        if (bossId === 'necro_lord_boss' || bossId.includes('boss')) {
-          useGameStore.getState().triggerOnboardingEvent('firstBossSeen', 'CUIDADO: O Senhor das Chagas despertou! Ele entrará em fúria se ferido!');
-        }
-
-        // Add Elite Bodyguards scaled by blood_tide
-        const hasBloodTide = useGameStore.getState().activeModifiers.includes('blood_tide');
-        const spawnMultiplier = hasBloodTide ? 1.4 : 1.0;
-        const bodyguardCount = Math.round(2 * spawnMultiplier);
-        for (let i = 0; i < bodyguardCount; i++) {
-          const offset = i === 0 ? -90 : (i === 1 ? 90 : (i === 2 ? -140 : 140));
-          const guard = new Enemy(this, room.centerX + offset, room.centerY + 50, 'cultist_acolyte', { floorDepth, eliteAffix: 'none' });
-          this.enemiesGroup.add(guard);
-          this.depthGroup.add(guard);
-          this.lightingPolish?.addMonsterGlow(guard, 'cultist_acolyte');
-          this.registerEntityEffects(guard);
-          this.totalFloorMonsters++;
-        }
-      } else {
-        // Standard Chamber: 2 to 4 enemies in patrol/guard positions scaled by blood_tide
-        const hasBloodTide = useGameStore.getState().activeModifiers.includes('blood_tide');
-        const spawnMultiplier = hasBloodTide ? 1.4 : 1.0;
-        let monsterCount = 2 + Math.floor(Math.random() * 2) + Math.min(2, floorDepth - 1);
-        monsterCount = Math.round(monsterCount * spawnMultiplier);
-
-        for (let i = 0; i < monsterCount; i++) {
-          const monsterId = Phaser.Utils.Array.GetRandom(currentWave.monsterPool);
-          const spawnX = room.x + 50 + Math.random() * (room.width - 100);
-          const spawnY = room.y + 50 + Math.random() * (room.height - 100);
-
-          this.pendingEnemySpawns.push({ x: spawnX, y: spawnY, monsterId, room });
-          this.totalFloorMonsters++;
-        }
-      }
-
-      // Spawn Scavengeables in non-spawn rooms
-      if (Math.random() < 0.75) {
-        const numScav = Math.random() < 0.5 ? 1 : 2;
-        for (let i = 0; i < numScav; i++) {
-          const sx = room.x + 50 + Math.random() * (room.width - 100);
-          const sy = room.y + 50 + Math.random() * (room.height - 100);
-          const stype = Phaser.Utils.Array.GetRandom(['skeleton', 'corpse', 'crate']) as any;
-          const scavObj = new Scavengeable(this, sx, sy, stype);
-          this.scavengeablesGroup.add(scavObj);
-          this.depthGroup.add(scavObj);
-        }
-      }
-    });
-
-    // Initial spawn push up to cap
-    this.checkAndSpawnPendingEnemies();
-
-    // Floor Announcement Banner
-    this.showFloorBanner(floorDepth);
+    this.dungeonFlow.buildDungeonMap(mapW, mapH, floorDepth);
   }
 
-  private showFloorBanner(floorDepth: number) {
-    const titles = ['CATACOMBAS DOS MORTOS', 'SANTUÁRIO DAS SOMBRAS', 'ABISMO INFERNAL', 'TRONO DO SENHOR DA MORTE'];
-    const floorTitle = titles[(floorDepth - 1) % titles.length];
-
-    const text = this.add.text(
-      this.player.x,
-      this.player.y - 120,
-      `🏰 CALABOUÇO - NIVEL ${floorDepth}\n"${floorTitle}"`,
-      {
-        fontSize: '22px',
-        color: '#f59e0b',
-        fontStyle: 'bold',
-        stroke: '#000000',
-        strokeThickness: 6,
-        align: 'center',
-      }
-    ).setOrigin(0.5).setDepth(2200);
-
-    this.tweens.add({
-      targets: text,
-      y: text.y - 30,
-      alpha: 0,
-      duration: 3200,
-      onComplete: () => text.destroy(),
-    });
-  }
-
-  /**
-   * Raycasting helper to test if line between two coordinates is blocked by dungeon walls
-   */
   public hasLineOfSight(x1: number, y1: number, x2: number, y2: number): boolean {
     return this.dungeonGenerator.hasLineOfSight(x1, y1, x2, y2);
   }
@@ -916,17 +706,8 @@ export class GameScene extends Phaser.Scene {
   /**
    * Alert nearby allies in same room when enemy takes damage or sees player
    */
-  private triggerGroupAlert(originX: number, originY: number, alertRadius: number = 240) {
-    this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
-      const enemy = enemyObj as Enemy;
-      if (enemy.active) {
-        const dist = Phaser.Math.Distance.Between(originX, originY, enemy.x, enemy.y);
-        if (dist <= alertRadius) {
-          enemy.alertToCombat();
-        }
-      }
-    });
-  }
+  // triggerGroupAlert foi movido para systems/CollisionHandlers.ts (só era
+  // usado dentro de handleProjectileHitEnemy, que também foi movido).
 
   public setTouchInputs(moveX: number, moveY: number, aimX: number, aimY: number) {
     this.touchMoveVector.x = moveX;
@@ -1557,7 +1338,7 @@ export class GameScene extends Phaser.Scene {
     this.skillSystem.handleGamepadInput();
   }
 
-  private applyRelicOnHitEffects(enemy: Enemy) {
+  public applyRelicOnHitEffects(enemy: Enemy) { // público: usado por CollisionHandlers
     this.skillSystem.applyRelicOnHitEffects(enemy);
   }
 
@@ -1566,121 +1347,23 @@ export class GameScene extends Phaser.Scene {
   }
 
 
+  // --- Colisões / Hits ---
+  // Implementação completa movida para systems/CollisionHandlers.ts (item 4
+  // do roadmap de refatoração, continuação da extração do PlayerSkillSystem).
+  // Wrappers finos preservam nomes/assinaturas usados pelos physics.add.overlap
+  // registrados em create().
   private handleProjectileHitWall(projObj: any, wallObj: any) {
-    const proj = projObj as Projectile;
-    if (!proj.active) return;
-
-    // Wall blood splatter mark (persistent small stain at impact point)
-    if (!proj.isEnemyProjectile) {
-      const wallMark = this.add.image(proj.x, proj.y, 'blood_pool_stain')
-        .setDepth(4)
-        .setScale(0.25 + Math.random() * 0.2)
-        .setAlpha(0.7)
-        .setRotation(Math.random() * Math.PI * 2);
-      this.bloodStainsGroup.add(wallMark);
-      // Wall marks fade slowly (~30s)
-      this.tweens.add({
-        targets: wallMark,
-        alpha: 0,
-        delay: 20000,
-        duration: 10000,
-        onComplete: () => { this.bloodStainsGroup.remove(wallMark, true, true); },
-      });
-    }
-
-    // Create wall spark / dust impact effect
-    for (let i = 0; i < 4; i++) {
-      const spark = this.add.image(proj.x, proj.y, 'particle_blood_red').setTint(0xfacc15).setDepth(1700).setScale(0.8);
-      this.tweens.add({
-        targets: spark,
-        x: proj.x + (Math.random() - 0.5) * 30,
-        y: proj.y + (Math.random() - 0.5) * 30,
-        alpha: 0,
-        duration: 200,
-        onComplete: () => spark.destroy(),
-      });
-    }
-
-    proj.releaseToPool();
+    this.collisionHandlers.handleProjectileHitWall(projObj, wallObj);
   }
 
   private handlePlayerOpenChest(playerObj: any, chestObj: any) {
-    const chest = chestObj as Phaser.Physics.Arcade.Sprite;
-    if (!chest.active) return;
-
-    soundEngine.playChestOpen();
-    ContractSystem.onChestOpened(this);
-
-    // Chest: guaranteed equipment loot + blood crystals (no XP/HP drops)
-    // Grant some XP directly
-    this.player.addXp(30);
-    this.spawnFloatingText(chest.x, chest.y - 13, '+30 XP', '#3b82f6', false);
-
-    // Guaranteed Chest Equipment Loot (Higher Rarity)
-    const chestLoot = LootSystem.generateLoot(this.currentFloorDepth, true);
-    const lootSprite = new LootSprite(this, chest.x + (Math.random() - 0.5) * 30, chest.y + (Math.random() - 0.5) * 30, chestLoot);
-    this.lootGroup.add(lootSprite);
-    this.lightingPolish?.addItemGlow(lootSprite, chestLoot.rarity);
-
-    // Grant Blood Crystals (15 to 30)
-    const crystals = 15 + Math.floor(Math.random() * 16);
-    useGameStore.getState().addBloodCrystals(crystals);
-    this.spawnFloatingText(chest.x, chest.y - 25, `+${crystals} CRISTAIS 💎`, '#f43f5e', true);
-
-    // Open chest animation
-    chest.setTint(0x444444);
-    chest.destroy();
+    this.collisionHandlers.handlePlayerOpenChest(playerObj, chestObj);
   }
 
   private handleProjectileHitEnemy(projObj: any, enemyObj: any) {
-    const proj = projObj as Projectile;
-    const enemy = enemyObj as Enemy;
-
-    if (!proj.active || !enemy.active) return;
-
-    // Read damage BEFORE releasing back to the pool (release resets the state)
-    const projectileDamage = proj.damage;
-
-    // Blood Particles
-    if (this.bloodEmitter) {
-      this.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 6);
-    }
-
-    proj.releaseToPool();
-
-    // Taking damage alerts group!
-    this.triggerGroupAlert(enemy.x, enemy.y, 220);
-
-    // Critical Hit Roll (15% chance for 1.75x damage)
-    const isCrit = Math.random() < 0.15;
-    const finalDamage = isCrit ? projectileDamage * 1.75 : projectileDamage;
-
-    const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
-    const isDead = enemy.takeDamage(finalDamage, this.player.x, this.player.y, isCrit, false);
-    CombatFeel.handleHitImpact(this, finalDamage, isCrit, false, enemy.hp / enemy.maxHp);
-    this.applyRelicOnHitEffects(enemy);
-
-    if (isCrit && this.lightingPolish) {
-      this.lightingPolish.addCriticalImpactGlow(enemy.x, enemy.y);
-    }
-
-    // Floating damage numbers
-    const dmgText = Math.round(finalDamage).toString();
-    this.spawnFloatingText(enemy.x, enemy.y, isCrit ? `${dmgText}!` : dmgText, isCrit ? '#facc15' : '#ffffff', isCrit);
-
-    // Vampirism life steal
-    const effVamp = this.player.getEffectiveVampirism();
-    if (effVamp > 0) {
-      const stolen = finalDamage * effVamp;
-      this.player.heal(stolen);
-      this.spawnFloatingText(this.player.x, this.player.y - 12, `+${Math.round(stolen)}`, '#22c55e', false);
-      this.lightingPolish?.addHealGlow(this.player.x, this.player.y);
-    }
-
-    if (isDead) {
-      this.handleEnemyDeath(enemy, 'blood_bolt', wasLowHp);
-    }
+    this.collisionHandlers.handleProjectileHitEnemy(projObj, enemyObj);
   }
+
 
   public startScavenging(scav: Scavengeable) {
     if (this.isScavenging) return;
@@ -1787,148 +1470,17 @@ export class GameScene extends Phaser.Scene {
     statusEffectOnHit?: { type: 'bleeding' | 'poison' | 'infection'; chance: number },
     hitType: 'physical' | 'ranged' | 'toxic' | 'heavy' = 'physical'
   ) {
-    if (this.player.isInvulnerable || this.player.stats.isUnconscious || this.player.stats.isDefinitivelyDead) {
-      return;
-    }
-
-    if (this.isScavenging) {
-      this.cancelScavenging();
-    }
-
-    // Check if player is inside Room 0 (Safe Town) to nullify damage
-    const spawnRoom = this.rooms[0];
-    if (spawnRoom && this.player.x >= spawnRoom.x && this.player.x <= spawnRoom.x + spawnRoom.width &&
-        this.player.y >= spawnRoom.y && this.player.y <= spawnRoom.y + spawnRoom.height) {
-      return; // Absolute damage protection inside Safe Town!
-    }
-
-    // Roll status conditions on hit
-    const store = useGameStore.getState();
-    const conds = this.player.stats.statusConditions;
-
-    if (!conds.bleeding && hitType === 'physical' && Math.random() < 0.18) {
-      conds.bleeding = true;
-      store.setStatusCondition('bleeding', true);
-      this.spawnFloatingText(this.player.x, this.player.y - 22, '🩸 SANGRAMENTO!', '#ef4444', true);
-      store.addLootLog('SANGRAMENTO: Ferida aberta! Pressione Z para usar Atadura.');
-    }
-
-    if (!conds.poison && (hitType === 'ranged' || hitType === 'toxic' || Math.random() < 0.12)) {
-      conds.poison = true;
-      store.setStatusCondition('poison', true);
-      this.spawnFloatingText(this.player.x, this.player.y - 22, '🧪 VENENO!', '#22c55e', true);
-      store.addLootLog('VENENO: Sangue contaminado! Pressione X para usar Antídoto.');
-    }
-
-    if (!conds.infection && (hitType === 'heavy' || Math.random() < 0.10)) {
-      conds.infection = true;
-      store.setStatusCondition('infection', true);
-      this.spawnFloatingText(this.player.x, this.player.y - 22, '☣️ INFECÇÃO!', '#a855f7', true);
-      store.addLootLog('INFECÇÃO: Vulnerabilidade a dano! Pressione V para usar Antibiótico.');
-    }
-
-    const isDead = this.player.takeDamage(damage);
-    ContractSystem.onPlayerDamaged();
-
-    // Fase 5: Haptic Feedback on damage
-    if (damage > 50) {
-      HapticFeedback.playerDamaged(); // Padrão duplo para dano alto
-    } else {
-      HapticFeedback.lightImpact(); // Leve para dano baixo
-    }
-
-    // Fase 5: Advanced Visual Effects baseado em tipo de dano
-    if (this.screenShake && (this.screenEffects || this.postFX) && this.advancedParticles) {
-      // Screen Shake refinado por intensidade
-      if (damage > 100) {
-        this.screenShake.heavy(); // Dano crítico
-        this.postFX?.setChromaticAberration(0.15, 200); // RGB separation (GPU)
-        this.screenEffects?.setChromaticAberration(0.15, 200);
-      } else if (damage > 50) {
-        this.screenShake.medium(); // Dano alto
-        this.postFX?.setChromaticAberration(0.08, 150);
-        this.screenEffects?.setChromaticAberration(0.08, 150);
-      } else if (damage > 20) {
-        this.screenShake.light(); // Dano médio
-      } else {
-        this.screenShake.light();
-      }
-
-      // Advanced Particles baseado no tipo de dano
-      if (hitType === 'ranged' || hitType === 'toxic') {
-        // Dano à distância: gota de veneno
-        this.advancedParticles.emit({
-          type: 'acid_splash',
-          x: this.player.x,
-          y: this.player.y,
-          intensity: Math.min(damage / 100, 1),
-        });
-      } else if (hitType === 'heavy') {
-        // Dano pesado: osso quebrado
-        this.advancedParticles.emit({
-          type: 'bone_dust',
-          x: this.player.x,
-          y: this.player.y,
-          intensity: Math.min(damage / 100, 1),
-        });
-      } else {
-        // Dano normal: sangue
-        this.advancedParticles.emit({
-          type: 'blood_splatter',
-          x: this.player.x,
-          y: this.player.y,
-          intensity: Math.min(damage / 100, 1),
-        });
-      }
-    }
-
-    // Fase 3: Chance of inflicting a survival status condition (Dead Frontier 2 style)
-    if (statusEffectOnHit && !this.player.stats.isUnconscious && !this.player.stats.isDefinitivelyDead) {
-      if (Math.random() < statusEffectOnHit.chance) {
-        const store = useGameStore.getState();
-        if (!store.playerStats.statusConditions[statusEffectOnHit.type]) {
-          store.setStatusCondition(statusEffectOnHit.type, true);
-          const label = statusEffectOnHit.type === 'bleeding' ? 'Sangramento' : statusEffectOnHit.type === 'poison' ? 'Envenenamento' : 'Infecção';
-          this.spawnFloatingText(this.player.x, this.player.y - 24, label.toUpperCase(), '#84cc16', false);
-          store.addLootLog(`Você contraiu: ${label}. Use um curativo antes que piore.`);
-        }
-      }
-    }
-    
-    // Floating damage number on player
-    this.spawnFloatingText(this.player.x, this.player.y, `-${Math.round(damage)}`, '#ef4444', true);
-
-    // Juice: Screen Shake and Red Flash on damage
-    const settings = useGameStore.getState().settings;
-    if (settings.screenShakeEnabled !== false) {
-      this.cameras.main.shake(150, 0.015);
-    }
-    if (settings.flashesEnabled !== false) {
-      this.cameras.main.flash(100, 150, 0, 0, false);
-    }
-
-    if (isDead) {
-      this.triggerGameOver();
-    }
+    this.collisionHandlers.playerHitByEnemy(damage, statusEffectOnHit, hitType);
   }
 
   private handleEnemyTouchPlayer(playerObj: any, enemyObj: any) {
-    const enemy = enemyObj as Enemy;
-    if (enemy.active) {
-      const touchDamage = (enemy.damage ?? enemy.config.damage) * 0.4;
-      this.playerHitByEnemy(touchDamage, enemy.config.statusEffectOnHit);
-    }
+    this.collisionHandlers.handleEnemyTouchPlayer(playerObj, enemyObj);
   }
 
   private handleEnemyProjectileHitPlayer(playerObj: any, projObj: any) {
-    const proj = projObj as Projectile;
-    if (proj.active) {
-      const statusEffectOnHit = proj.statusEffectOnHit;
-      const projDamage = proj.damage;
-      proj.releaseToPool();
-      this.playerHitByEnemy(projDamage, statusEffectOnHit);
-    }
+    this.collisionHandlers.handleEnemyProjectileHitPlayer(playerObj, projObj);
   }
+
 
   private spawnProceduralGore(enemy: Enemy) {
     const numFrags = enemy.config.executionFragments || 3;
@@ -2214,158 +1766,20 @@ export class GameScene extends Phaser.Scene {
   }
 
   private revealDescentPortal(x: number, y: number) {
-    this.isPortalActive = true;
-    this.portalSprite = this.add.sprite(x, y, 'spr_portal').setDepth(10).setScale(1.2);
-    this.lightingPolish?.addPortalGlow(this.portalSprite);
-
-    // Swirling portal tween
-    this.tweens.add({
-      targets: this.portalSprite,
-      rotation: Math.PI * 2,
-      duration: 3000,
-      repeat: -1,
-    });
-
-    // Portal Announcement
-    const text = this.add.text(
-      this.player.x,
-      this.player.y - 100,
-      '🌀 O PORTAL PARA AS PROFUNDEZES FOI REVELADO! 🌀',
-      {
-        fontSize: '20px',
-        color: '#a855f7',
-        fontStyle: 'bold',
-        stroke: '#000000',
-        strokeThickness: 5,
-      }
-    ).setOrigin(0.5).setDepth(2200);
-
-    this.tweens.add({
-      targets: text,
-      y: text.y - 40,
-      alpha: 0,
-      duration: 3500,
-      onComplete: () => text.destroy(),
-    });
+    this.dungeonFlow.revealDescentPortal(x, y);
   }
 
   private advanceToNextFloor() {
-    this.isPortalActive = false;
-    soundEngine.playPortalEnter();
-    if (this.portalSprite) {
-      this.portalSprite.destroy();
-      this.portalSprite = undefined;
-    }
-
-    const hpRatio = this.player.stats.hp / this.player.stats.maxHp;
-    ContractSystem.onFloorCompleted(this.currentFloorDepth, hpRatio, this);
-
-    this.currentFloorDepth++;
-    this.player.heal(35); // Reward floor clear with HP restore
-    this.player.addMana(50);
-
-    // Fase 5: Achievement Wiring - Depth-based achievements
-    if (this.achievements) {
-      if (this.currentFloorDepth >= 10) {
-        const achDepth = this.achievements.unlock('depth_10');
-        if (achDepth && this.achievementNotification) {
-          this.achievementNotification.show({
-            name: achDepth.name,
-            description: achDepth.description,
-            icon: '🔻',
-            rewards: {
-              bloodCrystals: achDepth.reward?.bloodCrystals,
-              talentPoints: achDepth.reward?.talentPoints,
-            },
-            rarity: 'epic',
-          });
-        }
-      }
-      
-      if (this.currentFloorDepth >= 25) {
-        const achDeep = this.achievements.unlock('depth_25');
-        if (achDeep && this.achievementNotification) {
-          this.achievementNotification.show({
-            name: achDeep.name,
-            description: achDeep.description,
-            icon: '🌑',
-            rewards: {
-              bloodCrystals: achDeep.reward?.bloodCrystals,
-              talentPoints: achDeep.reward?.talentPoints,
-            },
-            rarity: 'legendary',
-          });
-        }
-      }
-    }
-
-    // Clear old map entities
-    this.wallsGroup.clear(true, true);
-    this.chestsGroup.clear(true, true);
-    this.collectiblesGroup.clear(true, true);
-    this.enemyProjectilesGroup.clear(true, true);
-    this.scavengeablesGroup.clear(true, true);
-    this.lootGroup.clear(true, true);
-    this.bloodStainsGroup.clear(true, true);
-
-    // If player leaves floor without collecting corpse, it is lost
-    const store = useGameStore.getState();
-    if (store.playerStats.droppedCorpse.hasDroppedCorpse) {
-      store.setDroppedCorpse({
-        ...store.playerStats.droppedCorpse,
-        hasDroppedCorpse: false
-      });
-      store.addLootLog("O cadáver foi deixado para trás e perdido para sempre nas catacumbas...");
-    }
-
-    // Rebuild Dungeon Map for Next Floor Depth!
-    this.buildDungeonMap(1920, 1440, this.currentFloorDepth);
+    this.dungeonFlow.advanceToNextFloor();
   }
 
+
   private handleCollectItem(playerObj: any, itemObj: any) {
-    const item = itemObj as Collectible;
-    if (!item.active) return;
-
-    soundEngine.playOrbPickup();
-
-    if (item.type === 'hp') {
-      this.player.heal(item.amount);
-      this.spawnFloatingText(this.player.x, this.player.y - 12, `+${item.amount} HP`, '#22c55e', false);
-    } else if (item.type === 'mana') {
-      this.player.addMana(item.amount);
-      this.spawnFloatingText(this.player.x, this.player.y - 12, `+${item.amount} MP`, '#a855f7', false);
-    }
-
-    item.destroy();
+    this.collisionHandlers.handleCollectItem(playerObj, itemObj);
   }
 
   private handleCollectLoot(playerObj: any, lootObj: any) {
-    const loot = lootObj as LootSprite;
-    if (!loot.active) return;
-
-    this.player.equipLoot(loot.lootData);
-
-    // Sync state with Zustand Store for Inventory Modal
-    useGameStore.getState().equipItem(loot.lootData);
-    useGameStore.getState().addLootLog(`Equipou: ${loot.lootData.name} (${loot.lootData.rarity.toUpperCase()})`);
-    
-    // Fancy text particle
-    const rarityColor = loot.lootData.rarity === 'legendary' ? '#f59e0b' : loot.lootData.rarity === 'epic' ? '#a855f7' : loot.lootData.rarity === 'rare' ? '#3b82f6' : '#ffffff';
-    const text = this.add.text(loot.x, loot.y - 15, `+ ${loot.lootData.name}`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '8px',
-      color: rarityColor,
-    }).setOrigin(0.5).setDepth(2000);
-
-    this.tweens.add({
-      targets: text,
-      y: loot.y - 40,
-      alpha: 0,
-      duration: 1200,
-      onComplete: () => text.destroy()
-    });
-
-    loot.destroy();
+    this.collisionHandlers.handleCollectLoot(playerObj, lootObj);
   }
 
   private triggerLevelUp() {
@@ -2384,7 +1798,7 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private triggerGameOver() {
+  public triggerGameOver() { // público: usado por CollisionHandlers
     this.isPaused = true;
     this.physics.pause();
     soundEngine.stopBGM();
