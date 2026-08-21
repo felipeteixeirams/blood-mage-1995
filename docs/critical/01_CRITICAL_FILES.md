@@ -24,7 +24,7 @@ tags: [critical, protected-files]
 
 ## 🔴 NÍVEL 1: NEVER TOUCH (Risco de Morte)
 
-### artifacts/bloodmage/src/game/objects/Player.ts
+### src/game/objects/Player.ts
 
 **Por que é crítico:**
 - Motor de movimento (aceleração gradual estilo Dungeon Siege 1)
@@ -70,7 +70,7 @@ playKnockedOutAnimation(): void { ... }
 
 ---
 
-### artifacts/bloodmage/src/game/objects/Enemy.ts
+### src/game/objects/Enemy.ts
 
 **Por que é crítico:**
 - FSM (Finite State Machine) complexa com 6+ estados
@@ -127,7 +127,7 @@ const HEARING_RANGE = 300; // Ajustar é OK
 
 ---
 
-### artifacts/bloodmage/src/game/scenes/GameScene.ts
+### src/game/scenes/GameScene.ts
 
 **Por que é crítico:**
 - Loop principal de atualização (60x/segundo)
@@ -178,7 +178,7 @@ if (!player.isUnconscious) {
 
 ## 🟠 NÍVEL 2: HANDLE WITH CARE (Alto Risco)
 
-### artifacts/bloodmage/src/store/gameStore.ts
+### src/store/gameStore.ts
 
 **Por que é crítico:**
 - Estado global (Zustand)
@@ -225,7 +225,7 @@ const loadNewFeature = () => {
 
 ---
 
-### artifacts/bloodmage/src/game/PhaserGame.tsx
+### src/game/PhaserGame.tsx
 
 **Por que é crítico:**
 - Inicialização do Phaser Game
@@ -263,7 +263,7 @@ scale: {
 
 ## 🟡 NÍVEL 3: MONITOR (Médio Risco)
 
-### artifacts/bloodmage/src/components/GameplayHUD.tsx
+### src/components/GameplayHUD.tsx
 
 **Por que é crítico:**
 - Componente raiz do HUD

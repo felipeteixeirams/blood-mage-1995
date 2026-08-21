@@ -1,6 +1,6 @@
 ---
 agent_context: frontend
-target_module: artifacts/bloodmage/src/game
+target_module: src/game
 priority: high
 status: active
 last_updated: 2026-08-09
