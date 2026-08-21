@@ -29,7 +29,8 @@ tags: [critical, troubleshooting, known-issues, assets, phaser]
 12. [Unhandled Promise Rejection com Objeto Vazio (`reason: {}`) no Logger](#12-unhandled-promise-rejection-com-objeto-vazio-reason--no-logger)
 13. [Regressão: `preload()` Gerando Fallback Procedural Antes de Tentar o Asset Real (TitleScene/SettingsScene/RecordsScene)](#13-regressão-preload-gerando-fallback-procedural-antes-de-tentar-o-asset-real)
 14. [Corrupção de PNG/JPG "Volta Sozinha" Após Recuperação Manual (Corrupção Committada + Fonte de Recuperação Também Contaminada)](#14-corrupção-de-pngjpg-volta-sozinha-após-recuperação-manual-corrupção-committada--fonte-de-recuperação-também-contaminada)
-15. [Tabela de Diagnóstico Rápido](#15-tabela-de-diagnóstico-rápido)
+15. [Reconstrução do Spritesheet do Jogador a Partir do PixelLab (e a Armadilha 48x48 vs 68x68)](#15-reconstrução-do-spritesheet-do-jogador-a-partir-do-pixellab-e-a-armadilha-48x48-vs-68x68)
+16. [Tabela de Diagnóstico Rápido](#16-tabela-de-diagnóstico-rápido)
 
 ---
 
@@ -444,7 +445,64 @@ O `dist/assets/*.png|jpg` também continha os 12 assets de UI com hash idêntico
 
 ---
 
-## 15. Tabela de Diagnóstico Rápido
+## 15. Reconstrução do Spritesheet do Jogador a Partir do PixelLab (e a Armadilha 48x48 vs 68x68)
+
+### 🔴 Sintoma
+O personagem controlado aparece como arte procedural (bonecos geométricos gerados por código) mesmo com o pipeline de animação funcionando corretamente — as 22 animações do bloodmage tocam, as direções respondem, mas os pixels são de placeholder.
+
+### 🔍 Causa-Raiz
+`public/assets/sprites/player/bloodmage.png` era gerado por `scripts/generate_bloodmage_spritesheet.cjs`, que é **100% procedural** (desenha o personagem via buffer de pixels + zlib, sem ler nenhum arquivo de arte). Ele foi criado como recuperação de emergência durante o incidente de corrupção de 2026-08-21, quando **toda** a arte original do PixelLab em `sprites_importados/` foi destruída pela corrupção UTF-8 (item 14) — incluindo os GIFs em `public/assets/sprites/player/animated/`, cujo header `GIF89a` sobreviveu por ser ASCII mas cujo conteúdo tinha milhares de sequências `EF BF BD`.
+
+Ou seja: **não havia bug de integração.** `BootScene` já fazia tudo na ordem correta (`queueAssetLoading` no `preload`, depois `generateGameTextures(this, { force: false })` e `registerAllAnimations(this)` no `create`), e `animationManager.ts` já tinha os índices de frame corretos. Faltava apenas a arte.
+
+### 🛠️ Procedimento de Resolução
+```powershell
+# 1. Rebaixar a arte original (o character_id está em sprites_importados/<pasta>/metadata.json)
+node scripts/pixellab_client.cjs download 5b677987-c87a-4f2e-a3d7-c0fdcea7eeb5 sprites_importados/blood_mage_v2
+
+# 2. Montar o spritesheet no layout que o jogo espera
+node scripts/build_bloodmage_spritesheet.cjs
+
+# 3. Validar
+pnpm verify
+```
+
+`scripts/build_bloodmage_spritesheet.cjs` compõe 72 frames numa grade de 8 colunas x 9 linhas de células 68x68 (544x612), exatamente no layout que `animationManager.ts` espera:
+
+| Linha | Conteúdo | Frames |
+|---|---|---|
+| 0 | Idle — 1 frame por direção | 0-7 |
+| 1-8 | Walk — 8 frames por direção | 8-71 |
+
+Ordem canônica das direções em ambos: `south, south-east, east, north-east, north, north-west, west, south-west`. Alterar essa ordem no montador **sem** alterar `animationManager.ts` faz o personagem andar virado para o lado errado.
+
+### ⚠️ A Armadilha: Tamanhos de Origem Diferentes
+O export do PixelLab **não é homogêneo**:
+
+| Origem | Tamanho |
+|---|---|
+| `Idle/rotations/*.png` (8 frames idle) | **48x48** |
+| `Idle/animations/Walking/<dir>/frame_00N.png` (64 frames) | **68x68** |
+
+O canvas dos frames de Walking vem com folga extra para acomodar o movimento. **Alinhar pela borda do arquivo faz o personagem "pular" alguns pixels na transição entre parado e andando** — um defeito sutil, constante, e difícil de diagnosticar depois.
+
+A solução implementada é alinhar pelo **conteúdo**, não pela tela do arquivo: o montador calcula a caixa delimitadora dos pixels não-transparentes de cada frame (`contentBounds`) e ancora todos pelo centro horizontal da célula com os pés a `BOTTOM_MARGIN` do fundo. Resultado verificado nos 72 frames: base em `y=63` e centro em `x≈33.5` em todos, sem nenhuma célula vazia.
+
+Como as células continuam 68x68, **nada mais precisa mudar** — nem `assetManifest.json` (`frameWidth`/`frameHeight`), nem o tamanho do personagem em tela.
+
+### 🛡️ Guardrails do Montador
+- **Recusa fonte corrompida.** Valida header PNG e a ausência de `EF BF BD` em cada arquivo de origem, abortando com `exit 1` e mensagem apontando para o item 14. Lição direta do incidente em que uma "recuperação" propagou a corrupção por copiar de `sprites_importados/gothic_chest/`, que já estava contaminada.
+- **Sem dependências externas.** Decodifica e codifica PNG com `zlib` nativo (suporta bit depth 8, color types 0/2/3/4/6, não-entrelaçado). Não depende de `pngjs` nem de `canvas`.
+- **Detecta a pasta de estado.** O PixelLab nomeia a subpasta conforme o personagem; o script procura automaticamente a que contém `rotations/` (preferindo a que também tem `animations/Walking`).
+
+### 📌 Notas Operacionais
+- Os frames de `casting_a_fireball` (8 direções x 6 frames) também vêm limpos no download. Para usá-los, estenda o sheet para 15 linhas e acrescente as definições em `animationManager.ts` — a animação `bloodmage_cast` hoje é um alias que reaproveita os frames de walk.
+- Após confirmar a arte em jogo, **apague ou coloque no `.gitignore` as árvores corrompidas** em `sprites_importados/` (`blood_mage`, `gothic_chest`, `grimdark_playable`). Mantê-las lado a lado com as boas é o cenário exato que causou a recuperação a partir de fonte podre no item 14.
+- O `scripts/generate_bloodmage_spritesheet.cjs` (procedural) deve ser tratado como **último recurso**, não como pipeline. Se ele voltar a ser a origem do `bloodmage.png`, o personagem volta a ser placeholder silenciosamente — o `verify` não detecta isso, porque o arquivo é um PNG perfeitamente válido.
+
+---
+
+## 16. Tabela de Diagnóstico Rápido
 
 | Sintoma | Causa Mais Provável | Ferramenta / Comando de Diagnóstico | Ação Imediata |
 |---|---|---|---|
@@ -465,6 +523,9 @@ O `dist/assets/*.png|jpg` também continha os 12 assets de UI com hash idêntico
 | Corrupção de PNG volta após `Copy-Item`/`cp` de restauração | Blob corrompido ainda commitado no Git; operação de Git posterior sobrescreve o working tree | `git log --oneline -- <arquivo>` + comparar `mtime` dos arquivos afetados | Restaurar e commitar imediatamente (`git commit --no-verify` se o husky bloquear) |
 | Restaurar de um backup e o arquivo continua corrompido | A própria fonte de recuperação está contaminada (ex.: `sprites_importados/gothic_chest/`) | `md5sum fonte destino` — se forem iguais, a fonte é o problema | Recuperar de `dist/` (build pré-corrupção) ou regerar via API |
 | `pnpm verify` falha no `pre-commit` impedindo o commit da própria correção | Deadlock do hook husky | `husky - pre-commit script failed (code 1)` | `git commit --no-verify` só no commit de restauração + `pnpm verify` manual em seguida |
+| Personagem em arte procedural com animações funcionando | `bloodmage.png` foi gerado pelo script procedural, não pela arte real | Abrir o PNG: bonecos geométricos = placeholder | `pixellab_client.cjs download` + `build_bloodmage_spritesheet.cjs` |
+| Personagem "pula" alguns pixels ao parar de andar | Frames idle (48x48) e walk (68x68) alinhados pela borda do arquivo | Comparar dimensões dos PNGs de origem | Alinhar pela caixa do conteúdo, não pela tela (item 15) |
+| Personagem anda virado para a direção errada | Ordem das direções do montador difere da de `animationManager.ts` | Conferir o array `DIRS` nos dois arquivos | Manter `south, south-east, east, north-east, north, north-west, west, south-west` |
 
 
 ---

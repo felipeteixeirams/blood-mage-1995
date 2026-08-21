@@ -87,6 +87,13 @@ When requested by the user to commit and push changes to the remote GitHub repos
 - **NEVER** use text-based editing tools (`edit_file`, `create_file`, `cat`, `sed`, `awk`, `echo`) on binary files (`.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.woff2`, `.mp3`, `.ogg`).
 - Doing so converts non-UTF-8 bytes to the replacement character `\uFFFD` (`EF BF BD`), corrupting the asset's binary header permanently.
 - If you need to generate, move, or download a binary asset, you MUST use pure binary stream handlers (e.g., `Buffer` in Node.js, `wget`, or `curl --output`) and verify its integrity using `file <path>` before proceeding.
+- **Valide toda fonte de recuperação ANTES de copiar dela.** Um backup pode já estar contaminado — foi exatamente o que aconteceu com `sprites_importados/gothic_chest/` no incidente de 2026-08-21, onde restaurar de lá apenas propagou a corrupção. Cheque o header (`89 50 4E 47` para PNG, `FF D8 FF` para JPG) e a ausência de `EF BF BD` no corpo do arquivo.
+- **Após restaurar um binário, commite imediatamente**, antes de qualquer outra operação de Git. Enquanto o blob corrompido estiver no histórico, um `stash pop`/`checkout`/`restore` reintroduz a corrupção no working tree.
+
+### 6b. Spritesheet do Jogador — Pipeline Correto
+- A origem de `public/assets/sprites/player/bloodmage.png` é a arte do PixelLab, montada por `scripts/build_bloodmage_spritesheet.cjs` (grade 8x9 de células 68x68, linha 0 = idle, linhas 1-8 = walk).
+- `scripts/generate_bloodmage_spritesheet.cjs` é **procedural** e existe apenas como último recurso de emergência. Se ele voltar a ser a origem do arquivo, o personagem vira placeholder **silenciosamente** — o `pnpm verify` não detecta, porque o PNG gerado é perfeitamente válido.
+- O export do PixelLab não é homogêneo: rotações idle vêm em **48x48** e frames de Walking em **68x68**. O montador alinha pela caixa delimitadora do conteúdo, não pela borda do arquivo; alinhar pela borda faz o personagem "pular" ao alternar entre parado e andando. Detalhes no item 15 do troubleshooting.
 
 ### 7. Strict UI Layering (React DOM vs Phaser Canvas) - CRITICAL
 - **NEVER render user interface elements (Buttons, Menus, Text, Modals, HUDs) inside Phaser Scenes.**
