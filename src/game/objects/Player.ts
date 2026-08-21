@@ -11,6 +11,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private aimVector: Phaser.Math.Vector2 = new Phaser.Math.Vector2(1, 0);
   private manualAimTimer: number = 0;
   private lastAutoShootTime: number = 0;
+  // Duração fixa da pose de conjuração (6 frames @ 10fps = 600ms), disparada uma
+  // única vez por tiro em vez de reavaliada a cada frame — evita que a animação
+  // reinicie/"dance" a cada frame por causa de auto-fire contínuo ou do alvo se
+  // mover (ver relato: "personagem parado parece que ele fica dançando").
+  private castAnimTimer: number = 0;
+  private castAnimDir: string = 'south';
+  // Última direção usada para a pose idle/parado, para não recalcular (e
+  // "tremer") a cada frame quando o aimVector oscila sutilmente.
+  private lastIdleDir: string = 'south';
   private skillCooldowns: Record<string, number> = {};
   public isInvulnerable: boolean = false;
   private invulnerableTimer: number = 0;
@@ -175,6 +184,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.manualAimTimer -= delta;
     }
 
+    // Cast animation pulse countdown (fixo, definido no momento do tiro)
+    if (this.castAnimTimer > 0) {
+      this.castAnimTimer -= delta;
+    }
+
     // Cooldown timers
     if (this.dashCooldownTimer > 0) {
       this.dashCooldownTimer -= delta;
@@ -286,25 +300,41 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.setVelocity(this.currentVx, this.currentVy);
     }
 
-    // Play directional walk or idle animation based on movement and aim
+    // Play directional walk or idle animation based on movement and aim.
     const isMoving = this.moveVector.x !== 0 || this.moveVector.y !== 0;
-    const isAttackingOrManualAim = (time - this.lastAutoShootTime < 300) || this.manualAimTimer > 0;
 
-    let dir = 'south';
-    if (isAttackingOrManualAim) {
-      dir = this.get8Direction(this.aimVector.x, this.aimVector.y);
+    // A pose de conjuração usa direção e duração FIXAS, travadas no instante do
+    // tiro (ver castBloodBolt). Isso evita reiniciar a animação a cada frame
+    // por causa de auto-fire contínuo ou do alvo se mover — que era a causa da
+    // "dança" relatada quando o personagem estava parado.
+    const isCasting = this.castAnimTimer > 0 && !isMoving;
+
+    let dir: string;
+    if (isCasting) {
+      dir = this.castAnimDir;
     } else if (isMoving) {
       dir = this.get8Direction(this.moveVector.x, this.moveVector.y);
-    } else {
+    } else if (this.manualAimTimer > 0) {
+      // Mira manual ativa: acompanha o vetor de mira em tempo real.
       dir = this.get8Direction(this.aimVector.x, this.aimVector.y);
+    } else {
+      // Parado, sem mira manual e sem conjurar: fica no asset estático,
+      // usando a última direção conhecida em vez de recalcular a cada frame
+      // (o aimVector pode oscilar sutilmente ao seguir um alvo distante,
+      // o que fazia o idle "tremer" entre poses vizinhas).
+      dir = this.lastIdleDir;
     }
+    this.lastIdleDir = dir;
 
     this.setFlipX(false);
 
-    const animState = isMoving ? 'walk' : 'idle';
+    const animState = isCasting ? 'cast' : isMoving ? 'walk' : 'idle';
     const animKey = `bloodmage_${animState}_${dir}`;
 
     if (this.scene && this.scene.anims && this.scene.anims.exists(animKey)) {
+      // ignoreIfPlaying=true (default): não reinicia o cast enquanto ele ainda
+      // está tocando, mas como repeat:0 termina e marca isPlaying=false, o
+      // próximo tiro na mesma direção reinicia normalmente.
       safePlayAnimation(this, animKey);
     } else {
       safePlayAnimation(this, isMoving ? 'bloodmage_walk_south' : 'bloodmage_idle_south');
@@ -660,6 +690,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.stats.mana -= cost;
     this.lastAutoShootTime = time;
+    // Dispara a pose de conjuração UMA vez, com direção e duração fixas
+    // (600ms = 6 frames @ 10fps), em vez de recalcular a cada frame — assim o
+    // personagem completa a animação de forma limpa mesmo com auto-fire.
+    this.castAnimTimer = 600;
+    this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     soundEngine.playBloodBolt();
     return true;
   }

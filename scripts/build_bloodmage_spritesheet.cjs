@@ -10,12 +10,21 @@
  *   <origem>/Idle/rotations/<dir>.png                      (1 frame idle por direção)
  *   <origem>/Idle/animations/Walking/<dir>/frame_00N.png   (8 frames de walk por direção)
  *
+ *   <origem>/Idle/animations/casting_a_fireball/<dir>/frame_00N.png  (6 frames de cast por direção, opcional)
+ *
  * Saída: public/assets/sprites/player/bloodmage.png
- *   Grade 8 colunas x 9 linhas de células 68x68 (544x612), no layout exato que
+ *   Grade 8 colunas x 17 linhas de células 68x68 (544x1156), no layout exato que
  *   src/game/animations/animationManager.ts espera:
- *     linha 0        -> idle, 1 frame por direção  (frames 0..7)
- *     linhas 1..8    -> walk, 8 frames por direção (frames 8..71)
- *   Ordem das direções: south, south-east, east, north-east, north, north-west, west, south-west
+ *     linha 0        -> idle,  1 frame por direção  (frames 0..7)
+ *     linhas 1..8    -> walk,  8 frames por direção  (frames 8..71)
+ *     linhas 9..16   -> cast,  1 linha por direção, 6 frames usados nas
+ *                       colunas 0..5 (colunas 6-7 ficam vazias — cast tem
+ *                       menos frames que walk). Se a pasta
+ *                       `casting_a_fireball` não existir na origem, essas
+ *                       linhas ficam totalmente transparentes e o jogo cai de
+ *                       volta no alias `bloodmage_cast` (frames de walk) sem
+ *                       quebrar.
+ *   Ordem das direções (walk E cast): south, south-east, east, north-east, north, north-west, west, south-west
  *
  * Não usa dependências externas: decodifica e codifica PNG com zlib nativo.
  * Recusa qualquer arquivo de origem corrompido (ver docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md, itens 13-14).
@@ -30,8 +39,9 @@ const OUT_PATH = 'public/assets/sprites/player/bloodmage.png';
 const CELL_W = 68;
 const CELL_H = 68;
 const COLS = 8;
-const ROWS = 9;
+const ROWS = 17;
 const WALK_FRAMES = 8;
+const CAST_FRAMES = 6;
 
 // Ordem canônica — precisa bater com animationManager.ts
 const DIRS = ['south', 'south-east', 'east', 'north-east', 'north', 'north-west', 'west', 'south-west'];
@@ -221,8 +231,18 @@ function blit(dst, dstW, src, cellCol, cellRow) {
   const b = contentBounds(src);
   if (!b) return;
 
+  const dstH = dst.length / (dstW * 4);
   const cellX = cellCol * CELL_W;
   const cellY = cellRow * CELL_H;
+  if (cellY + CELL_H > dstH || cellX + CELL_W > dstW) {
+    // Guarda defensiva: uma célula fora do buffer é sinal de ROWS/COLS
+    // dessincronizado do número real de direções/frames — falha alto e claro
+    // em vez de descartar pixels silenciosamente (bug já cometido uma vez aqui).
+    throw new Error(
+      `blit: célula [col=${cellCol}, row=${cellRow}] cai fora do sheet ` +
+      `(${dstW}x${dstH}). Confira ROWS/COLS contra o número real de direções/frames.`
+    );
+  }
 
   // Âncora: centro horizontal da célula, pés a BOTTOM_MARGIN do fundo.
   let offX = cellX + Math.round((CELL_W - b.w) / 2) - b.minX;
@@ -318,6 +338,24 @@ function main() {
     }
   });
 
+  // Linhas 9..14 — cast, 6 frames por direção (opcional; some sem quebrar o build)
+  const castDir = path.join(stateDir, 'animations', 'casting_a_fireball');
+  let castIncluded = false;
+  if (fs.existsSync(castDir)) {
+    DIRS.forEach((dir, i) => {
+      const row = 9 + i;
+      for (let step = 0; step < CAST_FRAMES; step++) {
+        const f = path.join(castDir, dir, `frame_${String(step).padStart(3, '0')}.png`);
+        if (!fs.existsSync(f)) return; // pasta parcial — pula a direção, não quebra o build
+        const img = decodePng(f);
+        sizes.add(`${img.width}x${img.height}`);
+        blit(sheet, sheetW, img, step, row);
+        count++;
+        castIncluded = true;
+      }
+    });
+  }
+
   const png = encodePng(sheetW, sheetH, sheet);
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
   fs.writeFileSync(OUT_PATH, png);
@@ -325,6 +363,7 @@ function main() {
   console.log(`✅ ${OUT_PATH}`);
   console.log(`   ${sheetW}x${sheetH}  (grade ${COLS}x${ROWS} de células ${CELL_W}x${CELL_H})`);
   console.log(`   ${count} frames compostos  |  tamanho dos originais: ${[...sizes].join(', ')}`);
+  console.log(`   Cast: ${castIncluded ? 'incluído (linhas 9-16)' : 'AUSENTE na origem — linhas 9-16 ficam transparentes, jogo usa fallback de walk'}`);
   console.log(`   ${png.length} bytes  |  header: ${png.subarray(0, 4).toString('hex')}`);
   console.log(`\n   Confira com: pnpm verify`);
 }

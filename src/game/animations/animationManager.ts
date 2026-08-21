@@ -184,11 +184,70 @@ export const GAME_ANIMATIONS: AnimationDefinition[] = [
     frameRate: 8,
     repeat: -1,
   },
+  // Casts (linhas 9-16 do spritesheet, 6 frames reais por direção nas colunas 0-5;
+  // usamos `frames` explícito em vez de startFrame/endFrame para não incluir as
+  // 2 colunas finais transparentes de cada linha — ver docs/critical item 15).
+  {
+    key: 'bloodmage_cast_south',
+    textureKey: 'spr_bloodmage',
+    frames: [72, 73, 74, 75, 76, 77],
+    frameRate: 10,
+    repeat: 0,
+  },
+  {
+    key: 'bloodmage_cast_south_east',
+    textureKey: 'spr_bloodmage',
+    frames: [80, 81, 82, 83, 84, 85],
+    frameRate: 10,
+    repeat: 0,
+  },
+  {
+    key: 'bloodmage_cast_east',
+    textureKey: 'spr_bloodmage',
+    frames: [88, 89, 90, 91, 92, 93],
+    frameRate: 10,
+    repeat: 0,
+  },
+  {
+    key: 'bloodmage_cast_north_east',
+    textureKey: 'spr_bloodmage',
+    frames: [96, 97, 98, 99, 100, 101],
+    frameRate: 10,
+    repeat: 0,
+  },
+  {
+    key: 'bloodmage_cast_north',
+    textureKey: 'spr_bloodmage',
+    frames: [104, 105, 106, 107, 108, 109],
+    frameRate: 10,
+    repeat: 0,
+  },
+  {
+    key: 'bloodmage_cast_north_west',
+    textureKey: 'spr_bloodmage',
+    frames: [112, 113, 114, 115, 116, 117],
+    frameRate: 10,
+    repeat: 0,
+  },
+  {
+    key: 'bloodmage_cast_west',
+    textureKey: 'spr_bloodmage',
+    frames: [120, 121, 122, 123, 124, 125],
+    frameRate: 10,
+    repeat: 0,
+  },
+  {
+    key: 'bloodmage_cast_south_west',
+    textureKey: 'spr_bloodmage',
+    frames: [128, 129, 130, 131, 132, 133],
+    frameRate: 10,
+    repeat: 0,
+  },
+  // Alias legado (mantido por compatibilidade; equivalente a south)
   {
     key: 'bloodmage_cast',
     textureKey: 'spr_bloodmage',
-    startFrame: 8,
-    endFrame: 15,
+    frames: [72, 73, 74, 75, 76, 77],
     frameRate: 10,
     repeat: 0,
   },
