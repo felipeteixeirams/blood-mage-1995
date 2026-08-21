@@ -1,0 +1,10 @@
+# Bloquear tratamento de texto em arquivos binários
+*.png binary -text -diff merge=binary
+*.jpg binary -text -diff merge=binary
+*.jpeg binary -text -diff merge=binary
+*.webp binary -text -diff merge=binary
+*.gif binary -text -diff merge=binary
+*.woff2 binary -text -diff merge=binary
+*.mp3 binary -text -diff merge=binary
+*.ogg binary -text -diff merge=binary
+*.wav binary -text -diff merge=binary
