@@ -64,4 +64,10 @@ pnpm-debug.log*
 bun.lock
 
 # Scratch imports / one-off exports that shouldn't be committed
+# Ambos reproduzíveis a qualquer momento: temp_lovable/ via novo download do
+# export do Lovable; sprites_importados/ via `node scripts/pixellab_client.cjs
+# download <character_id> sprites_importados/<pasta>`. Não versionar evita
+# reintroduzir binários corrompidos pelo histórico do Git (ver item 14 do
+# docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md).
 temp_lovable/
+sprites_importados/
