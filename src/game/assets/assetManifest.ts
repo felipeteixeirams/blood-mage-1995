@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { logger } from '../../utils/logger';
+import rawManifest from './assetManifest.json';
 
 export type AssetType = 'image' | 'spritesheet' | 'audio';
 
@@ -7,11 +8,24 @@ export interface BaseAssetConfig {
   key: string;
   path: string;
   type: AssetType;
+  /**
+   * When true, this asset MUST be present and valid on disk. `pnpm verify`
+   * (via scripts/verify-assets.cjs) fails the build if a required asset is
+   * missing, corrupted, or has a spritesheet size that doesn't evenly divide
+   * its declared frameWidth/frameHeight.
+   *
+   * When false (the default for anything not yet produced), the asset is
+   * "planned": the procedural fallback in textureGenerator.ts is expected
+   * to cover it for now, and verify-assets.cjs reports it as pending
+   * coverage instead of failing. Flip this to true once the real asset has
+   * been generated, stitched, and committed under public/.
+   */
+  required?: boolean;
+  normalMapPath?: string;
 }
 
 export interface ImageAssetConfig extends BaseAssetConfig {
   type: 'image';
-  normalMapPath?: string;
 }
 
 export interface SpritesheetAssetConfig extends BaseAssetConfig {
@@ -32,190 +46,29 @@ export type GameAssetConfig = ImageAssetConfig | SpritesheetAssetConfig | AudioA
 
 /**
  * Manifest of external physical assets mapped to their engine texture keys.
- * If any asset fails to load or is not yet present on disk, the engine's
- * procedural textureGenerator automatically generates the fallback texture.
+ *
+ * Source of truth: assetManifest.json (plain data, no Phaser dependency) so
+ * that scripts/verify-assets.cjs can validate coverage at build time without
+ * needing a browser/DOM environment.
+ *
+ * If a `required: false` asset fails to load or is not yet present on disk,
+ * the engine's procedural textureGenerator automatically generates the
+ * fallback texture under the same key — this is expected while the asset is
+ * still "planned". A `required: true` asset falling back is a regression:
+ * queueAssetLoading logs it as an error (not a warning) so it's impossible
+ * to miss during `pnpm dev`.
  */
-export const GAME_ASSET_MANIFEST: GameAssetConfig[] = [
-  // --- PLAYER ENTITIES ---
-  {
-    key: 'spr_bloodmage',
-    type: 'spritesheet',
-    path: 'assets/sprites/player/bloodmage.png',
-    frameWidth: 48,
-    frameHeight: 48,
-  },
-
-  // --- MONSTERS & BOSSES ---
-  {
-    key: 'spr_skeleton',
-    type: 'spritesheet',
-    path: 'assets/sprites/enemies/skeleton.png',
-    frameWidth: 32,
-    frameHeight: 40,
-  },
-  {
-    key: 'spr_cultist',
-    type: 'spritesheet',
-    path: 'assets/sprites/enemies/cultist.png',
-    frameWidth: 32,
-    frameHeight: 40,
-  },
-  {
-    key: 'spr_hound',
-    type: 'spritesheet',
-    path: 'assets/sprites/enemies/hound.png',
-    frameWidth: 36,
-    frameHeight: 28,
-  },
-  {
-    key: 'spr_golem',
-    type: 'spritesheet',
-    path: 'assets/sprites/enemies/golem.png',
-    frameWidth: 48,
-    frameHeight: 56,
-  },
-  {
-    key: 'spr_specter',
-    type: 'spritesheet',
-    path: 'assets/sprites/enemies/specter.png',
-    frameWidth: 32,
-    frameHeight: 40,
-  },
-  {
-    key: 'spr_boss',
-    type: 'spritesheet',
-    path: 'assets/sprites/enemies/boss.png',
-    frameWidth: 64,
-    frameHeight: 72,
-  },
-  {
-    key: 'spr_zombie_shambler',
-    type: 'spritesheet',
-    path: 'assets/sprites/enemies/zombie_shambler.png',
-    frameWidth: 32,
-    frameHeight: 40,
-  },
-  {
-    key: 'spr_vampire_stalker',
-    type: 'spritesheet',
-    path: 'assets/sprites/enemies/vampire_stalker.png',
-    frameWidth: 32,
-    frameHeight: 44,
-  },
-  {
-    key: 'spr_werewolf_lycan',
-    type: 'spritesheet',
-    path: 'assets/sprites/enemies/werewolf_lycan.png',
-    frameWidth: 38,
-    frameHeight: 44,
-  },
-  {
-    key: 'spr_bat_swarm',
-    type: 'spritesheet',
-    path: 'assets/sprites/enemies/bat_swarm.png',
-    frameWidth: 20,
-    frameHeight: 20,
-  },
-  {
-    key: 'spr_gore_abomination',
-    type: 'spritesheet',
-    path: 'assets/sprites/enemies/gore_abomination.png',
-    frameWidth: 52,
-    frameHeight: 60,
-  },
-
-  // --- PROJECTILES & VFX ---
-  {
-    key: 'proj_blood_bolt',
-    type: 'image',
-    path: 'assets/sprites/projectiles/blood_bolt.png',
-  },
-  {
-    key: 'proj_energy_bolt',
-    type: 'image',
-    path: 'assets/sprites/projectiles/energy_bolt.png',
-  },
-
-  // --- ITEMS & ORBS ---
-  {
-    key: 'orb_hp',
-    type: 'image',
-    path: 'assets/sprites/items/orb_hp.png',
-  },
-  {
-    key: 'orb_mana',
-    type: 'image',
-    path: 'assets/sprites/items/orb_mana.png',
-  },
-  {
-    key: 'gem_xp',
-    type: 'image',
-    path: 'assets/sprites/items/gem_xp.png',
-  },
-
-  // --- DUNGEON TILESETS & PROPS ---
-  {
-    key: 'tile_ground',
-    type: 'image',
-    path: 'assets/tilesets/tile_ground.png',
-  },
-  {
-    key: 'tile_wall_brick',
-    type: 'image',
-    path: 'assets/tilesets/tile_wall_brick.png',
-  },
-  {
-    key: 'spr_chest',
-    type: 'image',
-    path: 'assets/sprites/items/chest.png',
-  },
-  {
-    key: 'spr_chest_south',
-    type: 'image',
-    path: 'assets/sprites/items/chest/south.png',
-  },
-  {
-    key: 'spr_chest_south_west',
-    type: 'image',
-    path: 'assets/sprites/items/chest/south-west.png',
-  },
-  {
-    key: 'spr_chest_west',
-    type: 'image',
-    path: 'assets/sprites/items/chest/west.png',
-  },
-  {
-    key: 'spr_chest_north_west',
-    type: 'image',
-    path: 'assets/sprites/items/chest/north-west.png',
-  },
-  {
-    key: 'spr_chest_north',
-    type: 'image',
-    path: 'assets/sprites/items/chest/north.png',
-  },
-  {
-    key: 'spr_chest_north_east',
-    type: 'image',
-    path: 'assets/sprites/items/chest/north-east.png',
-  },
-  {
-    key: 'spr_chest_east',
-    type: 'image',
-    path: 'assets/sprites/items/chest/east.png',
-  },
-  {
-    key: 'spr_chest_south_east',
-    type: 'image',
-    path: 'assets/sprites/items/chest/south-east.png',
-  },
-];
+export const GAME_ASSET_MANIFEST: GameAssetConfig[] = rawManifest as GameAssetConfig[];
 
 export interface LoadMetrics {
   total: number;
   loaded: number;
   failed: number;
   failedKeys: string[];
+  /** Failed keys where the manifest entry has `required: true` — real regressions. */
+  failedRequiredKeys: string[];
+  /** Failed keys where the manifest entry has `required: false` — expected fallback. */
+  failedPlannedKeys: string[];
 }
 
 export interface QueueAssetOptions {
@@ -232,12 +85,15 @@ export function queueAssetLoading(
   options?: QueueAssetOptions
 ): LoadMetrics {
   const assetsToLoad = manifest;
+  const requiredByKey = new Map(assetsToLoad.map((asset) => [asset.key, Boolean(asset.required)]));
 
   const metrics: LoadMetrics = {
     total: assetsToLoad.length,
     loaded: 0,
     failed: 0,
     failedKeys: [],
+    failedRequiredKeys: [],
+    failedPlannedKeys: [],
   };
 
   assetsToLoad.forEach((asset) => {
@@ -267,22 +123,36 @@ export function queueAssetLoading(
     metrics.failed += 1;
     if (fileObj && fileObj.key) {
       metrics.failedKeys.push(fileObj.key);
-      logger.warn('ASSET_LOADER', `Asset físico não encontrado: [${fileObj.key}] em '${fileObj.url}'. Fallback procedural ativado.`, {
-        key: fileObj.key,
-        url: fileObj.url,
-      });
+      const isRequired = requiredByKey.get(fileObj.key) ?? false;
+
+      if (isRequired) {
+        metrics.failedRequiredKeys.push(fileObj.key);
+        logger.error('ASSET_LOADER', `REGRESSÃO: asset obrigatório [${fileObj.key}] não foi encontrado em '${fileObj.url}'. Isso deveria ter sido pego por 'pnpm verify' — rode-o localmente.`, {
+          key: fileObj.key,
+          url: fileObj.url,
+        });
+      } else {
+        metrics.failedPlannedKeys.push(fileObj.key);
+        logger.warn('ASSET_LOADER', `Asset físico ainda não produzido: [${fileObj.key}] em '${fileObj.url}'. Fallback procedural ativado (esperado nesta fase).`, {
+          key: fileObj.key,
+          url: fileObj.url,
+        });
+      }
     }
   });
 
   scene.load.on('complete', () => {
-    if (metrics.failed > 0) {
-      logger.warn('ASSET_LOADER', `Carregamento de assets concluído com ${metrics.failed} fallback(s) procedurais necessários.`, {
-        total: metrics.total,
-        loaded: metrics.loaded,
-        failed: metrics.failed,
-        failedKeys: metrics.failedKeys,
+    if (metrics.failedRequiredKeys.length > 0) {
+      logger.error('ASSET_LOADER', `${metrics.failedRequiredKeys.length} asset(s) OBRIGATÓRIOS caíram no fallback procedural.`, {
+        failedRequiredKeys: metrics.failedRequiredKeys,
       });
-    } else if (metrics.total > 0) {
+    }
+    if (metrics.failedPlannedKeys.length > 0) {
+      logger.info('ASSET_LOADER', `${metrics.failedPlannedKeys.length} asset(s) planejado(s) ainda usando fallback procedural (esperado).`, {
+        failedPlannedKeys: metrics.failedPlannedKeys,
+      });
+    }
+    if (metrics.failed === 0 && metrics.total > 0) {
       logger.info('ASSET_LOADER', `Todos os ${metrics.total} assets físicos foram carregados com sucesso.`);
     }
   });

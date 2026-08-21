@@ -124,6 +124,95 @@ export class AdvancedParticles {
       emitter.stop();
     });
   }
+
+  /**
+   * Inicializar emissores de atmosfera ambiental do calabouço.
+   * Deve ser chamado uma vez ao iniciar a cena. Os emissores de névoa e brasa
+   * ficam ativos continuamente em baixa intensidade para criar a sensação
+   * de calabouço vivo.
+   * @param worldWidth Largura total do mapa (para dispersar as partículas)
+   * @param worldHeight Altura total do mapa
+   */
+  public startAmbient(worldWidth: number, worldHeight: number): void {
+    // 1. Névoa rasteira — partículas lentas e translúcidas de baixo nível (fog_wisp)
+    if (!this.emitters.has('atmospheric_fog')) {
+      try {
+        const fogEmitter = this.scene.add.particles(worldWidth / 2, worldHeight - 32, 'particle_fog_wisp', {
+          x: { min: -(worldWidth / 2), max: worldWidth / 2 },
+          y: { min: -12, max: 12 },
+          speedX: { min: -10, max: 10 },
+          speedY: { min: -3, max: 3 },
+          alpha: { start: 0.55, end: 0 },
+          scale: { start: 3.5, end: 6 },
+          lifespan: { min: 5000, max: 9000 },
+          frequency: 280,
+          emitting: true,
+        });
+        // Phaser 4: 'depth' não existe mais em ParticleEmitterConfig — a profundidade
+        // do emissor é uma propriedade da instância (Components.Depth), setada abaixo.
+        fogEmitter.setDepth(-1);
+        this.emitters.set('atmospheric_fog', fogEmitter);
+      } catch (_) { /* Partículas indisponíveis */ }
+    }
+
+    // 2. Brasas de tochas ascendentes (particle_torch_ember) — pequenas, rápidas, quentes
+    if (!this.emitters.has('torch_embers')) {
+      try {
+        const emberEmitter = this.scene.add.particles(0, 0, 'particle_torch_ember', {
+          x: { min: 0, max: worldWidth },
+          y: { min: 0, max: worldHeight },
+          speedX: { min: -15, max: 15 },
+          speedY: { min: -55, max: -25 },
+          alpha: { start: 0.9, end: 0 },
+          scale: { start: 0.9, end: 0.3 },
+          lifespan: { min: 800, max: 1600 },
+          frequency: 600,
+          tint: [0xff9900, 0xffd700, 0xff5500],
+          gravityY: -30,
+          emitting: true,
+        });
+        emberEmitter.setDepth(10);
+        this.emitters.set('torch_embers', emberEmitter);
+      } catch (_) { /* Partículas indisponíveis */ }
+    }
+  }
+
+  /**
+   * Para os emissores ambientais (ao sair da cena ou mudar de área).
+   */
+  public stopAmbient(): void {
+    const fog = this.emitters.get('atmospheric_fog');
+    if (fog) { fog.stop(); }
+    const embers = this.emitters.get('torch_embers');
+    if (embers) { embers.stop(); }
+  }
+
+  /**
+   * Emitir rastro de feitiço ou dash (particle_spell_trail) na posição dada.
+   * Deve ser chamado a cada frame de movimento/projeção.
+   * @param x Posição X do rastro
+   * @param y Posição Y do rastro
+   * @param count Número de partículas emitidas (padrão 3)
+   */
+  public emitSpellTrail(x: number, y: number, count: number = 3): void {
+    if (!this.emitters.has('spell_trail')) {
+      try {
+        const trailEmitter = this.scene.add.particles(0, 0, 'particle_spell_trail', {
+          speed: { min: 10, max: 40 },
+          angle: { min: 0, max: 360 },
+          scale: { start: 1.2, end: 0 },
+          alpha: { start: 0.8, end: 0 },
+          lifespan: { min: 150, max: 280 },
+          gravityY: 0,
+          emitting: false,
+        });
+        trailEmitter.setDepth(5);
+        this.emitters.set('spell_trail', trailEmitter);
+      } catch (_) { return; }
+    }
+    const emitter = this.emitters.get('spell_trail');
+    if (emitter) { emitter.emitParticleAt(x, y, count); }
+  }
 }
 
 export default AdvancedParticles;

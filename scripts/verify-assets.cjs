@@ -8,17 +8,25 @@ const EXTENSIONS = {
   '.jpeg': [0xff, 0xd8, 0xff]
 };
 
+const MANIFEST_PATH = path.resolve(process.cwd(), 'src/game/assets/assetManifest.json');
+const PUBLIC_DIR = path.resolve(process.cwd(), 'public');
+
 let hasError = false;
+
+// ---------------------------------------------------------------------------
+// Part 1: binary integrity of whatever asset files ARE present on disk.
+// (Catches the text-editor-corrupts-a-PNG class of bug.)
+// ---------------------------------------------------------------------------
 
 function scanDirectory(directory) {
   if (!fs.existsSync(directory)) return;
-  
+
   const files = fs.readdirSync(directory);
-  
+
   for (const file of files) {
     const fullPath = path.join(directory, file);
     const stat = fs.statSync(fullPath);
-    
+
     if (stat.isDirectory()) {
       scanDirectory(fullPath);
     } else {
@@ -30,7 +38,7 @@ function scanDirectory(directory) {
 function checkFileIntegrity(filePath) {
   const ext = path.extname(filePath).toLowerCase();
   const expectedMagicBytes = EXTENSIONS[ext];
-  
+
   if (!expectedMagicBytes) return; // Ignora outros tipos
 
   // Verifica se o arquivo tem tamanho mínimo
@@ -70,15 +78,128 @@ function checkFileIntegrity(filePath) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Part 2: PNG dimension reader (IHDR chunk), used to validate that a
+// spritesheet's real pixel size is actually sliceable by its declared
+// frameWidth/frameHeight — catches silent "wrong grid" bugs where the file
+// exists and is a valid PNG, but Phaser will slice it into garbage frames.
+// ---------------------------------------------------------------------------
+
+function readPngDimensions(filePath) {
+  const fd = fs.openSync(filePath, 'r');
+  const header = Buffer.alloc(24);
+  fs.readSync(fd, header, 0, 24, 0);
+  fs.closeSync(fd);
+  // IHDR width/height live at bytes 16-23 (big-endian uint32 each)
+  const width = header.readUInt32BE(16);
+  const height = header.readUInt32BE(20);
+  return { width, height };
+}
+
+// ---------------------------------------------------------------------------
+// Part 3: asset manifest coverage — cross-checks assetManifest.json against
+// what actually exists under public/. This is the check that used to be
+// missing entirely: a manifest entry could be silently absent forever and
+// nothing would ever fail.
+// ---------------------------------------------------------------------------
+
+function verifyManifestCoverage() {
+  if (!fs.existsSync(MANIFEST_PATH)) {
+    console.warn(`⚠️  Manifesto de assets não encontrado em ${MANIFEST_PATH} — pulando verificação de cobertura.`);
+    return;
+  }
+
+  const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8'));
+
+  const requiredOk = [];
+  const requiredMissing = [];
+  const requiredBadDimensions = [];
+  const plannedPending = [];
+  const plannedPresent = [];
+
+  for (const asset of manifest) {
+    const isRequired = Boolean(asset.required);
+    const absPath = path.join(PUBLIC_DIR, asset.path);
+    const exists = fs.existsSync(absPath);
+
+    if (!exists) {
+      if (isRequired) {
+        requiredMissing.push(asset);
+      } else {
+        plannedPending.push(asset);
+      }
+      continue;
+    }
+
+    // File exists — for required spritesheets, validate the frame grid.
+    if (asset.type === 'spritesheet' && path.extname(absPath).toLowerCase() === '.png') {
+      try {
+        const { width, height } = readPngDimensions(absPath);
+        const gridOk = width % asset.frameWidth === 0 && height % asset.frameHeight === 0;
+        if (!gridOk) {
+          const message = `[${asset.key}] ${asset.path}: dimensões reais ${width}x${height} não são múltiplas do frame declarado ${asset.frameWidth}x${asset.frameHeight}.`;
+          if (isRequired) {
+            requiredBadDimensions.push({ ...asset, message });
+          } else {
+            console.warn(`⚠️  ATENÇÃO (planejado): ${message} — corrija o grid antes de marcar como required.`);
+          }
+          continue;
+        }
+      } catch (err) {
+        if (isRequired) {
+          requiredBadDimensions.push({ ...asset, message: `[${asset.key}] ${asset.path}: falha ao ler dimensões PNG (${err.message}).` });
+          continue;
+        }
+      }
+    }
+
+    if (isRequired) {
+      requiredOk.push(asset);
+    } else {
+      plannedPresent.push(asset);
+    }
+  }
+
+  console.log('\n📦 Cobertura do Manifesto de Assets (assetManifest.json)');
+  console.log(`   ✅ Obrigatórios OK: ${requiredOk.length}`);
+  if (plannedPresent.length > 0) {
+    console.log(`   ✅ Planejados já produzidos (considere marcar required: true): ${plannedPresent.length}`);
+    plannedPresent.forEach((a) => console.log(`      - [${a.key}] ${a.path}`));
+  }
+  if (plannedPending.length > 0) {
+    console.log(`   🟡 Planejados pendentes (usando fallback procedural, esperado nesta fase): ${plannedPending.length}`);
+    plannedPending.forEach((a) => console.log(`      - [${a.key}] ${a.path}`));
+  }
+
+  if (requiredMissing.length > 0) {
+    hasError = true;
+    console.error(`\n💥 ${requiredMissing.length} asset(s) OBRIGATÓRIOS ausentes em public/:`);
+    requiredMissing.forEach((a) => console.error(`   - [${a.key}] esperado em public/${a.path}`));
+    console.error('   Corrija o arquivo, ou marque required: false em assetManifest.json se ele deixou de existir de propósito.');
+  }
+
+  if (requiredBadDimensions.length > 0) {
+    hasError = true;
+    console.error(`\n💥 ${requiredBadDimensions.length} asset(s) OBRIGATÓRIOS com grid de spritesheet inválido:`);
+    requiredBadDimensions.forEach((a) => console.error(`   - ${a.message}`));
+  }
+}
+
 console.log('🔍 Executando Verificação de Integridade de Assets Binários...');
 
-ASSET_DIRS.forEach(dir => scanDirectory(dir));
+ASSET_DIRS.forEach((dir) => scanDirectory(dir));
+
+if (!hasError) {
+  console.log('✅ Todos os assets binários estão íntegros e com cabeçalhos válidos!');
+}
+
+verifyManifestCoverage();
 
 if (hasError) {
-  console.error('\n💥 FALHA NA INTEGRIDADE: Assets corrompidos encontrados!');
-  console.error('Consulte /docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md para restaurar.\n');
+  console.error('\n💥 FALHA NA INTEGRIDADE: assets corrompidos ou obrigatórios ausentes encontrados!');
+  console.error('Consulte /docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md para restaurar assets corrompidos.\n');
   process.exit(1);
 } else {
-  console.log('✅ Todos os assets binários estão íntegros e com cabeçalhos válidos!\n');
+  console.log('\n✅ Verificação de assets concluída sem falhas obrigatórias.\n');
   process.exit(0);
 }

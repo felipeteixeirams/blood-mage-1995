@@ -13,6 +13,7 @@
     "noUnusedLocals": false,
     "noImplicitAny": true,
     "noImplicitThis": true,
+    "resolveJsonModule": true,
     "strictNullChecks": true,
     "strictFunctionTypes": false,
     "strictBindCallApply": true,
