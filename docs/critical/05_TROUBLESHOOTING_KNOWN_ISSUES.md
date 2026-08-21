@@ -391,11 +391,29 @@ Durante a conjuração de magias ativas (como Hellfire Nova, Syphon Soul, Bone S
 
 ---
 
-## 14. Tabela de Diagnóstico Rápido
+## 14. Corrupção de Assets de Baú / Menu e Desalinhamento de FrameSize de Spritesheet
+
+### 🔴 Sintoma
+Ao carregar o jogo em produção na Vercel, o menu principal e os elementos do mundo (como baús e o jogador) revertem para gráficos procedurais dourados/geométricos em vez dos assets de alta fidelidade em pixel art.
+
+### 🔍 Causa-Raiz
+1. **Corrupção de Bytes em Arquivos Binários (UTF-8 Replacement):** Arquivos binários (`.png`, `.jpg`) de UI e itens foram manipulados através de ferramentas com parsing de texto UTF-8, corrompendo os bytes iniciais (`\x89PNG` transformado em `\xEF\xBF\xBD\x50\x4E\x47`). O navegador falha ao decodificar a imagem física (`loaderror`), acionando o fallback procedural do `textureGenerator.ts`.
+2. **Descompasso de Dimensões no Manifest:** O manifest de assets (`assetManifest.ts`) estava configurado com `frameWidth: 48, frameHeight: 48` para o `spr_bloodmage`, enquanto o gerador de spritesheet exportava frames em `68x68` (544x1156).
+
+### 🛠️ Procedimento de Resolução
+1. **Restauração Pura de UI via Git Blobs API:** Download dos bytes binários puros dos assets de UI (`altar.png`, `title-logo.png`, `gargoyle-*.png`, `torch.png`, `rune-arch.png`, etc.) a partir dos hashes de blobs válidos no GitHub.
+2. **Geração Limpa de Sprites Binários com `pngjs`:** Criação dos scripts `scripts/generate_chest_assets.cjs`, `scripts/generate_pwa_icons.cjs` e `scripts/generate_bloodmage_spritesheet.cjs` que constroem e gravam os arquivos PNG diretamente como buffers binários.
+3. **Correção de Dimensões do `spr_bloodmage` no Manifest:** Atualizado `assetManifest.ts` para `frameWidth: 68, frameHeight: 68`.
+4. **Validação Automática:** Execução de `node scripts/verify-assets.cjs` (103 assets verificados com sucesso) e `npm test` (24 test files / 206 tests aprovados).
+
+---
+
+## 15. Tabela de Diagnóstico Rápido
 
 | Sintoma | Causa Mais Provável | Ferramenta / Comando de Diagnóstico | Ação Imediata |
 |---|---|---|---|
 | Menu retrô com formas geométricas em vez de texturas | PNG/JPG corrompidos ou sobrescrita no preload | `node scripts/verify-assets.cjs` ou `file src/assets/ui/*` | Restaurar via Git Blobs API (Buffer puro) e garantir `this.load.image` no preload |
+| Gráficos procedurais no baú e jogador na Vercel | PNGs de itens/UI corrompidos com UTF-8 replacement ou frameWidth incorreto | `node scripts/verify-assets.cjs` | Rodar geradores binários (`generate_chest_assets.cjs`, `generate_bloodmage_spritesheet.cjs`) e ajustar frame dimensions no manifest |
 | Modal Phaser invisível / tela preta | Container pai com `height: 0` | Inspecionar DOM (`computed style`) | Adicionar `h-[540px] aspect-[16/9]` |
 | Game duplicando canvas | Dependências instáveis no `useEffect` | Checar array de deps no React | Isolar ciclo de vida do Phaser em `[]` |
 | Erro de Lockfile na Vercel | `pnpm-lock.yaml` desincronizado com `package.json` | Logs da Vercel | Rodar `pnpm install` e commitar o lockfile |

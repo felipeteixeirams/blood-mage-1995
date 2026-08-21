@@ -41,8 +41,8 @@ export const GAME_ASSET_MANIFEST: GameAssetConfig[] = [
     key: 'spr_bloodmage',
     type: 'spritesheet',
     path: 'assets/sprites/player/bloodmage.png',
-    frameWidth: 48,
-    frameHeight: 48,
+    frameWidth: 68,
+    frameHeight: 68,
   },
 
   // --- MONSTERS & BOSSES ---
