@@ -3,7 +3,7 @@ agent_context: all devs
 target_module: all
 priority: high
 status: active
-last_updated: 2026-08-13
+last_updated: 2026-08-21
 tags: [critical, troubleshooting, known-issues, assets, phaser]
 ---
 
@@ -26,7 +26,10 @@ tags: [critical, troubleshooting, known-issues, assets, phaser]
 9. [Classificação de Severidade de Logs (Assets Inexistentes e Fallbacks como WARN)](#9-classificação-de-severidade-de-logs-assets-inexistentes-e-fallbacks-como-warn)
 10. [Sprite do Personagem Blood Mage Renderizando como Sombra Preta e Pacing de IA / Atiradores](#10-sprite-do-personagem-blood-mage-renderizando-como-sombra-preta-e-pacing-de-ia--atiradores)
 11. [Sobreposição Indevida de Menus React DOM sobre o Logotipo e Arte do TitleScene](#11-sobreposição-indevida-de-menus-react-dom-sobre-o-logotipo-e-arte-do-titlescene)
-12. [Tabela de Diagnóstico Rápido](#12-tabela-de-diagnóstico-rápido)
+12. [Unhandled Promise Rejection com Objeto Vazio (`reason: {}`) no Logger](#12-unhandled-promise-rejection-com-objeto-vazio-reason--no-logger)
+13. [Regressão: `preload()` Gerando Fallback Procedural Antes de Tentar o Asset Real (TitleScene/SettingsScene/RecordsScene)](#13-regressão-preload-gerando-fallback-procedural-antes-de-tentar-o-asset-real)
+14. [Corrupção de PNG/JPG "Volta Sozinha" Após Recuperação Manual (Corrupção Committada + Fonte de Recuperação Também Contaminada)](#14-corrupção-de-pngjpg-volta-sozinha-após-recuperação-manual-corrupção-committada--fonte-de-recuperação-também-contaminada)
+15. [Tabela de Diagnóstico Rápido](#15-tabela-de-diagnóstico-rápido)
 
 ---
 
@@ -357,7 +360,75 @@ O console/logger exibia o erro:
 
 ---
 
-## 13. Tabela de Diagnóstico Rápido
+## 13. Regressão: `preload()` Gerando Fallback Procedural Antes de Tentar o Asset Real
+
+### 🔴 Sintoma
+O menu principal (`TitleScene`), tela de ajustes (`SettingsScene`) e tela de recordes (`RecordsScene`) sempre exibem os placeholders geométricos dourados do fallback procedural, mesmo com os arquivos `.png`/`.jpg` do Lovable presentes e íntegros em `src/assets/ui/`. Verificar a integridade binária dos arquivos (`file src/assets/ui/*` ou `Format-Hex` no PowerShell) confirma que os arquivos estão válidos — o problema não é o asset em si.
+
+### 🔍 Causa-Raiz
+Um commit (`fca4fa5`, mensagem "fix: resolve UI asset load errors with pure procedural generation") removeu, das três cenas acima, o carregamento real via `this.load.image(chave, urlImportadaViaVite)` e deixou apenas:
+```ts
+preload() {
+  generateUITextures(this); // gera TODAS as chaves incondicionalmente
+}
+```
+Como `generateUITextures(this)` (sem filtro de chaves) roda incondicionalmente no `preload()`, as texturas procedurais ocupam as chaves (`altar`, `gargoyleTop`, `uiCorner`, etc.) antes de qualquer tentativa de carregar o arquivo real. O Phaser se recusa a sobrescrever uma chave de textura já existente, então mesmo que o asset físico seja perfeitamente válido, ele nunca tem a chance de ser carregado — o fallback procedural "ganha" sempre, por ordem de execução, não por falha real de carregamento. O código em `create()` que filtra `missingKeys` e gera fallback seletivo continuou intacto e correto, mas ficava morto: `missingKeys` nunca tinha nada porque o `preload()` já tinha preenchido todas as chaves antes.
+
+Esse mesmo commit também corrompeu (texto UTF-8 sobre binário) `src/assets/ui/*`, `public/assets/sprites/player/bloodmage.png` e `public/assets/sprites/items/chest*` — e reduziu o histórico do repositório para 2 commits, então `git restore`/`git log` não ajudam a recuperar versões anteriores. A causa raiz completa do incidente de 2026-08-21 teve portanto duas partes independentes: (1) binários corrompidos, resolvido restaurando a arte original do export do Lovable (`temp_lovable/`) e regenerando `bloodmage.png`/baú via os scripts em `scripts/`; (2) o código de carregamento removido, resolvido restaurando os `this.load.image(...)` com imports Vite (`import x from "../../assets/ui/nome.png"`, com os `declare module '*.png'` já presentes em `src/vite-env.d.ts`).
+
+### 🛠️ Procedimento de Resolução
+1. Em cada cena afetada, importe os assets via Vite (`import altarUrl from "../../assets/ui/altar.png";` etc.) e enfileire-os em `preload()` com `this.load.image(chave, url)` — **nunca** chame `generateUITextures(this)` sem filtro no `preload()`.
+2. Mantenha a lógica de `create()` como está: `const missingKeys = uiKeys.filter(k => !this.textures.exists(k))` seguido de `generateUITextures(this, missingKeys)` — isso já implementa corretamente o fallback seletivo, só precisa que o `preload()` dê ao asset real a chance de carregar primeiro.
+3. Adicione um listener de `loaderror` no `preload()` chamando `logger.warn('ASSET_LOADER', ...)` para visibilidade imediata no console de qual chave caiu no fallback.
+4. Antes de aceitar qualquer commit com mensagem do tipo "fix... with pure procedural generation" ou similar, revise o diff manualmente — é um sinal de alerta de que o carregamento real pode ter sido removido em vez de corrigido.
+
+---
+
+## 14. Corrupção de PNG/JPG "Volta Sozinha" Após Recuperação Manual (Corrupção Committada + Fonte de Recuperação Também Contaminada)
+
+### 🔴 Sintoma
+Depois de copiar manualmente os arquivos originais (ex.: `Copy-Item -Force` do export limpo do Lovable em `temp_lovable/` para `src/assets/ui/`, ou de `sprites_importados/gothic_chest/...` para `public/assets/sprites/items/chest/`), o `pnpm verify` continua reportando exatamente os mesmos 21 arquivos como corrompidos (`EF BF BD` no lugar do byte mágico `0x89` do PNG). O tamanho do arquivo "recuperado" nem bate com o tamanho do arquivo de origem, o que descarta erro de digitação no comando de cópia.
+
+Agravante: o hook `pre-commit` do husky roda `pnpm verify`, que falha justamente por causa desses arquivos — criando um **deadlock**, já que a correção não pode ser commitada enquanto a verificação não passar, e a verificação não passa enquanto a correção não for aplicada e persistida.
+
+### 🔍 Causa-Raiz (duas causas independentes, confirmadas por inspeção binária + timestamps)
+
+**(a) Para `src/assets/ui/*` (12 arquivos): a corrupção está *committada* no Git, não só no working tree.**
+Os `mtime` dos 12 PNGs/JPGs de `src/assets/ui/` mostram que todos foram regravados **no mesmo instante** (`2026-08-21T14:42:01Z`, span de ~100ms) em que `package.json`, `AGENTS.md` e `tsconfig.base.json` também foram regravados — arquivos que só se movem juntos por uma operação de Git (stash pop, checkout, restore, merge, pull) tocando várias pastas de uma vez, nunca por um `Copy-Item` isolado de PNGs. Ou seja: a cópia manual funcionou no momento em que foi executada, mas uma operação de Git subsequente sobrescreveu o working tree de volta com o blob corrompido presente no índice/histórico. Enquanto esse blob permanecer commitado, qualquer operação de Git que descarte alterações locais nesses caminhos reintroduz a corrupção.
+
+Comprovação adicional do mecanismo da corrupção: reproduzindo em Node um round-trip UTF-8 sobre o `altar.png` limpo (`Buffer.from(buf.toString("utf8"), "utf8")`), o resultado tem 1.187.977 bytes — praticamente idêntico aos 1.186.828 bytes do arquivo corrompido no repositório. A diferença residual de ~1.1 KB indica que o arquivo commitado no repo não era byte-idêntico ao export do Lovable (foi reotimizado em algum momento) e **foi essa versão do repo que sofreu o round-trip UTF-8**.
+
+**(b) Para `public/assets/sprites/items/chest/*` (9 arquivos): a fonte de recuperação usada estava corrompida.**
+`sprites_importados/gothic_chest/Idle/rotations/south.png` é **byte-idêntico** (mesmo hash MD5) ao arquivo de destino corrompido, e já começa com `EF BF BD`. Seu `mtime` é `2026-08-19T12:47:51Z` — dois dias *antes* do incidente do `preload()` (item 13), ou seja, um incidente separado: a pasta `sprites_importados/gothic_chest` (importada via `scripts/pixellab_client.cjs download`) nunca teve versão limpa. Copiar dela apenas propagava a mesma corrupção.
+
+### ✅ Fonte de Recuperação Correta: o diretório `dist/`
+O `dist/` (saída de build, fora do controle do Git via `.gitignore`) **não é afetado pela corrupção do working tree**, porque contém o resultado de um `vite build` executado antes do incidente. Ele foi a fonte de recuperação definitiva para o baú:
+
+| Arquivo | Corrompido | Recuperado de `dist/` |
+|---|---|---|
+| `chest/east.png` | 6.354 bytes | 3.508 bytes — PNG 48x48 válido |
+| `chest/north.png` | 4.563 bytes | 2.542 bytes — PNG 48x48 válido |
+| `chest/south.png` | 6.481 bytes | 3.603 bytes — PNG 48x48 válido |
+| *(demais 6 rotações + `chest.png`)* | inflados | todos PNG 48x48 válidos |
+
+O `dist/assets/*.png|jpg` também continha os 12 assets de UI com hash idêntico ao export limpo do Lovable (`altar-B9hV2CcF.png` = 654.685 bytes), confirmando de forma independente qual era a versão correta.
+
+### 🛠️ Procedimento de Resolução
+1. **Nunca use `Copy-Item`/`cp` do PowerShell para restaurar binários neste projeto sem validar depois** — valide sempre com `Format-Hex -Count 4` (deve ser `89 50 4E 47` para PNG, `FF D8 FF` para JPG).
+2. **UI (`src/assets/ui/*`):** restaure de `temp_lovable/.../src/assets/*` (ou de `dist/assets/<nome>-<hash>.png`).
+3. **Baú (`public/assets/sprites/items/chest/*` + `chest.png`):** restaure de `dist/assets/sprites/items/chest/*` — **não** de `sprites_importados/gothic_chest/`, que está corrompida na origem. Se o `dist/` não existir mais, rode um build a partir de um commit anterior íntegro, ou regenere via PixelLab com `node scripts/pixellab_client.cjs download <character_id> sprites_importados/gothic_chest_v2` (pasta nova, para não confundir com a corrompida) e valide os bytes antes de copiar.
+4. **Commite imediatamente após restaurar**, sem rodar nenhuma outra operação de Git no meio: `git add src/assets/ui public/assets/sprites/items && git commit -m "fix: restaura binarios corrompidos dos assets"`. Só depois disso é seguro fazer `pull`/`stash pop`/`checkout`.
+5. **Se o deadlock do husky bloquear o commit** (verify falha → não commita → não corrige), use `git commit --no-verify` *apenas* nesse commit específico de restauração, e rode `pnpm verify` manualmente logo em seguida para confirmar.
+6. **Regra geral:** valide qualquer fonte de recuperação **antes** de usá-la. Um "backup" pode já estar contaminado — foi exatamente o que aconteceu com `sprites_importados/gothic_chest/`.
+
+### 🛡️ Prevenção
+- `.gitattributes` já marca `*.png`/`*.jpg`/`*.webp` como `binary` — mantenha, mas saiba que isso protege o Git, **não** protege contra um script Node que leia/escreva o arquivo como string UTF-8.
+- Nenhum script deve usar `fs.readFileSync(path, 'utf8')` seguido de `fs.writeFileSync` em arquivos de mídia. Os scripts do pipeline (`pixellab_client.cjs`, `fetch-spritecook-sprite.cjs`, `generate-asset.mjs`) já usam `Buffer` corretamente; scripts ad-hoc de patch na raiz do projeto (`fix_*.cjs`, `patch_*.cjs`, `update_assets.*`) são os suspeitos prováveis e devem ser removidos após o uso.
+- `scripts/verify-assets.cjs` (rodando no `pre-commit`) detecta exatamente esse padrão — trate qualquer falha dele como bloqueante, nunca como falso positivo.
+
+---
+
+## 15. Tabela de Diagnóstico Rápido
 
 | Sintoma | Causa Mais Provável | Ferramenta / Comando de Diagnóstico | Ação Imediata |
 |---|---|---|---|
@@ -375,6 +446,9 @@ O console/logger exibia o erro:
 | Atiradores atacando fora da tela / avançando demais | `visionDistance` e `attackRange` excessivos + lunge indevido | Inspecionar `monsters.json` e `Enemy.ts` | Calibrar velocidades, kiting tático a 80-100% de alcance e travar lunge para ranged |
 | Botões do React DOM sobrepondo tela inicial do Lovable | Camada redundante de botões HTML em `MainMenu.tsx` | Inspecionar DOM em `MainMenu.tsx` | Remover botões DOM sobrepostos e restaurar `buildHud()` / `buildMenu()` nativos do `TitleScene.ts` |
 | `[UNHANDLED_REJECTION] Unhandled Promise Rejection {"reason": {}}` | Propriedades não-enumeráveis de `Error` no logger + conflito de SoundManager do Phaser / autoplay | Inspecionar `logger.ts` e logs de áudio | Extrair propriedades completas de `Error`, monkey-patch em `resume()` e configurar `audio: { noAudio: true }` no Phaser |
+| Corrupção de PNG volta após `Copy-Item`/`cp` de restauração | Blob corrompido ainda commitado no Git; operação de Git posterior sobrescreve o working tree | `git log --oneline -- <arquivo>` + comparar `mtime` dos arquivos afetados | Restaurar e commitar imediatamente (`git commit --no-verify` se o husky bloquear) |
+| Restaurar de um backup e o arquivo continua corrompido | A própria fonte de recuperação está contaminada (ex.: `sprites_importados/gothic_chest/`) | `md5sum fonte destino` — se forem iguais, a fonte é o problema | Recuperar de `dist/` (build pré-corrupção) ou regerar via API |
+| `pnpm verify` falha no `pre-commit` impedindo o commit da própria correção | Deadlock do hook husky | `husky - pre-commit script failed (code 1)` | `git commit --no-verify` só no commit de restauração + `pnpm verify` manual em seguida |
 
 
 ---
