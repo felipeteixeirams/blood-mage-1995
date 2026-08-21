@@ -96,10 +96,10 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   });
   addTextureWithNormalMap('tile_ground', tileCanvas);
 
-  // 2. Bloodmage Character Spritesheet (544x1156: 8 columns x 17 rows of 68x68 frames)
-  const bloodmageCanvas = createPixelCanvas(544, 1156, (ctx) => {
-    const FRAME_W = 68;
-    const FRAME_H = 68;
+  // 2. Bloodmage Character Spritesheet (384x816: 8 columns x 17 rows of 48x48 frames)
+  const bloodmageCanvas = createPixelCanvas(384, 816, (ctx) => {
+    const FRAME_W = 48;
+    const FRAME_H = 48;
 
     const renderFrame = (
       originX: number,
@@ -108,8 +108,8 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
       animType: 'idle' | 'walk' | 'cast',
       step: number
     ) => {
-      const cx = originX + 34;
-      const cy = originY + 34;
+      const cx = originX + 24;
+      const cy = originY + 24;
 
       const isWalk = animType === 'walk';
       const isCast = animType === 'cast';
@@ -118,51 +118,51 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
       const bobY = isWalk
         ? Math.round(Math.sin(phase * Math.PI * 2) * 1.5)
         : isCast
-        ? Math.round(Math.sin(phase * Math.PI) * -3)
+        ? Math.round(Math.sin(phase * Math.PI) * -2.5)
         : 0;
 
-      const legSwing = isWalk ? Math.sin(phase * Math.PI * 2) * 3 : 0;
-      const swayX = isWalk ? Math.round(Math.cos(phase * Math.PI * 2) * 1.2) : 0;
+      const legSwing = isWalk ? Math.sin(phase * Math.PI * 2) * 2.5 : 0;
+      const swayX = isWalk ? Math.round(Math.cos(phase * Math.PI * 2) * 1.0) : 0;
 
       // 1. Soft Shadow
-      const shadowScale = isCast ? 14 + Math.round(Math.sin(phase * Math.PI) * 2) : 13;
+      const shadowScale = isCast ? 10 + Math.round(Math.sin(phase * Math.PI) * 1.5) : 9;
       ctx.fillStyle = 'rgba(5, 5, 10, 0.45)';
       ctx.beginPath();
-      ctx.ellipse(cx, cy + 22, shadowScale, 5, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, cy + 17, shadowScale, 4, 0, 0, Math.PI * 2);
       ctx.fill();
 
       // 2. Boots
-      const bootY = cy + 18 + bobY;
+      const bootY = cy + 14 + bobY;
       ctx.fillStyle = '#23140f';
       if (dir === 4 || dir === 3 || dir === 5) {
-        ctx.fillRect(cx - 6 - Math.round(legSwing * 0.5), bootY, 4, 6);
-        ctx.fillRect(cx + 2 + Math.round(legSwing * 0.5), bootY, 4, 6);
-      } else if (dir === 2) {
-        ctx.fillRect(cx - 3 + Math.round(legSwing), bootY, 6, 6);
+        ctx.fillRect(cx - 4 - Math.round(legSwing * 0.4), bootY, 3, 4);
+        ctx.fillRect(cx + 2 + Math.round(legSwing * 0.4), bootY, 3, 4);
+      } else if (dir === 2 || dir === 1) {
+        ctx.fillRect(cx - 2 + Math.round(legSwing * 0.7), bootY, 4, 4);
         ctx.fillStyle = '#371e14';
-        ctx.fillRect(cx - 1 - Math.round(legSwing), bootY + 1, 5, 5);
-      } else if (dir === 6) {
-        ctx.fillRect(cx - 3 - Math.round(legSwing), bootY, 6, 6);
+        ctx.fillRect(cx - 1 - Math.round(legSwing * 0.7), bootY + 1, 3, 3);
+      } else if (dir === 6 || dir === 7) {
+        ctx.fillRect(cx - 2 - Math.round(legSwing * 0.7), bootY, 4, 4);
         ctx.fillStyle = '#371e14';
-        ctx.fillRect(cx - 4 + Math.round(legSwing), bootY + 1, 5, 5);
+        ctx.fillRect(cx - 2 + Math.round(legSwing * 0.7), bootY + 1, 3, 3);
       } else {
         ctx.fillStyle = '#371e14';
-        ctx.fillRect(cx - 6 + Math.round(legSwing), bootY, 4, 6);
-        ctx.fillRect(cx + 2 - Math.round(legSwing), bootY, 4, 6);
+        ctx.fillRect(cx - 4 + Math.round(legSwing * 0.6), bootY, 3, 4);
+        ctx.fillRect(cx + 1 - Math.round(legSwing * 0.6), bootY, 3, 4);
         ctx.fillStyle = '#d97706';
-        ctx.fillRect(cx - 6 + Math.round(legSwing), bootY, 4, 2);
-        ctx.fillRect(cx + 2 - Math.round(legSwing), bootY, 4, 2);
+        ctx.fillRect(cx - 3 + Math.round(legSwing * 0.6), bootY + 1, 1, 1);
+        ctx.fillRect(cx + 2 - Math.round(legSwing * 0.6), bootY + 1, 1, 1);
       }
 
       // 3. Flowing Crimson Robe (Lower Body)
-      const robeTop = cy + 6 + bobY;
-      const robeBottom = cy + 20 + bobY;
-      const castFlare = isCast ? Math.round(Math.sin(phase * Math.PI) * 3) : 0;
-      const robeW = 10 + castFlare;
+      const robeTop = cy + 4 + bobY;
+      const robeBottom = cy + 15 + bobY;
+      const castFlare = isCast ? Math.round(Math.sin(phase * Math.PI) * 2) : 0;
+      const robeW = 7 + castFlare;
 
       for (let y = robeTop; y <= robeBottom; y++) {
         const progress = (y - robeTop) / (robeBottom - robeTop);
-        const halfW = Math.round(5 + progress * robeW);
+        const halfW = Math.round(3 + progress * robeW);
         const leftX = cx - halfW + swayX;
         const rightX = cx + halfW + swayX;
 
@@ -171,12 +171,12 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
           if (x === leftX || x === rightX) {
             col = '#450a0a';
           } else if (y === robeBottom || y === robeBottom - 1) {
-            col = (x % 3 === 0) ? '#f59e0b' : '#b91c1c';
-          } else if (x === cx + swayX || x === cx + swayX - 1) {
+            col = (x % 2 === 0) ? '#f59e0b' : '#b91c1c';
+          } else if (x === cx + swayX) {
             col = (dir === 4) ? '#5c0b14' : '#dc2626';
-          } else if (x < cx + swayX - 2) {
+          } else if (x < cx + swayX - 1) {
             col = (dir === 2 || dir === 3) ? '#450a0a' : '#b91c1c';
-          } else if (x > cx + swayX + 2) {
+          } else if (x > cx + swayX + 1) {
             col = (dir === 6 || dir === 5) ? '#450a0a' : '#b91c1c';
           }
           ctx.fillStyle = col;
@@ -185,28 +185,24 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
       }
 
       // 4. Belt & Phials
-      const beltY = cy + 6 + bobY;
+      const beltY = cy + 3 + bobY;
       if (dir !== 4) {
         ctx.fillStyle = '#18181b';
-        ctx.fillRect(cx - 6 + swayX, beltY, 12, 2);
+        ctx.fillRect(cx - 4 + swayX, beltY, 8, 2);
         ctx.fillStyle = '#fbbf24';
         ctx.fillRect(cx - 1 + swayX, beltY, 2, 2);
 
         // Phials
         ctx.fillStyle = '#ef4444';
-        ctx.fillRect(cx - 5 + swayX, beltY + 2, 2, 3);
-        ctx.fillRect(cx + 3 + swayX, beltY + 2, 2, 3);
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(cx - 5 + swayX, beltY + 1, 2, 1);
-        ctx.fillRect(cx + 3 + swayX, beltY + 1, 2, 1);
+        ctx.fillRect(cx + 3 + swayX, beltY - 1, 2, 3);
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(cx - 5 + swayX, beltY + 2, 1, 1);
+        ctx.fillRect(cx + 3 + swayX, beltY - 1, 1, 1);
       }
 
       // 5. Torso & Mantle
-      const torsoTop = cy - 6 + bobY;
+      const torsoTop = cy - 4 + bobY;
       for (let y = torsoTop; y < beltY; y++) {
-        const halfW = 6;
+        const halfW = (y < torsoTop + 2) ? 6 : 5;
         for (let x = cx - halfW; x <= cx + halfW; x++) {
           let col = '#b91c1c';
           if (x === cx - halfW || x === cx + halfW) col = '#450a0a';
@@ -216,29 +212,17 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
         }
       }
 
-      // Gold Brooch
-      if (dir !== 4) {
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(cx - 1 + swayX, torsoTop + 2, 2, 2);
-        ctx.fillStyle = '#ef4444';
-        ctx.fillRect(cx + swayX, torsoTop + 2, 1, 1);
-      }
+      // Gold Mantle Trim
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(cx - 5 + swayX, torsoTop, 10, 1);
 
-      // Pauldrons
-      ctx.fillStyle = '#450a0a';
-      ctx.fillRect(cx - 9 + swayX, torsoTop - 1, 4, 4);
-      ctx.fillRect(cx + 5 + swayX, torsoTop - 1, 4, 4);
-      ctx.fillStyle = '#f59e0b';
-      ctx.fillRect(cx - 8 + swayX, torsoTop - 1, 2, 2);
-      ctx.fillRect(cx + 6 + swayX, torsoTop - 1, 2, 2);
-
-      // 6. Hood & Face
-      const headTop = cy - 18 + bobY;
+      // 6. Hood & Gaunt Face
+      const headTop = cy - 13 + bobY;
       const headBottom = torsoTop + 1;
 
       for (let y = headTop; y <= headBottom; y++) {
         const prog = (y - headTop) / (headBottom - headTop);
-        const halfW = Math.round(2 + prog * 6);
+        const halfW = Math.round(2 + prog * 5);
         for (let x = cx - halfW; x <= cx + halfW; x++) {
           let col = '#991b1b';
           if (y === headTop || y === headTop + 1) col = '#dc2626';
@@ -249,51 +233,46 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
       }
 
       if (dir === 4) {
-        for (let y = headTop + 4; y <= headBottom; y++) {
-          ctx.fillStyle = '#450a0a';
-          ctx.fillRect(cx + swayX, y, 1, 1);
-          ctx.fillStyle = '#5c0b14';
-          ctx.fillRect(cx - 1 + swayX, y, 1, 1);
-        }
+        ctx.fillStyle = '#450a0a';
+        ctx.fillRect(cx + swayX, headTop + 2, 1, 4);
       } else {
-        const faceY = headTop + 6;
+        const faceY = headTop + 3;
         ctx.fillStyle = '#180914';
-        ctx.fillRect(cx - 4 + swayX, faceY, 8, 7);
+        ctx.fillRect(cx - 3 + swayX, faceY, 6, 5);
 
         ctx.fillStyle = '#e2d5c5';
-        ctx.fillRect(cx - 3 + swayX, faceY + 2, 6, 4);
+        ctx.fillRect(cx - 2 + swayX, faceY + 1, 4, 3);
         ctx.fillStyle = '#b4a596';
-        ctx.fillRect(cx - 2 + swayX, faceY + 5, 4, 2);
+        ctx.fillRect(cx - 2 + swayX, faceY + 3, 4, 1);
 
         // Glowing Crimson Eyes
         ctx.fillStyle = '#ff143c';
-        const eyePupilCol = isCast ? '#ffffff' : '#ffffff';
         if (dir === 0 || dir === 1 || dir === 7) {
-          ctx.fillRect(cx - 3 + swayX, faceY + 2, 2, 2);
-          ctx.fillRect(cx + 1 + swayX, faceY + 2, 2, 2);
-          ctx.fillStyle = eyePupilCol;
-          ctx.fillRect(cx - 3 + swayX, faceY + 2, 1, 1);
-          ctx.fillRect(cx + 1 + swayX, faceY + 2, 1, 1);
+          ctx.fillRect(cx - 2 + swayX, faceY + 1, 1, 1);
+          ctx.fillRect(cx + 1 + swayX, faceY + 1, 1, 1);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(cx - 2 + swayX, faceY + 1, 1, 1);
+          ctx.fillRect(cx + 1 + swayX, faceY + 1, 1, 1);
         } else if (dir === 2 || dir === 3) {
-          ctx.fillRect(cx + swayX, faceY + 2, 2, 2);
-          ctx.fillStyle = eyePupilCol;
-          ctx.fillRect(cx + 1 + swayX, faceY + 2, 1, 1);
+          ctx.fillRect(cx + 1 + swayX, faceY + 1, 1, 1);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(cx + 1 + swayX, faceY + 1, 1, 1);
         } else if (dir === 6 || dir === 5) {
-          ctx.fillRect(cx - 2 + swayX, faceY + 2, 2, 2);
-          ctx.fillStyle = eyePupilCol;
-          ctx.fillRect(cx - 2 + swayX, faceY + 2, 1, 1);
+          ctx.fillRect(cx - 2 + swayX, faceY + 1, 1, 1);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(cx - 2 + swayX, faceY + 1, 1, 1);
         }
       }
 
-      // 7. Blood Staff with glowing Blood Orb
-      let staffX = cx + 11 + swayX;
+      // 7. Dark Wood Staff with Glowing Ruby Blood Gem
+      let staffX = cx + 8 + swayX;
       let staffY = cy - 14 + bobY;
       if (dir === 6 || dir === 5 || dir === 7) {
-        staffX = cx - 12 + swayX;
+        staffX = cx - 8 + swayX;
       }
 
       if (isCast) {
-        const castLift = Math.round(Math.sin(phase * Math.PI) * 6);
+        const castLift = Math.round(Math.sin(phase * Math.PI) * 4);
         staffY -= castLift;
         if (dir === 2 || dir === 1 || dir === 3) {
           staffX += Math.round(Math.sin(phase * Math.PI) * 4);
@@ -302,45 +281,38 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
         }
       }
 
-      ctx.fillStyle = '#2d2830';
-      ctx.fillRect(staffX, staffY + 6, 2, 26);
-      ctx.fillStyle = '#4b4650';
-      ctx.fillRect(staffX + 1, staffY + 8, 1, 22);
+      // Shaft
+      ctx.fillStyle = '#2b1e1a';
+      ctx.fillRect(staffX, staffY + 4, 2, 24);
+      ctx.fillStyle = '#453025';
+      ctx.fillRect(staffX + 1, staffY + 6, 1, 20);
 
-      // Gold claw
-      ctx.fillStyle = '#f59e0b';
-      ctx.fillRect(staffX - 2, staffY + 2, 6, 4);
-      ctx.fillRect(staffX - 3, staffY, 2, 3);
-      ctx.fillRect(staffX + 3, staffY, 2, 3);
+      // Gold Prongs
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(staffX - 1, staffY + 2, 3, 2);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(staffX - 2, staffY + 1, 1, 1);
+      ctx.fillRect(staffX + 2, staffY + 1, 1, 1);
 
-      // Glowing Blood Orb
-      const orbRadius = isCast ? 4 + Math.round(Math.sin(phase * Math.PI) * 2) : 4;
-      ctx.fillStyle = '#991b1b';
+      // Ruby Blood Gem
+      ctx.fillStyle = '#dc2626';
       ctx.beginPath();
-      ctx.arc(staffX + 1, staffY - 2, orbRadius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#ef4444';
-      ctx.beginPath();
-      ctx.arc(staffX + 1, staffY - 2, Math.max(1, orbRadius - 2), 0, Math.PI * 2);
+      ctx.arc(staffX + 1, staffY, 3, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#fecaca';
-      ctx.fillRect(staffX, staffY - 3, 1, 1);
+      ctx.fillRect(staffX, staffY - 1, 1, 1);
 
-      // Magic sparkles
-      ctx.fillStyle = 'rgba(248, 113, 113, 0.75)';
-      ctx.fillRect(staffX - 3, staffY - 5, 1, 1);
-      ctx.fillRect(staffX + 5, staffY - 3, 1, 1);
-
+      // Magic VFX when casting
       if (isCast && step >= 2 && step <= 6) {
         ctx.fillStyle = 'rgba(255, 60, 60, 0.85)';
-        ctx.fillRect(staffX + 2, staffY - 7, 2, 2);
-        ctx.fillRect(staffX - 2, staffY - 6, 2, 2);
+        ctx.fillRect(staffX + 2, staffY - 4, 2, 2);
+        ctx.fillRect(staffX - 2, staffY - 3, 2, 2);
       }
     };
 
     // Row 0: 8 Idle frames (1 per direction)
     for (let dir = 0; dir < 8; dir++) {
-      renderFrame(dir * FRAME_W, 0, dir, 'idle', 0);
+      renderFrame(dir * FRAME_W, 0, dir, 'idle', dir);
     }
 
     // Rows 1..8: Walk animations (8 frames per direction)
@@ -359,7 +331,7 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
       }
     }
   });
-  addSpriteSheet('spr_bloodmage', bloodmageCanvas, 68, 68);
+  addSpriteSheet('spr_bloodmage', bloodmageCanvas, 48, 48);
 
 
 
@@ -785,24 +757,129 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   });
   addTexture('spr_portal', portalCanvas);
 
-  // 19. Dungeon Treasure Chest (24x20)
-  const chestCanvas = createPixelCanvas(24, 20, (ctx) => {
-    ctx.fillStyle = '#78350f'; // Dark wood
-    ctx.fillRect(2, 4, 20, 14);
+  // 19. Dungeon Gothic Treasure Chest (48x48) with 8 Directional Perspectives
+  const createDirectionalChestCanvas = (dir: string) => {
+    return createPixelCanvas(48, 48, (ctx) => {
+      const cx = 24;
+      const cy = 25;
 
-    ctx.fillStyle = '#d97706'; // Gold trim
-    ctx.fillRect(2, 4, 20, 3);
-    ctx.fillRect(2, 15, 20, 3);
-    ctx.fillRect(10, 4, 4, 14);
+      // Drop shadow
+      ctx.fillStyle = 'rgba(10, 5, 12, 0.55)';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy + 12, 16, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
 
-    ctx.fillStyle = '#fef08a'; // Glowing lock
-    ctx.fillRect(10, 9, 4, 4);
-  });
-  addTexture('spr_chest', chestCanvas);
+      // Wooden Box Body (28x20)
+      const bx = cx - 14;
+      const by = cy - 4;
+      const boxW = 28;
+      const boxH = 20;
+      const lidY = by - 8;
+      const lidH = 10;
+
+      // Dark oak wood base & grain
+      ctx.fillStyle = '#422213';
+      ctx.fillRect(bx, by, boxW, boxH);
+
+      // Plank grooves & highlights
+      ctx.fillStyle = '#24140e';
+      ctx.fillRect(bx, by + 6, boxW, 1);
+      ctx.fillRect(bx, by + 13, boxW, 1);
+      ctx.fillStyle = '#66381e';
+      ctx.fillRect(bx, by + 1, boxW, 2);
+      ctx.fillRect(bx, by + 7, boxW, 2);
+
+      // Curved Lid
+      ctx.fillStyle = '#422213';
+      ctx.fillRect(bx - 1, lidY, boxW + 2, lidH);
+      ctx.fillStyle = '#8a4e2a';
+      ctx.fillRect(bx - 1, lidY, boxW + 2, 2); // Top rim highlight
+      ctx.fillStyle = '#24140e';
+      ctx.fillRect(bx - 1, by, boxW + 2, 2); // Lid seam shadow
+
+      // Iron perimeter & bands
+      ctx.fillStyle = '#282523';
+      ctx.fillRect(bx - 1, lidY, 1, boxH + lidH);
+      ctx.fillRect(bx + boxW, lidY, 1, boxH + lidH);
+
+      // Vertical Iron Straps (Left & Right)
+      const strapX1 = bx + 5;
+      const strapX2 = bx + boxW - 7;
+      [strapX1, strapX2].forEach((sx) => {
+        ctx.fillStyle = '#282523';
+        ctx.fillRect(sx, lidY, 3, boxH + lidH);
+        ctx.fillStyle = '#46403a';
+        ctx.fillRect(sx, lidY, 1, boxH + lidH);
+        // Gold/Iron Rivets
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(sx + 1, lidY + 2, 1, 1);
+        ctx.fillRect(sx + 1, by + 4, 1, 1);
+        ctx.fillRect(sx + 1, by + 10, 1, 1);
+        ctx.fillRect(sx + 1, by + 16, 1, 1);
+      });
+
+      // Horizontal Middle Band
+      ctx.fillStyle = '#282523';
+      ctx.fillRect(bx - 1, by - 1, boxW + 2, 3);
+      ctx.fillStyle = '#574f49';
+      ctx.fillRect(bx - 1, by - 1, boxW + 2, 1);
+
+      // Directional details
+      if (dir === 'north' || dir === 'north_west' || dir === 'north_east') {
+        // Rear Iron Hinges
+        [strapX1, strapX2].forEach((sx) => {
+          ctx.fillStyle = '#38322e';
+          ctx.fillRect(sx - 1, by - 3, 5, 5);
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(sx + 1, by - 1, 1, 1);
+        });
+      } else if (dir === 'east' || dir === 'south_east') {
+        // Right Side Handle
+        ctx.fillStyle = '#38322e';
+        ctx.fillRect(bx + boxW, by + 4, 3, 5);
+        ctx.fillStyle = '#574f49';
+        ctx.fillRect(bx + boxW + 1, by + 6, 2, 3);
+      } else if (dir === 'west' || dir === 'south_west') {
+        // Left Side Handle
+        ctx.fillStyle = '#38322e';
+        ctx.fillRect(bx - 3, by + 4, 3, 5);
+        ctx.fillStyle = '#574f49';
+        ctx.fillRect(bx - 2, by + 6, 2, 3);
+      }
+
+      if (dir === 'south' || dir === 'south_east' || dir === 'south_west' || dir === 'default') {
+        // Front Skull Latch & Blood Ruby Lock Core
+        const lockX = cx - 4;
+        const lockY = by - 3;
+        ctx.fillStyle = '#b45309';
+        ctx.fillRect(lockX, lockY, 8, 10);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(lockX + 1, lockY + 1, 6, 8);
+
+        // Skull Plate
+        ctx.fillStyle = '#fde68a';
+        ctx.fillRect(lockX + 2, lockY + 2, 4, 3);
+        ctx.fillRect(lockX + 3, lockY + 5, 2, 2);
+        // Eye sockets
+        ctx.fillStyle = '#1e1008';
+        ctx.fillRect(lockX + 2, lockY + 3, 1, 1);
+        ctx.fillRect(lockX + 5, lockY + 3, 1, 1);
+
+        // Glowing Ruby Core
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(cx - 1, lockY + 6, 2, 2);
+        ctx.fillStyle = '#f87171';
+        ctx.fillRect(cx, lockY + 6, 1, 1);
+      }
+    });
+  };
+
+  const defaultChestCanvas = createDirectionalChestCanvas('default');
+  addTexture('spr_chest', defaultChestCanvas);
 
   const chestDirs = ['south', 'south_west', 'west', 'north_west', 'north', 'north_east', 'east', 'south_east'];
   chestDirs.forEach((dir) => {
-    addTexture(`spr_chest_${dir}`, chestCanvas);
+    addTexture(`spr_chest_${dir}`, createDirectionalChestCanvas(dir));
   });
 
   // 19b. Skeleton Remains (Bones)

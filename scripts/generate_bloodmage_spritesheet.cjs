@@ -1,385 +1,293 @@
 const fs = require('fs');
-const zlib = require('zlib');
+const path = require('path');
+const { PNG } = require('pngjs');
 
-const FRAME_W = 68;
-const FRAME_H = 68;
+const FRAME_W = 48;
+const FRAME_H = 48;
 const COLS = 8;
 const ROWS = 17; // Row 0: Idle (8 dirs), Rows 1-8: Walk (8 dirs x 8 frames), Rows 9-16: Cast (8 dirs x 8 frames)
-const SHEET_W = COLS * FRAME_W; // 544
-const SHEET_H = ROWS * FRAME_H; // 1156
+const SHEET_W = COLS * FRAME_W; // 384
+const SHEET_H = ROWS * FRAME_H; // 816
 
-// Color palette (RGBA)
-const C = {
-  trans: [0, 0, 0, 0],
-  shadow: [5, 5, 10, 115],
-  bootDark: [35, 20, 15, 255],
-  bootMid: [55, 30, 20, 255],
-  bootGold: [217, 119, 6, 255],
-  robeDark: [69, 10, 10, 255],
-  robeShadow: [92, 11, 20, 255],
-  robeMid: [153, 27, 27, 255],
-  robeBright: [185, 28, 28, 255],
-  robeHighlight: [220, 38, 38, 255],
-  robeTrim: [245, 158, 11, 255],
-  beltBlack: [24, 24, 27, 255],
-  beltGold: [251, 191, 36, 255],
-  phialGlass: [226, 232, 240, 200],
-  phialBlood: [239, 68, 68, 255],
-  phialGlint: [255, 255, 255, 255],
-  skinPale: [226, 213, 197, 255],
-  skinShadow: [180, 165, 150, 255],
-  eyeGlow: [255, 20, 60, 255],
-  eyePupil: [255, 255, 255, 255],
-  staffWood: [45, 40, 48, 255],
-  staffWoodLit: [75, 70, 80, 255],
-  staffGold: [245, 158, 11, 255],
-  orbDark: [153, 27, 27, 255],
-  orbMid: [220, 38, 38, 255],
-  orbBright: [239, 68, 68, 255],
-  orbGlint: [254, 202, 202, 255],
-  magicSparks: [248, 113, 113, 190],
-  magicBeam: [255, 60, 60, 220],
-  hoodShadow: [24, 9, 20, 255],
-};
+function createBloodMageSpritesheet() {
+  const png = new PNG({ width: SHEET_W, height: SHEET_H });
 
-function renderBloodMageFrame(ctx, dir, animType, step) {
-  // dir: 0=S, 1=SE, 2=E, 3=NE, 4=N, 5=NW, 6=W, 7=SW
-  // animType: 'idle' | 'walk' | 'cast'
-  const cx = 34;
-  const cy = 34;
-
-  const isWalk = animType === 'walk';
-  const isCast = animType === 'cast';
-
-  const phase = step / 8;
-  const bobY = isWalk
-    ? Math.round(Math.sin(phase * Math.PI * 2) * 1.5)
-    : isCast
-    ? Math.round(Math.sin(phase * Math.PI) * -3)
-    : 0;
-
-  const legSwing = isWalk ? Math.sin(phase * Math.PI * 2) * 3 : 0;
-  const swayX = isWalk ? Math.round(Math.cos(phase * Math.PI * 2) * 1.2) : 0;
-
-  // 1. Shadow underneath
-  const shadowScale = isCast ? 14 + Math.round(Math.sin(phase * Math.PI) * 2) : 13;
-  ctx.fillEllipse(cx, cy + 22, shadowScale, 5, C.shadow);
-
-  // 2. Boots
-  const bootY = cy + 18 + bobY;
-  if (dir === 4 || dir === 3 || dir === 5) {
-    ctx.fillRect(cx - 6 - Math.round(legSwing * 0.5), bootY, 4, 6, C.bootDark);
-    ctx.fillRect(cx + 2 + Math.round(legSwing * 0.5), bootY, 4, 6, C.bootDark);
-  } else if (dir === 2) {
-    ctx.fillRect(cx - 3 + Math.round(legSwing), bootY, 6, 6, C.bootDark);
-    ctx.fillRect(cx - 1 - Math.round(legSwing), bootY + 1, 5, 5, C.bootMid);
-  } else if (dir === 6) {
-    ctx.fillRect(cx - 3 - Math.round(legSwing), bootY, 6, 6, C.bootDark);
-    ctx.fillRect(cx - 4 + Math.round(legSwing), bootY + 1, 5, 5, C.bootMid);
-  } else {
-    ctx.fillRect(cx - 6 + Math.round(legSwing), bootY, 4, 6, C.bootMid);
-    ctx.fillRect(cx + 2 - Math.round(legSwing), bootY, 4, 6, C.bootMid);
-    ctx.fillRect(cx - 6 + Math.round(legSwing), bootY, 4, 2, C.bootGold);
-    ctx.fillRect(cx + 2 - Math.round(legSwing), bootY, 4, 2, C.bootGold);
+  // Clear to transparent
+  for (let i = 0; i < png.data.length; i += 4) {
+    png.data[i] = 0;
+    png.data[i + 1] = 0;
+    png.data[i + 2] = 0;
+    png.data[i + 3] = 0;
   }
 
-  // 3. Robe (Lower Body)
-  const robeTop = cy + 6 + bobY;
-  const robeBottom = cy + 20 + bobY;
-  const castFlare = isCast ? Math.round(Math.sin(phase * Math.PI) * 3) : 0;
-  const robeW = 10 + castFlare;
+  function setPixel(x, y, r, g, b, a = 255) {
+    if (x < 0 || x >= SHEET_W || y < 0 || y >= SHEET_H) return;
+    const idx = (y * SHEET_W + x) * 4;
+    // Alpha blending with underlying pixel if needed
+    if (a < 255 && png.data[idx + 3] > 0) {
+      const srcA = a / 255;
+      const dstA = png.data[idx + 3] / 255;
+      const outA = srcA + dstA * (1 - srcA);
+      png.data[idx] = Math.round((r * srcA + png.data[idx] * dstA * (1 - srcA)) / outA);
+      png.data[idx + 1] = Math.round((g * srcA + png.data[idx + 1] * dstA * (1 - srcA)) / outA);
+      png.data[idx + 2] = Math.round((b * srcA + png.data[idx + 2] * dstA * (1 - srcA)) / outA);
+      png.data[idx + 3] = Math.round(outA * 255);
+    } else {
+      png.data[idx] = r;
+      png.data[idx + 1] = g;
+      png.data[idx + 2] = b;
+      png.data[idx + 3] = a;
+    }
+  }
 
-  for (let y = robeTop; y <= robeBottom; y++) {
-    const progress = (y - robeTop) / (robeBottom - robeTop);
-    const halfW = Math.round(5 + progress * robeW);
-    const leftX = cx - halfW + swayX;
-    const rightX = cx + halfW + swayX;
-
-    for (let x = leftX; x <= rightX; x++) {
-      let col = C.robeMid;
-      if (x === leftX || x === rightX) {
-        col = C.robeDark;
-      } else if (y === robeBottom || y === robeBottom - 1) {
-        col = x % 3 === 0 ? C.robeTrim : C.robeBright;
-      } else if (x === cx + swayX || x === cx + swayX - 1) {
-        col = dir === 4 ? C.robeShadow : C.robeHighlight;
-      } else if (x < cx + swayX - 2) {
-        col = dir === 2 || dir === 3 ? C.robeDark : C.robeBright;
-      } else if (x > cx + swayX + 2) {
-        col = dir === 6 || dir === 5 ? C.robeDark : C.robeBright;
+  function fillRect(rx, ry, rw, rh, r, g, b, a = 255) {
+    for (let py = ry; py < ry + rh; py++) {
+      for (let px = rx; px < rx + rw; px++) {
+        setPixel(px, py, r, g, b, a);
       }
-      ctx.setPixel(x, y, col);
     }
   }
 
-  // 4. Belt & Blood Phials
-  const beltY = cy + 6 + bobY;
-  if (dir !== 4) {
-    ctx.fillRect(cx - 6 + swayX, beltY, 12, 2, C.beltBlack);
-    ctx.fillRect(cx - 1 + swayX, beltY, 2, 2, C.beltGold);
-
-    // Blood phial left
-    ctx.fillRect(cx - 5 + swayX, beltY + 2, 2, 3, C.phialBlood);
-    ctx.fillRect(cx - 5 + swayX, beltY + 1, 2, 1, C.beltGold);
-    ctx.setPixel(cx - 5 + swayX, beltY + 2, C.phialGlint);
-
-    // Blood phial right
-    ctx.fillRect(cx + 3 + swayX, beltY + 2, 2, 3, C.phialBlood);
-    ctx.fillRect(cx + 3 + swayX, beltY + 1, 2, 1, C.beltGold);
-  }
-
-  // 5. Torso & Mantle
-  const torsoTop = cy - 6 + bobY;
-  for (let y = torsoTop; y < beltY; y++) {
-    const halfW = 6;
-    for (let x = cx - halfW; x <= cx + halfW; x++) {
-      let col = C.robeBright;
-      if (x === cx - halfW || x === cx + halfW) col = C.robeDark;
-      else if (x === cx || x === cx - 1) col = dir === 4 ? C.robeDark : C.robeHighlight;
-      ctx.setPixel(x + swayX, y, col);
+  function fillEllipse(cx, cy, rx, ry, r, g, b, a = 255) {
+    for (let y = cy - ry; y <= cy + ry; y++) {
+      for (let x = cx - rx; x <= cx + rx; x++) {
+        const dx = (x - cx) / rx;
+        const dy = (y - cy) / ry;
+        if (dx * dx + dy * dy <= 1) {
+          setPixel(x, y, r, g, b, a);
+        }
+      }
     }
   }
 
-  // Gold Brooch on chest
-  if (dir !== 4) {
-    ctx.fillRect(cx - 1 + swayX, torsoTop + 2, 2, 2, C.beltGold);
-    ctx.setPixel(cx + swayX, torsoTop + 2, C.phialBlood);
-  }
+  // Directions: 0=S, 1=SE, 2=E, 3=NE, 4=N, 5=NW, 6=W, 7=SW
+  function renderFrame(col, row, dir, animType, step) {
+    const ox = col * FRAME_W;
+    const oy = row * FRAME_H;
 
-  // 6. Pauldrons / Shoulder Guards
-  ctx.fillRect(cx - 9 + swayX, torsoTop - 1, 4, 4, C.robeDark);
-  ctx.fillRect(cx - 8 + swayX, torsoTop - 1, 2, 2, C.robeTrim);
-  ctx.fillRect(cx + 5 + swayX, torsoTop - 1, 4, 4, C.robeDark);
-  ctx.fillRect(cx + 6 + swayX, torsoTop - 1, 2, 2, C.robeTrim);
+    const cx = ox + 24;
+    const cy = oy + 24;
 
-  // 7. Hood & Face
-  const headTop = cy - 18 + bobY;
-  const headBottom = torsoTop + 1;
+    const isWalk = animType === 'walk';
+    const isCast = animType === 'cast';
 
-  for (let y = headTop; y <= headBottom; y++) {
-    const prog = (y - headTop) / (headBottom - headTop);
-    const halfW = Math.round(2 + prog * 6);
-    for (let x = cx - halfW; x <= cx + halfW; x++) {
-      let col = C.robeMid;
-      if (y === headTop || y === headTop + 1) col = C.robeHighlight;
-      else if (x === cx - halfW || x === cx + halfW) col = C.robeDark;
-      ctx.setPixel(x + swayX, y, col);
+    const phase = step / 8;
+    const bobY = isWalk
+      ? Math.round(Math.sin(phase * Math.PI * 2) * 1.5)
+      : isCast
+      ? Math.round(Math.sin(phase * Math.PI) * -2.5)
+      : Math.round(Math.sin((col / 8) * Math.PI * 2) * 0.5);
+
+    const legSwing = isWalk ? Math.sin(phase * Math.PI * 2) * 2.5 : 0;
+    const swayX = isWalk ? Math.round(Math.cos(phase * Math.PI * 2) * 1.0) : 0;
+
+    // 1. Shadow underneath
+    const shadowR = isCast ? 10 + Math.round(Math.sin(phase * Math.PI) * 1.5) : 9;
+    fillEllipse(cx, cy + 17, shadowR, 4, 10, 5, 12, 120);
+
+    // 2. Boots (dark leather with gold buckles)
+    const bootY = cy + 14 + bobY;
+    if (dir === 4 || dir === 3 || dir === 5) {
+      // North facing
+      fillRect(cx - 4 - Math.round(legSwing * 0.4), bootY, 3, 4, 30, 20, 15);
+      fillRect(cx + 2 + Math.round(legSwing * 0.4), bootY, 3, 4, 30, 20, 15);
+    } else if (dir === 2 || dir === 1) {
+      // East facing
+      fillRect(cx - 2 + Math.round(legSwing * 0.7), bootY, 4, 4, 30, 20, 15);
+      fillRect(cx - 1 - Math.round(legSwing * 0.7), bootY + 1, 3, 3, 45, 28, 20);
+    } else if (dir === 6 || dir === 7) {
+      // West facing
+      fillRect(cx - 2 - Math.round(legSwing * 0.7), bootY, 4, 4, 30, 20, 15);
+      fillRect(cx - 2 + Math.round(legSwing * 0.7), bootY + 1, 3, 3, 45, 28, 20);
+    } else {
+      // South facing
+      fillRect(cx - 4 + Math.round(legSwing * 0.6), bootY, 3, 4, 45, 25, 18);
+      fillRect(cx + 1 - Math.round(legSwing * 0.6), bootY, 3, 4, 45, 25, 18);
+      setPixel(cx - 3 + Math.round(legSwing * 0.6), bootY + 1, 217, 119, 6);
+      setPixel(cx + 2 - Math.round(legSwing * 0.6), bootY + 1, 217, 119, 6);
     }
-  }
 
-  // Cowl interior / Face
-  if (dir === 4) {
-    for (let y = headTop + 4; y <= headBottom; y++) {
-      ctx.setPixel(cx + swayX, y, C.robeDark);
-      ctx.setPixel(cx - 1 + swayX, y, C.robeShadow);
+    // 3. Flowing Crimson Robe (Lower Body)
+    const robeTop = cy + 4 + bobY;
+    const robeBottom = cy + 15 + bobY;
+    const castFlare = isCast ? Math.round(Math.sin(phase * Math.PI) * 2) : 0;
+    const baseW = 7 + castFlare;
+
+    for (let y = robeTop; y <= robeBottom; y++) {
+      const prog = (y - robeTop) / (robeBottom - robeTop);
+      const halfW = Math.round(3 + prog * baseW);
+      const leftX = cx - halfW + swayX;
+      const rightX = cx + halfW + swayX;
+
+      for (let x = leftX; x <= rightX; x++) {
+        let r = 153, g = 27, b = 27; // Mid robe red
+        if (x === leftX || x === rightX) {
+          r = 69; g = 10; b = 10; // Dark outline
+        } else if (y >= robeBottom - 1) {
+          if (x % 2 === 0) {
+            r = 245; g = 158; b = 11; // Gold ragged hem
+          } else {
+            r = 185; g = 28; b = 28;
+          }
+        } else if (x === cx + swayX) {
+          r = 220; g = 38; b = 38; // Center pleat highlight
+        } else if (x < cx + swayX - 1) {
+          r = (dir === 2 || dir === 3) ? 80 : 185;
+          g = (dir === 2 || dir === 3) ? 12 : 28;
+          b = (dir === 2 || dir === 3) ? 12 : 28;
+        } else if (x > cx + swayX + 1) {
+          r = (dir === 6 || dir === 5) ? 80 : 185;
+          g = (dir === 6 || dir === 5) ? 12 : 28;
+          b = (dir === 6 || dir === 5) ? 12 : 28;
+        }
+        setPixel(x, y, r, g, b, 255);
+      }
     }
-  } else {
-    const faceY = headTop + 6;
-    ctx.fillRect(cx - 4 + swayX, faceY, 8, 7, C.hoodShadow);
-    ctx.fillRect(cx - 3 + swayX, faceY + 2, 6, 4, C.skinPale);
-    ctx.fillRect(cx - 2 + swayX, faceY + 5, 4, 2, C.skinShadow);
 
-    const eyeIntensity = isCast ? C.eyePupil : C.eyeGlow;
+    // 4. Belt & Tarnished Gold Buckle with Blood Phials
+    const beltY = cy + 3 + bobY;
+    fillRect(cx - 4 + swayX, beltY, 8, 2, 24, 24, 27);
+    fillRect(cx - 1 + swayX, beltY, 2, 2, 251, 191, 36); // Buckle gold
+    // Side blood potion phials
     if (dir === 0 || dir === 1 || dir === 7) {
-      ctx.fillRect(cx - 3 + swayX, faceY + 2, 2, 2, C.eyeGlow);
-      ctx.fillRect(cx + 1 + swayX, faceY + 2, 2, 2, C.eyeGlow);
-      ctx.setPixel(cx - 3 + swayX, faceY + 2, eyeIntensity);
-      ctx.setPixel(cx + 1 + swayX, faceY + 2, eyeIntensity);
-    } else if (dir === 2 || dir === 3) {
-      ctx.fillRect(cx + swayX, faceY + 2, 2, 2, C.eyeGlow);
-      ctx.setPixel(cx + 1 + swayX, faceY + 2, eyeIntensity);
-    } else if (dir === 6 || dir === 5) {
-      ctx.fillRect(cx - 2 + swayX, faceY + 2, 2, 2, C.eyeGlow);
-      ctx.setPixel(cx - 2 + swayX, faceY + 2, eyeIntensity);
+      fillRect(cx + 3 + swayX, beltY - 1, 2, 3, 239, 68, 68);
+      setPixel(cx + 3 + swayX, beltY - 1, 255, 255, 255); // Glass glint
     }
-  }
 
-  // 8. Staff / Casting Relic Weapon
-  let staffX = cx + 11 + swayX;
-  let staffY = cy - 14 + bobY;
-
-  if (dir === 6 || dir === 5 || dir === 7) {
-    staffX = cx - 12 + swayX;
-  }
-
-  // Casting arm & staff thrust
-  if (isCast) {
-    const castLift = Math.round(Math.sin(phase * Math.PI) * 6);
-    staffY -= castLift;
-    if (dir === 2 || dir === 1 || dir === 3) {
-      staffX += Math.round(Math.sin(phase * Math.PI) * 4);
-    } else if (dir === 6 || dir === 7 || dir === 5) {
-      staffX -= Math.round(Math.sin(phase * Math.PI) * 4);
+    // 5. Torso & Shoulders (Gothic Robes with Mantle)
+    const torsoY = cy - 4 + bobY;
+    for (let y = torsoY; y < beltY; y++) {
+      const tw = (y < torsoY + 2) ? 6 : 5;
+      fillRect(cx - tw + swayX, y, tw * 2, 1, 153, 27, 27);
+      // Dark gothic mantle shading
+      setPixel(cx - tw + swayX, y, 69, 10, 10);
+      setPixel(cx + tw - 1 + swayX, y, 69, 10, 10);
     }
-  }
+    // Mantle gold trim
+    fillRect(cx - 5 + swayX, torsoY, 10, 1, 217, 119, 6);
 
-  // Staff shaft
-  ctx.fillRect(staffX, staffY + 6, 2, 26, C.staffWood);
-  ctx.fillRect(staffX + 1, staffY + 8, 1, 22, C.staffWoodLit);
+    // 6. Deep Crimson Hood & Sinister Gaunt Visage
+    const headY = cy - 13 + bobY;
+    // Hood back/outline
+    fillEllipse(cx + swayX, headY + 4, 6, 6, 69, 10, 10);
+    // Hood cowl
+    fillEllipse(cx + swayX, headY + 3, 5, 5, 185, 28, 28);
+    // Hood shadow interior
+    fillRect(cx - 3 + swayX, headY + 2, 6, 5, 20, 8, 14);
 
-  // Staff golden head claw
-  ctx.fillRect(staffX - 2, staffY + 2, 6, 4, C.staffGold);
-  ctx.fillRect(staffX - 3, staffY, 2, 3, C.staffGold);
-  ctx.fillRect(staffX + 3, staffY, 2, 3, C.staffGold);
+    // Pale Face & Piercing Glowing Eyes
+    if (dir !== 4) {
+      // Not looking fully away (North)
+      const lookOffsetX = (dir === 2 || dir === 1 || dir === 3) ? 1 : (dir === 6 || dir === 7 || dir === 5) ? -1 : 0;
+      
+      // Gaunt pale skin in shadow
+      fillRect(cx - 2 + swayX + lookOffsetX, headY + 3, 4, 3, 220, 205, 190);
+      setPixel(cx - 2 + swayX + lookOffsetX, headY + 5, 160, 145, 130); // Gaunt jaw shadow
+      setPixel(cx + 1 + swayX + lookOffsetX, headY + 5, 160, 145, 130);
 
-  // Glowing Blood Orb
-  const orbRadius = isCast ? 4 + Math.round(Math.sin(phase * Math.PI) * 2) : 4;
-  ctx.fillCircle(staffX + 1, staffY - 2, orbRadius, C.orbMid);
-  ctx.fillCircle(staffX + 1, staffY - 2, Math.max(1, orbRadius - 2), C.orbBright);
-  ctx.setPixel(staffX, staffY - 3, C.orbGlint);
-
-  // Magic aura and sparks
-  ctx.setPixel(staffX - 3, staffY - 5, C.magicSparks);
-  ctx.setPixel(staffX + 5, staffY - 3, C.magicSparks);
-  ctx.setPixel(staffX - 4, staffY + 1, C.magicSparks);
-
-  if (isCast && step >= 2 && step <= 6) {
-    ctx.setPixel(staffX + 2, staffY - 7, C.magicBeam);
-    ctx.setPixel(staffX - 2, staffY - 6, C.magicBeam);
-    ctx.fillCircle(staffX + 1, staffY - 2, 1, C.eyePupil);
-  }
-}
-
-function generateSpritesheetBuffer() {
-  const pixelBuffer = Buffer.alloc(SHEET_W * SHEET_H * 4, 0);
-
-  function createSubContext(frameX, frameY) {
-    const originX = frameX * FRAME_W;
-    const originY = frameY * FRAME_H;
-
-    return {
-      setPixel(x, y, [r, g, b, a]) {
-        if (x < 0 || x >= FRAME_W || y < 0 || y >= FRAME_H) return;
-        const targetX = originX + x;
-        const targetY = originY + y;
-        const offset = (targetY * SHEET_W + targetX) * 4;
-
-        if (a === 255) {
-          pixelBuffer[offset] = r;
-          pixelBuffer[offset + 1] = g;
-          pixelBuffer[offset + 2] = b;
-          pixelBuffer[offset + 3] = 255;
-        } else if (a > 0) {
-          const oldA = pixelBuffer[offset + 3] / 255;
-          const newA = a / 255;
-          const outA = newA + oldA * (1 - newA);
-          if (outA > 0) {
-            pixelBuffer[offset] = Math.round((r * newA + pixelBuffer[offset] * oldA * (1 - newA)) / outA);
-            pixelBuffer[offset + 1] = Math.round((g * newA + pixelBuffer[offset + 1] * oldA * (1 - newA)) / outA);
-            pixelBuffer[offset + 2] = Math.round((b * newA + pixelBuffer[offset + 2] * oldA * (1 - newA)) / outA);
-            pixelBuffer[offset + 3] = Math.round(outA * 255);
-          }
-        }
-      },
-      fillRect(x, y, w, h, col) {
-        for (let dy = 0; dy < h; dy++) {
-          for (let dx = 0; dx < w; dx++) {
-            this.setPixel(x + dx, y + dy, col);
-          }
-        }
-      },
-      fillCircle(cx, cy, radius, col) {
-        const r2 = radius * radius;
-        for (let dy = -radius; dy <= radius; dy++) {
-          for (let dx = -radius; dx <= radius; dx++) {
-            if (dx * dx + dy * dy <= r2) {
-              this.setPixel(cx + dx, cy + dy, col);
-            }
-          }
-        }
-      },
-      fillEllipse(cx, cy, rx, ry, col) {
-        for (let dy = -ry; dy <= ry; dy++) {
-          for (let dx = -rx; dx <= rx; dx++) {
-            if ((dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) <= 1.0) {
-              this.setPixel(cx + dx, cy + dy, col);
-            }
-          }
-        }
+      // Glowing Crimson Eyes
+      if (dir === 2 || dir === 3) {
+        // Looking East
+        setPixel(cx + swayX + 1, headY + 3, 255, 20, 60);
+        setPixel(cx + swayX + 1, headY + 3, 255, 255, 255, 180);
+      } else if (dir === 6 || dir === 5) {
+        // Looking West
+        setPixel(cx + swayX - 1, headY + 3, 255, 20, 60);
+        setPixel(cx + swayX - 1, headY + 3, 255, 255, 255, 180);
+      } else {
+        // Looking South / Diagonal
+        setPixel(cx - 1 + swayX, headY + 3, 255, 20, 60);
+        setPixel(cx + 1 + swayX, headY + 3, 255, 20, 60);
+        setPixel(cx - 1 + swayX, headY + 3, 255, 255, 255, 180);
+        setPixel(cx + 1 + swayX, headY + 3, 255, 255, 255, 180);
       }
-    };
-  }
+    } else {
+      // Facing North - back of pointed hood peak
+      setPixel(cx + swayX, headY - 1, 153, 27, 27);
+      setPixel(cx + swayX, headY - 2, 69, 10, 10);
+    }
 
-  // Row 0: 8 Idle frames (1 per direction)
-  for (let dir = 0; dir < 8; dir++) {
-    const ctx = createSubContext(dir, 0);
-    renderBloodMageFrame(ctx, dir, 'idle', 0);
-  }
+    // 7. Petrified Dark Wood Staff with Pulsing Ruby Blood Gem
+    let staffX = cx + 8;
+    let staffY = cy + bobY;
+    let staffTipY = cy - 14 + bobY;
 
-  // Rows 1..8: Walk animations (8 frames per direction)
-  for (let dir = 0; dir < 8; dir++) {
-    const row = 1 + dir;
-    for (let step = 0; step < 8; step++) {
-      const ctx = createSubContext(step, row);
-      renderBloodMageFrame(ctx, dir, 'walk', step);
+    if (isCast) {
+      const castAngle = Math.sin(phase * Math.PI) * 0.8;
+      const reach = Math.round(Math.sin(phase * Math.PI) * 6);
+      if (dir === 2 || dir === 1 || dir === 3) {
+        staffX = cx + 8 + reach;
+        staffTipY = cy - 12 - Math.round(reach * 0.8) + bobY;
+      } else if (dir === 6 || dir === 7 || dir === 5) {
+        staffX = cx - 8 - reach;
+        staffTipY = cy - 12 - Math.round(reach * 0.8) + bobY;
+      } else if (dir === 4) {
+        staffX = cx + 7;
+        staffTipY = cy - 16 - reach + bobY;
+      } else {
+        staffX = cx + 7 + Math.round(reach * 0.5);
+        staffTipY = cy - 15 - reach + bobY;
+      }
+    } else if (dir === 6 || dir === 7 || dir === 5) {
+      staffX = cx - 8;
+    }
+
+    // Staff Shaft (gnarled petrified wood)
+    for (let sy = staffTipY + 4; sy <= staffY + 14; sy++) {
+      setPixel(staffX, sy, 45, 30, 25);
+      setPixel(staffX + 1, sy, 70, 50, 40);
+    }
+    // Staff Gold Crown/Prongs
+    fillRect(staffX - 1, staffTipY + 2, 3, 2, 217, 119, 6);
+    setPixel(staffX - 2, staffTipY + 1, 245, 158, 11);
+    setPixel(staffX + 2, staffTipY + 1, 245, 158, 11);
+
+    // Floating Ruby Blood Gem atop Staff
+    fillEllipse(staffX, staffTipY, 3, 3, 220, 38, 38);
+    setPixel(staffX, staffTipY - 1, 255, 200, 200); // Gem sparkle highlight
+    setPixel(staffX - 1, staffTipY, 255, 50, 80);
+
+    // 8. Magic VFX (Sparks / Sigil Circle when Casting)
+    if (isCast && step >= 2 && step <= 6) {
+      // Swirling blood magic runes at staff tip
+      const sparkRadius = Math.round(4 + Math.sin(phase * Math.PI) * 3);
+      fillEllipse(staffX, staffTipY, sparkRadius, sparkRadius, 239, 68, 68, 80);
+      setPixel(staffX + Math.round(Math.cos(phase * 12) * sparkRadius), staffTipY + Math.round(Math.sin(phase * 12) * sparkRadius), 254, 202, 202);
+      setPixel(staffX - Math.round(Math.cos(phase * 12) * sparkRadius), staffTipY - Math.round(Math.sin(phase * 12) * sparkRadius), 255, 100, 100);
+      // Front hand thrusting forward
+      fillRect(staffX - 2, staffY + 2, 3, 2, 220, 205, 190);
     }
   }
 
-  // Rows 9..16: Cast animations (8 frames per direction)
-  for (let dir = 0; dir < 8; dir++) {
-    const row = 9 + dir;
-    for (let step = 0; step < 8; step++) {
-      const ctx = createSubContext(step, row);
-      renderBloodMageFrame(ctx, dir, 'cast', step);
+  // Row 0: Idle (8 directions)
+  const idleDirs = [0, 1, 2, 3, 4, 5, 6, 7];
+  for (let col = 0; col < 8; col++) {
+    renderFrame(col, 0, idleDirs[col], 'idle', col);
+  }
+
+  // Rows 1-8: Walk (8 directions x 8 frames)
+  for (let r = 0; r < 8; r++) {
+    const dir = r; // 0=S, 1=SE, 2=E, 3=NE, 4=N, 5=NW, 6=W, 7=SW
+    for (let frame = 0; frame < 8; frame++) {
+      renderFrame(frame, r + 1, dir, 'walk', frame);
     }
   }
 
-  // Convert raw pixelBuffer into standard PNG using zlib
-  const stride = 1 + SHEET_W * 4;
-  const rawPngData = Buffer.alloc(SHEET_H * stride);
-
-  for (let y = 0; y < SHEET_H; y++) {
-    const rowStart = y * stride;
-    rawPngData[rowStart] = 0; // Filter None
-    pixelBuffer.copy(rawPngData, rowStart + 1, y * SHEET_W * 4, (y + 1) * SHEET_W * 4);
-  }
-
-  const idatCompressed = zlib.deflateSync(rawPngData, { level: 9 });
-
-  function crc32(buf) {
-    let crc = 0 ^ (-1);
-    for (let i = 0; i < buf.length; i++) {
-      crc = (crc >>> 8) ^ table[(crc ^ buf[i]) & 0xFF];
+  // Rows 9-16: Cast (8 directions x 8 frames)
+  for (let r = 0; r < 8; r++) {
+    const dir = r;
+    for (let frame = 0; frame < 8; frame++) {
+      renderFrame(frame, r + 9, dir, 'cast', frame);
     }
-    return (crc ^ (-1)) >>> 0;
-  }
-  const table = new Uint32Array(256);
-  for (let i = 0; i < 256; i++) {
-    let c = i;
-    for (let k = 0; k < 8; k++) c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
-    table[i] = c >>> 0;
   }
 
-  function chunk(type, data) {
-    const len = data ? data.length : 0;
-    const buf = Buffer.alloc(12 + len);
-    buf.writeUInt32BE(len, 0);
-    buf.write(type, 4, 4, 'ascii');
-    if (data) data.copy(buf, 8);
-    const crcBuf = Buffer.alloc(4 + len);
-    crcBuf.write(type, 0, 4, 'ascii');
-    if (data) data.copy(crcBuf, 4);
-    buf.writeUInt32BE(crc32(crcBuf), 8 + len);
-    return buf;
-  }
-
-  const header = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
-  const ihdrData = Buffer.alloc(13);
-  ihdrData.writeUInt32BE(SHEET_W, 0);
-  ihdrData.writeUInt32BE(SHEET_H, 4);
-  ihdrData[8] = 8; // 8 bit
-  ihdrData[9] = 6; // RGBA
-  ihdrData[10] = 0;
-  ihdrData[11] = 0;
-  ihdrData[12] = 0;
-
-  const ihdr = chunk('IHDR', ihdrData);
-  const idat = chunk('IDAT', idatCompressed);
-  const iend = chunk('IEND', Buffer.alloc(0));
-
-  return Buffer.concat([header, ihdr, idat, iend]);
+  return PNG.sync.write(png);
 }
 
-const pngBuffer = generateSpritesheetBuffer();
-fs.writeFileSync('public/assets/sprites/player/bloodmage.png', pngBuffer);
-console.log('Successfully generated public/assets/sprites/player/bloodmage.png with size:', pngBuffer.length, 'bytes');
+const outPath = path.resolve(process.cwd(), 'public/assets/sprites/player/bloodmage.png');
+const outDir = path.dirname(outPath);
+fs.mkdirSync(outDir, { recursive: true });
+
+const buf = createBloodMageSpritesheet();
+fs.writeFileSync(outPath, buf);
+console.log(`[BloodMage] Generated 48x48 17-row master spritesheet at: ${outPath} (${buf.length} bytes, 384x816 px)`);

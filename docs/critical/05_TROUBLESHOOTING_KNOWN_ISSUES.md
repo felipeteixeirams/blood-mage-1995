@@ -398,12 +398,12 @@ Ao carregar o jogo em produção na Vercel, o menu principal e os elementos do m
 
 ### 🔍 Causa-Raiz
 1. **Corrupção de Bytes em Arquivos Binários (UTF-8 Replacement):** Arquivos binários (`.png`, `.jpg`) de UI e itens foram manipulados através de ferramentas com parsing de texto UTF-8, corrompendo os bytes iniciais (`\x89PNG` transformado em `\xEF\xBF\xBD\x50\x4E\x47`). O navegador falha ao decodificar a imagem física (`loaderror`), acionando o fallback procedural do `textureGenerator.ts`.
-2. **Descompasso de Dimensões no Manifest:** O manifest de assets (`assetManifest.ts`) estava configurado com `frameWidth: 48, frameHeight: 48` para o `spr_bloodmage`, enquanto o gerador de spritesheet exportava frames em `68x68` (544x1156).
+2. **Descompasso de Dimensões no Manifest e Fallbacks:** O manifest de assets (`assetManifest.ts`) e os geradores de fallback e spritesheet apresentavam variações entre 48x48 e 68x68, causando descompasso nos frames ou hitbox do jogador.
 
 ### 🛠️ Procedimento de Resolução
 1. **Restauração Pura de UI via Git Blobs API:** Download dos bytes binários puros dos assets de UI (`altar.png`, `title-logo.png`, `gargoyle-*.png`, `torch.png`, `rune-arch.png`, etc.) a partir dos hashes de blobs válidos no GitHub.
-2. **Geração Limpa de Sprites Binários com `pngjs`:** Criação dos scripts `scripts/generate_chest_assets.cjs`, `scripts/generate_pwa_icons.cjs` e `scripts/generate_bloodmage_spritesheet.cjs` que constroem e gravam os arquivos PNG diretamente como buffers binários.
-3. **Correção de Dimensões do `spr_bloodmage` no Manifest:** Atualizado `assetManifest.ts` para `frameWidth: 68, frameHeight: 68`.
+2. **Geração Limpa de Sprites Binários com `pngjs`:** Criação dos scripts `scripts/generate_chest_assets.cjs`, `scripts/generate_pwa_icons.cjs` e `scripts/generate_bloodmage_spritesheet.cjs` que constroem e gravam os arquivos PNG diretamente como buffers binários em 48x48 (spritesheet de 384x816 para o jogador com 17 linhas: idle, 8 walk e 8 cast; e 8 baús góticos direcionais em 48x48).
+3. **Unificação de Dimensões do `spr_bloodmage` e `spr_chest`:** Alinhado `assetManifest.ts`, `textureGenerator.ts` e `Player.ts` para 48x48 (`frameWidth: 48, frameHeight: 48`).
 4. **Validação Automática:** Execução de `node scripts/verify-assets.cjs` (103 assets verificados com sucesso) e `npm test` (24 test files / 206 tests aprovados).
 
 ---
