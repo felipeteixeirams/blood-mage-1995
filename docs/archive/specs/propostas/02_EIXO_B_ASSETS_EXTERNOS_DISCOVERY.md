@@ -23,7 +23,7 @@ tags: [specs, discovery, assets, pipeline, performance, procedural-replacement]
 - ✅ 60+ FPS garantido
 - ✅ Pronto para produção
 
-**Eixo B** cobra: "E depois, quando quisermos arte externa?" Para a visão de UI híbrida do React com fatiamento de imagens (9-slice CSS) e a transição gradativa de áudio (Eixo C), consulte o documento de direcionamento macro em `[[02_DISCOVERY_UI_ASSETS_EXTERNOS.md]]`.
+**Eixo B** cobra: "E depois, quando quisermos arte externa?" Para a visão de UI híbrida do React com fatiamento de imagens (9-slice CSS) e a transição gradativa de áudio (Eixo C), consulte o documento de direcionamento macro em `[[02_EIXO_A_DISCOVERY_UI_ASSETS_EXTERNOS.md]]`.
 
 ---
 

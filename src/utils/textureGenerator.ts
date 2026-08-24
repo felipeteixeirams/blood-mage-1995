@@ -319,70 +319,162 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
 
 
 
+  // Shared: soft ground shadow used by grounded creature/pickup sprites
+  // below — keeps them visually anchored instead of reading as flat
+  // cut-out rectangles floating on the tile.
+  const drawShadow = (ctx: CanvasRenderingContext2D, cx: number, cy: number, rx: number, ry: number, alpha = 0.4) => {
+    ctx.fillStyle = `rgba(5, 4, 8, ${alpha})`;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+    ctx.fill();
+  };
+
   // 3. Skeleton Warrior (32x40)
   const skeletonCanvas = createPixelCanvas(32, 40, (ctx) => {
+    drawShadow(ctx, 16, 36, 10, 3);
+
+    // Tattered burial cloth at the hips
+    ctx.fillStyle = '#2b2420';
+    ctx.fillRect(10, 24, 12, 8);
+    ctx.fillRect(9, 30, 4, 6);
+    ctx.fillRect(19, 30, 4, 6);
+
     // Skull
     ctx.fillStyle = '#d1c7b7';
     ctx.fillRect(10, 4, 12, 10);
-    // Eye sockets
+    ctx.fillStyle = '#a89a82'; // shadowed side of the skull
+    ctx.fillRect(10, 4, 4, 10);
+    // Eye sockets with a faint necrotic glow
     ctx.fillStyle = '#0f0c08';
     ctx.fillRect(12, 7, 3, 3);
     ctx.fillRect(17, 7, 3, 3);
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(13, 8, 1, 1);
+    ctx.fillRect(18, 8, 1, 1);
+    // Jaw crack
+    ctx.fillStyle = '#8f8270';
+    ctx.fillRect(13, 12, 6, 1);
 
     // Ribcage & Spine
     ctx.fillStyle = '#e8e0d3';
     ctx.fillRect(12, 14, 8, 12);
+    ctx.fillStyle = '#bfb5a2'; // rib shading, shadowed side
+    ctx.fillRect(12, 14, 3, 12);
     ctx.fillStyle = '#100e0b';
     ctx.fillRect(12, 17, 8, 2);
     ctx.fillRect(12, 21, 8, 2);
 
-    // Rusty Sword
+    // Rusty Sword: blade, edge highlight, crossguard and wrapped grip
     ctx.fillStyle = '#73706c';
     ctx.fillRect(22, 10, 3, 22);
-    ctx.fillStyle = '#8f4115'; // Rust
+    ctx.fillStyle = '#a8a5a0';
+    ctx.fillRect(24, 10, 1, 22);
+    ctx.fillStyle = '#8f4115'; // rust patches
     ctx.fillRect(22, 18, 3, 6);
+    ctx.fillStyle = '#3f3a35'; // crossguard
+    ctx.fillRect(20, 9, 7, 2);
+    ctx.fillStyle = '#5b4632'; // leather-wrapped grip
+    ctx.fillRect(22, 32, 3, 6);
   });
   addTextureWithNormalMap('spr_skeleton', skeletonCanvas);
 
   // 4. Cultist Acolyte (32x40)
   const cultistCanvas = createPixelCanvas(32, 40, (ctx) => {
-    // Purple robe
+    drawShadow(ctx, 16, 36, 10, 3);
+
+    // Purple robe with shaded and lit folds
     ctx.fillStyle = '#3b1254';
     ctx.fillRect(8, 10, 16, 28);
-    // Dark cowl
+    ctx.fillStyle = '#2a0d3d';
+    ctx.fillRect(8, 10, 5, 28);
+    ctx.fillStyle = '#54186f';
+    ctx.fillRect(21, 10, 3, 28);
+    // Rope belt with a hanging talisman
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(8, 22, 16, 2);
+    ctx.fillStyle = '#fde68a';
+    ctx.fillRect(15, 24, 2, 3);
+
+    // Dark cowl with inner shadow
     ctx.fillStyle = '#5c1d85';
     ctx.fillRect(10, 4, 12, 10);
-    // Green glowing eyes
+    ctx.fillStyle = '#43146a';
+    ctx.fillRect(11, 6, 10, 5);
+    // Green glowing eyes with a soft halo
+    ctx.fillStyle = 'rgba(34, 197, 94, 0.5)';
+    ctx.fillRect(11, 7, 4, 4);
+    ctx.fillRect(17, 7, 4, 4);
     ctx.fillStyle = '#22c55e';
     ctx.fillRect(12, 8, 2, 2);
     ctx.fillRect(18, 8, 2, 2);
+
+    // Sleeves & a ritual dagger clutched at the chest
+    ctx.fillStyle = '#3b1254';
+    ctx.fillRect(4, 20, 5, 10);
+    ctx.fillRect(23, 20, 5, 10);
+    ctx.fillStyle = '#a8a5a0';
+    ctx.fillRect(24, 16, 2, 8);
   });
   addTexture('spr_cultist', cultistCanvas);
 
   // 5. Hell Hound (36x28)
   const houndCanvas = createPixelCanvas(36, 28, (ctx) => {
-    // Demonic red quadruped
+    drawShadow(ctx, 18, 24, 14, 3);
+
+    // Demonic red quadruped body, shaded underside and lit back
     ctx.fillStyle = '#7f1d1d';
     ctx.fillRect(6, 8, 22, 12);
-    // Head & Fangs
+    ctx.fillStyle = '#5c1414';
+    ctx.fillRect(6, 16, 22, 4);
+    ctx.fillStyle = '#a33333';
+    ctx.fillRect(8, 8, 18, 2);
+    // Legs & claws
+    ctx.fillStyle = '#5c1414';
+    ctx.fillRect(8, 18, 4, 8);
+    ctx.fillRect(20, 18, 4, 8);
+    ctx.fillStyle = '#18181b';
+    ctx.fillRect(8, 25, 4, 2);
+    ctx.fillRect(20, 25, 4, 2);
+
+    // Head & snarling jaw
+    ctx.fillStyle = '#7f1d1d';
     ctx.fillRect(24, 4, 10, 10);
+    ctx.fillStyle = '#450a0a'; // muzzle shadow
+    ctx.fillRect(30, 8, 5, 5);
     ctx.fillStyle = '#facc15'; // Yellow eyes
     ctx.fillRect(28, 6, 3, 2);
     ctx.fillStyle = '#ffffff'; // Fangs
     ctx.fillRect(32, 12, 2, 4);
-    // Spikes on back
+    ctx.fillRect(29, 12, 2, 3);
+
+    // Spikes on back with highlighted edge
     ctx.fillStyle = '#18181b';
     ctx.fillRect(10, 4, 2, 4);
     ctx.fillRect(16, 4, 2, 4);
     ctx.fillRect(22, 4, 2, 4);
+    ctx.fillStyle = '#3f3f46';
+    ctx.fillRect(10, 4, 1, 4);
+    ctx.fillRect(16, 4, 1, 4);
+    ctx.fillRect(22, 4, 1, 4);
+
+    // Whip-like tail
+    ctx.fillStyle = '#5c1414';
+    ctx.fillRect(2, 10, 5, 3);
   });
   addTextureWithNormalMap('spr_hound', houndCanvas);
 
   // 6. Flesh Golem (48x56)
   const golemCanvas = createPixelCanvas(48, 56, (ctx) => {
-    // Massive stitched body
+    drawShadow(ctx, 24, 52, 18, 4);
+
+    // Massive stitched body, shaded left flank and lit right flank
     ctx.fillStyle = '#3f2e2b';
     ctx.fillRect(8, 10, 32, 40);
+    ctx.fillStyle = '#2a1f1d';
+    ctx.fillRect(8, 10, 8, 40);
+    ctx.fillStyle = '#5a4340';
+    ctx.fillRect(34, 10, 6, 40);
+
     // Sutures & Scars
     ctx.fillStyle = '#8c2d19';
     ctx.fillRect(16, 16, 16, 3);
@@ -390,23 +482,50 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     ctx.fillStyle = '#e2e8f0';
     ctx.fillRect(20, 14, 2, 7);
     ctx.fillRect(26, 26, 2, 7);
-    // Head
+    ctx.fillRect(14, 40, 2, 8);
+
+    // Iron shackles at the wrists
+    ctx.fillStyle = '#3f3a35';
+    ctx.fillRect(6, 24, 4, 4);
+    ctx.fillRect(38, 24, 4, 4);
+    ctx.fillStyle = '#71717a';
+    ctx.fillRect(6, 24, 4, 1);
+
+    // Head with a browed shadow and glowing eye halo
     ctx.fillStyle = '#2b1e1b';
     ctx.fillRect(18, 2, 12, 10);
-    ctx.fillStyle = '#ef4444'; // Glowing red eye
+    ctx.fillStyle = '#1a1210';
+    ctx.fillRect(18, 2, 12, 3);
+    ctx.fillStyle = 'rgba(239, 68, 68, 0.4)';
+    ctx.fillRect(19, 4, 6, 5);
+    ctx.fillStyle = '#ef4444';
     ctx.fillRect(20, 5, 4, 3);
   });
   addTexture('spr_golem', golemCanvas);
 
-  // 7. Blood Specter (32x40)
+  // 7. Blood Specter (32x40) — floats, so no ground shadow
   const specterCanvas = createPixelCanvas(32, 40, (ctx) => {
     ctx.fillStyle = 'rgba(225, 29, 72, 0.85)';
     ctx.beginPath();
     ctx.arc(16, 14, 12, 0, Math.PI * 2);
     ctx.fill();
-    // Wispy tail
-    ctx.fillRect(10, 20, 12, 18);
-    // White glowing hollow eyes
+    ctx.fillStyle = 'rgba(190, 18, 60, 0.55)'; // shaded underside
+    ctx.beginPath();
+    ctx.arc(16, 18, 10, 0, Math.PI);
+    ctx.fill();
+
+    // Wispy tail, tapering and fading toward the tip
+    ctx.fillStyle = 'rgba(225, 29, 72, 0.75)';
+    ctx.fillRect(10, 20, 12, 12);
+    ctx.fillStyle = 'rgba(225, 29, 72, 0.35)';
+    ctx.fillRect(12, 32, 8, 6);
+    ctx.fillStyle = 'rgba(225, 29, 72, 0.15)';
+    ctx.fillRect(13, 36, 6, 3);
+
+    // White glowing hollow eyes with a soft halo
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.fillRect(10, 10, 5, 8);
+    ctx.fillRect(17, 10, 5, 8);
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(12, 12, 3, 4);
     ctx.fillRect(18, 12, 3, 4);
@@ -415,56 +534,126 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
 
   // 8. Necro Lord Boss (64x72)
   const bossCanvas = createPixelCanvas(64, 72, (ctx) => {
-    // Huge obsidian armor & horned helm
+    drawShadow(ctx, 32, 68, 22, 5, 0.5);
+
+    // Crimson cape (behind the body)
+    ctx.fillStyle = '#991b1b';
+    ctx.fillRect(10, 20, 8, 48);
+    ctx.fillRect(46, 20, 8, 48);
+    ctx.fillStyle = '#6b1414';
+    ctx.fillRect(10, 50, 8, 18);
+    ctx.fillRect(46, 50, 8, 18);
+
+    // Huge obsidian armor & horned helm, shaded flank and rim highlight
     ctx.fillStyle = '#18181b';
     ctx.fillRect(16, 16, 32, 50);
+    ctx.fillStyle = '#0c0c0e';
+    ctx.fillRect(16, 16, 8, 50);
+    ctx.fillStyle = '#3f3f46';
+    ctx.fillRect(44, 16, 4, 50);
+    // Plating seams
+    ctx.fillStyle = '#0c0c0e';
+    ctx.fillRect(16, 34, 32, 2);
+    ctx.fillRect(16, 50, 32, 2);
+
     // Horns
+    ctx.fillStyle = '#18181b';
     ctx.fillRect(10, 4, 6, 16);
     ctx.fillRect(48, 4, 6, 16);
-    // Glowing red chest gem
+    ctx.fillStyle = '#3f3f46';
+    ctx.fillRect(10, 4, 2, 16);
+    ctx.fillRect(48, 4, 2, 16);
+
+    // Glowing red chest gem with halo
+    ctx.fillStyle = 'rgba(220, 38, 38, 0.35)';
+    ctx.beginPath();
+    ctx.arc(32, 32, 12, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#dc2626';
     ctx.beginPath();
     ctx.arc(32, 32, 8, 0, Math.PI * 2);
     ctx.fill();
-    // Crimson cape
-    ctx.fillStyle = '#991b1b';
-    ctx.fillRect(12, 22, 6, 44);
-    ctx.fillRect(46, 22, 6, 44);
+    ctx.fillStyle = '#fca5a5';
+    ctx.beginPath();
+    ctx.arc(30, 30, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Skull-motif belt studs
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(24, 56, 4, 4);
+    ctx.fillRect(36, 56, 4, 4);
   });
   addTexture('spr_boss', bossCanvas);
 
   // 8b. Zombie Shambler (32x40) - Classic Rotting Corpse
   const zombieCanvas = createPixelCanvas(32, 40, (ctx) => {
-    // Olive/decay green rotting flesh
+    drawShadow(ctx, 16, 36, 10, 3);
+
+    // Tattered burial rags
+    ctx.fillStyle = '#1f2a18';
+    ctx.fillRect(8, 26, 16, 10);
+    ctx.fillRect(8, 34, 4, 6);
+    ctx.fillRect(20, 34, 4, 6);
+
+    // Olive/decay green rotting flesh, shadowed side
     ctx.fillStyle = '#2d3a24';
     ctx.fillRect(8, 10, 16, 26);
-    // Open gore chest wound
+    ctx.fillStyle = '#1c2415';
+    ctx.fillRect(8, 10, 5, 26);
+    // Open gore chest wound with depth
     ctx.fillStyle = '#7f1d1d';
     ctx.fillRect(12, 16, 8, 10);
+    ctx.fillStyle = '#450a0a';
+    ctx.fillRect(13, 18, 6, 6);
     // Exposed ribcage bone
     ctx.fillStyle = '#dcd3c1';
     ctx.fillRect(13, 18, 6, 2);
     ctx.fillRect(13, 22, 6, 2);
+
     // Head with missing jaw
     ctx.fillStyle = '#3a4a2f';
     ctx.fillRect(10, 2, 12, 10);
+    ctx.fillStyle = '#293620'; // brow shadow
+    ctx.fillRect(10, 2, 12, 3);
+    ctx.fillStyle = 'rgba(245, 158, 11, 0.35)'; // eye glow halo
+    ctx.fillRect(11, 4, 4, 4);
+    ctx.fillRect(16, 4, 4, 4);
     ctx.fillStyle = '#f59e0b'; // Feral glowing yellow eyes
     ctx.fillRect(12, 5, 2, 2);
     ctx.fillRect(17, 5, 2, 2);
+    // Dangling flap where the jaw used to be
+    ctx.fillStyle = '#1c2415';
+    ctx.fillRect(13, 11, 6, 3);
   });
   addTexture('spr_zombie_shambler', zombieCanvas);
 
   // 8c. Vampire Stalker (32x44) - Aristocratic Blood Predator
   const vampireCanvas = createPixelCanvas(32, 44, (ctx) => {
-    // Pale alabaster skin
-    ctx.fillStyle = '#e2e8f0';
-    ctx.fillRect(10, 2, 12, 10);
-    // Velvet black coat & crimson lining
-    ctx.fillStyle = '#18181b';
-    ctx.fillRect(6, 12, 20, 30);
-    ctx.fillStyle = '#991b1b'; // Red cape interior
+    drawShadow(ctx, 16, 40, 10, 3);
+
+    // Velvet black coat with red cape interior (behind the body)
+    ctx.fillStyle = '#991b1b';
     ctx.fillRect(4, 12, 4, 28);
     ctx.fillRect(24, 12, 4, 28);
+    ctx.fillStyle = '#6b1414';
+    ctx.fillRect(4, 32, 4, 8);
+    ctx.fillRect(24, 32, 4, 8);
+
+    ctx.fillStyle = '#18181b';
+    ctx.fillRect(6, 12, 20, 30);
+    ctx.fillStyle = '#0c0c0e'; // coat shading, left side
+    ctx.fillRect(6, 12, 6, 30);
+    ctx.fillStyle = '#3f3f46'; // silver coat trim
+    ctx.fillRect(15, 12, 2, 30);
+
+    // Pale alabaster skin with cheek shading and slicked-back hair
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(10, 2, 12, 10);
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillRect(10, 8, 12, 4);
+    ctx.fillStyle = '#18181b';
+    ctx.fillRect(10, 1, 12, 3);
+
     // Glowing crimson eyes & sharp white fangs
     ctx.fillStyle = '#ef4444';
     ctx.fillRect(12, 5, 2, 2);
@@ -472,21 +661,46 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(13, 9, 2, 3);
     ctx.fillRect(17, 9, 2, 3);
+
+    // Blood-red cravat pin
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(15, 13, 2, 2);
   });
   addTexture('spr_vampire_stalker', vampireCanvas);
 
   // 8d. Werewolf Lycan (38x44) - Feral Beast
   const lycanCanvas = createPixelCanvas(38, 44, (ctx) => {
-    // Dark hunched charcoal fur
+    drawShadow(ctx, 19, 40, 14, 3);
+
+    // Dark hunched charcoal fur, shaded underside and fur-tuft highlights
     ctx.fillStyle = '#27272a';
     ctx.fillRect(6, 8, 26, 32);
-    // Hunched head with snout
+    ctx.fillStyle = '#18181b';
+    ctx.fillRect(6, 26, 26, 14);
+    ctx.fillStyle = '#3f3f46';
+    ctx.fillRect(9, 10, 2, 6);
+    ctx.fillRect(14, 8, 2, 8);
+    ctx.fillRect(24, 9, 2, 7);
+
+    // Hunched head with snout & pointed ears
+    ctx.fillStyle = '#27272a';
     ctx.fillRect(12, 2, 18, 10);
-    // Massive razor claws
+    ctx.fillRect(11, 0, 4, 4);
+    ctx.fillRect(27, 0, 4, 4);
+    ctx.fillStyle = '#18181b';
+    ctx.fillRect(24, 6, 8, 6);
+
+    // Massive razor claws with tip highlight
     ctx.fillStyle = '#a1a1aa';
     ctx.fillRect(2, 22, 5, 12);
     ctx.fillRect(31, 22, 5, 12);
-    // Feral yellow eyes & white fangs
+    ctx.fillStyle = '#e4e4e7';
+    ctx.fillRect(2, 32, 5, 2);
+    ctx.fillRect(31, 32, 5, 2);
+
+    // Feral yellow eyes with a glow halo & white fangs
+    ctx.fillStyle = 'rgba(250, 204, 21, 0.4)';
+    ctx.fillRect(19, 3, 5, 4);
     ctx.fillStyle = '#facc15';
     ctx.fillRect(20, 4, 3, 2);
     ctx.fillStyle = '#ffffff';
@@ -496,10 +710,9 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
 
   // 8e. Bat Swarm (20x20) - Fast Shadow Bat
   const batCanvas = createPixelCanvas(20, 20, (ctx) => {
-    // Small dark purple body
-    ctx.fillStyle = '#2e1065';
-    ctx.fillRect(8, 6, 4, 8);
-    // Membrane wings
+    drawShadow(ctx, 10, 18, 5, 1.5, 0.3);
+
+    // Membrane wings with faint vein lines
     ctx.fillStyle = '#3b0764';
     ctx.beginPath();
     ctx.moveTo(8, 8);
@@ -513,6 +726,24 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     ctx.lineTo(16, 14);
     ctx.closePath();
     ctx.fill();
+    ctx.strokeStyle = 'rgba(168, 85, 247, 0.4)';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(8, 8);
+    ctx.lineTo(3, 6);
+    ctx.moveTo(12, 8);
+    ctx.lineTo(17, 6);
+    ctx.stroke();
+
+    // Small dark purple body with belly shadow & ears
+    ctx.fillStyle = '#2e1065';
+    ctx.fillRect(8, 6, 4, 8);
+    ctx.fillStyle = '#1a0640';
+    ctx.fillRect(8, 11, 4, 3);
+    ctx.fillStyle = '#2e1065';
+    ctx.fillRect(8, 4, 2, 3);
+    ctx.fillRect(10, 4, 2, 3);
+
     // Glowing red eyes
     ctx.fillStyle = '#ef4444';
     ctx.fillRect(8, 7, 1, 1);
@@ -522,23 +753,40 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
 
   // 8f. Gore Abomination (52x60) - Huge Pulsating Flesh Colossus
   const abomCanvas = createPixelCanvas(52, 60, (ctx) => {
-    // Massive gore flesh colossus
+    drawShadow(ctx, 26, 56, 20, 4, 0.5);
+
+    // Massive gore flesh colossus, layered dark-to-lit
     ctx.fillStyle = '#450a0a';
     ctx.fillRect(8, 10, 36, 46);
     ctx.fillStyle = '#7f1d1d';
     ctx.fillRect(12, 14, 28, 38);
-    // Toxic green puss pustules
+    ctx.fillStyle = '#991b1b'; // fleshy highlight, upper-right
+    ctx.fillRect(28, 14, 12, 14);
+
+    // Toxic green puss pustules with a highlight dot each
     ctx.fillStyle = '#22c55e';
     ctx.beginPath();
     ctx.arc(18, 22, 5, 0, Math.PI * 2);
     ctx.arc(32, 34, 6, 0, Math.PI * 2);
     ctx.arc(22, 42, 4, 0, Math.PI * 2);
     ctx.fill();
-    // Bone protrusions
+    ctx.fillStyle = '#bbf7d0';
+    ctx.fillRect(17, 20, 1, 1);
+    ctx.fillRect(31, 32, 1, 1);
+
+    // Bone protrusions with shading
     ctx.fillStyle = '#dcd3c1';
     ctx.fillRect(4, 18, 6, 12);
     ctx.fillRect(42, 28, 6, 12);
-    // Multiple glowing eyes
+    ctx.fillStyle = '#a89a82';
+    ctx.fillRect(4, 26, 6, 4);
+    ctx.fillRect(42, 36, 6, 4);
+
+    // Multiple glowing eyes with soft halos
+    ctx.fillStyle = 'rgba(239, 68, 68, 0.35)';
+    ctx.fillRect(18, 4, 6, 6);
+    ctx.fillRect(24, 6, 5, 5);
+    ctx.fillRect(28, 3, 6, 6);
     ctx.fillStyle = '#ef4444';
     ctx.fillRect(20, 6, 3, 3);
     ctx.fillRect(26, 8, 2, 2);
@@ -548,53 +796,83 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
 
   // 9. Projectile: Blood Bolt (16x16)
   const boltCanvas = createPixelCanvas(16, 16, (ctx) => {
+    ctx.fillStyle = 'rgba(239, 68, 68, 0.35)'; // outer glow
+    ctx.beginPath();
+    ctx.arc(8, 8, 7, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#ef4444';
     ctx.beginPath();
     ctx.arc(8, 8, 6, 0, Math.PI * 2);
     ctx.fill();
+    ctx.fillStyle = '#991b1b'; // rim shadow
+    ctx.beginPath();
+    ctx.arc(8, 8, 6, Math.PI * 0.1, Math.PI * 0.9);
+    ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.arc(8, 8, 2, 0, Math.PI * 2);
+    ctx.arc(7, 7, 2, 0, Math.PI * 2);
     ctx.fill();
   });
   addTexture('proj_blood_bolt', boltCanvas);
 
   // 10. Projectile: Cultist Energy Bolt (16x16)
   const energyBoltCanvas = createPixelCanvas(16, 16, (ctx) => {
+    ctx.fillStyle = 'rgba(168, 85, 247, 0.35)'; // outer glow
+    ctx.beginPath();
+    ctx.arc(8, 8, 7, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#a855f7';
     ctx.beginPath();
     ctx.arc(8, 8, 5, 0, Math.PI * 2);
     ctx.fill();
+    ctx.fillStyle = '#6b21a8'; // rim shadow
+    ctx.beginPath();
+    ctx.arc(8, 8, 5, Math.PI * 0.1, Math.PI * 0.9);
+    ctx.fill();
     ctx.fillStyle = '#f0abfc';
     ctx.beginPath();
-    ctx.arc(8, 8, 2, 0, Math.PI * 2);
+    ctx.arc(7, 7, 2, 0, Math.PI * 2);
     ctx.fill();
   });
   addTexture('proj_energy_bolt', energyBoltCanvas);
 
   // 11. Health Orb (16x16)
   const hporbCanvas = createPixelCanvas(16, 16, (ctx) => {
+    drawShadow(ctx, 8, 14, 5, 1.5, 0.3);
     ctx.fillStyle = '#dc2626';
     ctx.beginPath();
     ctx.arc(8, 8, 6, 0, Math.PI * 2);
     ctx.fill();
+    ctx.fillStyle = '#7f1d1d'; // shaded lower side of the glass sphere
+    ctx.beginPath();
+    ctx.arc(8, 8, 6, Math.PI * 0.1, Math.PI * 0.9);
+    ctx.fill();
     ctx.fillStyle = '#fca5a5';
     ctx.fillRect(5, 5, 3, 3);
+    ctx.fillStyle = '#ffffff'; // glass glint
+    ctx.fillRect(6, 5, 1, 1);
   });
   addTexture('orb_hp', hporbCanvas);
 
   // 12. Mana Orb (16x16)
   const manaorbCanvas = createPixelCanvas(16, 16, (ctx) => {
+    drawShadow(ctx, 8, 14, 5, 1.5, 0.3);
     ctx.fillStyle = '#2563eb';
     ctx.beginPath();
     ctx.arc(8, 8, 6, 0, Math.PI * 2);
     ctx.fill();
+    ctx.fillStyle = '#1e3a8a';
+    ctx.beginPath();
+    ctx.arc(8, 8, 6, Math.PI * 0.1, Math.PI * 0.9);
+    ctx.fill();
     ctx.fillStyle = '#93c5fd';
     ctx.fillRect(5, 5, 3, 3);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(6, 5, 1, 1);
   });
   addTexture('orb_mana', manaorbCanvas);
 
-  // 13. XP Blood Gem (12x12)
+  // 13. XP Blood Gem (12x12) — faceted diamond with a lit top facet
   const gemCanvas = createPixelCanvas(12, 12, (ctx) => {
     ctx.fillStyle = '#10b981';
     ctx.beginPath();
@@ -604,6 +882,23 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     ctx.lineTo(0, 6);
     ctx.closePath();
     ctx.fill();
+    ctx.fillStyle = '#047857'; // shaded lower-right facet
+    ctx.beginPath();
+    ctx.moveTo(6, 6);
+    ctx.lineTo(12, 6);
+    ctx.lineTo(6, 12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#6ee7b7'; // lit top facet
+    ctx.beginPath();
+    ctx.moveTo(6, 0);
+    ctx.lineTo(9, 3);
+    ctx.lineTo(6, 6);
+    ctx.lineTo(3, 3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(5, 2, 1, 1);
   });
   addTexture('gem_xp', gemCanvas);
 

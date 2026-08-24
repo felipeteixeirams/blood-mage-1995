@@ -66,9 +66,10 @@ docs/specs//
 
 | Feature | Prioridade | Conceito | Documento de Especificação | Responsável |
 |---------|-----------|----------|----------------------------|-------------|
-| **Evolução de UI com Assets Externos** | Alta | Transição para pixel art de alta resolução com fallback de gerador de texturas procedural | [[./propostas/02_DISCOVERY_UI_ASSETS_EXTERNOS.md]] | Jules |
+| **Evolução de UI com Assets Externos (Eixo A — direção)** | Alta | Transição para pixel art de alta resolução com fallback de gerador de texturas procedural | [[./propostas/02_EIXO_A_DISCOVERY_UI_ASSETS_EXTERNOS.md]] | Jules |
+| **Pipeline de Assets Externos (Eixo B — implementação)** | Média (pós-Fase 5) | Sistema de chaves compartilhadas entre asset físico e fallback procedural, substituição incremental sem refatoração | [[./propostas/02_EIXO_B_ASSETS_EXTERNOS_DISCOVERY.md]] | TBD |
 | **Evolução Gráfica Avançada** | Média | postFX WebGL + iluminação Light2D/normal maps + pipeline de assets | [[./propostas/01_EVOLUCAO_GRAFICA_AVANCADA.md]] | - |
-| **Multijogador Cooperativo** | Média | Cooperação, ressurreição mútua e interações rúnicas P2P via WebRTC | [[./propostas/03_MULTIJOVADOR_COOPERATIVO_E_INTERATIVIDADE.md]] | Jules |
+| **Multijogador Cooperativo** | Média | Cooperação, ressurreição mútua e interações rúnicas P2P via WebRTC | [[./propostas/03_MULTIJOGADOR_COOPERATIVO_E_INTERATIVIDADE.md]] | Jules |
 | **Mobile App & Monetização** | Alta | Empacotamento Capacitor, UX móvel aprimorada e monetização ética não-intrusiva | [[./propostas/04_MOBILE_APP_E_MONETIZACAO_INDIE.md]] | Jules |
 | **Skinning & Camadas Canvas** | Média | Customização em tempo real de skins, armas e armaduras usando composições no gerador procedural | [[./propostas/05_SISTEMA_DE_SKINNING_E_CAMADAS_DINAMICAS.md]] | Jules |
 | **Prestige (Blood Seal)** | Média | Reset opcional de nível para bônus passivos permanentes e escalonamento simples de dificuldades | [[./propostas/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md]] | Jules |
@@ -76,6 +77,16 @@ docs/specs//
 | **Guia de Evolução Comercial** | Alta | Roteiro de transição para padrão comercial (Diablo II / Dungeon Siege) em mobile e desktop | [[./propostas/08_GUIA_EVOLUCAO_COMERCIAL.md]] | Jules + Felipe |
 
 **Documentação:** [[./propostas/]]
+
+> ℹ️ **Nota (2026-08-24):** "Eixo A" e "Eixo B" acima não são duplicados — são
+> a mesma iniciativa (assets externos) em dois níveis: Eixo A é a direção de
+> arte/produto, Eixo B é o discovery técnico de pipeline (guardado atrás da
+> Fase 5 no `ROADMAP.md`). Os nomes de arquivo foram ajustados só para deixar
+> essa relação óbvia — corrigido também o typo `MULTIJOVADOR` → `MULTIJOGADOR`
+> no nome do arquivo de multiplayer. O restante desta tabela (status,
+> responsáveis, prioridades) **não foi revalidado** nesta passada — segue
+> refletindo o estado de 2026-08-10, anterior ao refactor do GameScene e ao
+> trabalho desta sessão.
 
 ---
 
