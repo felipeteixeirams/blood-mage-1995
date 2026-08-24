@@ -710,6 +710,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.stats.mana < cost) return false;
 
     this.stats.mana -= cost;
+    // Fase de merge com origin/main (24/08): outras skills também disparam a
+    // pose de conjuração, não só o blood bolt — mesma trava fixa de 600ms.
+    this.castAnimTimer = 600;
+    this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
     this.skillCooldowns['hellfire_nova'] = cd;
     soundEngine.playNova();
@@ -727,6 +731,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.stats.mana < cost) return false;
 
     this.stats.mana -= cost;
+    this.castAnimTimer = 600;
+    this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
     this.skillCooldowns['syphon_soul'] = cd;
     soundEngine.playSyphonSoul();
@@ -744,6 +750,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.stats.mana < cost) return false;
 
     this.stats.mana -= cost;
+    this.castAnimTimer = 600;
+    this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
     this.skillCooldowns['bone_shield'] = cd;
     soundEngine.playBoneShield();
@@ -764,6 +772,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.stats.mana -= cost;
     this.stats.hp -= hpCost;
+    this.castAnimTimer = 600;
+    this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
     this.skillCooldowns['crimson_scythe'] = cd;
     soundEngine.playScytheSlash();
@@ -784,6 +794,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.stats.mana -= cost;
     this.stats.hp -= hpCost;
+    this.castAnimTimer = 600;
+    this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
     this.skillCooldowns['blood_ritual_circle'] = cd;
     soundEngine.playRitualCircle();
@@ -804,6 +816,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.stats.mana -= cost;
     this.stats.hp -= hpCost;
+    this.castAnimTimer = 600;
+    this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
     this.skillCooldowns['hemomancy_beam'] = cd;
     soundEngine.playHemomancyBeam();
