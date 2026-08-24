@@ -1,22 +1,28 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { registerSW } from 'virtual:pwa-register';
 import { SplashScreen } from './components/SplashScreen';
 import { MainMenu } from './components/MainMenu';
-import { GameplayHUD } from './components/GameplayHUD';
-import { LevelUpModal } from './components/LevelUpModal';
-import { CodexModal } from './components/CodexModal';
-import { SettingsModal } from './components/SettingsModal';
-import { HighScoresModal } from './components/HighScoresModal';
-import { GameOverModal } from './components/GameOverModal';
-import { InventoryModal } from './components/InventoryModal';
-import { TalentsModal } from './components/TalentsModal';
-import { AchievementsModal } from './components/AchievementsModal';
-import { ObservabilityModal } from './components/ObservabilityModal';
 import { RotateDeviceOverlay } from './components/RotateDeviceOverlay';
-import { PhaserGame } from './game/PhaserGame';
-import { GameScene } from './game/scenes/GameScene';
+import type { GameScene } from './game/scenes/GameScene';
 import { PlayerStats, UpgradeOption } from './types/game';
+
+// Lazy-loaded: Phaser + all game systems, the gameplay HUD, and every modal
+// only render after the splash/menu, so none of that code (nor its
+// transitive imports — Phaser itself, GameScene and everything it pulls in)
+// needs to be in the initial bundle. Each becomes its own chunk, fetched on
+// first use. See docs/critical/02_PERFORMANCE_OPTIMIZATION.md.
+const PhaserGame = lazy(() => import('./game/PhaserGame').then((m) => ({ default: m.PhaserGame })));
+const GameplayHUD = lazy(() => import('./components/GameplayHUD').then((m) => ({ default: m.GameplayHUD })));
+const LevelUpModal = lazy(() => import('./components/LevelUpModal').then((m) => ({ default: m.LevelUpModal })));
+const CodexModal = lazy(() => import('./components/CodexModal').then((m) => ({ default: m.CodexModal })));
+const SettingsModal = lazy(() => import('./components/SettingsModal').then((m) => ({ default: m.SettingsModal })));
+const HighScoresModal = lazy(() => import('./components/HighScoresModal').then((m) => ({ default: m.HighScoresModal })));
+const GameOverModal = lazy(() => import('./components/GameOverModal').then((m) => ({ default: m.GameOverModal })));
+const InventoryModal = lazy(() => import('./components/InventoryModal').then((m) => ({ default: m.InventoryModal })));
+const TalentsModal = lazy(() => import('./components/TalentsModal').then((m) => ({ default: m.TalentsModal })));
+const AchievementsModal = lazy(() => import('./components/AchievementsModal').then((m) => ({ default: m.AchievementsModal })));
+const ObservabilityModal = lazy(() => import('./components/ObservabilityModal').then((m) => ({ default: m.ObservabilityModal })));
 import { soundEngine } from './utils/soundEngine';
 import { useGameStore } from './store/gameStore';
 import { telemetry } from './utils/telemetry';
@@ -228,7 +234,7 @@ export default function App() {
 
       {/* 2. Active Game Phaser Canvas */}
       {gameState === 'playing' && (
-        <>
+        <Suspense fallback={null}>
           <PhaserGame
             gameSceneRef={gameSceneRef}
             onGameOver={handleGameOver}
@@ -237,7 +243,7 @@ export default function App() {
           <GameplayHUD
             getCooldownRemaining={getCooldownRemaining}
           />
-        </>
+        </Suspense>
       )}
 
       {/* 3. Pause Screen Overlay */}
@@ -271,49 +277,69 @@ export default function App() {
 
       {/* 4. Level Up Upgrade Modal */}
       {levelUpData && (
-        <LevelUpModal
-          level={levelUpData.level}
-          options={levelUpData.choices}
-          onSelectOption={handleSelectUpgrade}
-        />
+        <Suspense fallback={null}>
+          <LevelUpModal
+            level={levelUpData.level}
+            options={levelUpData.choices}
+            onSelectOption={handleSelectUpgrade}
+          />
+        </Suspense>
       )}
 
       {/* 5. Game Over Modal */}
       {gameOverStats && (
-        <GameOverModal
-          stats={gameOverStats}
-          onRestart={handleStartGame}
-          onGoHome={() => setGameOverStats(null)}
-        />
+        <Suspense fallback={null}>
+          <GameOverModal
+            stats={gameOverStats}
+            onRestart={handleStartGame}
+            onGoHome={() => setGameOverStats(null)}
+          />
+        </Suspense>
       )}
 
       {/* 6. Aux Modals */}
       <AnimatePresence>
-        {isBestiaryOpen && <CodexModal onClose={() => setBestiaryOpen(false)} />}
+        {isBestiaryOpen && (
+          <Suspense fallback={null}>
+            <CodexModal onClose={() => setBestiaryOpen(false)} />
+          </Suspense>
+        )}
         {isSettingsOpen && (
-          <SettingsModal
-            settings={settings}
-            onUpdateSettings={updateSettings}
-            onClose={() => setSettingsOpen(false)}
-          />
+          <Suspense fallback={null}>
+            <SettingsModal
+              settings={settings}
+              onUpdateSettings={updateSettings}
+              onClose={() => setSettingsOpen(false)}
+            />
+          </Suspense>
         )}
         {isHighScoresOpen && (
-          <HighScoresModal
-            scores={highScores}
-            onClose={() => setHighScoresOpen(false)}
-          />
+          <Suspense fallback={null}>
+            <HighScoresModal
+              scores={highScores}
+              onClose={() => setHighScoresOpen(false)}
+            />
+          </Suspense>
         )}
         {isAchievementsOpen && (
-          <AchievementsModal onClose={() => setAchievementsOpen(false)} />
+          <Suspense fallback={null}>
+            <AchievementsModal onClose={() => setAchievementsOpen(false)} />
+          </Suspense>
         )}
         {isInventoryOpen && (
-          <InventoryModal onClose={() => setInventoryOpen(false)} />
+          <Suspense fallback={null}>
+            <InventoryModal onClose={() => setInventoryOpen(false)} />
+          </Suspense>
         )}
         {isTalentsOpen && (
-          <TalentsModal onClose={() => setTalentsOpen(false)} />
+          <Suspense fallback={null}>
+            <TalentsModal onClose={() => setTalentsOpen(false)} />
+          </Suspense>
         )}
         {isObservabilityOpen && (
-          <ObservabilityModal onClose={() => setObservabilityOpen(false)} />
+          <Suspense fallback={null}>
+            <ObservabilityModal onClose={() => setObservabilityOpen(false)} />
+          </Suspense>
         )}
       </AnimatePresence>
     </div>
