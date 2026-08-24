@@ -104,9 +104,27 @@ export class CollisionHandlers {
     useGameStore.getState().addBloodCrystals(crystals);
     scene.spawnFloatingText(chest.x, chest.y - 25, `+${crystals} CRISTAIS 💎`, '#f43f5e', true);
 
-    // Open chest animation
-    chest.setTint(0x444444);
-    chest.destroy();
+    // Open chest animation: swap to the matching "open" sprite for the
+    // chest's current facing direction (falls back to the generic open
+    // texture, then to a tint if no open asset exists at all), hold it
+    // briefly so the player sees the loot pop, then fade out and remove.
+    const openKey = chest.texture.key.startsWith('spr_chest_')
+      ? chest.texture.key.replace('spr_chest_', 'spr_chest_open_')
+      : 'spr_chest_open';
+    if (scene.textures.exists(openKey)) {
+      chest.setTexture(openKey);
+    } else if (scene.textures.exists('spr_chest_open')) {
+      chest.setTexture('spr_chest_open');
+    } else {
+      chest.setTint(0x444444);
+    }
+    scene.tweens.add({
+      targets: chest,
+      alpha: 0,
+      delay: 1500,
+      duration: 500,
+      onComplete: () => chest.destroy(),
+    });
   }
 
   public handleProjectileHitEnemy(projObj: any, enemyObj: any) {

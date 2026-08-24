@@ -38,5 +38,15 @@
   { "key": "spr_chest_north", "type": "image", "path": "assets/sprites/items/chest/north.png", "required": true },
   { "key": "spr_chest_north_east", "type": "image", "path": "assets/sprites/items/chest/north-east.png", "required": true },
   { "key": "spr_chest_east", "type": "image", "path": "assets/sprites/items/chest/east.png", "required": true },
-  { "key": "spr_chest_south_east", "type": "image", "path": "assets/sprites/items/chest/south-east.png", "required": true }
+  { "key": "spr_chest_south_east", "type": "image", "path": "assets/sprites/items/chest/south-east.png", "required": true },
+
+  { "key": "spr_chest_open", "type": "image", "path": "assets/sprites/items/chest_open/south.png", "required": true },
+  { "key": "spr_chest_open_south", "type": "image", "path": "assets/sprites/items/chest_open/south.png", "required": true },
+  { "key": "spr_chest_open_south_west", "type": "image", "path": "assets/sprites/items/chest_open/south-west.png", "required": true },
+  { "key": "spr_chest_open_west", "type": "image", "path": "assets/sprites/items/chest_open/west.png", "required": true },
+  { "key": "spr_chest_open_north_west", "type": "image", "path": "assets/sprites/items/chest_open/north-west.png", "required": true },
+  { "key": "spr_chest_open_north", "type": "image", "path": "assets/sprites/items/chest_open/north.png", "required": true },
+  { "key": "spr_chest_open_north_east", "type": "image", "path": "assets/sprites/items/chest_open/north-east.png", "required": true },
+  { "key": "spr_chest_open_east", "type": "image", "path": "assets/sprites/items/chest_open/east.png", "required": true },
+  { "key": "spr_chest_open_south_east", "type": "image", "path": "assets/sprites/items/chest_open/south-east.png", "required": true }
 ]
