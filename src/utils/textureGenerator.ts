@@ -741,24 +741,129 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   });
   addTexture('spr_portal', portalCanvas);
 
-  // 19. Dungeon Treasure Chest (24x20)
-  const chestCanvas = createPixelCanvas(24, 20, (ctx) => {
-    ctx.fillStyle = '#78350f'; // Dark wood
-    ctx.fillRect(2, 4, 20, 14);
+  // 19. Dungeon Gothic Treasure Chest (48x48) with 8 Directional Perspectives
+  const createDirectionalChestCanvas = (dir: string) => {
+    return createPixelCanvas(48, 48, (ctx) => {
+      const cx = 24;
+      const cy = 25;
 
-    ctx.fillStyle = '#d97706'; // Gold trim
-    ctx.fillRect(2, 4, 20, 3);
-    ctx.fillRect(2, 15, 20, 3);
-    ctx.fillRect(10, 4, 4, 14);
+      // Drop shadow
+      ctx.fillStyle = 'rgba(10, 5, 12, 0.55)';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy + 12, 16, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
 
-    ctx.fillStyle = '#fef08a'; // Glowing lock
-    ctx.fillRect(10, 9, 4, 4);
-  });
-  addTexture('spr_chest', chestCanvas);
+      // Wooden Box Body (28x20)
+      const bx = cx - 14;
+      const by = cy - 4;
+      const boxW = 28;
+      const boxH = 20;
+      const lidY = by - 8;
+      const lidH = 10;
+
+      // Dark oak wood base & grain
+      ctx.fillStyle = '#422213';
+      ctx.fillRect(bx, by, boxW, boxH);
+
+      // Plank grooves & highlights
+      ctx.fillStyle = '#24140e';
+      ctx.fillRect(bx, by + 6, boxW, 1);
+      ctx.fillRect(bx, by + 13, boxW, 1);
+      ctx.fillStyle = '#66381e';
+      ctx.fillRect(bx, by + 1, boxW, 2);
+      ctx.fillRect(bx, by + 7, boxW, 2);
+
+      // Curved Lid
+      ctx.fillStyle = '#422213';
+      ctx.fillRect(bx - 1, lidY, boxW + 2, lidH);
+      ctx.fillStyle = '#8a4e2a';
+      ctx.fillRect(bx - 1, lidY, boxW + 2, 2); // Top rim highlight
+      ctx.fillStyle = '#24140e';
+      ctx.fillRect(bx - 1, by, boxW + 2, 2); // Lid seam shadow
+
+      // Iron perimeter & bands
+      ctx.fillStyle = '#282523';
+      ctx.fillRect(bx - 1, lidY, 1, boxH + lidH);
+      ctx.fillRect(bx + boxW, lidY, 1, boxH + lidH);
+
+      // Vertical Iron Straps (Left & Right)
+      const strapX1 = bx + 5;
+      const strapX2 = bx + boxW - 7;
+      [strapX1, strapX2].forEach((sx) => {
+        ctx.fillStyle = '#282523';
+        ctx.fillRect(sx, lidY, 3, boxH + lidH);
+        ctx.fillStyle = '#46403a';
+        ctx.fillRect(sx, lidY, 1, boxH + lidH);
+        // Gold/Iron Rivets
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(sx + 1, lidY + 2, 1, 1);
+        ctx.fillRect(sx + 1, by + 4, 1, 1);
+        ctx.fillRect(sx + 1, by + 10, 1, 1);
+        ctx.fillRect(sx + 1, by + 16, 1, 1);
+      });
+
+      // Horizontal Middle Band
+      ctx.fillStyle = '#282523';
+      ctx.fillRect(bx - 1, by - 1, boxW + 2, 3);
+      ctx.fillStyle = '#574f49';
+      ctx.fillRect(bx - 1, by - 1, boxW + 2, 1);
+
+      // Directional details
+      if (dir === 'north' || dir === 'north_west' || dir === 'north_east') {
+        // Rear Iron Hinges
+        [strapX1, strapX2].forEach((sx) => {
+          ctx.fillStyle = '#38322e';
+          ctx.fillRect(sx - 1, by - 3, 5, 5);
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(sx + 1, by - 1, 1, 1);
+        });
+      } else if (dir === 'east' || dir === 'south_east') {
+        // Right Side Handle
+        ctx.fillStyle = '#38322e';
+        ctx.fillRect(bx + boxW, by + 4, 3, 5);
+        ctx.fillStyle = '#574f49';
+        ctx.fillRect(bx + boxW + 1, by + 6, 2, 3);
+      } else if (dir === 'west' || dir === 'south_west') {
+        // Left Side Handle
+        ctx.fillStyle = '#38322e';
+        ctx.fillRect(bx - 3, by + 4, 3, 5);
+        ctx.fillStyle = '#574f49';
+        ctx.fillRect(bx - 2, by + 6, 2, 3);
+      }
+
+      if (dir === 'south' || dir === 'south_east' || dir === 'south_west' || dir === 'default') {
+        // Front Skull Latch & Blood Ruby Lock Core
+        const lockX = cx - 4;
+        const lockY = by - 3;
+        ctx.fillStyle = '#b45309';
+        ctx.fillRect(lockX, lockY, 8, 10);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(lockX + 1, lockY + 1, 6, 8);
+
+        // Skull Plate
+        ctx.fillStyle = '#fde68a';
+        ctx.fillRect(lockX + 2, lockY + 2, 4, 3);
+        ctx.fillRect(lockX + 3, lockY + 5, 2, 2);
+        // Eye sockets
+        ctx.fillStyle = '#1e1008';
+        ctx.fillRect(lockX + 2, lockY + 3, 1, 1);
+        ctx.fillRect(lockX + 5, lockY + 3, 1, 1);
+
+        // Glowing Ruby Core
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(cx - 1, lockY + 6, 2, 2);
+        ctx.fillStyle = '#f87171';
+        ctx.fillRect(cx, lockY + 6, 1, 1);
+      }
+    });
+  };
+
+  const defaultChestCanvas = createDirectionalChestCanvas('default');
+  addTexture('spr_chest', defaultChestCanvas);
 
   const chestDirs = ['south', 'south_west', 'west', 'north_west', 'north', 'north_east', 'east', 'south_east'];
   chestDirs.forEach((dir) => {
-    addTexture(`spr_chest_${dir}`, chestCanvas);
+    addTexture(`spr_chest_${dir}`, createDirectionalChestCanvas(dir));
   });
 
   // 19b. Skeleton Remains (Bones)

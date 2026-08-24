@@ -9,6 +9,25 @@ To prevent context window bloat, reduce token cost, and prevent hallucinations/r
 
 ---
 
+## 🚦 Mode Selection & Spec-Driven Discipline (MUST OBEY)
+
+> **Princípio Fundamental:** Nem toda interação exige especificação formal.
+> Evite burocracia desnecessária. Classifique a solicitação antes de qualquer ação:
+
+### 1. Conversational Mode (Zero-Overhead / Baixo Atrito)
+- **Gatilhos:** Perguntas conceituais, dúvidas rápidas, brainstorm de design/game feel, opiniões técnicas, alinhamentos simples.
+- **Regra:** Responda diretamente, de forma concisa e útil. **PROIBIDO** criar specs formais, arquivos em `docs/specs/` ou planos de implementação não solicitados.
+
+### 2. Architecture Mode (Tradeoffs & Decisões Estruturais)
+- **Gatilhos:** Discussão estrutural, tradeoffs técnicos, desenho de sistemas ou fluxos de integração.
+- **Regra:** Apresente prós/contras e alternativas pragmáticas. Gere mini-specs **apenas se solicitado**.
+
+### 3. Spec-Driven Mode (Implementações Relevantes & Refatorações Críticas)
+- **Gatilhos:** APENAS quando o usuário pedir implementação de nova feature relevante, refatoração de múltiplos módulos ou mudança em persistência/arquitetura.
+- **Regra:** Siga o ciclo formal em 3 fases: `Spec Phase` ➔ `Contract Phase` ➔ `Implementation Phase` (ver `docs/architecture/05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md`).
+
+---
+
 ## 🛡️ Absolute Game Rules & Architectural Guardrails
 
 Every agent modifying this codebase MUST respect the following strict, non-negotiable boundaries:
