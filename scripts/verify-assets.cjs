@@ -1,11 +1,16 @@
 const fs = require('fs');
 const path = require('path');
 
-const ASSET_DIRS = ['src/assets', 'public/assets'];
+// public/fonts ainda não existe hoje, mas listar aqui é inofensivo — scanDirectory
+// pula diretórios ausentes — e já cobre o dia em que fontes locais forem adicionadas.
+const ASSET_DIRS = ['src/assets', 'public/assets', 'public/fonts'];
 const EXTENSIONS = {
   '.png': [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], // \x89PNG\r\n\x1a\n
   '.jpg': [0xff, 0xd8, 0xff],
-  '.jpeg': [0xff, 0xd8, 0xff]
+  '.jpeg': [0xff, 0xd8, 0xff],
+  '.gif': [0x47, 0x49, 0x46, 0x38], // 'GIF8' — cobre os GIFs de showcase em sprites/player/animated/
+  '.woff2': [0x77, 0x4f, 0x46, 0x32], // 'wOF2'
+  '.ogg': [0x4f, 0x67, 0x67, 0x53], // 'OggS'
 };
 
 // .webp's signature isn't one contiguous run of bytes like PNG/JPG: it's
@@ -15,6 +20,13 @@ const EXTENSIONS = {
 const WEBP_EXTENSIONS = new Set(['.webp']);
 const RIFF_MAGIC = [0x52, 0x49, 0x46, 0x46]; // 'RIFF'
 const WEBP_MAGIC = [0x57, 0x45, 0x42, 0x50]; // 'WEBP'
+
+// .mp3 has two valid magic patterns — an ID3 tag ('ID3' at offset 0) or, for
+// files without one, a raw MPEG frame sync (0xFF followed by a byte whose top
+// 3 bits are set). Needs its own check function like .webp instead of a
+// single fixed byte sequence.
+const MP3_EXTENSIONS = new Set(['.mp3']);
+const ID3_MAGIC = [0x49, 0x44, 0x33]; // 'ID3'
 
 const MANIFEST_PATH = path.resolve(process.cwd(), 'src/game/assets/assetManifest.json');
 const PUBLIC_DIR = path.resolve(process.cwd(), 'public');
@@ -26,12 +38,18 @@ let hasError = false;
 // (Catches the text-editor-corrupts-a-PNG class of bug.)
 // ---------------------------------------------------------------------------
 
+// Diretórios que nunca devem ser varridos mesmo se algum ASSET_DIRS futuro
+// apontar para uma raiz mais ampla (defensivo — hoje ASSET_DIRS já é
+// suficientemente específico para não tocar nenhum destes).
+const SKIP_DIR_NAMES = new Set(['node_modules', 'dist', '.git']);
+
 function scanDirectory(directory) {
   if (!fs.existsSync(directory)) return;
 
   const files = fs.readdirSync(directory);
 
   for (const file of files) {
+    if (SKIP_DIR_NAMES.has(file)) continue;
     const fullPath = path.join(directory, file);
     const stat = fs.statSync(fullPath);
 
@@ -55,6 +73,11 @@ function checkFileIntegrity(filePath) {
 
   if (WEBP_EXTENSIONS.has(ext)) {
     checkWebpIntegrity(filePath);
+    return;
+  }
+
+  if (MP3_EXTENSIONS.has(ext)) {
+    checkMp3Integrity(filePath);
     return;
   }
 
@@ -87,6 +110,55 @@ function checkFileIntegrity(filePath) {
   // Verifica se o magic byte bate com o esperado
   if (!bytesMatch(buffer, 0, expectedMagicBytes)) {
     console.error(`❌ HEADER INVÁLIDO: O arquivo ${filePath} não é um ${ext} válido.`);
+    hasError = true;
+    return;
+  }
+
+  // Sanidade de dimensões IHDR para QUALQUER .png no disco (não só os que
+  // aparecem no manifesto — pega corrupção em UI/tilesets/decorativos também).
+  // A validação de grid contra frameWidth/frameHeight declarado continua
+  // sendo feita só para spritesheets do manifesto, em verifyManifestCoverage().
+  if (ext === '.png') {
+    try {
+      const { width, height } = readPngDimensions(filePath);
+      if (width === 0 || height === 0 || width > 100000 || height > 100000) {
+        console.error(`❌ VALIDAÇÃO DE PAYLOAD FALHOU: ${filePath} — dimensões IHDR inválidas (${width}x${height}).`);
+        hasError = true;
+      }
+    } catch (err) {
+      console.error(`❌ ERRO: falha ao ler dimensões IHDR de ${filePath} (${err.message}).`);
+      hasError = true;
+    }
+  }
+}
+
+function checkMp3Integrity(filePath) {
+  const stat = fs.statSync(filePath);
+  if (stat.size < 4) {
+    console.error(`❌ ERRO: O arquivo ${filePath} está vazio ou curto demais (${stat.size} bytes).`);
+    hasError = true;
+    return;
+  }
+
+  const buffer = Buffer.alloc(4);
+  const fd = fs.openSync(filePath, 'r');
+  fs.readSync(fd, buffer, 0, 4, 0);
+  fs.closeSync(fd);
+
+  if (buffer[0] === 0xef && buffer[1] === 0xbf && buffer[2] === 0xbd) {
+    console.error(`🚨 CORRUPÇÃO CRÍTICA (UTF-8 REPLACEMENT DETECTADO): ${filePath}`);
+    console.error(`   Este arquivo foi salvo indevidamente como texto. Restaure-o do repositório.`);
+    hasError = true;
+    return;
+  }
+
+  const hasId3 = bytesMatch(buffer, 0, ID3_MAGIC);
+  // Sem tag ID3: aceita o frame sync MPEG bruto (0xFF seguido de um byte cujos
+  // 3 bits mais altos estão setados — 0xE0 = 0b11100000).
+  const hasFrameSync = buffer[0] === 0xff && (buffer[1] & 0xe0) === 0xe0;
+
+  if (!hasId3 && !hasFrameSync) {
+    console.error(`❌ HEADER INVÁLIDO: O arquivo ${filePath} não possui assinatura válida de .mp3 (esperado 'ID3' ou frame sync MPEG).`);
     hasError = true;
   }
 }
