@@ -417,87 +417,150 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   addTextureWithNormalMap('spr_skeleton', skeletonCanvas);
 
   // 4. Cultist Acolyte (32x40)
+  // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
+  // robe reescrita como silhueta em sino via quadraticCurveTo + degradê linear,
+  // capuz como elipse com degradê radial + sombra interna, olhos como elipses,
+  // mangas como paths afunilados. Ganhou normal map (Fase 3.1).
   const cultistCanvas = createPixelCanvas(32, 40, (ctx) => {
     drawShadow(ctx, 16, 36, 10, 3);
 
-    // Purple robe with shaded and lit folds
-    ctx.fillStyle = '#3b1254';
-    ctx.fillRect(8, 10, 16, 28);
-    ctx.fillStyle = '#2a0d3d';
-    ctx.fillRect(8, 10, 5, 28);
-    ctx.fillStyle = '#54186f';
-    ctx.fillRect(21, 10, 3, 28);
+    // Bell-shaped purple robe — afunilada nos ombros, alargando até a barra
+    const robeGrad = ctx.createLinearGradient(6, 0, 26, 0);
+    robeGrad.addColorStop(0, '#2a0d3d');
+    robeGrad.addColorStop(0.5, '#3b1254');
+    robeGrad.addColorStop(1, '#54186f');
+    ctx.fillStyle = robeGrad;
+    ctx.beginPath();
+    ctx.moveTo(12, 10);
+    ctx.quadraticCurveTo(16, 8, 20, 10);
+    ctx.quadraticCurveTo(24, 24, 23, 38);
+    ctx.lineTo(9, 38);
+    ctx.quadraticCurveTo(8, 24, 12, 10);
+    ctx.closePath();
+    ctx.fill();
+
     // Rope belt with a hanging talisman
     ctx.fillStyle = '#78350f';
     ctx.fillRect(8, 22, 16, 2);
     ctx.fillStyle = '#fde68a';
     ctx.fillRect(15, 24, 2, 3);
 
-    // Dark cowl with inner shadow
-    ctx.fillStyle = '#5c1d85';
-    ctx.fillRect(10, 4, 12, 10);
-    ctx.fillStyle = '#43146a';
-    ctx.fillRect(11, 6, 10, 5);
-    // Green glowing eyes with a soft halo
+    // Dark cowl — elipse com degradê radial + sombra interna
+    const cowlGrad = ctx.createRadialGradient(16, 8, 1, 16, 9, 8);
+    cowlGrad.addColorStop(0, '#6d2494');
+    cowlGrad.addColorStop(1, '#43146a');
+    ctx.fillStyle = cowlGrad;
+    ctx.beginPath();
+    ctx.ellipse(16, 9, 7, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#2f0f47';
+    ctx.beginPath();
+    ctx.ellipse(16, 11, 5.5, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Green glowing eyes with a soft halo — elipses em vez de retângulos
     ctx.fillStyle = 'rgba(34, 197, 94, 0.5)';
-    ctx.fillRect(11, 7, 4, 4);
-    ctx.fillRect(17, 7, 4, 4);
+    ctx.beginPath();
+    ctx.ellipse(13, 9, 3, 2.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(19, 9, 3, 2.5, 0, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#22c55e';
-    ctx.fillRect(12, 8, 2, 2);
-    ctx.fillRect(18, 8, 2, 2);
+    ctx.beginPath();
+    ctx.ellipse(13, 9, 1.4, 1.2, 0, 0, Math.PI * 2);
+    ctx.ellipse(19, 9, 1.4, 1.2, 0, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Sleeves & a ritual dagger clutched at the chest
-    ctx.fillStyle = '#3b1254';
-    ctx.fillRect(4, 20, 5, 10);
-    ctx.fillRect(23, 20, 5, 10);
+    // Sleeves — paths afunilados em vez de blocos retangulares
+    ctx.fillStyle = robeGrad;
+    ctx.beginPath();
+    ctx.moveTo(9, 19); ctx.quadraticCurveTo(4, 22, 4, 28); ctx.lineTo(8, 30); ctx.quadraticCurveTo(9, 24, 12, 20); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(23, 19); ctx.quadraticCurveTo(28, 22, 28, 28); ctx.lineTo(24, 30); ctx.quadraticCurveTo(23, 24, 20, 20); ctx.closePath(); ctx.fill();
+    // Ritual dagger clutched at the chest — reto (lâmina é reta mesmo)
     ctx.fillStyle = '#a8a5a0';
     ctx.fillRect(24, 16, 2, 8);
   });
-  addTexture('spr_cultist', cultistCanvas);
+  addTextureWithNormalMap('spr_cultist', cultistCanvas);
 
   // 5. Hell Hound (36x28)
+  // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
+  // torso e cabeça reescritos com curvas + degradê em vez de blocos + tarjas retas;
+  // pernas viraram paths afunilados; já tinha normal map (mantido).
   const houndCanvas = createPixelCanvas(36, 28, (ctx) => {
     drawShadow(ctx, 18, 24, 14, 3);
 
-    // Demonic red quadruped body, shaded underside and lit back
-    ctx.fillStyle = '#7f1d1d';
-    ctx.fillRect(6, 8, 22, 12);
+    // Demonic red quadruped body — silhueta curva com degradê vertical (sombra embaixo, luz em cima)
+    const bodyGrad = ctx.createLinearGradient(0, 8, 0, 20);
+    bodyGrad.addColorStop(0, '#a33333');
+    bodyGrad.addColorStop(0.4, '#7f1d1d');
+    bodyGrad.addColorStop(1, '#5c1414');
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.moveTo(6, 14);
+    ctx.quadraticCurveTo(10, 6, 20, 8);
+    ctx.quadraticCurveTo(27, 9, 28, 14);
+    ctx.quadraticCurveTo(26, 20, 18, 20);
+    ctx.quadraticCurveTo(10, 20, 6, 14);
+    ctx.closePath();
+    ctx.fill();
+
+    // Legs — paths afunilados em vez de blocos retangulares
     ctx.fillStyle = '#5c1414';
-    ctx.fillRect(6, 16, 22, 4);
-    ctx.fillStyle = '#a33333';
-    ctx.fillRect(8, 8, 18, 2);
-    // Legs & claws
-    ctx.fillStyle = '#5c1414';
-    ctx.fillRect(8, 18, 4, 8);
-    ctx.fillRect(20, 18, 4, 8);
+    ctx.beginPath();
+    ctx.moveTo(8, 17); ctx.quadraticCurveTo(7, 22, 8, 26); ctx.lineTo(11, 26); ctx.quadraticCurveTo(11, 21, 12, 18); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(19, 17); ctx.quadraticCurveTo(18, 22, 19, 26); ctx.lineTo(22, 26); ctx.quadraticCurveTo(22, 21, 23, 18); ctx.closePath(); ctx.fill();
+    // Claws — mantidos retos (garra é uma cunha reta)
     ctx.fillStyle = '#18181b';
     ctx.fillRect(8, 25, 4, 2);
     ctx.fillRect(20, 25, 4, 2);
 
-    // Head & snarling jaw
-    ctx.fillStyle = '#7f1d1d';
-    ctx.fillRect(24, 4, 10, 10);
+    // Head — elipse com degradê radial, snarling jaw
+    const headGrad = ctx.createRadialGradient(28, 8, 1, 29, 9, 8);
+    headGrad.addColorStop(0, '#a33333');
+    headGrad.addColorStop(1, '#5c1414');
+    ctx.fillStyle = headGrad;
+    ctx.beginPath();
+    ctx.ellipse(29, 9, 7, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#450a0a'; // muzzle shadow
-    ctx.fillRect(30, 8, 5, 5);
+    ctx.beginPath();
+    ctx.ellipse(33, 11, 3.5, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#facc15'; // Yellow eyes
-    ctx.fillRect(28, 6, 3, 2);
-    ctx.fillStyle = '#ffffff'; // Fangs
+    ctx.beginPath();
+    ctx.ellipse(29, 8, 1.6, 1.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff'; // Fangs — retos (presa é reta)
     ctx.fillRect(32, 12, 2, 4);
     ctx.fillRect(29, 12, 2, 3);
 
-    // Spikes on back with highlighted edge
+    // Spikes on back — triângulos pontudos em vez de retângulos com tarja
     ctx.fillStyle = '#18181b';
-    ctx.fillRect(10, 4, 2, 4);
-    ctx.fillRect(16, 4, 2, 4);
-    ctx.fillRect(22, 4, 2, 4);
+    [10, 16, 22].forEach((sx) => {
+      ctx.beginPath();
+      ctx.moveTo(sx - 1.5, 8);
+      ctx.lineTo(sx + 1.5, 8);
+      ctx.lineTo(sx, 2.5);
+      ctx.closePath();
+      ctx.fill();
+    });
     ctx.fillStyle = '#3f3f46';
-    ctx.fillRect(10, 4, 1, 4);
-    ctx.fillRect(16, 4, 1, 4);
-    ctx.fillRect(22, 4, 1, 4);
+    [10, 16, 22].forEach((sx) => {
+      ctx.beginPath();
+      ctx.moveTo(sx - 0.5, 8);
+      ctx.lineTo(sx + 0.5, 8);
+      ctx.lineTo(sx, 3);
+      ctx.closePath();
+      ctx.fill();
+    });
 
-    // Whip-like tail
-    ctx.fillStyle = '#5c1414';
-    ctx.fillRect(2, 10, 5, 3);
+    // Whip-like tail — curva em vez de bloco reto
+    ctx.strokeStyle = '#5c1414';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(6, 12);
+    ctx.quadraticCurveTo(0, 10, 1, 15);
+    ctx.stroke();
   });
   addTextureWithNormalMap('spr_hound', houndCanvas);
 
@@ -660,78 +723,125 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   addTextureWithNormalMap('spr_boss', bossCanvas);
 
   // 8b. Zombie Shambler (32x40) - Classic Rotting Corpse
+  // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
+  // torso reescrito com curvas + degradê linear, cabeça como elipse, ferida como
+  // elipse com degradê radial. Ganhou normal map (Fase 3.1).
   const zombieCanvas = createPixelCanvas(32, 40, (ctx) => {
     drawShadow(ctx, 16, 36, 10, 3);
 
-    // Tattered burial rags
+    // Tattered burial rags — mantidos retos (trapo rasgado em bloco é ok)
     ctx.fillStyle = '#1f2a18';
     ctx.fillRect(8, 26, 16, 10);
     ctx.fillRect(8, 34, 4, 6);
     ctx.fillRect(20, 34, 4, 6);
 
-    // Olive/decay green rotting flesh, shadowed side
-    ctx.fillStyle = '#2d3a24';
-    ctx.fillRect(8, 10, 16, 26);
-    ctx.fillStyle = '#1c2415';
-    ctx.fillRect(8, 10, 5, 26);
-    // Open gore chest wound with depth
-    ctx.fillStyle = '#7f1d1d';
-    ctx.fillRect(12, 16, 8, 10);
-    ctx.fillStyle = '#450a0a';
-    ctx.fillRect(13, 18, 6, 6);
-    // Exposed ribcage bone
+    // Olive/decay green rotting flesh — torso encurvado com degradê lateral
+    const fleshGrad = ctx.createLinearGradient(6, 0, 24, 0);
+    fleshGrad.addColorStop(0, '#1c2415');
+    fleshGrad.addColorStop(0.45, '#2d3a24');
+    fleshGrad.addColorStop(1, '#3f4f30');
+    ctx.fillStyle = fleshGrad;
+    ctx.beginPath();
+    ctx.moveTo(9, 12);
+    ctx.quadraticCurveTo(16, 8, 23, 12);
+    ctx.quadraticCurveTo(25, 24, 22, 36);
+    ctx.lineTo(10, 36);
+    ctx.quadraticCurveTo(7, 24, 9, 12);
+    ctx.closePath();
+    ctx.fill();
+
+    // Open gore chest wound with depth — elipse com degradê radial
+    const woundGrad = ctx.createRadialGradient(16, 21, 1, 16, 21, 6);
+    woundGrad.addColorStop(0, '#a33333');
+    woundGrad.addColorStop(1, '#450a0a');
+    ctx.fillStyle = woundGrad;
+    ctx.beginPath();
+    ctx.ellipse(16, 21, 4.5, 5.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Exposed ribcage bone — mantido reto (costela é curva mas fina, tarjas finas ok)
     ctx.fillStyle = '#dcd3c1';
     ctx.fillRect(13, 18, 6, 2);
     ctx.fillRect(13, 22, 6, 2);
 
-    // Head with missing jaw
-    ctx.fillStyle = '#3a4a2f';
-    ctx.fillRect(10, 2, 12, 10);
-    ctx.fillStyle = '#293620'; // brow shadow
-    ctx.fillRect(10, 2, 12, 3);
+    // Head — elipse com degradê radial em vez de retângulo
+    const headGrad = ctx.createRadialGradient(15, 6, 1, 16, 7, 8);
+    headGrad.addColorStop(0, '#4a5c3c');
+    headGrad.addColorStop(1, '#293620');
+    ctx.fillStyle = headGrad;
+    ctx.beginPath();
+    ctx.ellipse(16, 7, 7, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = 'rgba(245, 158, 11, 0.35)'; // eye glow halo
-    ctx.fillRect(11, 4, 4, 4);
-    ctx.fillRect(16, 4, 4, 4);
+    ctx.beginPath();
+    ctx.ellipse(13, 6, 2.5, 2, 0, 0, Math.PI * 2);
+    ctx.ellipse(19, 6, 2.5, 2, 0, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#f59e0b'; // Feral glowing yellow eyes
-    ctx.fillRect(12, 5, 2, 2);
-    ctx.fillRect(17, 5, 2, 2);
+    ctx.beginPath();
+    ctx.ellipse(13, 6, 1.1, 1, 0, 0, Math.PI * 2);
+    ctx.ellipse(19, 6, 1.1, 1, 0, 0, Math.PI * 2);
+    ctx.fill();
     // Dangling flap where the jaw used to be
     ctx.fillStyle = '#1c2415';
     ctx.fillRect(13, 11, 6, 3);
   });
-  addTexture('spr_zombie_shambler', zombieCanvas);
+  addTextureWithNormalMap('spr_zombie_shambler', zombieCanvas);
 
   // 8c. Vampire Stalker (32x44) - Aristocratic Blood Predator
+  // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
+  // cape reescrita como paths afunilados, casaco como silhueta curva com degradê
+  // linear, cabeça como elipse. Ganhou normal map (Fase 3.1).
   const vampireCanvas = createPixelCanvas(32, 44, (ctx) => {
     drawShadow(ctx, 16, 40, 10, 3);
 
-    // Velvet black coat with red cape interior (behind the body)
+    // Velvet cape interior — paths afunilados em vez de tiras retangulares retas
     ctx.fillStyle = '#991b1b';
-    ctx.fillRect(4, 12, 4, 28);
-    ctx.fillRect(24, 12, 4, 28);
+    ctx.beginPath();
+    ctx.moveTo(6, 12); ctx.lineTo(10, 12); ctx.quadraticCurveTo(8, 26, 6, 40); ctx.lineTo(3, 39); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(22, 12); ctx.lineTo(26, 12); ctx.quadraticCurveTo(29, 26, 29, 39); ctx.lineTo(24, 40); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#6b1414';
-    ctx.fillRect(4, 32, 4, 8);
-    ctx.fillRect(24, 32, 4, 8);
+    ctx.beginPath();
+    ctx.moveTo(6, 30); ctx.lineTo(9, 30); ctx.quadraticCurveTo(7, 36, 6, 40); ctx.lineTo(4, 38); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(23, 30); ctx.lineTo(26, 30); ctx.quadraticCurveTo(28, 36, 28, 39); ctx.lineTo(25, 40); ctx.closePath(); ctx.fill();
 
-    ctx.fillStyle = '#18181b';
-    ctx.fillRect(6, 12, 20, 30);
-    ctx.fillStyle = '#0c0c0e'; // coat shading, left side
-    ctx.fillRect(6, 12, 6, 30);
-    ctx.fillStyle = '#3f3f46'; // silver coat trim
+    // Black velvet coat — silhueta afunilada nos ombros com degradê lateral
+    const coatGrad = ctx.createLinearGradient(6, 0, 26, 0);
+    coatGrad.addColorStop(0, '#0c0c0e');
+    coatGrad.addColorStop(0.5, '#18181b');
+    coatGrad.addColorStop(1, '#3f3f46');
+    ctx.fillStyle = coatGrad;
+    ctx.beginPath();
+    ctx.moveTo(8, 12);
+    ctx.quadraticCurveTo(16, 10, 24, 12);
+    ctx.quadraticCurveTo(26, 26, 24, 42);
+    ctx.lineTo(8, 42);
+    ctx.quadraticCurveTo(6, 26, 8, 12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#3f3f46'; // silver coat trim — reto (barra de metal costurada é reta)
     ctx.fillRect(15, 12, 2, 30);
 
-    // Pale alabaster skin with cheek shading and slicked-back hair
-    ctx.fillStyle = '#e2e8f0';
-    ctx.fillRect(10, 2, 12, 10);
-    ctx.fillStyle = '#cbd5e1';
-    ctx.fillRect(10, 8, 12, 4);
+    // Pale alabaster skin — elipse com degradê radial + cabelo penteado pra trás
+    const skinGrad = ctx.createRadialGradient(16, 5, 1, 16, 7, 8);
+    skinGrad.addColorStop(0, '#f1f5f9');
+    skinGrad.addColorStop(1, '#cbd5e1');
+    ctx.fillStyle = skinGrad;
+    ctx.beginPath();
+    ctx.ellipse(16, 7, 7, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#18181b';
-    ctx.fillRect(10, 1, 12, 3);
+    ctx.beginPath();
+    ctx.ellipse(16, 2, 7, 3, 0, Math.PI, 0, true);
+    ctx.fill();
 
-    // Glowing crimson eyes & sharp white fangs
+    // Glowing crimson eyes & sharp white fangs — retos (presa reta faz sentido)
     ctx.fillStyle = '#ef4444';
-    ctx.fillRect(12, 5, 2, 2);
-    ctx.fillRect(18, 5, 2, 2);
+    ctx.beginPath();
+    ctx.ellipse(13, 6, 1.4, 1.2, 0, 0, Math.PI * 2);
+    ctx.ellipse(19, 6, 1.4, 1.2, 0, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(13, 9, 2, 3);
     ctx.fillRect(17, 9, 2, 3);
@@ -740,31 +850,55 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     ctx.fillStyle = '#dc2626';
     ctx.fillRect(15, 13, 2, 2);
   });
-  addTexture('spr_vampire_stalker', vampireCanvas);
+  addTextureWithNormalMap('spr_vampire_stalker', vampireCanvas);
 
   // 8d. Werewolf Lycan (38x44) - Feral Beast
+  // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
+  // torso encurvado (peito estufado, cintura fina) via curvas + degradê, cabeça
+  // como elipse, orelhas como triângulos. Ganhou normal map (Fase 3.1).
   const lycanCanvas = createPixelCanvas(38, 44, (ctx) => {
     drawShadow(ctx, 19, 40, 14, 3);
 
-    // Dark hunched charcoal fur, shaded underside and fur-tuft highlights
-    ctx.fillStyle = '#27272a';
-    ctx.fillRect(6, 8, 26, 32);
-    ctx.fillStyle = '#18181b';
-    ctx.fillRect(6, 26, 26, 14);
-    ctx.fillStyle = '#3f3f46';
+    // Dark hunched charcoal fur — peito estufado afunilando pra cintura, degradê vertical
+    const furGrad = ctx.createLinearGradient(0, 8, 0, 40);
+    furGrad.addColorStop(0, '#3f3f46');
+    furGrad.addColorStop(0.4, '#27272a');
+    furGrad.addColorStop(1, '#18181b');
+    ctx.fillStyle = furGrad;
+    ctx.beginPath();
+    ctx.moveTo(10, 10);
+    ctx.quadraticCurveTo(19, 6, 30, 10);
+    ctx.quadraticCurveTo(33, 24, 27, 40);
+    ctx.lineTo(11, 40);
+    ctx.quadraticCurveTo(5, 24, 10, 10);
+    ctx.closePath();
+    ctx.fill();
+    // Fur-tuft highlights — mantidos finos e retos (tufo de pelo é ok como traço)
+    ctx.fillStyle = '#52525b';
     ctx.fillRect(9, 10, 2, 6);
     ctx.fillRect(14, 8, 2, 8);
     ctx.fillRect(24, 9, 2, 7);
 
-    // Hunched head with snout & pointed ears
+    // Hunched head — elipse com degradê radial + focinho
+    const headGrad = ctx.createRadialGradient(19, 6, 1, 21, 7, 10);
+    headGrad.addColorStop(0, '#3f3f46');
+    headGrad.addColorStop(1, '#18181b');
+    ctx.fillStyle = headGrad;
+    ctx.beginPath();
+    ctx.ellipse(21, 7, 9, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Pointed ears — triângulos em vez de quadrados
     ctx.fillStyle = '#27272a';
-    ctx.fillRect(12, 2, 18, 10);
-    ctx.fillRect(11, 0, 4, 4);
-    ctx.fillRect(27, 0, 4, 4);
+    ctx.beginPath();
+    ctx.moveTo(11, 2); ctx.lineTo(15, 2); ctx.lineTo(12, -5); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(27, 2); ctx.lineTo(31, 2); ctx.lineTo(30, -5); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#18181b';
-    ctx.fillRect(24, 6, 8, 6);
+    ctx.beginPath();
+    ctx.ellipse(28, 8, 4.5, 3.5, 0, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Massive razor claws with tip highlight
+    // Massive razor claws — retos (lâmina de garra é uma cunha reta)
     ctx.fillStyle = '#a1a1aa';
     ctx.fillRect(2, 22, 5, 12);
     ctx.fillRect(31, 22, 5, 12);
@@ -774,13 +908,17 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
 
     // Feral yellow eyes with a glow halo & white fangs
     ctx.fillStyle = 'rgba(250, 204, 21, 0.4)';
-    ctx.fillRect(19, 3, 5, 4);
+    ctx.beginPath();
+    ctx.ellipse(21, 5, 3, 2.2, 0, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#facc15';
-    ctx.fillRect(20, 4, 3, 2);
+    ctx.beginPath();
+    ctx.ellipse(21, 5, 1.6, 1.1, 0, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(24, 8, 3, 3);
   });
-  addTexture('spr_werewolf_lycan', lycanCanvas);
+  addTextureWithNormalMap('spr_werewolf_lycan', lycanCanvas);
 
   // 8e. Bat Swarm (20x20) - Fast Shadow Bat
   const batCanvas = createPixelCanvas(20, 20, (ctx) => {

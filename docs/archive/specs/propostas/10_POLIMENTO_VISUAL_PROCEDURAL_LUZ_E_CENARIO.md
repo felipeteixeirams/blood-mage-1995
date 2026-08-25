@@ -2,7 +2,7 @@
 agent_context: frontend, game-engine, game designer
 target_module: src/utils/textureGenerator.ts, src/game/systems/LightingSystem.ts, src/game/systems/LightingPolish.ts, src/game/systems/ShadowSystem.ts, src/game/systems/DungeonGenerator.ts, src/game/scenes/GameScene.ts
 priority: media
-status: Fases 1-4 implementadas (piloto Fase 2 com 3 de 8 inimigos), aguardando validação em jogo
+status: Fases 1-4 implementadas (Fase 2 completa — 8 de 8 inimigos), aguardando validação em jogo
 last_updated: 2026-08-25
 tags: [design, procedural-art, lighting, vfx, polish, sem-sprites]
 ---
@@ -134,9 +134,20 @@ esguio, maciço, "elite") e validar em jogo antes de replicar o padrão pros out
 **Implementado (25/08):** piloto concluído — Skeleton (crânio/mandíbula em elipse com
 degradê radial, caixa torácica em curva fechada com arcos de costela), Golem (corpo
 afunilado via `quadraticCurveTo` com degradê linear, cabeça em elipse) e Boss/Necro Lord
-(armadura afunilada, chifres curvos, capa com pontas afuniladas) redesenhados. Cultist,
-Hound, Zombie, Vampire e Werewolf ficam para uma segunda leva, replicando o mesmo padrão
-já validado aqui.
+(armadura afunilada, chifres curvos, capa com pontas afuniladas) redesenhados.
+
+**Implementado (25/08, segunda leva):** os 5 inimigos restantes replicam o mesmo padrão —
+Cultist Acolyte (robe em sino via `quadraticCurveTo` + degradê linear, capuz em elipse com
+degradê radial e sombra interna, olhos em elipse, mangas como paths afunilados), Hell
+Hound (torso e cabeça em curva fechada com degradê, pernas afuniladas, espinhos como
+triângulos, cauda como curva em vez de bloco), Zombie Shambler (torso encurvado com
+degradê lateral, ferida no peito como elipse com degradê radial, cabeça em elipse),
+Vampire Stalker (capa em paths afunilados, casaco encurvado com degradê lateral, cabeça em
+elipse), Werewolf Lycan (torso com peito estufado/cintura fina via curvas + degradê,
+cabeça em elipse, orelhas como triângulos). Detalhes intencionalmente retos foram mantidos
+(lâmina de adaga, presas, garras, costura de armadura/coleira) — só a massa corporal
+principal deixou de ser bloco+tarja. Todos os 5 passaram de `addTexture` pra
+`addTextureWithNormalMap` (item 3.1 completo pros 8 inimigos).
 
 ### Fase 3 — Luz e sombreamento
 
@@ -186,8 +197,8 @@ revisitar se algum dia entrarem no cenário jogável.
 - [x] Fase 1.1 — `ShadowSystem` sem fallback de quadrado preto — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] Fase 1.2 — partículas com gradiente radial (sangue, faísca, gelo, chama negra) — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] Fase 2 — piloto com Skeleton, Golem e Boss redesenhados (formas orgânicas) — falta você validar em jogo + `pnpm verify` antes do commit
-- [ ] Fase 2 — replicar padrão validado pros 5 inimigos restantes (Cultist, Hound, Zombie, Vampire, Werewolf)
-- [x] Fase 3.1 — normal maps nos inimigos redesenhados (Skeleton já tinha; Golem e Boss ganharam agora) — falta você validar em jogo + `pnpm verify` antes do commit
+- [x] Fase 2 — replicar padrão validado pros 5 inimigos restantes (Cultist, Hound, Zombie, Vampire, Werewolf) — falta você validar em jogo + `pnpm verify` antes do commit
+- [x] Fase 3.1 — normal maps em todos os 8 inimigos redesenhados (Skeleton/Hound já tinham; Golem, Boss, Cultist, Zombie, Vampire, Werewolf ganharam agora) — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] Fase 3.2 — tochas alinhadas ao `doorWidth` real + jitter determinístico — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] Fase 3.3 — distribuição de tochas variando por tipo de sala (chamber: 2 cantos; especiais: 4) — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] Fase 4 — `tile_wall_brick` com variação de tijolo (chanfro, musgo orgânico, ruído sutil) — falta você validar em jogo + `pnpm verify` antes do commit
@@ -209,3 +220,4 @@ revisitar se algum dia entrarem no cenário jogável.
 | 2026-08-25 | Criação: auditoria concreta dos artefatos "quadrado" reais (inimigos em bloco, partículas sem degradê, bug de fallback de sombra, tochas em grade desalinhada da porta), plano em 4 fases | Claude |
 | 2026-08-25 | Fase 1 implementada: `ShadowSystem.ts` gera elipse com degradê na hora em vez de cair pro quadrado preto; `particle_blood_red`/`particle_ember_spark`/`particle_frost_crystal`/`particle_dark_flame` reescritas com `createRadialGradient` em vez de `fillRect` cru — falta validação em jogo | Claude |
 | 2026-08-25 | Fases 2, 3 e 4 implementadas: Skeleton/Golem/Boss redesenhados com curvas+degradê e normal map; `DOOR_WIDTH` exportado de `DungeonGenerator.ts` e usado por `GameScene.ts` pro flanqueio de tocha real (+ jitter determinístico + variação por tipo de sala); `tile_wall_brick` com chanfro/musgo orgânico/ruído. Falta validação em jogo | Claude |
+| 2026-08-25 | Fase 2 completa: Cultist, Hound, Zombie, Vampire e Werewolf redesenhados com o mesmo padrão orgânico (curvas + degradê) validado no piloto, todos com normal map novo — os 8 inimigos "quadrados" do diagnóstico original agora estão redesenhados. Falta validação em jogo + `pnpm verify` | Claude |
