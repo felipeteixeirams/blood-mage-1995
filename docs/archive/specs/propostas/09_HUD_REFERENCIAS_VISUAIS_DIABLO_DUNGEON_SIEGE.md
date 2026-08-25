@@ -69,7 +69,7 @@ cita *Diablo I* explicitamente) do que a imagem 1. Pontos transferíveis:
 
 | Zona | Implementação atual | Imagem 1 | Imagem 2 | Veredito |
 |---|---|---|---|---|
-| Vida/Mana | Barra retangular horizontal, canto superior esquerdo (`PlayerStatus.tsx`) | Barra compacta sob retrato, topo-esquerda | Orbe circular líquido, rodapé | **Orbe descartado por decisão do Felipe (25/08).** Mantemos a barra retangular como forma; a melhoria é de acabamento (moldura/textura), não de geometria — ver Tier A.3 |
+| Vida/Mana | Barra retangular horizontal, canto superior esquerdo (`PlayerStatus.tsx`) | Barra compacta sob retrato, topo-esquerda | Orbe circular líquido, rodapé | **Decidido (25/08):** forma continua retangular (sem orbe) e posição continua no topo-esquerda (sem mover pro rodapé). Único ganho é de acabamento — ver Tier A.3 |
 | Minimap | **Não existe.** `minimapVisible`/`minimapAlpha` são settings persistidos em `localStorage.ts`/`SettingsScene.ts` sem nenhum componente que os leia | Bússola circular, topo-direita | Não aparece | Vale construir um minimap mínimo agora — zero dependência de sprite, e fecha um gap de settings mortos |
 | Alvo em combate | `TargetFrame.tsx` já existe: nome, nível, barra de HP do inimigo no topo-centro (estilo WoW/Diablo) | — | — | Já resolvido, nenhuma mudança necessária |
 | Menu contextual de alvo | Inexistente — clique/toque já ataca direto | Texto contextual junto ao cursor | Não aparece | Valor real só em desktop com mouse; no touch (nosso público mobile-first) já resolvemos com tap direto. Baixa prioridade |
@@ -112,13 +112,13 @@ cita *Diablo I* explicitamente) do que a imagem 1. Pontos transferíveis:
 
 ### Tier B — Depende de decisão de produto (ergonomia, testar antes de comprometer)
 
-5. **Mover vida/mana/curativos do topo-esquerda para o rodapé**, mantendo a forma de
-   barra retangular (não orbe, por decisão do Felipe). Melhora o alcance do polegar em
-   mobile (a *thumb zone* inferior é mais acessível que o canto superior), mas o rodapé
-   hoje já está ocupado pelo joystick (esquerda) e pelo arco de skills (direita) —
-   precisaria virar uma barra fina centro-inferior, ou barras verticais compactas nos
-   dois cantos inferiores, disputando espaço. Recomendo prototipar isoladamente antes de
-   comprometer, dado o risco de regressão de usabilidade em telas pequenas.
+> **Atualização (25/08):** o item 5 (mover HP/mana/curativos pro rodapé) foi decidido e
+> descartado — os indicadores continuam no topo-esquerda. Resta só o item 6 em aberto.
+
+5. ~~Mover vida/mana/curativos do topo-esquerda para o rodapé~~ — **descartado por
+   decisão do Felipe (25/08).** Os indicadores continuam no canto superior esquerdo; o
+   ganho aqui é só de acabamento visual (Tier A.3 / Fase 3), sem mudança de posição ou
+   de ergonomia. Item mantido riscado só como registro histórico da ideia avaliada.
 6. **Menu contextual "ENGAGE / ATACAR / MIRAR MAIS PRÓXIMO"** ao passar o mouse sobre um
    alvo. Só tem valor real em desktop com mouse — no touch já resolvemos com tap direto.
    Baixa prioridade dado o público mobile-first do projeto (ver
@@ -175,9 +175,10 @@ commit.
 
 - [ ] Fase 1 — marcador "!" sobre NPC interagível
 - [ ] Fase 2 — minimap mínimo (substitui settings mortos `minimapVisible`/`minimapAlpha`)
-- [ ] Fase 3 — acabamento entalhado da barra de HP/MP (sem orbe)
+- [x] Fase 3 — acabamento entalhado da barra de HP/MP (sem orbe) — falta você validar em jogo + `pnpm verify` antes do commit
 - [ ] Fase 4 — cinturão visual de curativos
-- [ ] Tier B avaliado e decidido (prototipar antes de comprometer)
+- [x] Tier B.5 avaliado e decidido — descartado, HP/mana/curativos continuam no topo-esquerda
+- [ ] Tier B.6 (menu contextual de mouse) — ainda em aberto, baixa prioridade
 - [ ] Tier C revisitado quando houver sprites customizados de UI
 
 ---
@@ -201,3 +202,5 @@ commit.
 |------|-------------|-------|
 | 2026-08-25 | Criação: análise crítica das 2 referências visuais trazidas por Felipe, cruzamento com o HUD atual, plano incremental em 4 fases (Tier A) executável sem sprites novos | Claude |
 | 2026-08-25 | Ajuste por decisão do Felipe: descartado o orbe circular de HP/mana no estilo Diablo; Tier A.3 e Fase 3 reescritos para elevar o acabamento da barra retangular existente em vez de trocar a forma | Claude |
+| 2026-08-25 | Decidido: indicadores de vida/mana/curativos continuam no canto superior esquerdo (Tier B.5 descartado) — escopo fecha em melhoria de acabamento visual, sem mudança de posição | Claude |
+| 2026-08-25 | Fase 3 implementada: `PlayerStatus.tsx` ganhou moldura forjada (textura de metal batido + rebites de canto + highlight superior) nas barras de HP/MP e pulso vermelho quando HP ≤ 25%. Mesma posição, mesma forma retangular — falta validação em jogo | Claude |

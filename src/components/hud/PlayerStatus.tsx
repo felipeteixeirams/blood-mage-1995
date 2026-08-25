@@ -6,11 +6,30 @@ interface PlayerStatusProps {
   stats: PlayerStats;
 }
 
+// Fase 3 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
+// acabamento entalhado das barras de HP/MP (sem virar orbe — mantém posição e forma).
+// Componentes de apoio ficam fora do corpo de PlayerStatus para não perder identidade
+// entre renders (evita remount/perda de estado a cada atualização de HP/MP).
+
+// Textura sutil de metal batido para o fundo das molduras (CSS puro, sem asset novo)
+const FORGED_METAL_TEXTURE: React.CSSProperties = {
+  backgroundImage:
+    'repeating-linear-gradient(135deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 3px)',
+};
+
+// Rebite decorativo de canto (mesmo espírito das "cantoneiras douradas" dos modais)
+const BarRivet: React.FC<{ className: string }> = ({ className }) => (
+  <div
+    className={`absolute w-[3px] h-[3px] rounded-full bg-gradient-to-br from-[#e8c76a] to-[#7a5312] shadow-[0_0_1px_rgba(0,0,0,0.9)] pointer-events-none ${className}`}
+  />
+);
+
 export const PlayerStatus: React.FC<PlayerStatusProps> = ({ stats }) => {
   const { settings } = useGameStore();
   const hpPercent = Math.max(0, Math.min(100, (stats.hp / stats.maxHp) * 100));
   const manaPercent = Math.max(0, Math.min(100, (stats.mana / stats.maxMana) * 100));
   const xpPercent = Math.max(0, Math.min(100, (stats.currentXp / stats.nextLevelXp) * 100));
+  const isCriticalHp = hpPercent > 0 && hpPercent <= 25;
 
   return (
     <div className="pointer-events-auto bg-[#0f0b09]/95 border-2 border-[#b8860b]/40 p-2 shadow-[4px_4px_12px_rgba(0,0,0,0.85)] backdrop-blur flex items-center gap-2.5 max-w-[280px] sm:max-w-xs">
@@ -47,10 +66,23 @@ export const PlayerStatus: React.FC<PlayerStatusProps> = ({ stats }) => {
             <span className="text-[8px] font-pixel text-[#e8c76a] font-bold uppercase tracking-wider">HP</span>
             <span className="text-[8px] font-pixel text-[#fca5a5] font-bold">{Math.ceil(stats.hp)} / {stats.maxHp}</span>
           </div>
-          {/* Ironcast frame container */}
-          <div className="w-full h-3 bg-black border border-[#1f1a17] shadow-[inset_1px_1px_3px_rgba(0,0,0,0.9)] p-[1.5px] rounded-none relative">
+          {/* Ironcast frame container — forjado: textura de metal batido + rebites de canto */}
+          <div
+            className={`w-full h-3 bg-black border border-[#1f1a17] p-[1.5px] rounded-none relative transition-shadow duration-300 ${
+              isCriticalHp
+                ? 'shadow-[inset_1px_1px_3px_rgba(0,0,0,0.9),0_0_9px_rgba(239,68,68,0.75)] animate-pulse'
+                : 'shadow-[inset_1px_1px_3px_rgba(0,0,0,0.9)]'
+            }`}
+            style={FORGED_METAL_TEXTURE}
+          >
             {/* Double gilded inner line to give a chiseled look */}
             <div className="absolute inset-0 border border-[#b8860b]/20 pointer-events-none" />
+            {/* Highlight superior fino, reforça a leitura de "entalhado" no metal */}
+            <div className="absolute inset-x-0 top-0 h-px bg-white/10 pointer-events-none" />
+            <BarRivet className="-top-[1.5px] -left-[1.5px]" />
+            <BarRivet className="-top-[1.5px] -right-[1.5px]" />
+            <BarRivet className="-bottom-[1.5px] -left-[1.5px]" />
+            <BarRivet className="-bottom-[1.5px] -right-[1.5px]" />
             {/* Liquid crimson blood fill */}
             <div
               className="h-full bg-gradient-to-r from-[#990000] via-[#dc2626] to-[#ef4444] shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)] transition-all duration-150"
@@ -65,9 +97,17 @@ export const PlayerStatus: React.FC<PlayerStatusProps> = ({ stats }) => {
             <span className="text-[8px] font-pixel text-[#e8c76a] font-bold uppercase tracking-wider">MP</span>
             <span className="text-[8px] font-pixel text-[#93c5fd] font-bold">{Math.ceil(stats.mana)} / {stats.maxMana}</span>
           </div>
-          {/* Ironcast frame container */}
-          <div className="w-full h-2.5 bg-black border border-[#1f1a17] shadow-[inset_1px_1px_3px_rgba(0,0,0,0.9)] p-[1.5px] rounded-none relative">
+          {/* Ironcast frame container — mesmo tratamento forjado da barra de HP */}
+          <div
+            className="w-full h-2.5 bg-black border border-[#1f1a17] shadow-[inset_1px_1px_3px_rgba(0,0,0,0.9)] p-[1.5px] rounded-none relative"
+            style={FORGED_METAL_TEXTURE}
+          >
             <div className="absolute inset-0 border border-[#b8860b]/20 pointer-events-none" />
+            <div className="absolute inset-x-0 top-0 h-px bg-white/10 pointer-events-none" />
+            <BarRivet className="-top-[1.5px] -left-[1.5px]" />
+            <BarRivet className="-top-[1.5px] -right-[1.5px]" />
+            <BarRivet className="-bottom-[1.5px] -left-[1.5px]" />
+            <BarRivet className="-bottom-[1.5px] -right-[1.5px]" />
             {/* Liquid cobalt blue fill */}
             <div
               className="h-full bg-gradient-to-r from-[#1e3a8a] via-[#2563eb] to-[#3b82f6] shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)] transition-all duration-150"
