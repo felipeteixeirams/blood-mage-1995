@@ -247,7 +247,8 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
             active: true,
             hasDragged: false
           };
-          window.dispatchEvent(new CustomEvent('drag-aim-start', { detail: { spellId } }));
+          // Comando tipado via store — ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
+          useGameStore.getState().setDragAim({ spellId, phase: 'start', dx: 0, dy: 0, isDrag: false });
         }}
         onPointerMove={(e) => {
           const d = dragStateRef.current;
@@ -259,7 +260,7 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
           }
           d.currentX = e.clientX;
           d.currentY = e.clientY;
-          window.dispatchEvent(new CustomEvent('drag-aim-move', { detail: { spellId, dx, dy } }));
+          useGameStore.getState().setDragAim({ spellId, phase: 'move', dx, dy, isDrag: d.hasDragged });
         }}
         onPointerUp={(e) => {
           const d = dragStateRef.current;
@@ -269,14 +270,7 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
           const dx = d.currentX - d.startX;
           const dy = d.currentY - d.startY;
 
-          window.dispatchEvent(new CustomEvent('drag-aim-end', {
-            detail: {
-              spellId,
-              dx,
-              dy,
-              isDrag: d.hasDragged
-            }
-          }));
+          useGameStore.getState().setDragAim({ spellId, phase: 'end', dx, dy, isDrag: d.hasDragged });
 
           if (!d.hasDragged) {
             soundEngine.playButtonClick();
@@ -288,14 +282,7 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
           if (!d.active || d.spellId !== spellId) return;
           e.currentTarget.releasePointerCapture(e.pointerId);
           d.active = false;
-          window.dispatchEvent(new CustomEvent('drag-aim-end', {
-            detail: {
-              spellId,
-              dx: 0,
-              dy: 0,
-              isDrag: false
-            }
-          }));
+          useGameStore.getState().setDragAim({ spellId, phase: 'end', dx: 0, dy: 0, isDrag: false });
         }}
         className={`absolute rounded-full border-2 flex flex-col items-center justify-center gap-0.5
           transition-all active:scale-95 cursor-pointer touch-manipulation select-none

@@ -2,7 +2,7 @@
 agent_context: frontend, backend, game-engine
 target_module: src/store/gameStore.ts, src/game/scenes/GameScene.ts, src/game/PhaserGame.tsx
 priority: medium
-status: em andamento — Fase 1 concluída; Fase 2 (cutover) 3/5 pontes migradas (respawn-player, update-cosmetic-tint, use-curative)
+status: Fase 1 e Fase 2 concluídas — 5/5 pontes migradas. Falta só a Fase 0 (limpeza opcional dos 3 listeners mortos) e a Fase 3 (atualizar 04_STATE_MANAGEMENT.md)
 last_updated: 2026-08-25
 tags: [architecture, phaser, react, zustand, event-bus, migration, tracker]
 ---
@@ -160,18 +160,18 @@ Ordem sugerida — da mais simples/baixo risco para a mais delicada:
    - `GameScene.ts`: listener removido. `useCurativeItem()` já era público (também usado pelos atalhos de teclado Z/X/V — nada mudou ali).
    - **Pendente de você:** validar manualmente — usar cada um dos 3 curativos clicando na UI (e também pelos atalhos Z/X/V, que usam o mesmo método e não devem ter sido afetados) — e `pnpm verify` antes do commit.
 
-4. **`loot-acquired`** (muda de direção — Phaser → React)
-   - `Player.ts:983`: trocar `window.dispatchEvent(...)` por `useGameStore.getState().notifyLootPickup(item)`.
-   - `LootLog.tsx`: reescrever de `useState` + `addEventListener` para `const pickup = useGameStore(s => s.lastLootPickup)` + `useEffect` que arma o `setTimeout` de 3s toda vez que `pickup?.id` muda.
-   - Validar: coletar 2 itens do mesmo tipo em sequência rápida, confirmar que o toast reaparece/reinicia a cada um (é exatamente o caso que o campo `id` existe para cobrir).
+4. ✅ **`loot-acquired`** — migrado em 25/08/2026 (muda de direção — Phaser → React)
+   - `Player.ts`: dispatch trocado por `useGameStore.getState().notifyLootPickup(item)`.
+   - `LootLog.tsx`: reescrito de `useState` + `addEventListener` para `useGameStore(s => s.lastLootPickup)` + `useEffect` que arma o `setTimeout` de 3s toda vez que `lastLootPickup` muda, guardando o `id` visível para não fechar um toast mais novo por engano se dois pickups ocorrerem dentro da janela de 3s.
+   - **Pendente de você:** validar manualmente — coletar 2 itens do mesmo tipo em sequência rápida, confirmar que o toast reaparece/reinicia a cada um (é exatamente o caso que o campo `id` existe para cobrir) — e `pnpm verify` antes do commit.
 
-5. **`drag-aim-start`/`-move`/`-end`** (a única de alta frequência — deixar por último, com mais atenção)
-   - `SkillsOverlay.tsx`: os 3 `window.dispatchEvent` viram `useGameStore.getState().setDragAim({ spellId, phase: 'start'|'move'|'end', dx, dy, isDrag })`.
-     - Atenção: o `dragStateRef` local do componente (posição do gesto) **continua existindo** — ele é estado de UI pura do gesto de toque, não precisa ir para o store. Só o que já cruzava para o Phaser via evento é que migra.
-   - `PhaserGame.tsx`: `useEffect` com dependência em `dragAim` despacha para `scene.handleDragAimStart/Move/End(dragAim)` conforme `dragAim.phase`.
-   - `GameScene.ts`: os 3 métodos `handleDragAimStart/Move/End` já existem e já são públicos (usados por `PlayerSkillSystem.ts`) — só muda quem os chama; remover os 3 `window.addEventListener`.
-   - **Ponto de atenção real:** como `move` dispara a cada `pointermove`, e Zustand com `set()` idêntico não gera novo objeto por padrão, é preciso garantir que cada chamada de `setDragAim` realmente crie um objeto novo (o plano acima já faz isso — `{ spellId, phase, dx, dy, isDrag }` é sempre um literal novo) para que o `useEffect` dispare a cada movimento, exatamente como já acontece hoje com `touchMoveInput`.
-   - Validar: usar drag-to-aim nas 3 skills direcionais (Foice Carmim, Feixe de Hemomancia, Círculo de Transmutação) em mouse e touch, confirmar preview de mira segue o dedo/cursor sem lag perceptível e a skill dispara na direção correta ao soltar.
+5. ✅ **`drag-aim-start`/`-move`/`-end`** — migrado em 25/08/2026 (a única de alta frequência — deixada por último, com mais atenção)
+   - `SkillsOverlay.tsx`: os 3 `window.dispatchEvent` viraram `useGameStore.getState().setDragAim({ spellId, phase: 'start'|'move'|'end', dx, dy, isDrag })`. O `dragStateRef` local do componente (posição do gesto) **continua existindo** — é estado de UI pura do gesto de toque, não precisava ir para o store.
+   - `PhaserGame.tsx`: novo `useEffect` (dependência `[dragAim]`) despacha para `scene.handleDragAimStart/Move/End(payload)` conforme `dragAim.phase`, com guard para não disparar no valor inicial (`spellId`/`phase` nulos).
+   - `GameScene.ts`: os 3 métodos passaram de `private` para `public` (mesmo padrão dos outros); os 3 `window.addEventListener`/`bind(this)` foram removidos.
+   - `PlayerSkillSystem.ts`: as 3 assinaturas mudaram de `(e: CustomEvent<{...}>)` para `(payload: {...})` — todo uso de `e.detail.x` virou `payload.x`. Comportamento idêntico, só a forma de receber o dado mudou.
+   - Confirmado por grep: cada chamada de `setDragAim` no `SkillsOverlay.tsx` sempre cria um objeto literal novo, então o `useEffect` do `PhaserGame.tsx` dispara a cada `pointermove` — mesma garantia que já vale para `touchMoveInput`/`touchAimInput`.
+   - **Pendente de você:** este é o cutover mais delicado — validar com atenção extra: usar drag-to-aim nas 3 skills direcionais (Foice Carmim, Feixe de Hemomancia, Círculo de Transmutação) em mouse **e** touch, confirmar que o preview de mira segue o dedo/cursor sem lag perceptível e que a skill dispara na direção correta ao soltar — e `pnpm verify` antes do commit.
 
 ### Fase 3 — Remoção final
 - Depois que os 5 bridges estiverem migrados e validados individualmente,
@@ -221,10 +221,10 @@ Ordem sugerida — da mais simples/baixo risco para a mais delicada:
 - [x] `respawn-player` migrado (código); `CustomEvent` antigo removido — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] `update-cosmetic-tint` migrado (código); `CustomEvent` antigo removido — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] `use-curative` migrado (código); `CustomEvent` antigo removido — falta você validar em jogo + `pnpm verify` antes do commit
-- [ ] `loot-acquired` migrado, validado, `CustomEvent` antigo removido
-- [ ] `drag-aim-start/move/end` migrado, validado (mouse + touch), `CustomEvent` antigo removido
-- [ ] Fase 3 — grep final confirma zero `CustomEvent` de gameplay restante em `src/`
-- [ ] `docs/architecture/04_STATE_MANAGEMENT.md` atualizado para mencionar que a ponte é 100% Zustand (remover a lacuna que hoje não menciona o bridge antigo nem o novo)
+- [x] `loot-acquired` migrado (código); `CustomEvent` antigo removido — falta você validar em jogo + `pnpm verify` antes do commit
+- [x] `drag-aim-start/move/end` migrado (código); `CustomEvent` antigo removido — falta você validar em jogo (mouse + touch, com atenção extra por ser a ponte de alta frequência) + `pnpm verify` antes do commit
+- [x] Fase 3 — grep confirma zero `CustomEvent`/`window.addEventListener` de gameplay restante em `src/` (só sobram os 3 listeners mortos da Fase 0 e os eventos nativos do browser listados no início deste documento)
+- [ ] `docs/architecture/04_STATE_MANAGEMENT.md` atualizado para mencionar que a ponte é 100% Zustand (ainda pendente — próximo passo sugerido)
 
 ---
 
@@ -242,3 +242,5 @@ Ordem sugerida — da mais simples/baixo risco para a mais delicada:
 | 2026-08-25 | Fase 2, ponte 1/5 (`respawn-player`) migrada: `GameOverModal.tsx`, `GameScene.ts` (`respawnPlayer()` público) e `PhaserGame.tsx` atualizados | Claude |
 | 2026-08-25 | Fase 2, ponte 2/5 (`update-cosmetic-tint`) migrada: `GameplayHUD.tsx`, `GameScene.ts` (`applyCosmeticTint()` público) e `PhaserGame.tsx` atualizados | Claude |
 | 2026-08-25 | Fase 2, ponte 3/5 (`use-curative`) migrada: `PlayerStatus.tsx`, `GameScene.ts` (listener removido, `useCurativeItem()` já era público) e `PhaserGame.tsx` atualizados | Claude |
+| 2026-08-25 | Fase 2, ponte 4/5 (`loot-acquired`) migrada: `Player.ts` e `LootLog.tsx` (reescrito para ler `lastLootPickup` do store) | Claude |
+| 2026-08-25 | Fase 2, ponte 5/5 (`drag-aim-start/move/end`) migrada: `SkillsOverlay.tsx`, `PlayerSkillSystem.ts` (assinaturas de payload plano), `GameScene.ts` (métodos `public`) e `PhaserGame.tsx` atualizados. Cutover completo — grep confirma zero `CustomEvent` de gameplay restante | Claude |

@@ -517,23 +517,14 @@ export class GameScene extends Phaser.Scene {
     const handleNovaEvent = () => this.triggerBloodNova();
     window.addEventListener('trigger-blood-nova', handleNovaEvent);
 
-    // Drag-to-Aim Event Listeners
-    this.handleDragAimStart = this.handleDragAimStart.bind(this);
-    this.handleDragAimMove = this.handleDragAimMove.bind(this);
-    this.handleDragAimEnd = this.handleDragAimEnd.bind(this);
-
-    window.addEventListener('drag-aim-start', this.handleDragAimStart as any);
-    window.addEventListener('drag-aim-move', this.handleDragAimMove as any);
-    window.addEventListener('drag-aim-end', this.handleDragAimEnd as any);
-
+    // Drag-to-Aim: handleDragAimStart/Move/End acima já são públicos e
+    // agora são chamados diretamente por PhaserGame.tsx via store (dragAim),
+    // não mais por window.addEventListener.
     // update-cosmetic-tint agora chega via store (cosmeticTintVersion) — ver
     // public applyCosmeticTint() abaixo e docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
 
     this.events.once('shutdown', () => {
       window.removeEventListener('trigger-blood-nova', handleNovaEvent);
-      window.removeEventListener('drag-aim-start', this.handleDragAimStart as any);
-      window.removeEventListener('drag-aim-move', this.handleDragAimMove as any);
-      window.removeEventListener('drag-aim-end', this.handleDragAimEnd as any);
       if (this.virtualJoystick) {
         this.virtualJoystick.destroy();
         this.virtualJoystick = null;
@@ -542,9 +533,6 @@ export class GameScene extends Phaser.Scene {
     });
     this.events.once('destroy', () => {
       window.removeEventListener('trigger-blood-nova', handleNovaEvent);
-      window.removeEventListener('drag-aim-start', this.handleDragAimStart as any);
-      window.removeEventListener('drag-aim-move', this.handleDragAimMove as any);
-      window.removeEventListener('drag-aim-end', this.handleDragAimEnd as any);
       if (this.virtualJoystick) {
         this.virtualJoystick.destroy();
         this.virtualJoystick = null;
@@ -1360,16 +1348,16 @@ export class GameScene extends Phaser.Scene {
   // GameScene.ts estava com ~117KB). Estes wrappers preservam os nomes e
   // assinaturas usados pelos event listeners e por update(), delegando para
   // o novo módulo sem alterar comportamento.
-  private handleDragAimStart(e: CustomEvent<{ spellId: string }>) {
-    this.skillSystem.handleDragAimStart(e);
+  public handleDragAimStart(payload: { spellId: string }) { // público: chamado por PhaserGame.tsx via store (dragAim)
+    this.skillSystem.handleDragAimStart(payload);
   }
 
-  private handleDragAimMove(e: CustomEvent<{ spellId: string, dx: number, dy: number }>) {
-    this.skillSystem.handleDragAimMove(e);
+  public handleDragAimMove(payload: { spellId: string, dx: number, dy: number }) { // público: chamado por PhaserGame.tsx via store (dragAim)
+    this.skillSystem.handleDragAimMove(payload);
   }
 
-  private handleDragAimEnd(e: CustomEvent<{ spellId: string, dx: number, dy: number, isDrag: boolean }>) {
-    this.skillSystem.handleDragAimEnd(e);
+  public handleDragAimEnd(payload: { spellId: string, dx: number, dy: number, isDrag: boolean }) { // público: chamado por PhaserGame.tsx via store (dragAim)
+    this.skillSystem.handleDragAimEnd(payload);
   }
 
   private handleGamepadInput() {

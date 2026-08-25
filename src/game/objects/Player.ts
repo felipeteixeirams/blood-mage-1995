@@ -978,8 +978,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     soundEngine.playEquipLoot(); // Play sound for loot
-    
-    // Notify React UI
-    window.dispatchEvent(new CustomEvent('loot-acquired', { detail: item }));
+
+    // Notify React UI — comando tipado via store, ver
+    // docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
+    useGameStore.getState().notifyLootPickup(item);
   }
 }

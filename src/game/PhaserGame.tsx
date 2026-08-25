@@ -32,6 +32,7 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
     cosmeticTintVersion,
     activeCurativeTrigger,
     setActiveCurativeTrigger: onCurativeProcessed,
+    dragAim,
     gameState,
   } = useGameStore();
 
@@ -186,6 +187,29 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
       onCurativeProcessed(null);
     }
   }, [activeCurativeTrigger]);
+
+  // Handle drag-to-aim gesture (start/move/end) — a única ponte de alta
+  // frequência; mesmo padrão de touchMoveInput/touchAimInput, já validado
+  // para rodar a cada pointermove sem lag perceptível. Ver
+  // docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md.
+  useEffect(() => {
+    if (!gameSceneRef.current && phaserGameRef.current?.scene) {
+      const scene = phaserGameRef.current.scene.getScene('GameScene') as GameScene;
+      if (scene) {
+        gameSceneRef.current = scene;
+      }
+    }
+    if (!dragAim.spellId || !dragAim.phase || !gameSceneRef.current) return;
+
+    const payload = { spellId: dragAim.spellId, dx: dragAim.dx, dy: dragAim.dy, isDrag: dragAim.isDrag };
+    if (dragAim.phase === 'start') {
+      gameSceneRef.current.handleDragAimStart(payload);
+    } else if (dragAim.phase === 'move') {
+      gameSceneRef.current.handleDragAimMove(payload);
+    } else if (dragAim.phase === 'end') {
+      gameSceneRef.current.handleDragAimEnd(payload);
+    }
+  }, [dragAim]);
 
   // BUG FIX (2026-08-25): congela/descongela a simulação com base no
   // gameState, em vez de deixar o pause destruir e recriar o Phaser.Game

@@ -77,35 +77,38 @@ export class PlayerSkillSystem {
     }
   }
 
-  public handleDragAimStart(e: CustomEvent<{ spellId: string }>) {
-    this.scene.activeDragAimSpellId = e.detail.spellId;
+  // Payload plano em vez de CustomEvent<T> — a ponte com a UI passou a ser o
+  // store tipado (dragAim), não mais window.dispatchEvent/CustomEvent. Ver
+  // docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md.
+  public handleDragAimStart(payload: { spellId: string }) {
+    this.scene.activeDragAimSpellId = payload.spellId;
     this.scene.dragAimVector.set(0, 0);
   }
 
-  public handleDragAimMove(e: CustomEvent<{ spellId: string, dx: number, dy: number }>) {
-    if (this.scene.activeDragAimSpellId !== e.detail.spellId) return;
-    this.scene.dragAimVector.set(e.detail.dx, e.detail.dy);
+  public handleDragAimMove(payload: { spellId: string, dx: number, dy: number }) {
+    if (this.scene.activeDragAimSpellId !== payload.spellId) return;
+    this.scene.dragAimVector.set(payload.dx, payload.dy);
 
     // Rotate player to face dragging direction
-    if (e.detail.dx !== 0 || e.detail.dy !== 0) {
-      this.scene.player.setAimInput(e.detail.dx, e.detail.dy);
+    if (payload.dx !== 0 || payload.dy !== 0) {
+      this.scene.player.setAimInput(payload.dx, payload.dy);
     }
   }
 
-  public handleDragAimEnd(e: CustomEvent<{ spellId: string, dx: number, dy: number, isDrag: boolean }>) {
-    if (this.scene.activeDragAimSpellId !== e.detail.spellId) return;
+  public handleDragAimEnd(payload: { spellId: string, dx: number, dy: number, isDrag: boolean }) {
+    if (this.scene.activeDragAimSpellId !== payload.spellId) return;
 
-    const wasDrag = e.detail.isDrag;
+    const wasDrag = payload.isDrag;
     this.scene.activeDragAimSpellId = null;
     this.scene.dragAimGraphics.clear();
 
     if (wasDrag) {
       // Cast the skill in the dragged direction
-      if (e.detail.dx !== 0 || e.detail.dy !== 0) {
-        this.scene.player.setAimInput(e.detail.dx, e.detail.dy);
+      if (payload.dx !== 0 || payload.dy !== 0) {
+        this.scene.player.setAimInput(payload.dx, payload.dy);
       }
 
-      const skillKey = this.getSkillKeyFromSpellId(e.detail.spellId);
+      const skillKey = this.getSkillKeyFromSpellId(payload.spellId);
       if (skillKey) {
         this.triggerSkill(skillKey);
       }
