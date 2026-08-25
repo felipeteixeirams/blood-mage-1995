@@ -122,6 +122,23 @@ interface GameStore {
   activeSkillTrigger: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | null;
   setActiveSkillTrigger: (skill: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | null) => void;
 
+  // Bridge tipada Phaser<->React (substitui window.dispatchEvent/CustomEvent) — ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
+  /** Comando "usar curativo" disparado pela UI; PhaserGame processa e reseta para null (mesmo padrão de activeSkillTrigger). */
+  activeCurativeTrigger: 'bandages' | 'antidotes' | 'antibiotics' | null;
+  setActiveCurativeTrigger: (type: 'bandages' | 'antidotes' | 'antibiotics' | null) => void;
+  /** Comando "respawnar jogador" disparado pelo GameOverModal; PhaserGame processa e reseta para false. */
+  respawnRequested: boolean;
+  setRespawnRequested: (requested: boolean) => void;
+  /** Incrementado sempre que uma paleta cosmética é aplicada; PhaserGame reage à mudança de valor (sem payload). */
+  cosmeticTintVersion: number;
+  bumpCosmeticTint: () => void;
+  /** Estado do gesto de drag-to-aim das skills direcionais (start/move/end). Mesmo padrão de touchMoveInput/touchAimInput — já validado para atualização em alta frequência. */
+  dragAim: { spellId: string | null; phase: 'start' | 'move' | 'end' | null; dx: number; dy: number; isDrag: boolean };
+  setDragAim: (state: { spellId: string | null; phase: 'start' | 'move' | 'end' | null; dx: number; dy: number; isDrag: boolean }) => void;
+  /** Último item coletado (para o toast de LootLog). `id` incrementa a cada chamada para distinguir pickups consecutivos do mesmo item. */
+  lastLootPickup: { item: LootItem; id: number } | null;
+  notifyLootPickup: (item: LootItem) => void;
+
   /** 4 spell IDs the player has pinned to the HUD skill bar */
   skillPreset: string[];
   setSkillPreset: (preset: string[]) => void;
@@ -548,6 +565,23 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   activeSkillTrigger: null,
   setActiveSkillTrigger: (skill) => set({ activeSkillTrigger: skill }),
+
+  activeCurativeTrigger: null,
+  setActiveCurativeTrigger: (type) => set({ activeCurativeTrigger: type }),
+
+  respawnRequested: false,
+  setRespawnRequested: (requested) => set({ respawnRequested: requested }),
+
+  cosmeticTintVersion: 0,
+  bumpCosmeticTint: () => set((state) => ({ cosmeticTintVersion: state.cosmeticTintVersion + 1 })),
+
+  dragAim: { spellId: null, phase: null, dx: 0, dy: 0, isDrag: false },
+  setDragAim: (dragAim) => set({ dragAim }),
+
+  lastLootPickup: null,
+  notifyLootPickup: (item) => set((state) => ({
+    lastLootPickup: { item, id: (state.lastLootPickup?.id ?? 0) + 1 }
+  })),
 
   skillPreset: ['hellfire_nova', 'syphon_soul', 'bone_shield', 'crimson_scythe'],
   setSkillPreset: (preset) => set({ skillPreset: preset }),

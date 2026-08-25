@@ -232,8 +232,19 @@ export default function App() {
         />
       )}
 
-      {/* 2. Active Game Phaser Canvas */}
-      {gameState === 'playing' && (
+      {/* 2. Active Game Phaser Canvas
+          BUG FIX (2026-08-25): antes, esse bloco só montava com
+          gameState === 'playing'. Pausar mudava o gameState para 'paused',
+          o que desmontava <PhaserGame> — e o cleanup do PhaserGame chama
+          currentGame.destroy(true), destruindo o Phaser.Game inteiro
+          (GameScene, masmorra, posição do jogador, tudo). Ao continuar, um
+          Phaser.Game NOVO era criado do zero, reiniciando o jogador no
+          spawn — exatamente o bug relatado ("volta pro ponto inicial como
+          se resetasse"). Agora o Phaser.Game permanece montado durante a
+          pausa; quem efetivamente congela a simulação é GameScene.isPaused
+          (setado logo abaixo, em PhaserGame.tsx), que já existia e já era
+          respeitado em update() — só nunca tinha sido ligado a nada. */}
+      {(gameState === 'playing' || gameState === 'paused') && (
         <Suspense fallback={null}>
           <PhaserGame
             gameSceneRef={gameSceneRef}

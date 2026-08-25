@@ -3,6 +3,7 @@ import { PlayerStats } from '../types/game';
 import { RotateCcw, Home, Skull, Flame, Trophy, Clock } from 'lucide-react';
 import { soundEngine } from '../utils/soundEngine';
 import { useGamepadUINavigation } from '../hooks/useGamepadUINavigation';
+import { useGameStore } from '../store/gameStore';
 
 interface GameOverModalProps {
   stats: PlayerStats;
@@ -102,8 +103,8 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
           <button
             onClick={() => {
               soundEngine.playButtonClick();
-              // Dispatch CustomEvent to let Phaser handle respawn
-              window.dispatchEvent(new CustomEvent('respawn-player'));
+              // Comando tipado via store — ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
+              useGameStore.getState().setRespawnRequested(true);
             }}
             className="w-full py-4 bg-gradient-to-r from-red-950 via-red-900 to-red-950 hover:from-red-900 hover:to-red-800 focus:from-red-900 focus:to-red-800 text-red-100 font-pixel text-xs rounded-none border border-red-600 shadow-[0_0_20px_rgba(153,0,0,0.5)] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer outline-none"
           >

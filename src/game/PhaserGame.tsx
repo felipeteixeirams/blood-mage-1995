@@ -27,6 +27,12 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
     touchAimInput,
     activeSkillTrigger,
     setActiveSkillTrigger: onSkillTriggerProcessed,
+    respawnRequested,
+    setRespawnRequested: onRespawnProcessed,
+    cosmeticTintVersion,
+    activeCurativeTrigger,
+    setActiveCurativeTrigger: onCurativeProcessed,
+    gameState,
   } = useGameStore();
 
   const onLevelUp = (level: number, choices: UpgradeOption[]) => {
@@ -138,6 +144,64 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
       onSkillTriggerProcessed(null);
     }
   }, [activeSkillTrigger]);
+
+  // Handle player respawn command (ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md)
+  useEffect(() => {
+    if (!gameSceneRef.current && phaserGameRef.current?.scene) {
+      const scene = phaserGameRef.current.scene.getScene('GameScene') as GameScene;
+      if (scene) {
+        gameSceneRef.current = scene;
+      }
+    }
+    if (respawnRequested && gameSceneRef.current) {
+      gameSceneRef.current.respawnPlayer();
+      onRespawnProcessed(false);
+    }
+  }, [respawnRequested]);
+
+  // Handle cosmetic palette change (ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md).
+  // cosmeticTintVersion é só um contador — o valor em si não importa, só a mudança.
+  useEffect(() => {
+    if (!gameSceneRef.current && phaserGameRef.current?.scene) {
+      const scene = phaserGameRef.current.scene.getScene('GameScene') as GameScene;
+      if (scene) {
+        gameSceneRef.current = scene;
+      }
+    }
+    if (cosmeticTintVersion > 0 && gameSceneRef.current) {
+      gameSceneRef.current.applyCosmeticTint();
+    }
+  }, [cosmeticTintVersion]);
+
+  // Handle curative UI clicks (ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md)
+  useEffect(() => {
+    if (!gameSceneRef.current && phaserGameRef.current?.scene) {
+      const scene = phaserGameRef.current.scene.getScene('GameScene') as GameScene;
+      if (scene) {
+        gameSceneRef.current = scene;
+      }
+    }
+    if (activeCurativeTrigger && gameSceneRef.current) {
+      gameSceneRef.current.useCurativeItem(activeCurativeTrigger);
+      onCurativeProcessed(null);
+    }
+  }, [activeCurativeTrigger]);
+
+  // BUG FIX (2026-08-25): congela/descongela a simulação com base no
+  // gameState, em vez de deixar o pause destruir e recriar o Phaser.Game
+  // (ver comentário em App.tsx). GameScene.update() já checava this.isPaused
+  // em 3 pontos — só nunca era setado por ninguém. Isso fecha o circuito.
+  useEffect(() => {
+    if (!gameSceneRef.current && phaserGameRef.current?.scene) {
+      const scene = phaserGameRef.current.scene.getScene('GameScene') as GameScene;
+      if (scene) {
+        gameSceneRef.current = scene;
+      }
+    }
+    if (gameSceneRef.current) {
+      gameSceneRef.current.isPaused = gameState === 'paused';
+    }
+  }, [gameState]);
 
   return (
     <div

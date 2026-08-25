@@ -152,22 +152,20 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
   const [splatters, setSplatters] = useState<BloodSplatter[]>([]);
   const [exploredRatio, setExploredPercentage] = useState<number>(18); // Reveal map progress
   const [isQuickSettingsOpen, setQuickSettingsOpen] = useState(false);
-  const [isPauseOpen, setPauseOpen] = useState(false);
   const [inventoryActiveTab, setInventoryActiveTab] = useState<'items' | 'scrolls'>('items');
 
   // Cooldown timers
   const [activeCooldowns, setCooldowns] = useState<Record<string, number>>({});
 
+  // NOTA (2026-08-25): o modal de pausa local (isPauseOpen) foi removido — era
+  // um segundo overlay de pausa duplicado do de App.tsx (gameState === 'paused'),
+  // que agora é o único, já que <GameplayHUD> continua montado durante a pausa
+  // (ver comentário em App.tsx). Os dois nunca deveriam coexistir; manter os
+  // dois teria feito dois modais "JOGO PAUSADO" empilhados. handlePauseToggle
+  // agora só seta o gameState — App.tsx cuida do resto.
   const handlePauseToggle = useCallback(() => {
     soundEngine.playButtonClick();
-    setPauseOpen(true);
     setGameState('paused');
-  }, [setGameState]);
-
-  const handleResume = useCallback(() => {
-    soundEngine.playButtonClick();
-    setPauseOpen(false);
-    setGameState('playing');
   }, [setGameState]);
 
   const moveJoystick = useFloatingJoystick((x, y) => {
@@ -409,7 +407,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
           {/* Trophy Button — Records Hall */}
           <button
             className="bg-[#0c0a09]/95 border border-[#b8860b]/50 p-1.5 text-[#e8c76a] hover:bg-[#1c140e] shadow-[2px_2px_4px_rgba(0,0,0,0.8)] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center w-8 h-8"
-            onClick={() => { soundEngine.playButtonClick(); setPauseOpen(true); setRecordsOpen(true); setGameState('paused'); }}
+            onClick={() => { soundEngine.playButtonClick(); setRecordsOpen(true); setGameState('paused'); }}
             title="Recordes"
           >
             {/* Pixel-art trophy icon */}
@@ -672,7 +670,8 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                           ...settings,
                           activePaletteId: p.id
                         });
-                        window.dispatchEvent(new CustomEvent('update-cosmetic-tint'));
+                        // Comando tipado via store — ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
+                        useGameStore.getState().bumpCosmeticTint();
                       }}
                       className={`py-0.5 border transition cursor-pointer ${
                         active
@@ -715,38 +714,9 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
         </div>
       )}
 
-      {/* ── PAUSE OVERLAY MODAL ── */}
-      {isPauseOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 pointer-events-auto">
-          <div className="bg-[#0c0a09] border-4 border-double border-[#b8860b] p-6 max-w-xs w-full text-center space-y-4 shadow-[0_0_35px_rgba(0,0,0,0.95)] relative">
-            {/* Cantoneiras */}
-            <div className="absolute top-1 left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-[#b8860b]" />
-            <div className="absolute top-1 right-1 w-2.5 h-2.5 border-t-2 border-r-2 border-[#b8860b]" />
-            <div className="absolute bottom-1 left-1 w-2.5 h-2.5 border-b-2 border-l-2 border-[#b8860b]" />
-            <div className="absolute bottom-1 right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-[#b8860b]" />
-
-            <h2 className="text-sm font-pixel text-[#e8c76a] uppercase tracking-widest font-bold">JOGO PAUSADO</h2>
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={handleResume}
-                className="w-full py-2 bg-[#171309] hover:bg-[#282216] border border-[#b8860b]/60 text-[#e8c76a] font-pixel text-[9px] uppercase transition shadow-[inset_1px_1px_2px_rgba(0,0,0,0.8)]"
-              >
-                RECOMECAR JORNADA
-              </button>
-              <button
-                onClick={() => {
-                  soundEngine.playButtonClick();
-                  setPauseOpen(false);
-                  setGameState('menu');
-                }}
-                className="w-full py-2 bg-[#990000] hover:bg-red-900 border border-red-800 text-white font-pixel text-[9px] uppercase transition"
-              >
-                SAIR DO ANDAR
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal de pausa: removido daqui (era duplicado de App.tsx). Ver nota
+          em handlePauseToggle acima e o comentário em App.tsx sobre o bug
+          de destruição do Phaser.Game ao pausar. */}
 
       {/* ══════════════════════════════════════════════════════════
           TOUCH & SKILLS OVERLAY — Native Phaser Joystick on Canvas + Skills Panel

@@ -279,67 +279,9 @@ export class GameScene extends Phaser.Scene {
       useGameStore.getState().setActiveNPC(npcType);
     });
 
-    // Register event listener for player respawn
-    window.addEventListener('respawn-player', () => {
-      const spawnRoom = this.rooms[0];
-      if (spawnRoom && this.player) {
-        // Capture death spot coords
-        const deathX = this.player.x;
-        const deathY = this.player.y;
-
-        // Teleport to Safe Zone
-        this.player.setPosition(spawnRoom.centerX, spawnRoom.centerY);
-
-        // Reset stats & penalties
-        this.player.stats.isDefinitivelyDead = false;
-        this.player.stats.isUnconscious = false;
-        this.player.stats.knockoutCount = 0;
-        this.player.stats.hp = this.player.stats.maxHp;
-        this.player.stats.mana = this.player.stats.maxMana;
-        this.player.stats.currentXp = 0; // XP progress penalty
-        this.player.setAlpha(1.0);
-        this.player.clearTint();
-
-        const store = useGameStore.getState();
-
-        // Destroy previous player corpse if it exists
-        this.scavengeablesGroup.getChildren().forEach(scav => {
-          const s = scav as Scavengeable;
-          if (s.scavengeType === 'player_corpse') {
-            s.destroy();
-          }
-        });
-
-        // Save current equipment to the corpse in the store
-        store.setDroppedCorpse({
-          hasDroppedCorpse: true,
-          zone: 'calabouco',
-          x: deathX,
-          y: deathY,
-          droppedTimestamp: Date.now(),
-          equipment: store.equipment,
-          curatives: this.player.stats.curatives
-        });
-
-        // Clear death screens
-        store.setDefinitivelyDead(false);
-        store.setGameOverStats(null);
-        
-        // Push stats to store, then clear inventory (which updates the store's stats again)
-        store.setPlayerStats({ ...this.player.stats });
-        store.clearInventoryOnDeath();
-        // Update local reference to match the cleared store
-        this.player.stats.curatives = { bandages: 0, antidotes: 0, antibiotics: 0 };
-
-        // Spawn a lost corpse scavengeable at the death spot!
-        const lostCorpse = new Scavengeable(this, deathX, deathY, 'player_corpse');
-        this.scavengeablesGroup.add(lostCorpse);
-        this.depthGroup.add(lostCorpse);
-
-        // Print atmospheric message
-        store.addLootLog("Você sente que a terra consome seus restos... olhos carniceiros espreitam seus pertences perdidos. Apresse-se, Bloodmage.");
-      }
-    });
+    // Respawno do jogador agora é disparado via store (respawnRequested), não mais
+    // por window.addEventListener — ver public respawnPlayer() abaixo e
+    // docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
 
     // Register event listener for touch-scavenge button
     window.addEventListener('trigger-scavenge', () => {
@@ -513,12 +455,9 @@ export class GameScene extends Phaser.Scene {
       this.keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,Q,E,SPACE,R,SHIFT,F,C,Z,X,V,ONE,TWO,THREE,FOUR,FIVE,SIX') as Record<string, Phaser.Input.Keyboard.Key>;
     }
 
-    // Listen for curative UI clicks
-    window.addEventListener('use-curative', (e: any) => {
-      if (e.detail) {
-        this.useCurativeItem(e.detail);
-      }
-    });
+    // use-curative agora chega via store (activeCurativeTrigger) — ver
+    // PhaserGame.tsx e docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md.
+    // useCurativeItem() já era público (também usado pelos atalhos Z/X/V abaixo).
 
     // Mouse / Touch Aim (ignoring movement pointer when virtual joystick is active)
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
@@ -587,19 +526,14 @@ export class GameScene extends Phaser.Scene {
     window.addEventListener('drag-aim-move', this.handleDragAimMove as any);
     window.addEventListener('drag-aim-end', this.handleDragAimEnd as any);
 
-    const handleCosmeticTint = () => {
-      if (this.player) {
-        this.player.applyCosmeticTint();
-      }
-    };
-    window.addEventListener('update-cosmetic-tint', handleCosmeticTint);
+    // update-cosmetic-tint agora chega via store (cosmeticTintVersion) — ver
+    // public applyCosmeticTint() abaixo e docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
 
     this.events.once('shutdown', () => {
       window.removeEventListener('trigger-blood-nova', handleNovaEvent);
       window.removeEventListener('drag-aim-start', this.handleDragAimStart as any);
       window.removeEventListener('drag-aim-move', this.handleDragAimMove as any);
       window.removeEventListener('drag-aim-end', this.handleDragAimEnd as any);
-      window.removeEventListener('update-cosmetic-tint', handleCosmeticTint);
       if (this.virtualJoystick) {
         this.virtualJoystick.destroy();
         this.virtualJoystick = null;
@@ -611,7 +545,6 @@ export class GameScene extends Phaser.Scene {
       window.removeEventListener('drag-aim-start', this.handleDragAimStart as any);
       window.removeEventListener('drag-aim-move', this.handleDragAimMove as any);
       window.removeEventListener('drag-aim-end', this.handleDragAimEnd as any);
-      window.removeEventListener('update-cosmetic-tint', handleCosmeticTint);
       if (this.virtualJoystick) {
         this.virtualJoystick.destroy();
         this.virtualJoystick = null;
@@ -664,6 +597,87 @@ export class GameScene extends Phaser.Scene {
     });
 
     soundEngine.startGothicAmbientBGM();
+  }
+
+  /**
+   * Respawna o jogador na Safe Town após a morte: reseta stats/penalidades,
+   * salva o equipamento atual como cadáver saqueável no local da morte e
+   * limpa as telas de game over. Extraído do antigo listener
+   * window.addEventListener('respawn-player', ...) — agora chamado por
+   * PhaserGame.tsx quando useGameStore().respawnRequested vira true.
+   * Ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md.
+   */
+  public respawnPlayer() { // público: chamado por PhaserGame.tsx via store (respawnRequested)
+    const spawnRoom = this.rooms[0];
+    if (!spawnRoom || !this.player) return;
+
+    // Capture death spot coords
+    const deathX = this.player.x;
+    const deathY = this.player.y;
+
+    // Teleport to Safe Zone
+    this.player.setPosition(spawnRoom.centerX, spawnRoom.centerY);
+
+    // Reset stats & penalties
+    this.player.stats.isDefinitivelyDead = false;
+    this.player.stats.isUnconscious = false;
+    this.player.stats.knockoutCount = 0;
+    this.player.stats.hp = this.player.stats.maxHp;
+    this.player.stats.mana = this.player.stats.maxMana;
+    this.player.stats.currentXp = 0; // XP progress penalty
+    this.player.setAlpha(1.0);
+    this.player.clearTint();
+
+    const store = useGameStore.getState();
+
+    // Destroy previous player corpse if it exists
+    this.scavengeablesGroup.getChildren().forEach(scav => {
+      const s = scav as Scavengeable;
+      if (s.scavengeType === 'player_corpse') {
+        s.destroy();
+      }
+    });
+
+    // Save current equipment to the corpse in the store
+    store.setDroppedCorpse({
+      hasDroppedCorpse: true,
+      zone: 'calabouco',
+      x: deathX,
+      y: deathY,
+      droppedTimestamp: Date.now(),
+      equipment: store.equipment,
+      curatives: this.player.stats.curatives
+    });
+
+    // Clear death screens
+    store.setDefinitivelyDead(false);
+    store.setGameOverStats(null);
+
+    // Push stats to store, then clear inventory (which updates the store's stats again)
+    store.setPlayerStats({ ...this.player.stats });
+    store.clearInventoryOnDeath();
+    // Update local reference to match the cleared store
+    this.player.stats.curatives = { bandages: 0, antidotes: 0, antibiotics: 0 };
+
+    // Spawn a lost corpse scavengeable at the death spot!
+    const lostCorpse = new Scavengeable(this, deathX, deathY, 'player_corpse');
+    this.scavengeablesGroup.add(lostCorpse);
+    this.depthGroup.add(lostCorpse);
+
+    // Print atmospheric message
+    store.addLootLog("Você sente que a terra consome seus restos... olhos carniceiros espreitam seus pertences perdidos. Apresse-se, Bloodmage.");
+  }
+
+  /**
+   * Reaplica a paleta cosmética atual ao sprite do jogador. Extraído do
+   * antigo listener window.addEventListener('update-cosmetic-tint', ...) —
+   * agora chamado por PhaserGame.tsx quando useGameStore().cosmeticTintVersion
+   * muda. Ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md.
+   */
+  public applyCosmeticTint() { // público: chamado por PhaserGame.tsx via store (cosmeticTintVersion)
+    if (this.player) {
+      this.player.applyCosmeticTint();
+    }
   }
 
   // --- Geração de masmorra/piso ---

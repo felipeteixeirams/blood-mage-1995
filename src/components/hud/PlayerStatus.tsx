@@ -95,7 +95,7 @@ export const PlayerStatus: React.FC<PlayerStatusProps> = ({ stats }) => {
         <div className="flex items-center gap-1.5 pt-1 border-t border-[#3a2825]/40">
           {/* Bleeding Indicator */}
           <button
-            onClick={() => window.dispatchEvent(new CustomEvent('use-curative', { detail: 'bandages' }))}
+            onClick={() => useGameStore.getState().setActiveCurativeTrigger('bandages')}
             className={`flex items-center gap-1 px-1.5 py-0.5 text-[8px] font-pixel border cursor-pointer transition ${
               stats.statusConditions?.bleeding
                 ? 'bg-red-950/80 border-red-500 text-red-200 animate-pulse font-bold shadow-[0_0_8px_rgba(239,68,68,0.5)]'
@@ -110,7 +110,7 @@ export const PlayerStatus: React.FC<PlayerStatusProps> = ({ stats }) => {
 
           {/* Poison Indicator */}
           <button
-            onClick={() => window.dispatchEvent(new CustomEvent('use-curative', { detail: 'antidotes' }))}
+            onClick={() => useGameStore.getState().setActiveCurativeTrigger('antidotes')}
             className={`flex items-center gap-1 px-1.5 py-0.5 text-[8px] font-pixel border cursor-pointer transition ${
               stats.statusConditions?.poison
                 ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200 animate-pulse font-bold shadow-[0_0_8px_rgba(34,197,94,0.5)]'
@@ -125,7 +125,7 @@ export const PlayerStatus: React.FC<PlayerStatusProps> = ({ stats }) => {
 
           {/* Infection Indicator */}
           <button
-            onClick={() => window.dispatchEvent(new CustomEvent('use-curative', { detail: 'antibiotics' }))}
+            onClick={() => useGameStore.getState().setActiveCurativeTrigger('antibiotics')}
             className={`flex items-center gap-1 px-1.5 py-0.5 text-[8px] font-pixel border cursor-pointer transition ${
               stats.statusConditions?.infection
                 ? 'bg-purple-950/80 border-purple-500 text-purple-200 animate-pulse font-bold shadow-[0_0_8px_rgba(168,85,247,0.5)]'

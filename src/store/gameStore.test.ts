@@ -359,4 +359,59 @@ describe('gameStore', () => {
       expect(useGameStore.getState().gamepadConnected).toBe(true);
     });
   });
+
+  describe('Phaser<->React typed bridge (docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md)', () => {
+    it('setActiveCurativeTrigger stores and clears the curative command', () => {
+      useGameStore.getState().setActiveCurativeTrigger('bandages');
+      expect(useGameStore.getState().activeCurativeTrigger).toBe('bandages');
+      useGameStore.getState().setActiveCurativeTrigger(null);
+      expect(useGameStore.getState().activeCurativeTrigger).toBeNull();
+    });
+
+    it('setRespawnRequested toggles the respawn command', () => {
+      expect(useGameStore.getState().respawnRequested).toBe(false);
+      useGameStore.getState().setRespawnRequested(true);
+      expect(useGameStore.getState().respawnRequested).toBe(true);
+      useGameStore.getState().setRespawnRequested(false);
+      expect(useGameStore.getState().respawnRequested).toBe(false);
+    });
+
+    it('bumpCosmeticTint increments the version on every call, including concurrent-looking calls', () => {
+      const start = useGameStore.getState().cosmeticTintVersion;
+      useGameStore.getState().bumpCosmeticTint();
+      useGameStore.getState().bumpCosmeticTint();
+      expect(useGameStore.getState().cosmeticTintVersion).toBe(start + 2);
+    });
+
+    it('setDragAim stores the full gesture state for start/move/end phases', () => {
+      useGameStore.getState().setDragAim({ spellId: 'crimson_scythe', phase: 'start', dx: 0, dy: 0, isDrag: false });
+      expect(useGameStore.getState().dragAim).toEqual({ spellId: 'crimson_scythe', phase: 'start', dx: 0, dy: 0, isDrag: false });
+
+      useGameStore.getState().setDragAim({ spellId: 'crimson_scythe', phase: 'move', dx: 40, dy: -12, isDrag: true });
+      expect(useGameStore.getState().dragAim).toEqual({ spellId: 'crimson_scythe', phase: 'move', dx: 40, dy: -12, isDrag: true });
+
+      useGameStore.getState().setDragAim({ spellId: 'crimson_scythe', phase: 'end', dx: 40, dy: -12, isDrag: true });
+      expect(useGameStore.getState().dragAim).toEqual({ spellId: 'crimson_scythe', phase: 'end', dx: 40, dy: -12, isDrag: true });
+    });
+
+    it('notifyLootPickup stores the item and increments id on every call, even for the same item reference', () => {
+      const item = makeItem({ name: 'Adaga Enferrujada', rarity: 'common' });
+
+      useGameStore.getState().notifyLootPickup(item);
+      expect(useGameStore.getState().lastLootPickup).toEqual({ item, id: 1 });
+
+      // Segundo pickup consecutivo do mesmo objeto: id precisa mudar para que
+      // o LootLog dispare o toast de novo, mesmo que o item seja idêntico.
+      useGameStore.getState().notifyLootPickup(item);
+      expect(useGameStore.getState().lastLootPickup).toEqual({ item, id: 2 });
+    });
+
+    it('notifyLootPickup id keeps incrementing across resets of unrelated state', () => {
+      useGameStore.getState().notifyLootPickup(makeItem({ name: 'Item A' }));
+      useGameStore.getState().setActiveSkillTrigger('nova'); // ação não relacionada não deve afetar o contador
+      useGameStore.getState().notifyLootPickup(makeItem({ name: 'Item B' }));
+      expect(useGameStore.getState().lastLootPickup?.id).toBe(2);
+      expect(useGameStore.getState().lastLootPickup?.item.name).toBe('Item B');
+    });
+  });
 });
