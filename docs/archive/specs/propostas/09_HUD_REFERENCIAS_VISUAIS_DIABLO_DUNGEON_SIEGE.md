@@ -49,8 +49,13 @@ flutuando sobre o NPC de missão; paleta terrosa, pedra e tocha. Essa referênci
 **muito mais alinhada** com a nossa própria inspiração declarada (`01_VISUAL_IDENTITY.md`
 cita *Diablo I* explicitamente) do que a imagem 1. Pontos transferíveis:
 
-- **Orbes líquidos de vida/mana** — hoje usamos barras retangulares horizontais no canto
-  superior esquerdo, não orbes circulares.
+> **Nota (25/08):** Felipe pediu explicitamente para não adotar o orbe circular de vida/
+> mana no estilo Diablo — o item abaixo foi mantido só como registro da referência, mas
+> a recomendação de execução (seção 3, Tier A.3) foi ajustada para não usar essa forma.
+
+- ~~Orbes líquidos de vida/mana~~ — descartado por decisão de produto (ver nota acima).
+  Hoje usamos barras retangulares horizontais no canto superior esquerdo; a melhoria de
+  acabamento visual segue outro caminho (seção 3, Tier A.3).
 - **Cinturão de poções numerado** — conceito muito próximo do que já existe (curativos com
   atalhos `Z`/`X`/`V` em `PlayerStatus.tsx`), só que posicionado no rodapé em vez de junto
   ao HP/mana no topo.
@@ -64,7 +69,7 @@ cita *Diablo I* explicitamente) do que a imagem 1. Pontos transferíveis:
 
 | Zona | Implementação atual | Imagem 1 | Imagem 2 | Veredito |
 |---|---|---|---|---|
-| Vida/Mana | Barra retangular horizontal, canto superior esquerdo (`PlayerStatus.tsx`) | Barra compacta sob retrato, topo-esquerda | Orbe circular líquido, rodapé | Orbe é esteticamente mais fiel ao Diablo I que já é nossa referência — mas mover para o rodapé é uma mudança de ergonomia à parte (ver Tier B) |
+| Vida/Mana | Barra retangular horizontal, canto superior esquerdo (`PlayerStatus.tsx`) | Barra compacta sob retrato, topo-esquerda | Orbe circular líquido, rodapé | **Orbe descartado por decisão do Felipe (25/08).** Mantemos a barra retangular como forma; a melhoria é de acabamento (moldura/textura), não de geometria — ver Tier A.3 |
 | Minimap | **Não existe.** `minimapVisible`/`minimapAlpha` são settings persistidos em `localStorage.ts`/`SettingsScene.ts` sem nenhum componente que os leia | Bússola circular, topo-direita | Não aparece | Vale construir um minimap mínimo agora — zero dependência de sprite, e fecha um gap de settings mortos |
 | Alvo em combate | `TargetFrame.tsx` já existe: nome, nível, barra de HP do inimigo no topo-centro (estilo WoW/Diablo) | — | — | Já resolvido, nenhuma mudança necessária |
 | Menu contextual de alvo | Inexistente — clique/toque já ataca direto | Texto contextual junto ao cursor | Não aparece | Valor real só em desktop com mouse; no touch (nosso público mobile-first) já resolvemos com tap direto. Baixa prioridade |
@@ -91,23 +96,29 @@ cita *Diablo I* explicitamente) do que a imagem 1. Pontos transferíveis:
    validado no item 9 (`docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md`). Isso
    também fecha o gap dos settings `minimapVisible`/`minimapAlpha`, que hoje existem no
    `SettingsModal` sem nenhum efeito real.
-3. **HP/Mana como "orbe" circular em CSS puro** (gradiente radial + `clip-path` circular
-   + borda dourada entalhada, reaproveitando exatamente a paleta de
-   `01_VISUAL_IDENTITY.md`), mantendo a posição atual no canto superior esquerdo. Ganho
-   estético alinhado à nossa própria referência (Diablo I) sem mexer em ergonomia mobile.
+3. **HP/Mana: elevar o acabamento da barra retangular atual, sem virar orbe.** Felipe
+   pediu explicitamente para não usar o orbe circular do Diablo — mantemos a barra
+   horizontal como forma, mas com um tratamento mais "entalhado em ferro/osso": moldura
+   dupla (já existe uma versão simples disso), textura sutil de metal batido no fundo
+   (`repeating-linear-gradient` bem discreto), rebites/parafusos decorativos nos cantos
+   da moldura (pequenos círculos com sombra, no mesmo espírito das "cantoneiras douradas"
+   já usadas nos modais), e um brilho líquido mais pronunciado na barra de HP (reforço do
+   gradiente `#990000 → #ef4444` já existente com uma leve animação de "pulso" quando o
+   HP está crítico, reaproveitando o padrão de urgência que já existe em outros lugares
+   do HUD). Tudo em CSS puro, mesma posição, mesma leitura de `hpPercent`/`manaPercent`.
 4. **Unificar visualmente os 3 botões de curativo como "cinturão"** — hoje já são uma
    fileira funcional; falta só uma moldura única (como um slot de poção) em vez de 3
    botões soltos lado a lado.
 
 ### Tier B — Depende de decisão de produto (ergonomia, testar antes de comprometer)
 
-5. **Mover vida/mana/curativos do topo-esquerda para o rodapé** (estilo cinturão
-   Diablo). Melhora o alcance do polegar em mobile (a *thumb zone* inferior é mais
-   acessível que o canto superior), mas o rodapé hoje já está ocupado pelo joystick
-   (esquerda) e pelo arco de skills (direita) — precisaria virar uma barra fina
-   centro-inferior ou orbes pequenos nos dois cantos inferiores, disputando espaço.
-   Recomendo prototipar isoladamente antes de comprometer, dado o risco de regressão de
-   usabilidade em telas pequenas.
+5. **Mover vida/mana/curativos do topo-esquerda para o rodapé**, mantendo a forma de
+   barra retangular (não orbe, por decisão do Felipe). Melhora o alcance do polegar em
+   mobile (a *thumb zone* inferior é mais acessível que o canto superior), mas o rodapé
+   hoje já está ocupado pelo joystick (esquerda) e pelo arco de skills (direita) —
+   precisaria virar uma barra fina centro-inferior, ou barras verticais compactas nos
+   dois cantos inferiores, disputando espaço. Recomendo prototipar isoladamente antes de
+   comprometer, dado o risco de regressão de usabilidade em telas pequenas.
 6. **Menu contextual "ENGAGE / ATACAR / MIRAR MAIS PRÓXIMO"** ao passar o mouse sobre um
    alvo. Só tem valor real em desktop com mouse — no touch já resolvemos com tap direto.
    Baixa prioridade dado o público mobile-first do projeto (ver
@@ -115,7 +126,8 @@ cita *Diablo I* explicitamente) do que a imagem 1. Pontos transferíveis:
 
 ### Tier C — Só faz sentido quando houver sprites customizados (fora do escopo desta spec)
 
-- Trocar o orbe CSS por uma moldura pintada à mão (bezel de metal/osso ilustrado).
+- Trocar a moldura CSS entalhada da barra de HP/MP por uma moldura pintada à mão
+  (bezel de metal/osso ilustrado) — mantendo a forma de barra, nunca virando orbe.
 - Ícones de item/poção desenhados à mão em vez dos emojis/ícones `lucide-react` atuais.
 - Sprite dedicado para o marcador de NPC em vez do glifo procedural do Tier A.1.
 
@@ -131,7 +143,7 @@ anterior.
 |---|---|---|---|
 | 1 | Marcador "!" sobre NPC interagível | `GameScene.ts` (desenho do glifo, ligado ao mesmo raio de proximidade que já dispara o prompt textual) | Marcador visível a média distância, some ao entrar em diálogo, sem custo de frame perceptível |
 | 2 | Minimap mínimo | novo `src/store` slice (`exploredRooms`, versão), novo componente `hud/Minimap.tsx`, leitura de `this.rooms` na `DungeonGenerator` | Salas exploradas aparecem preenchidas, jogador e baús marcados, liga/desliga respeita `minimapVisible`/`minimapAlpha` já existentes |
-| 3 | Orbes de HP/MP em CSS | `PlayerStatus.tsx` | Mesma posição, mesma leitura de `hpPercent`/`manaPercent`, sem barras retangulares residuais |
+| 3 | Acabamento entalhado da barra de HP/MP (sem virar orbe) | `PlayerStatus.tsx` | Mesma posição e mesma forma retangular, moldura/textura/rebites novos, pulso de HP crítico funcionando |
 | 4 | Cinturão visual de curativos | `PlayerStatus.tsx` | Moldura única visível, atalhos `Z`/`X`/`V` inalterados |
 
 Cada fase segue o padrão já validado no projeto: implementação, `pnpm verify`, validação
@@ -153,6 +165,9 @@ commit.
   fundo escuro semi-transparente, transições sutis via Framer Motion.
 - Não comprometer o Tier B (mover HP/mana pro rodapé) sem prototipar — é a mudança de
   maior risco de regressão de usabilidade em mobile desta spec.
+- **Não usar orbe circular para HP/mana em nenhuma fase** — decisão explícita do Felipe
+  (25/08). HP/mana continuam em forma de barra retangular, mesmo se movidos de posição
+  no Tier B.
 
 ---
 
@@ -160,7 +175,7 @@ commit.
 
 - [ ] Fase 1 — marcador "!" sobre NPC interagível
 - [ ] Fase 2 — minimap mínimo (substitui settings mortos `minimapVisible`/`minimapAlpha`)
-- [ ] Fase 3 — HP/MP em orbe CSS
+- [ ] Fase 3 — acabamento entalhado da barra de HP/MP (sem orbe)
 - [ ] Fase 4 — cinturão visual de curativos
 - [ ] Tier B avaliado e decidido (prototipar antes de comprometer)
 - [ ] Tier C revisitado quando houver sprites customizados de UI
@@ -185,3 +200,4 @@ commit.
 | Data | O que mudou | Autor |
 |------|-------------|-------|
 | 2026-08-25 | Criação: análise crítica das 2 referências visuais trazidas por Felipe, cruzamento com o HUD atual, plano incremental em 4 fases (Tier A) executável sem sprites novos | Claude |
+| 2026-08-25 | Ajuste por decisão do Felipe: descartado o orbe circular de HP/mana no estilo Diablo; Tier A.3 e Fase 3 reescritos para elevar o acabamento da barra retangular existente em vez de trocar a forma | Claude |
