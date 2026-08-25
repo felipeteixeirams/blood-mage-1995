@@ -213,14 +213,16 @@ Ordem sugerida — da mais simples/baixo risco para a mais delicada:
 
 ## 7. Checklist de execução (Fase 2)
 
-- [x] Fase 0 — remover os 3 listeners mortos (`trigger-npc`, `trigger-scavenge`, `trigger-blood-nova`) — falta você validar em jogo + `pnpm verify` antes do commit
-- [x] `respawn-player` migrado (código); `CustomEvent` antigo removido — falta você validar em jogo + `pnpm verify` antes do commit
+- [x] Fase 0 — remover os 3 listeners mortos (`trigger-npc`, `trigger-scavenge`, `trigger-blood-nova`) — falta você validar em jogo (NPC, scavenge, Blood Nova) + `pnpm verify` antes do commit
+- [x] `respawn-player` migrado (código); `CustomEvent` antigo removido — falta você validar em jogo (fluxo de morte/respawn) + `pnpm verify` antes do commit
 - [x] `update-cosmetic-tint` migrado (código); `CustomEvent` antigo removido — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] `use-curative` migrado (código); `CustomEvent` antigo removido — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] `loot-acquired` migrado (código); `CustomEvent` antigo removido — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] `drag-aim-start/move/end` migrado (código); `CustomEvent` antigo removido — falta você validar em jogo (mouse + touch, com atenção extra por ser a ponte de alta frequência) + `pnpm verify` antes do commit
 - [x] Fase 3 — grep confirma zero `CustomEvent`/`window.addEventListener` de gameplay restante em `src/` (só sobram os 3 listeners mortos da Fase 0 e os eventos nativos do browser listados no início deste documento)
 - [x] `docs/architecture/04_STATE_MANAGEMENT.md` atualizado para mencionar que a ponte é 100% Zustand
+- [x] **Validado em jogo (25/08):** bug de pause (jogador voltava ao spawn ao continuar) — confirmado corrigido, posição preservada
+- [x] **Investigado (25/08):** sprites de jogador/baú somem no início da partida — falso alarme, causado por dessincronia do dev server (Vite/HMR) após reescrita de arquivos por fora; reiniciar `npm run dev` resolveu, sem relação com o código da migração
 
 ---
 
@@ -241,3 +243,4 @@ Ordem sugerida — da mais simples/baixo risco para a mais delicada:
 | 2026-08-25 | Fase 2, ponte 4/5 (`loot-acquired`) migrada: `Player.ts` e `LootLog.tsx` (reescrito para ler `lastLootPickup` do store) | Claude |
 | 2026-08-25 | Fase 2, ponte 5/5 (`drag-aim-start/move/end`) migrada: `SkillsOverlay.tsx`, `PlayerSkillSystem.ts` (assinaturas de payload plano), `GameScene.ts` (métodos `public`) e `PhaserGame.tsx` atualizados. Cutover completo — grep confirma zero `CustomEvent` de gameplay restante | Claude |
 | 2026-08-25 | Fase 0 (limpeza dos 3 listeners mortos + `triggerBloodNova()`) e Fase 3 (`04_STATE_MANAGEMENT.md` atualizado) concluídas — item 9 encerrado | Claude |
+| 2026-08-25 | Validação em jogo: bug de pause confirmado corrigido (posição preservada); investigado sumiço de sprites de jogador/baú no início da partida — falso alarme, causado por dessincronia do dev server (Vite/HMR), sem relação com a migração | Claude |
