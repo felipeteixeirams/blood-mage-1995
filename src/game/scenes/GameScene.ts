@@ -101,6 +101,15 @@ export class GameScene extends Phaser.Scene {
   public isPortalActive: boolean = false; // público: usado por DungeonFlowController
   private corpsePointer?: Phaser.GameObjects.Sprite;
 
+  // Fase 1 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
+  // marcador flutuante ("!") sobre NPCs interagíveis, procedural (sem sprite novo).
+  private npcMarkers: { npcType: string; container: Phaser.GameObjects.Container; baseY: number }[] = []; // público via métodos: usado por DungeonFlowController
+
+  // Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
+  // minimap mínimo — grade 3x3 fixa (mesma ordem row-major de DungeonGenerator).
+  private exploredRoomIndices: Set<number> = new Set();
+  private minimapPushAccumMs: number = 0;
+
   private currentWaveIndex: number = 0;
   public waveConfigs: WaveConfig[] = wavesData as WaveConfig[]; // público: usado por DungeonFlowController
 
@@ -647,6 +656,86 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Remove todos os marcadores flutuantes de NPC atualmente na cena. Chamado
+   * por DungeonFlowController antes de recriar os NPCs de cada andar/piso.
+   * Ver docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md.
+   */
+  public clearNpcMarkers() { // público: chamado por DungeonFlowController
+    this.npcMarkers.forEach((m) => m.container.destroy());
+    this.npcMarkers = [];
+  }
+
+  /**
+   * Cria um marcador flutuante ("!") acima de um NPC interagível — reforça
+   * (não substitui) o prompt textual "aperte E" já existente, dando
+   * legibilidade a distância. Cor combina com o tint já usado no sprite do
+   * NPC (DungeonFlowController), então não introduz nenhuma cor nova fora
+   * da paleta já em uso no jogo. Some automaticamente quando o jogador entra
+   * em diálogo com aquele NPC (ver toggle de visibilidade em update()).
+   */
+  public createNpcMarker(x: number, y: number, npcType: string, color: number) { // público: chamado por DungeonFlowController
+    const hex = `#${color.toString(16).padStart(6, '0')}`;
+    const markerY = y - 42;
+
+    const glow = this.add.circle(0, 0, 9, color, 0.22);
+    const glyph = this.add.text(0, 0, '!', {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: '14px',
+      color: hex,
+    })
+      .setOrigin(0.5)
+      .setShadow(0, 0, hex, 6, true, true);
+
+    const container = this.add.container(x, markerY, [glow, glyph]).setDepth(1700);
+    this.npcMarkers.push({ npcType, container, baseY: markerY });
+  }
+
+  /**
+   * Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
+   * reseta o rastreamento de exploração (a sala de spawn começa sempre
+   * revelada) e empurra o primeiro snapshot pro store. Chamado por
+   * DungeonFlowController logo depois de `scene.rooms = rooms`.
+   */
+  public initMinimap() { // público: chamado por DungeonFlowController
+    this.exploredRoomIndices = new Set(this.rooms.length > 0 ? [0] : []);
+    this.pushMinimapSnapshot();
+  }
+
+  private getRoomIndexAt(x: number, y: number): number {
+    return this.rooms.findIndex(
+      (r) => x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height
+    );
+  }
+
+  private pushMinimapSnapshot() {
+    if (this.rooms.length === 0) return;
+
+    const playerRoomIndex = this.player && this.player.active
+      ? this.getRoomIndexAt(this.player.x, this.player.y)
+      : -1;
+
+    const chestRoomIndices = new Set<number>();
+    if (this.chestsGroup) {
+      this.chestsGroup.getChildren().forEach((chestObj) => {
+        const chest = chestObj as unknown as Phaser.GameObjects.Sprite;
+        if (!chest.active) return;
+        const idx = this.getRoomIndexAt(chest.x, chest.y);
+        if (idx >= 0) chestRoomIndices.add(idx);
+      });
+    }
+
+    const snapshot = this.rooms.map((room, i) => ({
+      index: i,
+      type: room.type,
+      explored: this.exploredRoomIndices.has(i),
+      hasChest: chestRoomIndices.has(i),
+      hasPlayer: i === playerRoomIndex,
+    }));
+
+    useGameStore.getState().setMinimapRooms(snapshot);
+  }
+
   // --- Geração de masmorra/piso ---
   // Implementação completa movida para systems/DungeonFlowController.ts
   // (continuação da extração do GameScene.ts). getActiveEnemyCap,
@@ -850,6 +939,28 @@ export class GameScene extends Phaser.Scene {
       if (store.closestNPCType !== null) {
         store.setClosestNPCType(null);
       }
+    }
+
+    // Fase 1 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
+    // bob suave + esconde o marcador do NPC com quem o jogador está conversando agora
+    if (this.npcMarkers.length > 0) {
+      const bob = Math.sin(time * 0.004) * 3;
+      this.npcMarkers.forEach((m) => {
+        m.container.y = m.baseY + bob;
+        m.container.setVisible(store.activeNPC !== m.npcType);
+      });
+    }
+
+    // Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
+    // throttled a ~400ms — não precisa ser por frame, é só um mapa esquemático
+    this.minimapPushAccumMs += delta;
+    if (this.minimapPushAccumMs >= 400) {
+      this.minimapPushAccumMs = 0;
+      if (this.player && this.player.active) {
+        const idx = this.getRoomIndexAt(this.player.x, this.player.y);
+        if (idx >= 0) this.exploredRoomIndices.add(idx);
+      }
+      this.pushMinimapSnapshot();
     }
 
     // Find closest scavengeable in range for HUD prompt

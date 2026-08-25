@@ -139,6 +139,21 @@ interface GameStore {
   lastLootPickup: { item: LootItem; id: number } | null;
   notifyLootPickup: (item: LootItem) => void;
 
+  /**
+   * Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
+   * snapshot do minimap (grade 3x3 fixa gerada por DungeonGenerator — o índice
+   * do array já é a posição na grade, row-major). GameScene empurra um novo
+   * snapshot periodicamente; hud/Minimap.tsx só lê.
+   */
+  minimapRooms: {
+    index: number;
+    type: 'spawn' | 'chamber' | 'secret_treasure' | 'boss';
+    explored: boolean;
+    hasChest: boolean;
+    hasPlayer: boolean;
+  }[];
+  setMinimapRooms: (rooms: GameStore['minimapRooms']) => void;
+
   /** 4 spell IDs the player has pinned to the HUD skill bar */
   skillPreset: string[];
   setSkillPreset: (preset: string[]) => void;
@@ -577,6 +592,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   dragAim: { spellId: null, phase: null, dx: 0, dy: 0, isDrag: false },
   setDragAim: (dragAim) => set({ dragAim }),
+
+  minimapRooms: [],
+  setMinimapRooms: (rooms) => set({ minimapRooms: rooms }),
 
   lastLootPickup: null,
   notifyLootPickup: (item) => set((state) => ({

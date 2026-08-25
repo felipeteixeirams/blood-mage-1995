@@ -2,7 +2,7 @@
 agent_context: frontend, game designer
 target_module: src/components/GameplayHUD.tsx, src/components/hud, src/game/scenes/GameScene.ts
 priority: media
-status: proposta
+status: implementado (Tier A completo, falta validação em jogo)
 last_updated: 2026-08-25
 tags: [design, ui, hud, referencia-visual, diablo, dungeon-siege, mobile]
 ---
@@ -141,10 +141,13 @@ anterior.
 
 | Fase | Escopo | Arquivos principais | Critério de aceite |
 |---|---|---|---|
-| 1 | Marcador "!" sobre NPC interagível | `GameScene.ts` (desenho do glifo, ligado ao mesmo raio de proximidade que já dispara o prompt textual) | Marcador visível a média distância, some ao entrar em diálogo, sem custo de frame perceptível |
-| 2 | Minimap mínimo | novo `src/store` slice (`exploredRooms`, versão), novo componente `hud/Minimap.tsx`, leitura de `this.rooms` na `DungeonGenerator` | Salas exploradas aparecem preenchidas, jogador e baús marcados, liga/desliga respeita `minimapVisible`/`minimapAlpha` já existentes |
+| 1 | Marcador "!" sobre NPC interagível | `GameScene.ts` (`createNpcMarker`/`clearNpcMarkers`), `DungeonFlowController.ts` (spawn dos 4 NPCs) | Marcador visível a média distância, some ao entrar em diálogo, sem custo de frame perceptível |
+| 2 | Minimap mínimo | `gameStore.ts` (`minimapRooms`/`setMinimapRooms` + teste), `GameScene.ts` (`initMinimap`/`pushMinimapSnapshot`, throttle de ~400ms em `update()`), `DungeonFlowController.ts` (chama `initMinimap` após gerar as salas), novo `hud/Minimap.tsx`, `GameplayHUD.tsx` (integra no painel topo-direita) | Salas exploradas aparecem preenchidas, jogador e baús marcados, liga/desliga respeita `minimapVisible`/`minimapAlpha` já existentes |
 | 3 | Acabamento entalhado da barra de HP/MP (sem virar orbe) | `PlayerStatus.tsx` | Mesma posição e mesma forma retangular, moldura/textura/rebites novos, pulso de HP crítico funcionando |
-| 4 | Cinturão visual de curativos | `PlayerStatus.tsx` | Moldura única visível, atalhos `Z`/`X`/`V` inalterados |
+| 4 | Cinturão visual de curativos | `PlayerStatus.tsx` (`CURATIVE_SLOTS`) | Moldura única visível, atalhos `Z`/`X`/`V` inalterados |
+
+**Implementado (25/08):** as 4 fases foram codificadas nesta sessão. Falta a validação
+manual em jogo (ver seção 7) antes do commit final.
 
 Cada fase segue o padrão já validado no projeto: implementação, `pnpm verify`, validação
 manual em jogo, commit isolado — sem acumular mudanças de fases diferentes no mesmo
@@ -173,10 +176,10 @@ commit.
 
 ## 6. Checklist de execução
 
-- [ ] Fase 1 — marcador "!" sobre NPC interagível
-- [ ] Fase 2 — minimap mínimo (substitui settings mortos `minimapVisible`/`minimapAlpha`)
+- [x] Fase 1 — marcador "!" sobre NPC interagível — falta você validar em jogo + `pnpm verify` antes do commit
+- [x] Fase 2 — minimap mínimo (substitui settings mortos `minimapVisible`/`minimapAlpha`) — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] Fase 3 — acabamento entalhado da barra de HP/MP (sem orbe) — falta você validar em jogo + `pnpm verify` antes do commit
-- [ ] Fase 4 — cinturão visual de curativos
+- [x] Fase 4 — cinturão visual de curativos — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] Tier B.5 avaliado e decidido — descartado, HP/mana/curativos continuam no topo-esquerda
 - [ ] Tier B.6 (menu contextual de mouse) — ainda em aberto, baixa prioridade
 - [ ] Tier C revisitado quando houver sprites customizados de UI
@@ -204,3 +207,4 @@ commit.
 | 2026-08-25 | Ajuste por decisão do Felipe: descartado o orbe circular de HP/mana no estilo Diablo; Tier A.3 e Fase 3 reescritos para elevar o acabamento da barra retangular existente em vez de trocar a forma | Claude |
 | 2026-08-25 | Decidido: indicadores de vida/mana/curativos continuam no canto superior esquerdo (Tier B.5 descartado) — escopo fecha em melhoria de acabamento visual, sem mudança de posição | Claude |
 | 2026-08-25 | Fase 3 implementada: `PlayerStatus.tsx` ganhou moldura forjada (textura de metal batido + rebites de canto + highlight superior) nas barras de HP/MP e pulso vermelho quando HP ≤ 25%. Mesma posição, mesma forma retangular — falta validação em jogo | Claude |
+| 2026-08-25 | Fases 1, 2 e 4 implementadas: marcador "!" procedural sobre os 4 NPCs (bob + some em diálogo); minimap mínimo 3x3 sincronizado via Zustand (`minimapRooms`, throttle ~400ms, teste em `gameStore.test.ts`) substituindo os settings mortos; cinturão único de curativos com a mesma moldura forjada da Fase 3. Tier A da spec completo — falta validação em jogo | Claude |

@@ -119,6 +119,8 @@ export class DungeonFlowController {
 
     const rooms = scene.dungeonGenerator.generate(mapW, mapH, biome);
     scene.rooms = rooms;
+    // Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md
+    scene.initMinimap();
 
     telemetry.trackEvent('floor_start', { floor: floorDepth, biome, rooms: rooms.length });
 
@@ -143,6 +145,9 @@ export class DungeonFlowController {
 
     // Clear old NPCs
     scene.npcsGroup.clear(true, true);
+    // Fase 1 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
+    // limpa os marcadores flutuantes do andar anterior antes de recriar os NPCs
+    scene.clearNpcMarkers();
 
     // Spawn Safe Village NPCs in Spawn Room (Room 0)
     // 1. Cleric (Curandeiro)
@@ -150,24 +155,28 @@ export class DungeonFlowController {
     cleric.setTint(0x38bdf8); // Blue glow
     cleric.setData('npcType', 'cleric');
     scene.depthGroup.add(cleric);
+    scene.createNpcMarker(spawnRoom.centerX - 120, spawnRoom.centerY - 80, 'cleric', 0x38bdf8);
 
     // 2. Alchemist (Alquimista)
     const alchemist = scene.npcsGroup.create(spawnRoom.centerX + 120, spawnRoom.centerY - 80, 'spr_cultist');
     alchemist.setTint(0xc084fc); // Purple glow
     alchemist.setData('npcType', 'alchemist');
     scene.depthGroup.add(alchemist);
+    scene.createNpcMarker(spawnRoom.centerX + 120, spawnRoom.centerY - 80, 'alchemist', 0xc084fc);
 
     // 3. Blacksmith (Ferreiro)
     const blacksmith = scene.npcsGroup.create(spawnRoom.centerX - 120, spawnRoom.centerY + 80, 'spr_skeleton');
     blacksmith.setTint(0xfacc15); // Golden glow
     blacksmith.setData('npcType', 'blacksmith');
     scene.depthGroup.add(blacksmith);
+    scene.createNpcMarker(spawnRoom.centerX - 120, spawnRoom.centerY + 80, 'blacksmith', 0xfacc15);
 
     // 4. Elder (Ancião)
     const elder = scene.npcsGroup.create(spawnRoom.centerX + 120, spawnRoom.centerY + 80, 'spr_boss');
     elder.setTint(0xf87171); // Soft Red glow
     elder.setData('npcType', 'elder');
     scene.depthGroup.add(elder);
+    scene.createNpcMarker(spawnRoom.centerX + 120, spawnRoom.centerY + 80, 'elder', 0xf87171);
 
     // Populate Enemies across Chambers & Boss Room
     scene.totalFloorMonsters = 0;

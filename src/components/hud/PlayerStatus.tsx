@@ -24,6 +24,50 @@ const BarRivet: React.FC<{ className: string }> = ({ className }) => (
   />
 );
 
+// Fase 4 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
+// os 3 slots do cinturão de curativos, dirigidos por dados em vez de 3 blocos JSX repetidos.
+const CURATIVE_SLOTS: {
+  type: 'bandages' | 'antidotes' | 'antibiotics';
+  condition: 'bleeding' | 'poison' | 'infection';
+  key: string;
+  icon: string;
+  title: string;
+  activeBg: string;
+  activeText: string;
+  activeGlow: string;
+}[] = [
+  {
+    type: 'bandages',
+    condition: 'bleeding',
+    key: 'Z',
+    icon: '🩸',
+    title: 'Sangramento: Pressione Z para usar Atadura',
+    activeBg: 'bg-red-950/80',
+    activeText: 'text-red-200',
+    activeGlow: 'shadow-[0_0_8px_rgba(239,68,68,0.5)]',
+  },
+  {
+    type: 'antidotes',
+    condition: 'poison',
+    key: 'X',
+    icon: '🍇',
+    title: 'Veneno: Pressione X para usar Antídoto',
+    activeBg: 'bg-emerald-950/80',
+    activeText: 'text-emerald-200',
+    activeGlow: 'shadow-[0_0_8px_rgba(34,197,94,0.5)]',
+  },
+  {
+    type: 'antibiotics',
+    condition: 'infection',
+    key: 'V',
+    icon: '🧪',
+    title: 'Infecção: Pressione V para usar Antibiótico',
+    activeBg: 'bg-purple-950/80',
+    activeText: 'text-purple-200',
+    activeGlow: 'shadow-[0_0_8px_rgba(168,85,247,0.5)]',
+  },
+];
+
 export const PlayerStatus: React.FC<PlayerStatusProps> = ({ stats }) => {
   const { settings } = useGameStore();
   const hpPercent = Math.max(0, Math.min(100, (stats.hp / stats.maxHp) * 100));
@@ -131,52 +175,39 @@ export const PlayerStatus: React.FC<PlayerStatusProps> = ({ stats }) => {
           </div>
         </div>
 
-        {/* Status Conditions & Curatives Bar */}
-        <div className="flex items-center gap-1.5 pt-1 border-t border-[#3a2825]/40">
-          {/* Bleeding Indicator */}
-          <button
-            onClick={() => useGameStore.getState().setActiveCurativeTrigger('bandages')}
-            className={`flex items-center gap-1 px-1.5 py-0.5 text-[8px] font-pixel border cursor-pointer transition ${
-              stats.statusConditions?.bleeding
-                ? 'bg-red-950/80 border-red-500 text-red-200 animate-pulse font-bold shadow-[0_0_8px_rgba(239,68,68,0.5)]'
-                : 'bg-black/40 border-[#1f1a17] text-gray-400 hover:border-[#b8860b]/40'
-            }`}
-            title="Sangramento: Pressione Z para usar Atadura"
-          >
-            <span>🩸</span>
-            <span className="hidden sm:inline">[Z]</span>
-            <span className="font-bold text-[#e8c76a]">{stats.curatives?.bandages || 0}</span>
-          </button>
+        {/* Fase 4 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
+            cinturão único de curativos — mesma moldura forjada das barras de HP/MP,
+            slots separados por divisórias finas em vez de 3 botões soltos. */}
+        <div
+          className="relative flex mt-1 border border-[#1f1a17] shadow-[inset_1px_1px_3px_rgba(0,0,0,0.9)] divide-x divide-[#3a2825]/60"
+          style={FORGED_METAL_TEXTURE}
+        >
+          <div className="absolute inset-0 border border-[#b8860b]/20 pointer-events-none" />
+          <div className="absolute inset-x-0 top-0 h-px bg-white/10 pointer-events-none" />
+          <BarRivet className="-top-[1.5px] -left-[1.5px]" />
+          <BarRivet className="-top-[1.5px] -right-[1.5px]" />
+          <BarRivet className="-bottom-[1.5px] -left-[1.5px]" />
+          <BarRivet className="-bottom-[1.5px] -right-[1.5px]" />
 
-          {/* Poison Indicator */}
-          <button
-            onClick={() => useGameStore.getState().setActiveCurativeTrigger('antidotes')}
-            className={`flex items-center gap-1 px-1.5 py-0.5 text-[8px] font-pixel border cursor-pointer transition ${
-              stats.statusConditions?.poison
-                ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200 animate-pulse font-bold shadow-[0_0_8px_rgba(34,197,94,0.5)]'
-                : 'bg-black/40 border-[#1f1a17] text-gray-400 hover:border-[#b8860b]/40'
-            }`}
-            title="Veneno: Pressione X para usar Antídoto"
-          >
-            <span>🍇</span>
-            <span className="hidden sm:inline">[X]</span>
-            <span className="font-bold text-[#e8c76a]">{stats.curatives?.antidotes || 0}</span>
-          </button>
-
-          {/* Infection Indicator */}
-          <button
-            onClick={() => useGameStore.getState().setActiveCurativeTrigger('antibiotics')}
-            className={`flex items-center gap-1 px-1.5 py-0.5 text-[8px] font-pixel border cursor-pointer transition ${
-              stats.statusConditions?.infection
-                ? 'bg-purple-950/80 border-purple-500 text-purple-200 animate-pulse font-bold shadow-[0_0_8px_rgba(168,85,247,0.5)]'
-                : 'bg-black/40 border-[#1f1a17] text-gray-400 hover:border-[#b8860b]/40'
-            }`}
-            title="Infecção: Pressione V para usar Antibiótico"
-          >
-            <span>🧪</span>
-            <span className="hidden sm:inline">[V]</span>
-            <span className="font-bold text-[#e8c76a]">{stats.curatives?.antibiotics || 0}</span>
-          </button>
+          {CURATIVE_SLOTS.map((slot) => {
+            const isActive = stats.statusConditions?.[slot.condition];
+            return (
+              <button
+                key={slot.type}
+                onClick={() => useGameStore.getState().setActiveCurativeTrigger(slot.type)}
+                className={`flex-1 flex items-center justify-center gap-1 px-1.5 py-0.5 text-[8px] font-pixel cursor-pointer transition ${
+                  isActive
+                    ? `${slot.activeBg} ${slot.activeText} animate-pulse font-bold ${slot.activeGlow}`
+                    : 'bg-transparent text-gray-400 hover:bg-white/5'
+                }`}
+                title={slot.title}
+              >
+                <span>{slot.icon}</span>
+                <span className="hidden sm:inline">[{slot.key}]</span>
+                <span className="font-bold text-[#e8c76a]">{stats.curatives?.[slot.type] || 0}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

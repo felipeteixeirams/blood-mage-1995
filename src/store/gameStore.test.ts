@@ -414,4 +414,19 @@ describe('gameStore', () => {
       expect(useGameStore.getState().lastLootPickup?.item.name).toBe('Item B');
     });
   });
+
+  describe('minimap (docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md)', () => {
+    it('setMinimapRooms starts empty and stores the full snapshot GameScene pushes', () => {
+      expect(useGameStore.getState().minimapRooms).toEqual([]);
+
+      const snapshot = [
+        { index: 0, type: 'spawn' as const, explored: true, hasChest: false, hasPlayer: true },
+        { index: 1, type: 'chamber' as const, explored: false, hasChest: false, hasPlayer: false },
+        { index: 8, type: 'boss' as const, explored: false, hasChest: true, hasPlayer: false },
+      ];
+
+      useGameStore.getState().setMinimapRooms(snapshot);
+      expect(useGameStore.getState().minimapRooms).toEqual(snapshot);
+    });
+  });
 });

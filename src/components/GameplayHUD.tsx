@@ -6,6 +6,7 @@ import { LootLog } from './hud/LootLog';
 import { SkillsOverlay } from './hud/SkillsOverlay';
 import { TargetFrame } from './hud/TargetFrame';
 import { ContractHUD } from './hud/ContractHUD';
+import { Minimap } from './hud/Minimap';
 import { RecordsDisplay } from './hud/RecordsDisplay';
 import palettesData from '../data/palettes.json';
 import { useFloatingJoystick } from '../hooks/useFloatingJoystick';
@@ -401,6 +402,9 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
 
       {/* ── TOP RIGHT PANEL: Adaptive Minimap & Actions ── */}
       <div className="absolute top-2 right-2 flex flex-col items-end gap-2 z-30 pointer-events-auto">
+
+        {/* Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md */}
+        <Minimap />
 
         {/* Compact action buttons row to clean the view for smartphones */}
         <div className="flex gap-1.5">
