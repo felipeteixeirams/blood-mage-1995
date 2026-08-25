@@ -1,4 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('phaser', () => ({ default: {} }));
+
 import { DismembermentSystem } from './DismembermentSystem';
 import monstersData from '../../data/monsters.json';
 import { MonsterConfig } from '../../types/game';

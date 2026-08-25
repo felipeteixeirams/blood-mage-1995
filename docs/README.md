@@ -31,7 +31,11 @@ As regras de produto, onde estamos e para onde vamos, divididas por Fases.
 * `docs/product/ACCOUNT_AND_DATA.md` - Estratégia de Salvamento e Autenticação (Local Only).
 * `docs/product/RELEASE_STRATEGY.md` - Requisitos para quando formos para a Play Store.
 
-### 4. 🗄️ Arquivo (Documentação Legada)
+### 4. 🔍 Auditorias e Qualidade de Código (Reviews & Quality)
+Relatórios de auditoria técnica, cobertura de testes e análise de segurança.
+* `docs/reviews/AUDIT_REPORT_QUALIDADE_CODIGO_2026.md` - **Relatório de Auditoria de Qualidade de Código 2026** (Testes, Tratamento de Erros, Padrões de Design, Segurança e Resiliência).
+
+### 5. 🗄️ Arquivo (Documentação Legada)
 Specs originais, planos passados e documentação desatualizada. **Não use como verdade absoluta.**
 * `docs/archive/` - Contém todo o histórico e planejamento obsoleto ou em pausa.
 
