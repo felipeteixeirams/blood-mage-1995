@@ -2,7 +2,7 @@
 agent_context: frontend, backend, game-engine
 target_module: src/store/gameStore.ts, src/game/scenes/GameScene.ts, src/game/PhaserGame.tsx
 priority: medium
-status: Fase 1 e Fase 2 concluídas — 5/5 pontes migradas. Falta só a Fase 0 (limpeza opcional dos 3 listeners mortos) e a Fase 3 (atualizar 04_STATE_MANAGEMENT.md)
+status: complete
 last_updated: 2026-08-25
 tags: [architecture, phaser, react, zustand, event-bus, migration, tracker]
 ---
@@ -123,13 +123,9 @@ Mesma lógica de segurança usada no refactor do `GameScene.ts`
 jogo rodável entre commits, sempre validar com `pnpm verify` antes de seguir
 para o próximo.
 
-### Fase 0 — Limpeza dos listeners mortos (opcional, pode ser feita já)
-- Remover os 3 listeners de §2.2.
-- Risco: baixíssimo (nenhum dispatch encontrado). Ainda assim, validar com
-  `pnpm verify` + um playtest manual rápido (abrir NPC, fazer scavenge,
-  conjurar Explosão Sanguínea) antes de dar commit, porque grep não prova
-  ausência com 100% de certeza (ex.: dispatch dinâmico por string montada em
-  runtime não apareceria no grep).
+### Fase 0 — Limpeza dos listeners mortos ✅ Concluído (25/08/2026)
+- Os 3 listeners de §2.2 (`trigger-npc`, `trigger-scavenge`, `trigger-blood-nova`) foram removidos de `GameScene.ts`, junto com o método `triggerBloodNova()` (que só existia para servir o terceiro listener — `executeNovaEffect()` em `PlayerSkillSystem.ts`, chamado por ele, continua em uso normal via `triggerSkill('nova')`).
+- **Pendente de você:** validar com `pnpm verify` + um playtest manual rápido (abrir diálogo de NPC, fazer scavenge de um item, conjurar Explosão de Sangue) antes de dar commit — grep não prova ausência de dispatch com 100% de certeza (ex.: um dispatch dinâmico por string montada em runtime não apareceria).
 
 ### Fase 1 — Scaffolding do store ✅ Concluído (25/08/2026)
 - 5 campos novos + ações em `gameStore.ts`, aditivos, não usados ainda por
@@ -217,14 +213,14 @@ Ordem sugerida — da mais simples/baixo risco para a mais delicada:
 
 ## 7. Checklist de execução (Fase 2)
 
-- [ ] Fase 0 — remover os 3 listeners mortos (`trigger-npc`, `trigger-scavenge`, `trigger-blood-nova`)
+- [x] Fase 0 — remover os 3 listeners mortos (`trigger-npc`, `trigger-scavenge`, `trigger-blood-nova`) — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] `respawn-player` migrado (código); `CustomEvent` antigo removido — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] `update-cosmetic-tint` migrado (código); `CustomEvent` antigo removido — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] `use-curative` migrado (código); `CustomEvent` antigo removido — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] `loot-acquired` migrado (código); `CustomEvent` antigo removido — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] `drag-aim-start/move/end` migrado (código); `CustomEvent` antigo removido — falta você validar em jogo (mouse + touch, com atenção extra por ser a ponte de alta frequência) + `pnpm verify` antes do commit
 - [x] Fase 3 — grep confirma zero `CustomEvent`/`window.addEventListener` de gameplay restante em `src/` (só sobram os 3 listeners mortos da Fase 0 e os eventos nativos do browser listados no início deste documento)
-- [ ] `docs/architecture/04_STATE_MANAGEMENT.md` atualizado para mencionar que a ponte é 100% Zustand (ainda pendente — próximo passo sugerido)
+- [x] `docs/architecture/04_STATE_MANAGEMENT.md` atualizado para mencionar que a ponte é 100% Zustand
 
 ---
 
@@ -244,3 +240,4 @@ Ordem sugerida — da mais simples/baixo risco para a mais delicada:
 | 2026-08-25 | Fase 2, ponte 3/5 (`use-curative`) migrada: `PlayerStatus.tsx`, `GameScene.ts` (listener removido, `useCurativeItem()` já era público) e `PhaserGame.tsx` atualizados | Claude |
 | 2026-08-25 | Fase 2, ponte 4/5 (`loot-acquired`) migrada: `Player.ts` e `LootLog.tsx` (reescrito para ler `lastLootPickup` do store) | Claude |
 | 2026-08-25 | Fase 2, ponte 5/5 (`drag-aim-start/move/end`) migrada: `SkillsOverlay.tsx`, `PlayerSkillSystem.ts` (assinaturas de payload plano), `GameScene.ts` (métodos `public`) e `PhaserGame.tsx` atualizados. Cutover completo — grep confirma zero `CustomEvent` de gameplay restante | Claude |
+| 2026-08-25 | Fase 0 (limpeza dos 3 listeners mortos + `triggerBloodNova()`) e Fase 3 (`04_STATE_MANAGEMENT.md` atualizado) concluídas — item 9 encerrado | Claude |

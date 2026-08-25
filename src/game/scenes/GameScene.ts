@@ -273,35 +273,15 @@ export class GameScene extends Phaser.Scene {
     // 3. Generate Dungeon Map Layout
     this.buildDungeonMap(mapW, mapH, this.currentFloorDepth);
 
-    // Register event listener for NPC interaction
-    window.addEventListener('trigger-npc', (e: any) => {
-      const npcType = e.detail;
-      useGameStore.getState().setActiveNPC(npcType);
-    });
-
+    // Limpeza (2026-08-25, Fase 0 de docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md):
+    // removidos os listeners mortos 'trigger-npc' e 'trigger-scavenge' — grep
+    // confirmou que nenhum dos dois era disparado por ninguém em src/. A
+    // interação com NPC já é 100% via store (setActiveNPC chamado direto pela
+    // UI em GameplayHUD.tsx); scavenge por toque não tem disparo algum hoje.
+    //
     // Respawno do jogador agora é disparado via store (respawnRequested), não mais
     // por window.addEventListener — ver public respawnPlayer() abaixo e
     // docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
-
-    // Register event listener for touch-scavenge button
-    window.addEventListener('trigger-scavenge', () => {
-      let closestScav: Scavengeable | null = null;
-      let closestDist = 48;
-      if (this.player && this.player.active && !this.player.stats.isUnconscious && !this.player.stats.isDefinitivelyDead) {
-        this.scavengeablesGroup.getChildren().forEach((scavObj) => {
-          const scav = scavObj as unknown as Scavengeable;
-          if (!scav.active || scav.isScavenged) return;
-          const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, scav.x, scav.y);
-          if (dist < closestDist) {
-            closestDist = dist;
-            closestScav = scav;
-          }
-        });
-      }
-      if (closestScav) {
-        this.startScavenging(closestScav);
-      }
-    });
 
     // --- VISUAL: Darkness overlay + Lighting ---
     this.dragAimGraphics = this.add.graphics().setDepth(2050);
@@ -513,9 +493,10 @@ export class GameScene extends Phaser.Scene {
 
     this.physics.add.collider(this.enemiesGroup, this.enemiesGroup);
 
-    // Listen for Blood Nova event from UI
-    const handleNovaEvent = () => this.triggerBloodNova();
-    window.addEventListener('trigger-blood-nova', handleNovaEvent);
+    // 'trigger-blood-nova' removido em 25/08/2026 (Fase 0 da limpeza) — grep
+    // confirmou que nunca era disparado por ninguém em src/; o método
+    // triggerBloodNova() que ele chamava também foi removido (só existia
+    // para servir esse listener morto).
 
     // Drag-to-Aim: handleDragAimStart/Move/End acima já são públicos e
     // agora são chamados diretamente por PhaserGame.tsx via store (dragAim),
@@ -524,7 +505,6 @@ export class GameScene extends Phaser.Scene {
     // public applyCosmeticTint() abaixo e docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
 
     this.events.once('shutdown', () => {
-      window.removeEventListener('trigger-blood-nova', handleNovaEvent);
       if (this.virtualJoystick) {
         this.virtualJoystick.destroy();
         this.virtualJoystick = null;
@@ -532,7 +512,6 @@ export class GameScene extends Phaser.Scene {
       if (this.flickerTimer) this.flickerTimer.destroy();
     });
     this.events.once('destroy', () => {
-      window.removeEventListener('trigger-blood-nova', handleNovaEvent);
       if (this.virtualJoystick) {
         this.virtualJoystick.destroy();
         this.virtualJoystick = null;
@@ -765,10 +744,6 @@ export class GameScene extends Phaser.Scene {
     }
 
     // Level up choice applied — game keeps running (no pause)
-  }
-
-  private triggerBloodNova() {
-    this.skillSystem.executeNovaEffect();
   }
 
   update(time: number, delta: number) {
