@@ -11,6 +11,11 @@ export interface RoomData {
   type: 'spawn' | 'chamber' | 'secret_treasure' | 'boss';
 }
 
+// Fase 3.2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
+// exportado pra GameScene.ts (posicionamento de tochas) usar o MESMO número em vez de um
+// valor solto (±70) que nunca foi conferido contra o vão de porta real.
+export const DOOR_WIDTH = 80;
+
 const BIOME_TINTS: Record<BiomeType, { ground: number; wall: number }> = {
   fosso_chagas: { ground: 0x86efac, wall: 0x15803d }, // Toxic Green tint
   catacumbas_martires: { ground: 0xcccccc, wall: 0x475569 }, // Cold Stone Brick
@@ -86,7 +91,7 @@ export class DungeonGenerator {
 
     // Build Partition Walls around rooms with door openings
     rooms.forEach((room) => {
-      const doorWidth = 80;
+      const doorWidth = DOOR_WIDTH;
 
       // Top Wall
       if (room.y > 100) {

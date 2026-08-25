@@ -330,39 +330,77 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   };
 
   // 3. Skeleton Warrior (32x40)
+  // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
+  // crânio e caixa torácica reescritos com elipses/curvas + degradê em vez de blocos
+  // retangulares empilhados — o vestuário do quadril e a espada continuam retos (fazem
+  // sentido: pano rústico cortado e lâmina reta), só a anatomia deixa de ser "bloco".
   const skeletonCanvas = createPixelCanvas(32, 40, (ctx) => {
     drawShadow(ctx, 16, 36, 10, 3);
 
-    // Tattered burial cloth at the hips
+    // Tattered burial cloth at the hips — silhueta irregular via path
     ctx.fillStyle = '#2b2420';
-    ctx.fillRect(10, 24, 12, 8);
-    ctx.fillRect(9, 30, 4, 6);
-    ctx.fillRect(19, 30, 4, 6);
+    ctx.beginPath();
+    ctx.moveTo(9, 24);
+    ctx.lineTo(23, 24);
+    ctx.lineTo(22, 32);
+    ctx.lineTo(19, 36);
+    ctx.lineTo(16, 30);
+    ctx.lineTo(13, 36);
+    ctx.lineTo(10, 32);
+    ctx.closePath();
+    ctx.fill();
 
-    // Skull
-    ctx.fillStyle = '#d1c7b7';
-    ctx.fillRect(10, 4, 12, 10);
-    ctx.fillStyle = '#a89a82'; // shadowed side of the skull
-    ctx.fillRect(10, 4, 4, 10);
+    // Skull — elipse com degradê radial em vez de retângulo
+    const skullGrad = ctx.createRadialGradient(14, 7, 1, 16, 9, 8);
+    skullGrad.addColorStop(0, '#e8ddc9');
+    skullGrad.addColorStop(0.6, '#d1c7b7');
+    skullGrad.addColorStop(1, '#8f8270');
+    ctx.fillStyle = skullGrad;
+    ctx.beginPath();
+    ctx.ellipse(16, 8, 7, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Mandíbula
+    ctx.fillStyle = '#a89a82';
+    ctx.beginPath();
+    ctx.ellipse(16, 13, 4, 3, 0, 0, Math.PI);
+    ctx.fill();
     // Eye sockets with a faint necrotic glow
     ctx.fillStyle = '#0f0c08';
-    ctx.fillRect(12, 7, 3, 3);
-    ctx.fillRect(17, 7, 3, 3);
+    ctx.beginPath();
+    ctx.ellipse(13, 8, 1.6, 2, 0, 0, Math.PI * 2);
+    ctx.ellipse(19, 8, 1.6, 2, 0, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#ef4444';
-    ctx.fillRect(13, 8, 1, 1);
-    ctx.fillRect(18, 8, 1, 1);
+    ctx.beginPath();
+    ctx.arc(13, 8, 0.8, 0, Math.PI * 2);
+    ctx.arc(19, 8, 0.8, 0, Math.PI * 2);
+    ctx.fill();
     // Jaw crack
     ctx.fillStyle = '#8f8270';
     ctx.fillRect(13, 12, 6, 1);
 
-    // Ribcage & Spine
-    ctx.fillStyle = '#e8e0d3';
-    ctx.fillRect(12, 14, 8, 12);
-    ctx.fillStyle = '#bfb5a2'; // rib shading, shadowed side
-    ctx.fillRect(12, 14, 3, 12);
-    ctx.fillStyle = '#100e0b';
-    ctx.fillRect(12, 17, 8, 2);
-    ctx.fillRect(12, 21, 8, 2);
+    // Ribcage & Spine — curva fechada (quadraticCurveTo) com degradê lateral +
+    // arcos de costela em vez de um bloco só com 2 tarjas
+    const ribGrad = ctx.createLinearGradient(12, 14, 20, 14);
+    ribGrad.addColorStop(0, '#bfb5a2');
+    ribGrad.addColorStop(0.5, '#e8e0d3');
+    ribGrad.addColorStop(1, '#cfc4b0');
+    ctx.fillStyle = ribGrad;
+    ctx.beginPath();
+    ctx.moveTo(12, 15);
+    ctx.quadraticCurveTo(16, 12, 20, 15);
+    ctx.lineTo(19, 26);
+    ctx.quadraticCurveTo(16, 28, 13, 26);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#100e0b';
+    ctx.lineWidth = 1;
+    for (let ry = 17; ry <= 23; ry += 3) {
+      ctx.beginPath();
+      ctx.moveTo(13, ry);
+      ctx.quadraticCurveTo(16, ry + 1.5, 19, ry);
+      ctx.stroke();
+    }
 
     // Rusty Sword: blade, edge highlight, crossguard and wrapped grip
     ctx.fillStyle = '#73706c';
@@ -464,18 +502,28 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   addTextureWithNormalMap('spr_hound', houndCanvas);
 
   // 6. Flesh Golem (48x56)
+  // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
+  // corpo e cabeça reescritos com curvas + degradê linear/radial em vez de bloco + 2
+  // tarjas retas; ganhou normal map (Fase 3.1) já que estava sendo redesenhado mesmo.
   const golemCanvas = createPixelCanvas(48, 56, (ctx) => {
     drawShadow(ctx, 24, 52, 18, 4);
 
-    // Massive stitched body, shaded left flank and lit right flank
-    ctx.fillStyle = '#3f2e2b';
-    ctx.fillRect(8, 10, 32, 40);
-    ctx.fillStyle = '#2a1f1d';
-    ctx.fillRect(8, 10, 8, 40);
-    ctx.fillStyle = '#5a4340';
-    ctx.fillRect(34, 10, 6, 40);
+    // Corpo maciço costurado — silhueta afunilada via curvas, com degradê lateral
+    const bodyGrad = ctx.createLinearGradient(8, 0, 40, 0);
+    bodyGrad.addColorStop(0, '#241a18');
+    bodyGrad.addColorStop(0.45, '#3f2e2b');
+    bodyGrad.addColorStop(1, '#5a4340');
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.moveTo(12, 10);
+    ctx.quadraticCurveTo(24, 6, 36, 10);
+    ctx.quadraticCurveTo(40, 30, 34, 50);
+    ctx.quadraticCurveTo(24, 54, 14, 50);
+    ctx.quadraticCurveTo(8, 30, 12, 10);
+    ctx.closePath();
+    ctx.fill();
 
-    // Sutures & Scars
+    // Sutures & Scars — mantidos retos (costura/cicatriz reta faz sentido)
     ctx.fillStyle = '#8c2d19';
     ctx.fillRect(16, 16, 16, 3);
     ctx.fillRect(22, 28, 12, 3);
@@ -491,17 +539,24 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     ctx.fillStyle = '#71717a';
     ctx.fillRect(6, 24, 4, 1);
 
-    // Head with a browed shadow and glowing eye halo
-    ctx.fillStyle = '#2b1e1b';
-    ctx.fillRect(18, 2, 12, 10);
-    ctx.fillStyle = '#1a1210';
-    ctx.fillRect(18, 2, 12, 3);
+    // Head — elipse com degradê radial em vez de retângulo
+    const headGrad = ctx.createRadialGradient(22, 6, 1, 24, 7, 8);
+    headGrad.addColorStop(0, '#3a2a26');
+    headGrad.addColorStop(1, '#1a1210');
+    ctx.fillStyle = headGrad;
+    ctx.beginPath();
+    ctx.ellipse(24, 7, 8, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = 'rgba(239, 68, 68, 0.4)';
-    ctx.fillRect(19, 4, 6, 5);
+    ctx.beginPath();
+    ctx.ellipse(24, 8, 4, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#ef4444';
-    ctx.fillRect(20, 5, 4, 3);
+    ctx.beginPath();
+    ctx.ellipse(24, 8, 2.5, 1.8, 0, 0, Math.PI * 2);
+    ctx.fill();
   });
-  addTexture('spr_golem', golemCanvas);
+  addTextureWithNormalMap('spr_golem', golemCanvas);
 
   // 7. Blood Specter (32x40) — floats, so no ground shadow
   const specterCanvas = createPixelCanvas(32, 40, (ctx) => {
@@ -533,38 +588,57 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   addTexture('spr_specter', specterCanvas);
 
   // 8. Necro Lord Boss (64x72)
+  // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
+  // armadura e chifres reescritos com curvas + degradê; capa ganha leve afunilamento
+  // nas pontas em vez de faixas retangulares retas. Normal map (Fase 3.1) adicionado.
   const bossCanvas = createPixelCanvas(64, 72, (ctx) => {
     drawShadow(ctx, 32, 68, 22, 5, 0.5);
 
-    // Crimson cape (behind the body)
+    // Crimson cape — afunilada nas pontas via path, não mais uma faixa reta
     ctx.fillStyle = '#991b1b';
-    ctx.fillRect(10, 20, 8, 48);
-    ctx.fillRect(46, 20, 8, 48);
+    ctx.beginPath();
+    ctx.moveTo(10, 20); ctx.lineTo(18, 20); ctx.lineTo(14, 68); ctx.lineTo(6, 66); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(46, 20); ctx.lineTo(54, 20); ctx.lineTo(58, 66); ctx.lineTo(50, 68); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#6b1414';
-    ctx.fillRect(10, 50, 8, 18);
-    ctx.fillRect(46, 50, 8, 18);
+    ctx.beginPath();
+    ctx.moveTo(12, 50); ctx.lineTo(17, 50); ctx.lineTo(14, 68); ctx.lineTo(8, 65); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(47, 50); ctx.lineTo(52, 50); ctx.lineTo(56, 65); ctx.lineTo(50, 68); ctx.closePath(); ctx.fill();
 
-    // Huge obsidian armor & horned helm, shaded flank and rim highlight
-    ctx.fillStyle = '#18181b';
-    ctx.fillRect(16, 16, 32, 50);
+    // Armadura obsidiana — ombros largos afunilando pra cintura, com degradê
+    // lateral em vez de bloco + 2 tarjas retas
+    const armorGrad = ctx.createLinearGradient(16, 0, 48, 0);
+    armorGrad.addColorStop(0, '#0c0c0e');
+    armorGrad.addColorStop(0.5, '#18181b');
+    armorGrad.addColorStop(1, '#3f3f46');
+    ctx.fillStyle = armorGrad;
+    ctx.beginPath();
+    ctx.moveTo(16, 20);
+    ctx.quadraticCurveTo(32, 12, 48, 20);
+    ctx.quadraticCurveTo(46, 40, 40, 66);
+    ctx.lineTo(24, 66);
+    ctx.quadraticCurveTo(18, 40, 16, 20);
+    ctx.closePath();
+    ctx.fill();
+    // Plating seams — mantidos retos (costura de placa metálica é reta mesmo)
     ctx.fillStyle = '#0c0c0e';
-    ctx.fillRect(16, 16, 8, 50);
-    ctx.fillStyle = '#3f3f46';
-    ctx.fillRect(44, 16, 4, 50);
-    // Plating seams
-    ctx.fillStyle = '#0c0c0e';
-    ctx.fillRect(16, 34, 32, 2);
-    ctx.fillRect(16, 50, 32, 2);
+    ctx.fillRect(18, 34, 28, 2);
+    ctx.fillRect(19, 50, 26, 2);
 
-    // Horns
+    // Horns — curvos (quadraticCurveTo) em vez de retângulos retos
     ctx.fillStyle = '#18181b';
-    ctx.fillRect(10, 4, 6, 16);
-    ctx.fillRect(48, 4, 6, 16);
+    ctx.beginPath();
+    ctx.moveTo(14, 20); ctx.quadraticCurveTo(6, 10, 12, 2); ctx.quadraticCurveTo(16, 10, 18, 18); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(50, 20); ctx.quadraticCurveTo(58, 10, 52, 2); ctx.quadraticCurveTo(48, 10, 46, 18); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#3f3f46';
-    ctx.fillRect(10, 4, 2, 16);
-    ctx.fillRect(48, 4, 2, 16);
+    ctx.beginPath();
+    ctx.moveTo(13, 18); ctx.quadraticCurveTo(9, 10, 12, 4); ctx.quadraticCurveTo(14, 10, 15, 17); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(51, 18); ctx.quadraticCurveTo(55, 10, 52, 4); ctx.quadraticCurveTo(50, 10, 49, 17); ctx.closePath(); ctx.fill();
 
-    // Glowing red chest gem with halo
+    // Glowing red chest gem with halo (já bem esculpido, mantido)
     ctx.fillStyle = 'rgba(220, 38, 38, 0.35)';
     ctx.beginPath();
     ctx.arc(32, 32, 12, 0, Math.PI * 2);
@@ -583,7 +657,7 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     ctx.fillRect(24, 56, 4, 4);
     ctx.fillRect(36, 56, 4, 4);
   });
-  addTexture('spr_boss', bossCanvas);
+  addTextureWithNormalMap('spr_boss', bossCanvas);
 
   // 8b. Zombie Shambler (32x40) - Classic Rotting Corpse
   const zombieCanvas = createPixelCanvas(32, 40, (ctx) => {
@@ -903,37 +977,63 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   addTexture('gem_xp', gemCanvas);
 
   // 14. Particle Blood Drop (8x8)
+  // Fase 1 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
+  // era um fillRect cru (quadrado sólido sem sombreamento) — agora um degradê radial,
+  // então em emissores com partículas grandes/lentas lê como gota, não como quadrado.
   const bloodPartCanvas = createPixelCanvas(8, 8, (ctx) => {
-    ctx.fillStyle = '#b91c1c';
-    ctx.fillRect(1, 1, 6, 6);
+    const grad = ctx.createRadialGradient(4, 4, 0, 4, 4, 3.5);
+    grad.addColorStop(0, '#ef4444');
+    grad.addColorStop(0.55, '#b91c1c');
+    grad.addColorStop(1, 'rgba(127, 29, 29, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(4, 4, 3.5, 0, Math.PI * 2);
+    ctx.fill();
   });
   addTexture('particle_blood_red', bloodPartCanvas);
 
-  // 14b. Status Effect Particles (Ember Spark, Frost Crystal, Dark Flame)
+  // 14b. Status Effect Particles (Ember Spark, Frost Crystal, Dark Flame) —
+  // mesma correção: degradê radial em vez de fillRect empilhado.
   const emberPartCanvas = createPixelCanvas(6, 6, (ctx) => {
-    ctx.fillStyle = '#fbbf24';
-    ctx.fillRect(1, 1, 4, 4);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(2, 2, 2, 2);
+    const grad = ctx.createRadialGradient(3, 3, 0, 3, 3, 2.5);
+    grad.addColorStop(0, '#ffffff');
+    grad.addColorStop(0.45, '#fbbf24');
+    grad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(3, 3, 2.5, 0, Math.PI * 2);
+    ctx.fill();
   });
   addTexture('particle_ember_spark', emberPartCanvas);
 
   const frostPartCanvas = createPixelCanvas(8, 8, (ctx) => {
-    ctx.fillStyle = '#67e8f9';
-    ctx.fillRect(3, 1, 2, 6);
-    ctx.fillRect(1, 3, 6, 2);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(3, 3, 2, 2);
+    const grad = ctx.createRadialGradient(4, 4, 0, 4, 4, 3.5);
+    grad.addColorStop(0, '#ffffff');
+    grad.addColorStop(0.5, '#67e8f9');
+    grad.addColorStop(1, 'rgba(103, 232, 249, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(4, 4, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+    // Facetas do cristal por cima do glow, mantendo a leitura de "gelo" sem virar um quadrado
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineWidth = 0.6;
+    ctx.beginPath();
+    ctx.moveTo(4, 1); ctx.lineTo(4, 7);
+    ctx.moveTo(1, 4); ctx.lineTo(7, 4);
+    ctx.stroke();
   });
   addTexture('particle_frost_crystal', frostPartCanvas);
 
   const darkFlamePartCanvas = createPixelCanvas(8, 8, (ctx) => {
-    ctx.fillStyle = '#7c3aed';
-    ctx.fillRect(2, 2, 4, 4);
-    ctx.fillStyle = '#c084fc';
-    ctx.fillRect(3, 1, 2, 4);
-    ctx.fillStyle = '#2e1065';
-    ctx.fillRect(3, 4, 2, 3);
+    const grad = ctx.createRadialGradient(4, 4, 0, 4, 4, 3.5);
+    grad.addColorStop(0, '#c084fc');
+    grad.addColorStop(0.55, '#7c3aed');
+    grad.addColorStop(1, 'rgba(46, 16, 101, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(4, 4, 3.5, 0, Math.PI * 2);
+    ctx.fill();
   });
   addTexture('particle_dark_flame', darkFlamePartCanvas);
 
@@ -974,25 +1074,64 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   addTexture('blood_pool_stain', bloodPoolCanvas);
 
   // 16. Dungeon Stone Brick Wall Block (32x32)
+  // Fase 4 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
+  // esse tile se repete lado a lado por todo corredor — a grade perfeita de retângulos
+  // ficava muito óbvia no repeat. Mantém as mesmas fiadas/dimensões gerais (não muda a
+  // "leitura" arquitetônica do tijolo), mas quebra a regularidade com: cantos
+  // levemente lascados (pequenos chanfros), musgo em blobs orgânicos (elipses
+  // sobrepostas em vez de um retângulo só) e um ruído sutil de textura na pedra base.
   const wallCanvas = createPixelCanvas(32, 32, (ctx) => {
     ctx.fillStyle = '#221922'; // Base dark stone
     ctx.fillRect(0, 0, 32, 32);
 
-    ctx.fillStyle = '#3a2d3c'; // Bricks
-    ctx.fillRect(2, 2, 13, 6);
-    ctx.fillRect(17, 2, 13, 6);
-    ctx.fillRect(2, 10, 28, 6);
-    ctx.fillRect(2, 18, 13, 6);
-    ctx.fillRect(17, 18, 13, 6);
-    ctx.fillRect(2, 26, 28, 4);
+    // Ruído sutil na pedra base — quebra a leitura de cor 100% chapada antes dos tijolos
+    for (let i = 0; i < 24; i++) {
+      const nx = Math.random() * 32;
+      const ny = Math.random() * 32;
+      ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)';
+      ctx.fillRect(nx, ny, 1, 1);
+    }
 
-    // Highlights & Moss
+    // Chanfro: desenha um tijolo com um ou dois cantos levemente cortados, em vez de
+    // um fillRect perfeitamente retangular — quebra a régua reta sem perder o formato
+    const drawBrick = (bx: number, by: number, bw: number, bh: number) => {
+      const chip = 1 + Math.floor(Math.random() * 2); // 1-2px de chanfro
+      ctx.beginPath();
+      ctx.moveTo(bx + chip, by);
+      ctx.lineTo(bx + bw, by);
+      ctx.lineTo(bx + bw, by + bh - chip);
+      ctx.lineTo(bx + bw - chip, by + bh);
+      ctx.lineTo(bx, by + bh);
+      ctx.lineTo(bx, by + chip);
+      ctx.closePath();
+      ctx.fill();
+    };
+
+    ctx.fillStyle = '#3a2d3c'; // Bricks
+    drawBrick(2, 2, 13, 6);
+    drawBrick(17, 2, 13, 6);
+    drawBrick(2, 10, 28, 6);
+    drawBrick(2, 18, 13, 6);
+    drawBrick(17, 18, 13, 6);
+    drawBrick(2, 26, 28, 4);
+
+    // Highlights
     ctx.fillStyle = '#533e56';
     ctx.fillRect(2, 2, 13, 1);
     ctx.fillRect(17, 2, 13, 1);
-    ctx.fillStyle = '#1e382b'; // Dark moss in crevices
-    ctx.fillRect(12, 14, 4, 2);
-    ctx.fillRect(2, 24, 6, 2);
+
+    // Musgo — blobs orgânicos (elipses sobrepostas) em vez de um retângulo reto
+    const drawMossBlob = (cx: number, cy: number, r: number) => {
+      ctx.fillStyle = '#1e382b';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, r, r * 0.65, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(cx + r * 0.6, cy + r * 0.3, r * 0.6, r * 0.4, 0, 0, Math.PI * 2);
+      ctx.fill();
+    };
+    drawMossBlob(13, 15, 2.4);
+    drawMossBlob(4, 25, 2.2);
   });
   addTexture('tile_wall_brick', wallCanvas);
 

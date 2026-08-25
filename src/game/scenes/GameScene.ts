@@ -44,7 +44,7 @@ export interface GameSceneCallbacks {
   onGameOver: (stats: PlayerStats) => void;
 }
 
-import { DungeonGenerator, RoomData } from '../systems/DungeonGenerator';
+import { DungeonGenerator, RoomData, DOOR_WIDTH } from '../systems/DungeonGenerator';
 
 export class GameScene extends Phaser.Scene {
   public player!: Player;
@@ -299,26 +299,56 @@ export class GameScene extends Phaser.Scene {
     this.darknessOverlay.fillStyle(0x050510, 0.12);
     this.darknessOverlay.fillRect(0, 0, mapW, mapH);
 
+    // Fase 3.2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
+    // hash determinístico simples (sem lib de RNG com seed) pra dar uma variação pequena
+    // e reproduzível por sala, quebrando a grade perfeita sem perder consistência visual.
+    const roomJitter = (roomIndex: number, salt: number, range: number): number => {
+      const h = Math.sin(roomIndex * 12.9898 + salt * 78.233) * 43758.5453;
+      const frac = h - Math.floor(h);
+      return (frac * 2 - 1) * range;
+    };
+
     // Place light sprites (additive blend over darkness)
     this.lightSprites.forEach(s => s.destroy());
     this.lightSprites = [];
-    this.rooms.forEach((room) => {
+    this.rooms.forEach((room, roomIndex) => {
       // Torches flanking doorways on each wall
       const flamePositions: { x: number; y: number; kind: 'torch' | 'brazier' }[] = [];
 
+      // Fase 3.2: o offset de flanqueio agora deriva do MESMO doorWidth que o
+      // DungeonGenerator usa pra abrir o vão real da porta (antes eram dois números
+      // desalinhados por acidente — ±70 aqui vs. doorWidth=80 lá), + um jitter leve.
+      const doorHalf = DOOR_WIDTH / 2;
+      const doorClearance = 12; // distância entre a borda do vão e a tocha que o flanqueia
+
       if (room.y > 80) {
-        flamePositions.push({ x: room.centerX - 70, y: room.y - 6, kind: 'torch' });
-        flamePositions.push({ x: room.centerX + 70, y: room.y - 6, kind: 'torch' });
+        flamePositions.push({ x: room.centerX - (doorHalf + doorClearance) + roomJitter(roomIndex, 1, 5), y: room.y - 6, kind: 'torch' });
+        flamePositions.push({ x: room.centerX + (doorHalf + doorClearance) + roomJitter(roomIndex, 2, 5), y: room.y - 6, kind: 'torch' });
       }
       if (room.x > 100) {
-        flamePositions.push({ x: room.x - 6, y: room.centerY - 40, kind: 'torch' });
-        flamePositions.push({ x: room.x - 6, y: room.centerY + 40, kind: 'torch' });
+        flamePositions.push({ x: room.x - 6, y: room.centerY - doorHalf + roomJitter(roomIndex, 3, 5), kind: 'torch' });
+        flamePositions.push({ x: room.x - 6, y: room.centerY + doorHalf + roomJitter(roomIndex, 4, 5), kind: 'torch' });
       }
-      // Corners of the room
-      flamePositions.push({ x: room.x + 40, y: room.y + 40, kind: 'torch' });
-      flamePositions.push({ x: room.x + room.width - 40, y: room.y + 40, kind: 'torch' });
-      flamePositions.push({ x: room.x + 40, y: room.y + room.height - 40, kind: 'torch' });
-      flamePositions.push({ x: room.x + room.width - 40, y: room.y + room.height - 40, kind: 'torch' });
+
+      // Fase 3.3: salas comuns de passagem ("chamber") ganham só 2 tochas de canto
+      // em diagonal em vez das 4 fixas de sempre — cria variação de atmosfera entre
+      // cômodos. Salas especiais (spawn/boss/secret_treasure) mantêm as 4, mais
+      // iluminadas/acolhedoras, coerente com o papel narrativo de cada uma.
+      const cornerInset = 40;
+      const allCorners = [
+        { x: room.x + cornerInset, y: room.y + cornerInset },
+        { x: room.x + room.width - cornerInset, y: room.y + cornerInset },
+        { x: room.x + cornerInset, y: room.y + room.height - cornerInset },
+        { x: room.x + room.width - cornerInset, y: room.y + room.height - cornerInset },
+      ];
+      const corners = room.type === 'chamber' ? [allCorners[0], allCorners[3]] : allCorners;
+      corners.forEach((c, i) => {
+        flamePositions.push({
+          x: c.x + roomJitter(roomIndex, 10 + i, 8),
+          y: c.y + roomJitter(roomIndex, 20 + i, 8),
+          kind: 'torch',
+        });
+      });
 
       // Boss room: massive brazier in center
       if (room.type === 'boss') {

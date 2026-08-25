@@ -24,6 +24,11 @@ export interface ShadowEntity extends Phaser.GameObjects.GameObject {
  * - Projeta a sombra na direção oposta com escala e achatamento elíptico proporcional à distância.
  * - Suporta fallback suave para sombra de contato estática em áreas escuras ou iluminação zenital.
  */
+// Fase 1 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
+// chave da textura de fallback gerada na hora, caso 'spr_shadow_disc' não esteja
+// registrada quando a primeira entidade pedir sombra.
+const FALLBACK_SHADOW_TEXTURE_KEY = 'shadow_fallback_ellipse';
+
 export class ShadowSystem {
   private scene: Phaser.Scene;
   private shadowSprites: Map<ShadowEntity, Phaser.GameObjects.Image> = new Map();
@@ -41,20 +46,45 @@ export class ShadowSystem {
   }
 
   /**
+   * Antes (Fase 1): se 'spr_shadow_disc' faltasse, a sombra virava
+   * 'particle_blood_red' (um quadrado 6x6 sólido) tintado de preto — um
+   * quadrado preto visível sob a entidade. Agora, se a textura principal
+   * faltar, gera uma elipse com degradê radial na hora (mesmo algoritmo do
+   * 'spr_shadow_disc' original em textureGenerator.ts), nunca um quadrado.
+   */
+  private resolveShadowTextureKey(): string {
+    if (this.scene.textures.exists('spr_shadow_disc')) return 'spr_shadow_disc';
+    if (!this.scene.textures.exists(FALLBACK_SHADOW_TEXTURE_KEY)) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 32;
+      canvas.height = 16;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        const grad = ctx.createRadialGradient(16, 8, 2, 16, 8, 15);
+        grad.addColorStop(0, 'rgba(0, 0, 0, 0.75)');
+        grad.addColorStop(0.6, 'rgba(0, 0, 0, 0.45)');
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.ellipse(16, 8, 15, 7, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      this.scene.textures.addCanvas(FALLBACK_SHADOW_TEXTURE_KEY, canvas);
+    }
+    return FALLBACK_SHADOW_TEXTURE_KEY;
+  }
+
+  /**
    * Registra uma entidade para receber projeção de sombra dinâmica
    */
   public registerEntity(entity: ShadowEntity): void {
     if (!entity || !entity.active || this.shadowSprites.has(entity)) return;
 
-    const textureKey = this.scene.textures.exists('spr_shadow_disc') ? 'spr_shadow_disc' : 'particle_blood_red';
+    const textureKey = this.resolveShadowTextureKey();
     const shadow = this.scene.add.image(entity.x, entity.y + 12, textureKey);
     shadow.setDepth(8); // Abaixo dos personagens (depth 20-50), acima do piso (depth 0-5)
     shadow.setScale(1.0, 0.45);
     shadow.setAlpha(0.35);
-
-    if (textureKey !== 'spr_shadow_disc') {
-      shadow.setTint(0x000000);
-    }
 
     this.shadowSprites.set(entity, shadow);
 
