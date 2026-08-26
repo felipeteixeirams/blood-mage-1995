@@ -1,0 +1,52 @@
+[
+  {
+    "key": "spr_bloodmage",
+    "type": "spritesheet",
+    "path": "assets/sprites/player/bloodmage.png",
+    "frameWidth": 68,
+    "frameHeight": 68,
+    "required": true
+  },
+
+  { "key": "spr_skeleton", "type": "spritesheet", "path": "assets/sprites/enemies/skeleton.png", "frameWidth": 32, "frameHeight": 40, "required": false },
+  { "key": "spr_cultist", "type": "spritesheet", "path": "assets/sprites/enemies/cultist.png", "frameWidth": 32, "frameHeight": 40, "required": false },
+  { "key": "spr_hound", "type": "spritesheet", "path": "assets/sprites/enemies/hound.png", "frameWidth": 36, "frameHeight": 28, "required": false },
+  { "key": "spr_golem", "type": "spritesheet", "path": "assets/sprites/enemies/golem.png", "frameWidth": 48, "frameHeight": 56, "required": false },
+  { "key": "spr_specter", "type": "spritesheet", "path": "assets/sprites/enemies/specter.png", "frameWidth": 32, "frameHeight": 40, "required": false },
+  { "key": "spr_boss", "type": "spritesheet", "path": "assets/sprites/enemies/boss.png", "frameWidth": 64, "frameHeight": 72, "required": false },
+  { "key": "spr_zombie_shambler", "type": "spritesheet", "path": "assets/sprites/enemies/zombie_shambler.png", "frameWidth": 32, "frameHeight": 40, "required": false },
+  { "key": "spr_vampire_stalker", "type": "spritesheet", "path": "assets/sprites/enemies/vampire_stalker.png", "frameWidth": 32, "frameHeight": 44, "required": false },
+  { "key": "spr_werewolf_lycan", "type": "spritesheet", "path": "assets/sprites/enemies/werewolf_lycan.png", "frameWidth": 38, "frameHeight": 44, "required": false },
+  { "key": "spr_bat_swarm", "type": "spritesheet", "path": "assets/sprites/enemies/bat_swarm.png", "frameWidth": 20, "frameHeight": 20, "required": false },
+  { "key": "spr_gore_abomination", "type": "spritesheet", "path": "assets/sprites/enemies/gore_abomination.png", "frameWidth": 52, "frameHeight": 60, "required": false },
+
+  { "key": "proj_blood_bolt", "type": "image", "path": "assets/sprites/projectiles/blood_bolt.png", "required": false },
+  { "key": "proj_energy_bolt", "type": "image", "path": "assets/sprites/projectiles/energy_bolt.png", "required": false },
+
+  { "key": "orb_hp", "type": "image", "path": "assets/sprites/items/orb_hp.png", "required": false },
+  { "key": "orb_mana", "type": "image", "path": "assets/sprites/items/orb_mana.png", "required": false },
+  { "key": "gem_xp", "type": "image", "path": "assets/sprites/items/gem_xp.png", "required": false },
+
+  { "key": "tile_ground", "type": "image", "path": "assets/tilesets/tile_ground.png", "required": false },
+  { "key": "tile_wall_brick", "type": "image", "path": "assets/tilesets/tile_wall_brick.png", "required": false },
+
+  { "key": "spr_chest", "type": "image", "path": "assets/sprites/items/chest.png", "required": true },
+  { "key": "spr_chest_south", "type": "image", "path": "assets/sprites/items/chest/south.png", "required": true },
+  { "key": "spr_chest_south_west", "type": "image", "path": "assets/sprites/items/chest/south-west.png", "required": true },
+  { "key": "spr_chest_west", "type": "image", "path": "assets/sprites/items/chest/west.png", "required": true },
+  { "key": "spr_chest_north_west", "type": "image", "path": "assets/sprites/items/chest/north-west.png", "required": true },
+  { "key": "spr_chest_north", "type": "image", "path": "assets/sprites/items/chest/north.png", "required": true },
+  { "key": "spr_chest_north_east", "type": "image", "path": "assets/sprites/items/chest/north-east.png", "required": true },
+  { "key": "spr_chest_east", "type": "image", "path": "assets/sprites/items/chest/east.png", "required": true },
+  { "key": "spr_chest_south_east", "type": "image", "path": "assets/sprites/items/chest/south-east.png", "required": true },
+
+  { "key": "spr_chest_open", "type": "image", "path": "assets/sprites/items/chest_open/south.png", "required": true },
+  { "key": "spr_chest_open_south", "type": "image", "path": "assets/sprites/items/chest_open/south.png", "required": true },
+  { "key": "spr_chest_open_south_west", "type": "image", "path": "assets/sprites/items/chest_open/south-west.png", "required": true },
+  { "key": "spr_chest_open_west", "type": "image", "path": "assets/sprites/items/chest_open/west.png", "required": true },
+  { "key": "spr_chest_open_north_west", "type": "image", "path": "assets/sprites/items/chest_open/north-west.png", "required": true },
+  { "key": "spr_chest_open_north", "type": "image", "path": "assets/sprites/items/chest_open/north.png", "required": true },
+  { "key": "spr_chest_open_north_east", "type": "image", "path": "assets/sprites/items/chest_open/north-east.png", "required": true },
+  { "key": "spr_chest_open_east", "type": "image", "path": "assets/sprites/items/chest_open/east.png", "required": true },
+  { "key": "spr_chest_open_south_east", "type": "image", "path": "assets/sprites/items/chest_open/south-east.png", "required": true }
+]
