@@ -7,7 +7,7 @@ Estruturar o polimento visual e os efeitos gráficos (VFX) do *Blood Mage 1995* 
 
 ## Mapeamento Geral: As 8 Frentes de Polimento
 
-> **Nota (27/08):** esta spec nunca tinha tags de status `[CONCLUÍDO]`/`[PARCIAL]`/`[PENDENTE]` nem changelog — foi escrita como proposta e ficou assim, mesmo depois de metade das frentes já estarem implementadas via outro trabalho (Frente 5 de iluminação veio meio de carona com o Eixo A de gráficos avançados, ver `docs/archive/specs/andamento/06_EIXO_A_GRAFICOS_AVANCADOS.md`). Auditoria de código feita em 27/08 — ver `## 📈 Histórico de Progresso` no fim do arquivo.
+> **Nota (27/08):** esta spec nunca tinha tags de status `[CONCLUÍDO]`/`[PARCIAL]`/`[PENDENTE]` nem changelog — foi escrita como proposta e ficou assim, mesmo depois de metade das frentes já estarem implementadas via outro trabalho (Frente 5 de iluminação veio meio de carona com o Eixo A de gráficos avançados, ver `docs/archive/specs/andamento/06_EIXO_A_GRAFICOS_AVANCADOS.md`). Auditoria de código feita em 27/08 — ver `## 📈 Histórico de Progresso` no fim do arquivo. **Atualização (27/08, mesmo dia):** o gap de Bloom PostFX identificado na auditoria foi fechado — Frente 5 passa de PARCIAL pra CONCLUÍDO, ver última entrada do changelog.
 
 1. **[PENDENTE] Construção do Ambiente e Mundo (Dungeon & World Gen):**
    - Gerador de layouts orgânicos (BSP + Cellular Automata) e texturização via ruído procedural, mesclando corredores naturais com criptas quadradas.
@@ -17,7 +17,7 @@ Estruturar o polimento visual e os efeitos gráficos (VFX) do *Blood Mage 1995* 
    - Decals no solo persistentes (pegadas de sangue, cinzas) e reflexos locais em poças mapeadas dinamicamente.
 4. **[PARCIAL] Construção e Efeitos de Personagens (Atores - Mobs e Jogador):**
    - *Game feel* aplicado aos corpos: *Squash & Stretch*, dismemberment aprimorado (gore dinâmico particionado) e *Hit Stop/Hit Flash* para feedback de impacto.
-5. **[PARCIAL] Iluminação e Efeitos de Magia (Spell & Lighting VFX):**
+5. **[CONCLUÍDO] Iluminação e Efeitos de Magia (Spell & Lighting VFX):**
    - Iluminação 2D com emissão dinâmica a partir de magias, orbes e tochas, com adição de Bloom FX no pipeline global para realçar energia.
 6. **[PENDENTE] Áudio e Feedback Sonoro (Audio Engineering):**
    - Sintetizadores espaciais proceduralmente ajustados (Pitch Shifting aleatório e drones dinâmicos de sub-grave para tensão dependente do ambiente).
@@ -32,7 +32,7 @@ Estruturar o polimento visual e os efeitos gráficos (VFX) do *Blood Mage 1995* 
 
 Abaixo estão detalhadas as duas frentes prioritárias recomendadas, preparadas para implementação sequencial e segura.
 
-### [PARCIAL] Prioridade 1: Frente 5 - Iluminação Dinâmica e Efeitos de Magia (Lighting & Spells)
+### [CONCLUÍDO] Prioridade 1: Frente 5 - Iluminação Dinâmica e Efeitos de Magia (Lighting & Spells)
 
 **1. Escopo**
 - Ativar o sistema de `Light2D` (Pipeline WebGL) no `LightingSystem.ts` e mapas base.
@@ -168,3 +168,54 @@ Abaixo estão detalhadas as duas frentes prioritárias recomendadas, preparadas 
     (sandbox sem `node_modules`, sem execução real do jogo — os itens
     marcados "não verificado"/"vale checar em jogo" acima são exatamente
     onde a leitura de código sozinha não é conclusiva).
+
+- **[2026-08-27] Fix: Bloom PostFX — fecha o gap da Frente 5:**
+  - Status: **CONCLUÍDO** — restaura a Frente 5 de PARCIAL pra **CONCLUÍDO**
+    no "Mapeamento Geral" e no header do Deep Dive.
+  - **Contexto:** o Phaser 4.2.1 (versão usada pelo projeto, ver `package.json`)
+    não tem um filtro `addBloom` nativo — a API de Filtros por câmera/objeto
+    (`filters.internal`/`filters.external`, ver `PostFXSystem.ts`) expõe
+    `addBarrel`, `addBlend`, `addBlocky`, `addBlur`, `addBokeh`,
+    `addColorMatrix`, `addDisplacement`, `addGlow`, `addMask`, `addPixelate`,
+    `addShadow`, `addThreshold`, `addTiltShift` — sem Bloom dedicado. `Glow`
+    (`Phaser.Filters.Glow`, halo luminoso ao redor do objeto) é o equivalente
+    funcional mais próximo, e como o próprio escopo da Frente 5 já pedia
+    "Bloom... acionado apenas nas camadas e objetos que brilham" (ou seja,
+    por objeto, não full-screen), um filtro Glow por sprite é uma
+    implementação fiel ao critério de aceite, não um desvio.
+  - **Implementado (`src/game/systems/LightingPolish.ts`):**
+    - Novo helper privado `applyBloomFilter(sprite, color, strength)`, que
+      aplica `sprite.filters.internal.addGlow(...)` nos sprites emissivos —
+      complementa (não substitui) as luzes `Light2D` que já existiam: a luz
+      ilumina o CENÁRIO ao redor, o Glow faz o próprio sprite "vazar" brilho.
+      Idempotente (`filters.internal.clear()` antes de reaplicar) pra não
+      empilhar Glows de cores/spells diferentes em sprites reciclados de
+      `ObjectPool` (projéteis).
+    - Ligado nos pontos que já existiam e já são chamados em toda a gameplay
+      real (sem plumbing novo, só o helper dentro dos métodos existentes):
+      `addItemGlow` (itens raros+, não em comuns), `addCollectibleGlow`
+      (orbes de HP/Mana/gemas), `addSpellGlow` (projéteis de magia, incl.
+      `blood_bolt` via `PlayerSkillSystem.ts:240`), `addMonsterGlow` (só
+      tiers fortes — elites/chefes/abominações, `intensity >= 0.7` —
+      propositalmente NÃO em mobs comuns, pra não gerar ruído visual/custo de
+      GPU em toda entidade da tela) e `addPortalGlow`.
+    - **Excluído de propósito:** `addPlayerStaffGlow` — aplicar Glow no
+      sprite inteiro do jogador (em vez de só na ponta do cajado, que a luz
+      Light2D já simula via offset) deixaria o Bloodmage com um halo vermelho
+      permanente, pesado demais pro sprite principal sempre visível em tela.
+    - **Corner case de performance (mobile):** `MAX_ACTIVE_BLOOM_TARGETS = 16`
+      filtros simultâneos, e respeita as configs existentes
+      `settings.postProcessingEnabled` (já usada por `PostFXSystem`/
+      `LightingSystem`) e `settings.lowPerformanceParticles` (que antes não
+      era consumida em lugar nenhum do código — esta é a primeira vez que a
+      flag realmente desliga algo).
+  - **Validação:** 8 novos testes em `LightingPolish.test.ts` (mock da Filters
+    API do Phaser 4: `sprite.filters.internal.addGlow`/`clear`) cobrindo:
+    aplica em item lendário / não aplica em item comum; orbe e projétil de
+    magia; só monstro de tier alto; NÃO aplica no cajado do jogador; respeita
+    `postProcessingEnabled=false` e `lowPerformanceParticles=true`; idempotência
+    (limpa antes de reaplicar); teto de 16 alvos simultâneos. Balanceamento de
+    chaves/parênteses checado programaticamente (sandbox sem `node_modules`) —
+    recomenda-se rodar `pnpm test`/`pnpm verify` localmente e confirmar
+    visualmente em jogo (orbes/projéteis/itens raros com halo, sem impacto de
+    FPS perceptível).

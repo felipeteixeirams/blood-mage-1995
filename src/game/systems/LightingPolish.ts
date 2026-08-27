@@ -1,9 +1,20 @@
 import Phaser from 'phaser';
+import { useGameStore } from '../../store/gameStore';
 
 /**
  * LightingPolish (Fase 5 Final - Eixo A: Evolução Gráfica Avançada)
  * Efeitos de glow, flash de impacto crítico e iluminação refinada
  * Integra com LightingSystem e Phaser Light2D para criar atmosfera gótica imersiva.
+ *
+ * Bloom PostFX (docs/specs/11_VISUAL_POLISH_FRONTS.md, Frente 5 — 27/08): além
+ * das luzes Light2D (que iluminam o CENÁRIO ao redor do sprite), objetos-chave
+ * agora também recebem um filtro `Glow` (Phaser 4 Filters API,
+ * `sprite.filters.internal.addGlow`) — o equivalente mais próximo a um Bloom
+ * real que o Phaser 4 oferece (não existe `addBloom` nativo). Isso faz o
+ * próprio sprite "vazar" luz/brilho, em vez de só clarear os tiles vizinhos.
+ * Aplicado seletivamente (itens raros+, orbes, projéteis de magia, monstros de
+ * elite/chefe, portal, cajado do jogador) para não gerar custo de GPU em toda
+ * entidade da tela — ver `isBloomEnabled()` e `MAX_ACTIVE_BLOOM_TARGETS`.
  */
 
 export interface GlowConfig {
@@ -13,9 +24,15 @@ export interface GlowConfig {
   type: 'item' | 'monster' | 'spell' | 'portal' | 'damage';
 }
 
+// Corner case de performance (spec 11, Frente 5): limitar o nº de filtros Glow
+// simultâneos evita gargalo de GPU em aparelhos móveis mais fracos quando a
+// tela está cheia de projéteis/itens/monstros ao mesmo tempo.
+const MAX_ACTIVE_BLOOM_TARGETS = 16;
+
 export class LightingPolish {
   private scene: Phaser.Scene;
   private glowLights: Map<Phaser.GameObjects.GameObject, Phaser.GameObjects.Light> = new Map();
+  private bloomTargets: Set<Phaser.GameObjects.Sprite> = new Set();
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -30,6 +47,56 @@ export class LightingPolish {
       this.scene.lights &&
       this.scene.lights.active
     );
+  }
+
+  /**
+   * Verifica se o Bloom (filtro Glow por objeto) deve rodar: respeita a config
+   * de performance do jogador (`postProcessingEnabled`/`lowPerformanceParticles`)
+   * e o limite de instâncias simultâneas.
+   */
+  private isBloomEnabled(): boolean {
+    try {
+      const settings = useGameStore.getState().settings;
+      if (settings.postProcessingEnabled === false) return false;
+      if (settings.lowPerformanceParticles === true) return false;
+    } catch {
+      // Store indisponível (ex: em testes fora de contexto) — segue habilitado.
+    }
+    return this.bloomTargets.size < MAX_ACTIVE_BLOOM_TARGETS;
+  }
+
+  /**
+   * Aplica o filtro Glow (Bloom) a um sprite emissivo. Idempotente: reaplicar
+   * num sprite reciclado de ObjectPool limpa o filtro anterior antes, pra não
+   * empilhar Glows de spells/cores diferentes no mesmo objeto reutilizado.
+   */
+  private applyBloomFilter(sprite: Phaser.GameObjects.Sprite, color: number, strength: number = 3): void {
+    if (!sprite || !this.isBloomEnabled()) return;
+    const filters = (sprite as any).filters;
+    if (!filters || !filters.internal || typeof filters.internal.addGlow !== 'function') return;
+
+    try {
+      if (typeof filters.internal.clear === 'function') {
+        filters.internal.clear();
+      }
+      filters.internal.addGlow(color, strength, 0, 1, false, 8, 12);
+      this.bloomTargets.add(sprite);
+
+      const removeBloom = () => {
+        try {
+          if (filters.internal && typeof filters.internal.clear === 'function') {
+            filters.internal.clear();
+          }
+        } catch {
+          // ignore
+        }
+        this.bloomTargets.delete(sprite);
+      };
+      sprite.once('destroy', removeBloom);
+    } catch {
+      // Filtro indisponível (renderer sem suporte, ex: Canvas) — a luz Light2D
+      // já cobre parte do efeito, segue sem o Glow do sprite.
+    }
   }
 
   /**
@@ -50,6 +117,7 @@ export class LightingPolish {
 
     // Pulsação de escala e brilho para itens raros, épicos e lendários
     if (rarity === 'rare' || rarity === 'epic' || rarity === 'legendary') {
+      this.applyBloomFilter(sprite, config.color, config.intensity * 3);
       this.scene.tweens.add({
         targets: sprite,
         scale: { from: sprite.scale, to: sprite.scale * 1.18 },
@@ -76,6 +144,7 @@ export class LightingPolish {
 
     const config = collectibleGlows[type] || collectibleGlows.hp;
     this.addGlowEffect(sprite, config.color, config.intensity, config.radius);
+    this.applyBloomFilter(sprite, config.color, config.intensity * 3);
   }
 
   /**
@@ -105,6 +174,12 @@ export class LightingPolish {
 
     const config = monsterGlows[monsterType] || { color: 0xff3333, intensity: 0.4, radius: 30 };
     this.addGlowEffect(sprite, config.color, config.intensity, config.radius);
+
+    // Bloom só nos tiers mais fortes (elites/chefes/abominações) — aplicar em
+    // todo mob comum geraria ruído visual e custo de GPU desnecessário.
+    if (config.intensity >= 0.7) {
+      this.applyBloomFilter(sprite, config.color, config.intensity * 2.5);
+    }
   }
 
   /**
@@ -123,6 +198,7 @@ export class LightingPolish {
 
     const config = spellGlows[spellType] || { color: 0xdc2626, intensity: 0.7, radius: 35 };
     this.addGlowEffect(sprite, config.color, config.intensity, config.radius);
+    this.applyBloomFilter(sprite, config.color, config.intensity * 3);
   }
 
   /**
@@ -132,6 +208,7 @@ export class LightingPolish {
     if (!sprite || !sprite.active) return;
 
     this.addGlowEffect(sprite, 0x06b6d4, 0.95, 80);
+    this.applyBloomFilter(sprite, 0x06b6d4, 3.2);
 
     // Pulso constante na aura do portal
     this.scene.tweens.add({
@@ -260,9 +337,14 @@ export class LightingPolish {
     if (!this.isLight2DActive() || !sprite) return;
 
     // A luz do cajado é um vermelho sangue vibrante
-    const color = 0xef4444; 
+    const color = 0xef4444;
     const intensity = 0.8;
     const radius = 60;
+    // Nota: propositalmente SEM `applyBloomFilter` aqui — o filtro Glow cobre o
+    // sprite inteiro, então aplicá-lo no personagem completo (em vez de só na
+    // ponta do cajado, como a luz Light2D já simula via offset) deixaria o
+    // Bloodmage inteiro com um halo vermelho o tempo todo, pesado demais para
+    // o sprite principal sempre visível em tela.
 
     try {
       // Posiciona a luz ligeiramente acima e à direita do centro do sprite, para simular a ponta do cajado

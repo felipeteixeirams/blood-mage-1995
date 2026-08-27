@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LightingPolish } from './LightingPolish';
+import { useGameStore } from '../../store/gameStore';
 
 function makeMockScene() {
   const lights = {
@@ -29,9 +30,29 @@ function makeMockScene() {
   return { scene, lights, tweens, events };
 }
 
+// Sprite mock com a Filters API do Phaser 4 (`sprite.filters.internal.addGlow`),
+// usada pelo Bloom (spec 11, Frente 5 — ver LightingPolish.ts).
+function makeBloomSprite(overrides: Partial<{ x: number; y: number }> = {}) {
+  const addGlow = vi.fn();
+  const clear = vi.fn();
+  return {
+    x: overrides.x ?? 10,
+    y: overrides.y ?? 20,
+    scale: 1,
+    active: true,
+    once: vi.fn(),
+    filters: { internal: { addGlow, clear } },
+    __addGlow: addGlow,
+    __clear: clear,
+  } as any;
+}
+
+const initialSettings = useGameStore.getState().settings;
+
 describe('LightingPolish', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useGameStore.setState({ settings: { ...initialSettings, postProcessingEnabled: true, lowPerformanceParticles: false } });
   });
 
   it('adiciona glow ao item e inicia pulsação para itens raros/épicos/lendários', () => {
@@ -127,5 +148,102 @@ describe('LightingPolish', () => {
     polish.addMonsterGlow(mockSprite, 'skeleton_warrior');
     polish.cleanup();
     expect(lights.removeLight).toHaveBeenCalled();
+  });
+
+  describe('Bloom PostFX (spec 11, Frente 5 — filtro Glow por sprite)', () => {
+    it('aplica o filtro Glow em item épico/lendário, além da luz Light2D', () => {
+      const { scene } = makeMockScene();
+      const polish = new LightingPolish(scene as any);
+      const sprite = makeBloomSprite();
+
+      polish.addItemGlow(sprite, 'legendary');
+      expect(sprite.__addGlow).toHaveBeenCalledWith(0xf59e0b, expect.any(Number), 0, 1, false, 8, 12);
+    });
+
+    it('NÃO aplica Glow em item comum (só a luz Light2D)', () => {
+      const { scene } = makeMockScene();
+      const polish = new LightingPolish(scene as any);
+      const sprite = makeBloomSprite();
+
+      polish.addItemGlow(sprite, 'common');
+      expect(sprite.__addGlow).not.toHaveBeenCalled();
+    });
+
+    it('aplica Glow em orbes coletáveis e em projétil de magia', () => {
+      const { scene } = makeMockScene();
+      const polish = new LightingPolish(scene as any);
+      const orbSprite = makeBloomSprite();
+      const spellSprite = makeBloomSprite();
+
+      polish.addCollectibleGlow(orbSprite, 'mana');
+      expect(orbSprite.__addGlow).toHaveBeenCalled();
+
+      polish.addSpellGlow(spellSprite, 'blood_bolt');
+      expect(spellSprite.__addGlow).toHaveBeenCalled();
+    });
+
+    it('aplica Glow só em monstros de tier alto (elite/chefe), não em mobs comuns', () => {
+      const { scene } = makeMockScene();
+      const polish = new LightingPolish(scene as any);
+      const bossSprite = makeBloomSprite();
+      const trashSprite = makeBloomSprite();
+
+      polish.addMonsterGlow(bossSprite, 'gore_abomination');
+      expect(bossSprite.__addGlow).toHaveBeenCalled();
+
+      polish.addMonsterGlow(trashSprite, 'zombie_shambler');
+      expect(trashSprite.__addGlow).not.toHaveBeenCalled();
+    });
+
+    it('NÃO aplica Glow no cajado do jogador (evita halo no personagem inteiro)', () => {
+      const { scene } = makeMockScene();
+      const polish = new LightingPolish(scene as any);
+      const sprite = makeBloomSprite();
+
+      polish.addPlayerStaffGlow(sprite);
+      expect(sprite.__addGlow).not.toHaveBeenCalled();
+    });
+
+    it('respeita postProcessingEnabled=false (desliga o Bloom)', () => {
+      useGameStore.setState({ settings: { ...useGameStore.getState().settings, postProcessingEnabled: false } });
+      const { scene } = makeMockScene();
+      const polish = new LightingPolish(scene as any);
+      const sprite = makeBloomSprite();
+
+      polish.addSpellGlow(sprite, 'blood_bolt');
+      expect(sprite.__addGlow).not.toHaveBeenCalled();
+    });
+
+    it('respeita lowPerformanceParticles=true (desliga o Bloom em aparelhos fracos)', () => {
+      useGameStore.setState({ settings: { ...useGameStore.getState().settings, lowPerformanceParticles: true } });
+      const { scene } = makeMockScene();
+      const polish = new LightingPolish(scene as any);
+      const sprite = makeBloomSprite();
+
+      polish.addSpellGlow(sprite, 'blood_bolt');
+      expect(sprite.__addGlow).not.toHaveBeenCalled();
+    });
+
+    it('limpa o filtro Glow anterior antes de reaplicar (sprite reciclado do ObjectPool)', () => {
+      const { scene } = makeMockScene();
+      const polish = new LightingPolish(scene as any);
+      const sprite = makeBloomSprite();
+
+      polish.addSpellGlow(sprite, 'blood_bolt');
+      polish.addSpellGlow(sprite, 'hellfire_nova');
+      expect(sprite.__clear).toHaveBeenCalledTimes(2);
+      expect(sprite.__addGlow).toHaveBeenCalledTimes(2);
+    });
+
+    it('respeita o teto MAX_ACTIVE_BLOOM_TARGETS de filtros simultâneos', () => {
+      const { scene } = makeMockScene();
+      const polish = new LightingPolish(scene as any);
+
+      const sprites = Array.from({ length: 20 }, () => makeBloomSprite());
+      sprites.forEach((sprite) => polish.addSpellGlow(sprite, 'blood_bolt'));
+
+      const appliedCount = sprites.filter((s) => s.__addGlow.mock.calls.length > 0).length;
+      expect(appliedCount).toBe(16);
+    });
   });
 });
