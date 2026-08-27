@@ -711,3 +711,80 @@ export function saveCampaignState(state: PersistedCampaignState): void {
     logger.error('PERSISTENCE', 'Failed to save campaign state', e);
   }
 }
+
+// Auditoria de 27/08 (docs/product/ROADMAP.md, Fase 0) — `AchievementSystem.ts`
+// (usado por `GameScene.ts`) é um sistema de conquistas SEPARADO do baseado em
+// store (`gameStore.ts` + `data/achievements.json` + `AchievementsModal.tsx`,
+// já persistido via `loadAchievements`/`saveAchievements` acima, chave
+// `bloodmage_1995_achievements`, formato {id, unlocked, redeemed}). Os dois
+// sistemas coexistem com formatos incompatíveis — unificá-los é fora de escopo
+// desta correção (só fecha o item do Roadmap: acesso direto/sem Zod ao
+// localStorage). Aqui só validamos e namespaceamos o progresso do
+// `AchievementSystem.ts`, sem mudar seu formato ({id, unlockedAt, progress,
+// complete}). Migra automaticamente da chave antiga não-namespaceada
+// ("achievements_progress") na primeira carga.
+const ACHIEVEMENT_PROGRESS_KEY = 'bloodmage_1995_achievements_progress';
+const LEGACY_ACHIEVEMENT_PROGRESS_KEY = 'achievements_progress';
+
+export interface AchievementProgressRecord {
+  id: string;
+  unlockedAt: number | null;
+  progress: number;
+  complete: boolean;
+}
+
+const AchievementProgressRecordSchema = z.object({
+  id: z.string().max(100),
+  unlockedAt: z.number().nonnegative().nullable().catch(null),
+  progress: z.number().min(0).max(100).catch(0),
+  complete: z.boolean().catch(false),
+}).strict();
+
+const AchievementProgressMapSchema = z.record(z.string().max(100), AchievementProgressRecordSchema).catch({});
+
+export function loadAchievementProgress(): Record<string, AchievementProgressRecord> {
+  try {
+    const raw = localStorage.getItem(ACHIEVEMENT_PROGRESS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const validated = AchievementProgressMapSchema.safeParse(parsed);
+      if (validated.success && typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+        logger.debug('PERSISTENCE', 'Achievement progress (AchievementSystem) loaded successfully');
+        return validated.data;
+      } else {
+        logger.warn('PERSISTENCE', 'Progresso de achievements inválido no localStorage. Restaurando padrão.', { raw });
+      }
+    } else {
+      // Migração única da chave legada sem namespace/validação.
+      const legacyRaw = localStorage.getItem(LEGACY_ACHIEVEMENT_PROGRESS_KEY);
+      if (legacyRaw) {
+        try {
+          const legacyParsed = JSON.parse(legacyRaw);
+          const validated = AchievementProgressMapSchema.safeParse(legacyParsed);
+          if (validated.success && typeof legacyParsed === 'object' && legacyParsed !== null && !Array.isArray(legacyParsed)) {
+            logger.debug('PERSISTENCE', 'Migrando progresso de achievements da chave legada "achievements_progress".');
+            saveAchievementProgress(validated.data);
+            localStorage.removeItem(LEGACY_ACHIEVEMENT_PROGRESS_KEY);
+            return validated.data;
+          }
+        } catch (e) {
+          logger.warn('PERSISTENCE', 'Falha ao migrar progresso legado de achievements', e);
+        }
+      }
+    }
+  } catch (e) {
+    logger.warn('PERSISTENCE', 'Failed to load achievement progress (AchievementSystem)', e);
+  }
+  return {};
+}
+
+export function saveAchievementProgress(progress: Record<string, AchievementProgressRecord>): void {
+  try {
+    const validated = AchievementProgressMapSchema.safeParse(progress);
+    const valueToSave = validated.success ? validated.data : {};
+    localStorage.setItem(ACHIEVEMENT_PROGRESS_KEY, JSON.stringify(valueToSave));
+    logger.debug('PERSISTENCE', 'Achievement progress (AchievementSystem) saved successfully');
+  } catch (e) {
+    logger.error('PERSISTENCE', 'Failed to save achievement progress (AchievementSystem)', e);
+  }
+}

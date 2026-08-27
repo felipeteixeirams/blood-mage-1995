@@ -24,6 +24,7 @@ export interface AchievementProgress {
 }
 
 import { logger } from '../../utils/logger';
+import { loadAchievementProgress, saveAchievementProgress, AchievementProgressRecord } from '../../utils/localStorage';
 
 export class AchievementSystem {
   private achievements: Map<string, Achievement> = new Map();
@@ -136,32 +137,30 @@ export class AchievementSystem {
   }
 
   /**
-   * Carregar progresso de achievements do localStorage
+   * Carregar progresso de achievements do localStorage (via utils/localStorage.ts,
+   * validado com Zod e namespaceado — docs/product/ROADMAP.md, Fase 0, auditoria 27/08).
    */
   private loadProgress(): void {
     try {
-      const saved = localStorage.getItem('achievements_progress');
-      if (saved) {
-        const data = JSON.parse(saved);
-        Object.entries(data).forEach(([id, prog]: [string, any]) => {
-          this.progress.set(id, prog);
-        });
-      }
+      const data = loadAchievementProgress();
+      Object.entries(data).forEach(([id, prog]) => {
+        this.progress.set(id, prog);
+      });
     } catch (e) {
       logger.error('ACHIEVEMENT', 'Erro ao carregar achievements', { error: e });
     }
   }
 
   /**
-   * Salvar progresso no localStorage
+   * Salvar progresso no localStorage (via utils/localStorage.ts, validado com Zod).
    */
   private saveProgress(): void {
     try {
-      const data: Record<string, AchievementProgress> = {};
+      const data: Record<string, AchievementProgressRecord> = {};
       this.progress.forEach((prog, id) => {
         data[id] = prog;
       });
-      localStorage.setItem('achievements_progress', JSON.stringify(data));
+      saveAchievementProgress(data);
     } catch (e) {
       logger.error('ACHIEVEMENT', 'Erro ao salvar achievements', { error: e });
     }

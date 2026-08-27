@@ -5,6 +5,7 @@ import {
 } from "../../utils/uiTextures";
 import { generateUITextures } from "../../utils/textureGenerator";
 import { logger } from "../../utils/logger";
+import { loadHighScores } from "../../utils/localStorage";
 
 // Hybrid asset architecture (AGENTS.md): try the real physical asset first;
 // create() falls back to the procedural generator only for keys that fail.
@@ -14,8 +15,6 @@ import plaqueUrl from "../../assets/ui/ui-plaque.png";
 
 export const BASE_W = 960;
 export const BASE_H = 540;
-
-const STORE_KEY = "bloodmage.records";
 
 export type RecordEntry = { name: string; score: number; level: number };
 
@@ -30,29 +29,23 @@ const DEMO: RecordEntry[] = [
   { name: "NYX", score: 21050, level: 4 },
 ];
 
+// Auditoria de 27/08 (docs/product/ROADMAP.md, Fase 0): esta função lia direto
+// de duas chaves de localStorage ("bloodmage_1995_high_scores" e
+// "bloodmage.records") que nunca eram escritas em lugar nenhum — os recordes
+// reais são salvos por `saveHighScore`/`loadHighScores` (utils/localStorage.ts,
+// validado com Zod, chave `bloodmage_1995_highscores`) e chegam aqui via
+// `scene.registry.get("scores")` (ver `HighScoresModal.tsx`). O fallback abaixo
+// agora usa `loadHighScores()` em vez da chave morta, então mesmo se a cena for
+// aberta sem passar pelo registry, ele mostra os recordes reais do jogador.
 function loadRecords(scene: Phaser.Scene): RecordEntry[] {
   const reg = scene.registry.get("scores");
-  if (Array.isArray(reg) && reg.length > 0) {
-    return reg.map((item: any, idx: number) => ({
+  const source = Array.isArray(reg) && reg.length > 0 ? reg : loadHighScores();
+  if (Array.isArray(source) && source.length > 0) {
+    return source.map((item: any, idx: number) => ({
       name: item.name || `BRUXO #${idx + 1}`,
       score: item.score || 0,
       level: item.levelReached || item.wave || 1,
     })).sort((a, b) => b.score - a.score).slice(0, 8);
-  }
-  try {
-    const raw = localStorage.getItem("bloodmage_1995_high_scores") || localStorage.getItem(STORE_KEY);
-    if (raw) {
-      const list = JSON.parse(raw);
-      if (Array.isArray(list) && list.length) {
-        return list.map((item: any, idx: number) => ({
-          name: item.name || `BRUXO #${idx + 1}`,
-          score: item.score || 0,
-          level: item.levelReached || item.wave || 1,
-        })).sort((a: any, b: any) => b.score - a.score).slice(0, 8);
-      }
-    }
-  } catch {
-    /* ignore */
   }
   return DEMO;
 }

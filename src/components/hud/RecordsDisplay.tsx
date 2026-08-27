@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import type { RecordEntry } from '../../game/scenes/RecordsScene';
+import { loadHighScores } from '../../utils/localStorage';
 
 interface RecordsDisplayProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const STORE_KEY = 'bloodmage.records';
 
 const DEMO: RecordEntry[] = [
   { name: 'VORTHAK', score: 98450, level: 12 },
@@ -20,17 +19,25 @@ const DEMO: RecordEntry[] = [
   { name: 'NYX', score: 21050, level: 4 },
 ];
 
+// Auditoria de 27/08 (docs/product/ROADMAP.md, Fase 0): esta função lia direto
+// da chave de localStorage "bloodmage.records", que nunca era escrita em lugar
+// nenhum — o "Salão dos Recordes" do menu de pausa sempre mostrava a lista DEMO,
+// nunca os recordes reais do jogador. Os recordes reais são salvos por
+// `saveHighScore`/`loadHighScores` (utils/localStorage.ts, validado com Zod,
+// chave `bloodmage_1995_highscores`) — mesma fonte que `HighScoresModal.tsx`
+// (menu principal) já usa via `store.highScores`. Corrigido para usar
+// `loadHighScores()` também aqui.
 function loadRecords(): RecordEntry[] {
-  try {
-    const raw = localStorage.getItem(STORE_KEY);
-    if (raw) {
-      const list = JSON.parse(raw) as RecordEntry[];
-      if (Array.isArray(list) && list.length) {
-        return [...list].sort((a, b) => b.score - a.score).slice(0, 8);
-      }
-    }
-  } catch {
-    // ignore
+  const scores = loadHighScores();
+  if (Array.isArray(scores) && scores.length > 0) {
+    return scores
+      .map((item, idx) => ({
+        name: `BRUXO #${idx + 1}`,
+        score: item.score,
+        level: item.levelReached,
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8);
   }
   return DEMO;
 }
