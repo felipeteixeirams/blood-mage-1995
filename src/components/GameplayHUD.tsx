@@ -16,7 +16,7 @@ import { soundEngine } from '../utils/soundEngine';
 import { useGameStore } from '../store/gameStore';
 import type { FloatingJoystickState } from '../hooks/useFloatingJoystick';
 import {
-  Eye, EyeOff, Settings, X, Shield, Scroll, RefreshCw,
+  Eye, EyeOff, Settings, X, Shield, RefreshCw,
   MapPin, Backpack, Sparkles, Volume2, VolumeX, Pause, Play, LogOut, CheckSquare, Square, Skull
 } from 'lucide-react';
 
@@ -157,7 +157,6 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
   const [splatters, setSplatters] = useState<BloodSplatter[]>([]);
   const [exploredRatio, setExploredPercentage] = useState<number>(18); // Reveal map progress
   const [isQuickSettingsOpen, setQuickSettingsOpen] = useState(false);
-  const [inventoryActiveTab, setInventoryActiveTab] = useState<'items' | 'scrolls'>('items');
 
   // Cooldown timers
   const [activeCooldowns, setCooldowns] = useState<Record<string, number>>({});
@@ -460,113 +459,12 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
         <ContractHUD />
       </div>
 
-      {/* ── INVENTORY MODAL OVERLAY (Gothic Stone Slab Style) ── */}
-      {isInventoryOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
-          <div className="bg-[#0c0a09] border-4 border-double border-[#b8860b] shadow-[0_0_35px_rgba(0,0,0,0.95)] p-5 max-w-md w-full relative flex flex-col gap-3">
-            {/* Cantoneiras douradas simuladas nos quatro cantos */}
-            <div className="absolute top-1 left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-[#b8860b]" />
-            <div className="absolute top-1 right-1 w-2.5 h-2.5 border-t-2 border-r-2 border-[#b8860b]" />
-            <div className="absolute bottom-1 left-1 w-2.5 h-2.5 border-b-2 border-l-2 border-[#b8860b]" />
-            <div className="absolute bottom-1 right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-[#b8860b]" />
-
-            {/* Header */}
-            <div className="flex justify-between items-center border-b-2 border-[#b8860b]/30 pb-2.5">
-              <div className="flex items-center gap-2">
-                <Backpack className="text-[#e8c76a]" size={16} />
-                <h3 className="font-pixel text-[#e8c76a] text-xs md:text-sm uppercase tracking-widest font-bold">TESOUROS DO SACRIFÍCIO</h3>
-              </div>
-              <button
-                onClick={() => setInventoryOpen(false)}
-                className="p-1 hover:bg-red-950/40 text-red-400 border border-red-900/40 w-8 h-8 flex items-center justify-center"
-              >
-                <X size={14} />
-              </button>
-            </div>
-
-            {/* Tab selector */}
-            <div className="flex gap-1.5">
-              <button
-                onClick={() => setInventoryActiveTab('items')}
-                className={`flex-1 py-1.5 text-[9px] uppercase font-bold border transition ${
-                  inventoryActiveTab === 'items'
-                    ? 'bg-[#1e1713] text-[#e8c76a] border-[#b8860b]'
-                    : 'bg-black/40 border-gray-900 text-gray-500 hover:text-gray-300'
-                }`}
-              >
-                EQUIPAMENTO
-              </button>
-              <button
-                onClick={() => setInventoryActiveTab('scrolls')}
-                className={`flex-1 py-1.5 text-[9px] uppercase font-bold border transition ${
-                  inventoryActiveTab === 'scrolls'
-                    ? 'bg-[#1e1713] text-[#e8c76a] border-[#b8860b]'
-                    : 'bg-black/40 border-gray-900 text-gray-500 hover:text-gray-300'
-                }`}
-              >
-                PERGAMINHOS & ELIXIRES
-              </button>
-            </div>
-
-            {/* Grid display */}
-            {inventoryActiveTab === 'items' ? (
-              <div className="grid grid-cols-4 gap-2 bg-[#120e0d]/80 p-2.5 border border-[#b8860b]/20">
-                {/* Cajado de Osso */}
-                <div className="aspect-square bg-[#0f0a09] border-2 border-[#b8860b] p-1.5 flex flex-col items-center justify-center relative group cursor-pointer hover:border-amber-400">
-                  <svg viewBox="0 0 24 24" className="w-8 h-8 text-[#e8c76a] fill-none stroke-current" strokeWidth="1.5">
-                    <line x1="4" y1="20" x2="20" y2="4" />
-                    <circle cx="20" cy="4" r="3" />
-                    <path d="M 4,20 L 7,21 L 5,18 Z" fill="currentColor" />
-                  </svg>
-                  {/* Gold rare tag */}
-                  <span className="absolute bottom-0 inset-x-0 bg-amber-600/90 text-[6px] text-center text-black font-bold uppercase font-sans">LENDÁRIO</span>
-                </div>
-
-                {/* Gema de Sangue */}
-                <div className="aspect-square bg-[#0f0a09] border-2 border-red-800 p-1.5 flex flex-col items-center justify-center relative group cursor-pointer hover:border-red-400">
-                  <svg viewBox="0 0 24 24" className="w-8 h-8 text-[#ff3333] fill-current">
-                    <polygon points="12,2 20,9 12,22 4,9" />
-                  </svg>
-                  <span className="absolute bottom-0 inset-x-0 bg-red-800/95 text-[6px] text-center text-white font-bold uppercase font-sans">SANGUÍNEO</span>
-                </div>
-
-                {/* Slots placeholders */}
-                {Array.from({ length: 6 }).map((_, idx) => (
-                  <div key={`inv-slot-${idx}`} className="aspect-square bg-[#0c0a09]/80 border border-gray-900 flex items-center justify-center text-gray-700 font-bold">
-                    +
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2 bg-[#120e0d]/80 p-2.5 border border-[#b8860b]/20 max-h-48 overflow-y-auto">
-                {/* Scroll item 1 */}
-                <div className="flex gap-2.5 p-2 bg-[#0c0a09] border border-gray-900">
-                  <Scroll className="text-[#e8c76a] w-6 h-6 shrink-0" />
-                  <div className="flex flex-col text-left">
-                    <span className="text-[9px] text-[#e8c76a] uppercase font-bold">Pergaminho de Hemomancia</span>
-                    <span className="text-[8px] text-gray-400 leading-tight">Casta instantaneamente a habilidade Blood Nova causando 250% de dano base sacrificando vitalidade.</span>
-                  </div>
-                </div>
-
-                {/* Scroll item 2 */}
-                <div className="flex gap-2.5 p-2 bg-[#0c0a09] border border-gray-900">
-                  <Shield className="text-blue-400 w-6 h-6 shrink-0" />
-                  <div className="flex flex-col text-left">
-                    <span className="text-[9px] text-blue-300 uppercase font-bold">Elixir de Almas</span>
-                    <span className="text-[8px] text-gray-400 leading-tight">Restaura 50% de Mana instantaneamente e concede imunidade a fadiga por 10 segundos.</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tooltip detail inside Inventory */}
-            <div className="bg-[#120e0d] border border-gray-900 p-2.5 text-left">
-              <span className="text-[9px] text-[#e8c76a] font-bold uppercase block">CAJADO DE OSSO (LENDÁRIO)</span>
-              <span className="text-[8px] text-gray-400 block mt-0.5 leading-tight">Concedido pelas almas perdidas no Fosso das Chagas. Concede +15% de Dano de Sangue e reduz o custo de HP de suas magias em 20%.</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Docs/specs/12_EXPANSION_FRONTS.md — auditoria de 27/08: este bloco era
+          um segundo overlay de inventário (mockup hardcoded, item fixos,
+          nunca lia `equipment`/loot real), gatilhado pelo MESMO
+          `isInventoryOpen` que o `InventoryModal.tsx` de verdade (renderizado
+          por `App.tsx`) — os dois renderizavam simultaneamente. Removido;
+          `InventoryModal.tsx` é o único inventário agora. */}
 
       {/* ── QUICK CONFIGURATIONS OVERLAY PANEL ── */}
       {isQuickSettingsOpen && (

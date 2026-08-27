@@ -9,7 +9,7 @@
 - [x] Testes / Estabilidade do Build / Vercel Deploy
 - [x] Segurança (Secrets fora do client)
 - [x] Workflow dos agentes ajustado e documentação limpa (Modo: Context-Driven)
-- [ ] Isolamento de Storage no `localStorage` (evitar que gameplay acesse direto, usar Zod schemas)
+- [ ] Isolamento de Storage no `localStorage` (evitar que gameplay acesse direto, usar Zod schemas) — **quase lá (auditado 27/08):** `src/utils/localStorage.ts` já cobre praticamente tudo com Zod (settings, high scores, cristais, talentos, relíquias, codex, achievements, run stats, e agora `campaignState` — ver `docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md`). Faltam só 3 pontos de acesso direto e sem validação: `RecordsScene.ts:43`, `AchievementSystem.ts:143,164` e `RecordsDisplay.tsx:25` (chaves `bloodmage_1995_high_scores`/`achievements_progress`, fora do padrão de nomenclatura `bloodmage_1995_*` usado no resto). Migrar esses 3 fecha o item de vez.
 
 ## 🟡 FASE 1 — Descoberta do Jogo (Foco Atual)
 **Objetivo:** Descobrir que jogo realmente queremos fazer (Experimentação Rápida).

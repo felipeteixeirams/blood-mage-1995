@@ -7,21 +7,23 @@ Estruturar o polimento visual e os efeitos gráficos (VFX) do *Blood Mage 1995* 
 
 ## Mapeamento Geral: As 8 Frentes de Polimento
 
-1. **Construção do Ambiente e Mundo (Dungeon & World Gen):** 
+> **Nota (27/08):** esta spec nunca tinha tags de status `[CONCLUÍDO]`/`[PARCIAL]`/`[PENDENTE]` nem changelog — foi escrita como proposta e ficou assim, mesmo depois de metade das frentes já estarem implementadas via outro trabalho (Frente 5 de iluminação veio meio de carona com o Eixo A de gráficos avançados, ver `docs/archive/specs/andamento/06_EIXO_A_GRAFICOS_AVANCADOS.md`). Auditoria de código feita em 27/08 — ver `## 📈 Histórico de Progresso` no fim do arquivo.
+
+1. **[PENDENTE] Construção do Ambiente e Mundo (Dungeon & World Gen):**
    - Gerador de layouts orgânicos (BSP + Cellular Automata) e texturização via ruído procedural, mesclando corredores naturais com criptas quadradas.
-2. **Efeitos de Ambientação e Clima (Atmospherics & Weather):** 
+2. **[CONCLUÍDO] Efeitos de Ambientação e Clima (Atmospherics & Weather):**
    - Sistema de névoa volumétrica usando *Perlin Noise* em movimento, ciclo de tempo base/tint, e chuvas de partículas (sangue/cinzas).
-3. **Efeitos de Mundo e Interação de Solo (World Reactions):** 
+3. **[PARCIAL] Efeitos de Mundo e Interação de Solo (World Reactions):**
    - Decals no solo persistentes (pegadas de sangue, cinzas) e reflexos locais em poças mapeadas dinamicamente.
-4. **Construção e Efeitos de Personagens (Atores - Mobs e Jogador):** 
+4. **[PARCIAL] Construção e Efeitos de Personagens (Atores - Mobs e Jogador):**
    - *Game feel* aplicado aos corpos: *Squash & Stretch*, dismemberment aprimorado (gore dinâmico particionado) e *Hit Stop/Hit Flash* para feedback de impacto.
-5. **Iluminação e Efeitos de Magia (Spell & Lighting VFX):** 
+5. **[PARCIAL] Iluminação e Efeitos de Magia (Spell & Lighting VFX):**
    - Iluminação 2D com emissão dinâmica a partir de magias, orbes e tochas, com adição de Bloom FX no pipeline global para realçar energia.
-6. **Áudio e Feedback Sonoro (Audio Engineering):** 
+6. **[PENDENTE] Áudio e Feedback Sonoro (Audio Engineering):**
    - Sintetizadores espaciais proceduralmente ajustados (Pitch Shifting aleatório e drones dinâmicos de sub-grave para tensão dependente do ambiente).
-7. **Objetos, Loot e Cosméticos (Items & Wearables):** 
+7. **[PENDENTE] Objetos, Loot e Cosméticos (Items & Wearables):**
    - Palette Swapping procedural. Equipamentos que alteram o `tint` base do personagem e adicionam emissores afixados (ex: manto flamejante gerando faíscas).
-8. **NPCs e Interatividade (Quests & World Events):** 
+8. **[PARCIAL] NPCs e Interatividade (Quests & World Events):**
    - Painéis de interação integrados no HUD (React), *barks* de texto flutuantes e pulsação em estruturas interativas como altares de sangue.
 
 ---
@@ -30,7 +32,7 @@ Estruturar o polimento visual e os efeitos gráficos (VFX) do *Blood Mage 1995* 
 
 Abaixo estão detalhadas as duas frentes prioritárias recomendadas, preparadas para implementação sequencial e segura.
 
-### Prioridade 1: Frente 5 - Iluminação Dinâmica e Efeitos de Magia (Lighting & Spells)
+### [PARCIAL] Prioridade 1: Frente 5 - Iluminação Dinâmica e Efeitos de Magia (Lighting & Spells)
 
 **1. Escopo**
 - Ativar o sistema de `Light2D` (Pipeline WebGL) no `LightingSystem.ts` e mapas base.
@@ -70,7 +72,7 @@ Abaixo estão detalhadas as duas frentes prioritárias recomendadas, preparadas 
 
 ---
 
-### Prioridade 2: Frente 2 - Atmosfera e Clima (Névoa Volumétrica)
+### [CONCLUÍDO] Prioridade 2: Frente 2 - Atmosfera e Clima (Névoa Volumétrica)
 
 **1. Escopo**
 - Adicionar uma camada superior visual de "Névoa" (Fog) que flutua independentemente da câmera.
@@ -102,3 +104,67 @@ Abaixo estão detalhadas as duas frentes prioritárias recomendadas, preparadas 
 - Uma névoa visual translúcida desliza pelo mapa do jogo de forma contínua.
 - A mudança de opacidade funciona a depender da configuração do `WorldManager` sem estourar o limite da CPU (60fps consistentes).
 - Ausência de regressão nos assets ou controles, integridade mantida.
+
+---
+
+## 📈 Histórico de Progresso (Changelog)
+
+- **[2026-08-27] Auditoria de código — status real das 8 Frentes:**
+  - Status: spec atualizada com tags de status pela primeira vez (nunca tinha
+    changelog nem `[CONCLUÍDO]`/`[PARCIAL]`/`[PENDENTE]`); nenhum código foi
+    escrito nesta entrada, só leitura + correção da documentação.
+  - **Achados por Frente (evidência por arquivo:linha):**
+    - **Frente 1 (World Gen) — PENDENTE:** `DungeonGenerator.ts:93-118` usa um
+      grid fixo 3x3 de salas retangulares (`cols=3, rows=3, roomW=440,
+      roomH=320`). Nenhum traço de BSP ou Cellular Automata — o layout é
+      sempre a mesma malha, só o conteúdo das salas muda.
+    - **Frente 2 (Atmosfera/Névoa) — CONCLUÍDO:** `AtmosphereSystem.ts`
+      existe e implementa exatamente o descrito: `groundFog`/`upperHaze`
+      via `Phaser.GameObjects.TileSprite` (linha 30-31), `setBiome(biome)`
+      (linha 191) trocando o clima por bioma.
+    - **Frente 3 (World Reactions) — PARCIAL:** `BloodSplatterSystem.ts`
+      registra "zona líquida reflexiva" pro `ReflectionSystem.ts`
+      (`BloodSplatterSystem.ts:310`, `ReflectionSystem.ts:29-77`,
+      `registerEntity`/`unregisterEntity`) — decals de sangue e reflexos em
+      poças existem. Não verificado: pegadas de passos persistentes (cinzas)
+      mencionadas na spec; pode já existir noutro sistema não mapeado nesta
+      auditoria, vale checar em jogo antes de assumir que falta.
+    - **Frente 4 (Character FX) — PARCIAL:** `CombatFeel.ts:66-67` implementa
+      Hit Stop (`hitStopDuration` 40-80ms) e `CombatFeel.ts:171-182`
+      implementa Squash & Stretch de verdade (`squashX/Y`, `stretchX/Y`
+      escalando o sprite no impacto). `DismembermentSystem.ts` existe e faz
+      gore particionado. O que falta pra fechar: não foi confirmado Hit
+      *Flash* (mudança de tint no frame do impacto, distinto do squash) — vale
+      checar `CombatFeel.ts` de novo com mais tempo.
+    - **Frente 5 (Iluminação) — PARCIAL:** `LightingSystem.ts:91` chama
+      `lights.enable()`, linha 107 `lights.setAmbientColor()`, linha 117
+      aplica o pipeline `'Light2D'` nos sprites — a base de iluminação 2D
+      dinâmica está pronta e é usada em toda parte (magias, orbes, tochas).
+      **O que falta:** nenhum Bloom PostFX real — `grep -rn "bloom" src/game/
+      systems/*.ts` só acha um comentário solto em
+      `VirtualJoystickSystem.ts:73` (blend mode ADD pro joystick, não
+      correlato). O critério de aceite #4 da Frente 5 ("Bloom PostFX") segue
+      pendente.
+    - **Frente 6 (Áudio Procedural) — PENDENTE:** `soundEngine.ts` tem vários
+      `filter.type = 'lowpass'` mas nenhum `playbackRate`/`detune` (pitch
+      shift aleatório) nem oscilador dedicado de drone de tensão. O
+      sintetizador de BGM (`bgmSynthesizer.ts`, ver spec 12 Frente 5) é um
+      sistema *diferente e mais recente* que cobre música, não os SFX
+      espaciais que esta frente descreve.
+    - **Frente 7 (Palette Swap / Cosméticos) — PENDENTE:** `grep -n
+      "equipment\." src/game/objects/Player.ts` não retorna nada — equipar
+      arma/armadura/relíquia (`equipment: EquipmentSlots` no `gameStore.ts`)
+      não muda o `tint` do sprite do jogador nem adiciona emissores de
+      partícula afixados. O `setTint` que existe em `Player.ts` é todo pra
+      feedback de dano/status (sangramento verde, veneno roxo, etc.), não pra
+      cosmético de equipamento.
+    - **Frente 8 (NPCs/Quests) — PARCIAL:** painéis de interação no HUD React
+      e *barks* de texto flutuante existem e funcionam
+      (`GameScene.spawnFloatingText`, `DialogueModal.tsx`, `QuestTracker.tsx`
+      — ver spec 13). **O que falta:** nenhuma pulsação visual nas estruturas
+      interativas (o Altar Ancestral de `spr_altar_crimson` é um sprite
+      estático, sem tween de pulso/glow reagindo à proximidade do jogador).
+  - **Validação:** auditoria por leitura de código + `grep` direcionado
+    (sandbox sem `node_modules`, sem execução real do jogo — os itens
+    marcados "não verificado"/"vale checar em jogo" acima são exatamente
+    onde a leitura de código sozinha não é conclusiva).

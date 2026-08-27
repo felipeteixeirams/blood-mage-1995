@@ -7,24 +7,35 @@ Estruturar o plano de expansão do *Blood Mage 1995*, focando em aprofundar as m
 
 ## Mapeamento Geral: As 4 Frentes de Expansão
 
-1. **Interações de Ambiente e Armadilhas (Dungeon Depth):**
+> **Nota (27/08):** o changelog abaixo documenta uma 5ª Frente (Trilha Sonora
+> Procedural) que nunca foi adicionada a este mapeamento — a lista ficou
+> desatualizada em relação ao próprio changelog da spec. Corrigido abaixo.
+> Auditoria de código feita em 27/08 confirmou as Frentes 1-3 e 5 batem com o
+> que o changelog descreve; a Frente 4 teve uma ressalva séria (bug do
+> inventário duplicado), **corrigida no mesmo dia** — ver
+> `## 📈 Histórico de Progresso`.
+
+1. **[CONCLUÍDO] Interações de Ambiente e Armadilhas (Dungeon Depth):**
     - Armadilhas procedurais nas salas (espinhos de chão, dardos, poças tóxicas) que punam tanto o jogador quanto os inimigos.
     - Estruturas de sacrifício (Altares Sombrios) para acordos de HP vs Bônus.
     - Elementos destrutíveis e voláteis (barris explosivos de sangue/veneno).
 
-2. **Inteligência Artificial e Modificadores de Elite (Combat Challenge):**
+2. **[CONCLUÍDO] Inteligência Artificial e Modificadores de Elite (Combat Challenge):**
     - Novos afixos para elites: *Vampirismo* (rouba vida), *Teleporte* (esquiva agressiva), *Reflexão* (escudos que rebatem magias).
     - Telegrafia de ataques em área (zonas de perigo) para incentivar o uso do *dash*.
 
-3. **Meta-Progressão e Economia (Replayability):**
+3. **[CONCLUÍDO] Meta-Progressão e Economia (Replayability):**
     - Sink para Cristais de Sangue no Hub/Menu.
     - Árvore de talentos permanente roguelite (vitalidade, crítico, regeneração).
     - Sinergia e mutação de relíquias (ex: feitiços que mudam de propriedades com certas relíquias).
 
-4. **Interface, UX e Polimento Sombrio (Game Feel):**
+4. **[CONCLUÍDO] Interface, UX e Polimento Sombrio (Game Feel):**
     - Comparativo visual de equipamentos e itens no chão (setas verde/vermelho).
     - Minimapa procedimental mapeado durante a exploração na HUD.
     - Aprimoramento da clareza de feedback visual de buffs/debuffs.
+
+5. **[CONCLUÍDO] Trilha Sonora Procedural 16-Bit (Web Audio Synthesizer Engine):**
+    - Sintetizador FM 100% código (sem arquivos de áudio externos) com temas dinâmicos por bioma e reatividade a HP crítico/modais abertos.
 
 ---
 
@@ -127,3 +138,66 @@ Estruturar o plano de expansão do *Blood Mage 1995*, focando em aprofundar as m
       - *Modo Pânico / HP Crítico (<25% HP):* Aceleração de BPM (+12%) e pulso de batimento cardíaco sombrio em tempo real.
     - **Integração:** `soundEngine.ts`, `GameScene.ts` e `App.tsx` sincronizados com volumes e mudo das configurações.
   - **Validação:** Testes dedicados em `src/utils/bgmSynthesizer.test.ts` (8 testes passando) e TypeScript verificado com 0 erros.
+
+- **[2026-08-27] Auditoria de código — status real das 5 Frentes:**
+  - Status: confirma Frentes 1, 2, 3 e 5 batendo com o changelog (evidência
+    abaixo); **rebaixa a Frente 4 de CONCLUÍDO pra PARCIAL** por um bug real
+    achado nesta auditoria. Também corrige o "Mapeamento Geral" (tags de
+    status acima), que nunca listava a Frente 5 apesar dela já estar
+    documentada como concluída no changelog há uma leva.
+  - **Confirmado por leitura de código:**
+    - Frente 1: `Traps.ts` (`SpikeTrap`/`ExplosiveBarrel`), geração em
+      `DungeonGenerator.ts` — ok (e agora com um ajuste de escopo: não spawna
+      mais em `gloomy_woods`, ver spec 13).
+    - Frente 2: `spawnReflectedSpark` em `GameScene.ts:1761`, afixos
+      `teleporter`/`reflective` em `EliteAffix` (`types/game.ts:131`) — ok.
+    - Frente 3: `talentLevels` persistido em `gameStore.ts` (`loadTalentLevels`/
+      `saveTalentLevels`) — ok.
+    - Frente 5: `bgmSynthesizer.ts` + `bgmSynthesizer.test.ts` existem — ok.
+  - **Frente 4 — o que achamos:** `src/components/InventoryModal.tsx` existe
+    de verdade e é o modal real, renderizado por `App.tsx` (`isInventoryOpen &&
+    <InventoryModal ... />`), com o comparativo de atributos
+    (`ArrowUpRight`/`ArrowDownRight` de `lucide-react`) que o changelog
+    descreve — até aqui bate. **Mas** `GameplayHUD.tsx` (linha ~464, seção
+    comentada `{/* ── INVENTORY MODAL OVERLAY (Gothic Stone Slab Style) ── */}`)
+    tem um **segundo** overlay de inventário, gatilhado pelo **mesmo**
+    `isInventoryOpen`, com item fixos hardcoded ("Cajado de Osso — LENDÁRIO",
+    "Gema de Sangue — SANGUÍNEO", 6 slots vazios "+", 2 pergaminhos estáticos)
+    que não lê `equipment`/loot real nenhum — parece ser a versão antiga/mockup
+    do inventário, esquecida no lugar depois que `InventoryModal.tsx` foi
+    construído por cima. Os dois têm `z-50` e `fixed inset-0` — quando o
+    jogador abre o inventário hoje, os dois provavelmente renderizam ao mesmo
+    tempo (qual fica por cima depende da ordem no DOM, não verificado
+    visualmente nesta auditoria). Isso não foi corrigido nesta entrada — só
+    documentado; é candidato natural pra próxima leva (ver sugestões de
+    frentes na conversa).
+  - **Validação:** achado por leitura de código (`grep`/`Read` direcionados),
+    não confirmado visualmente em jogo — sandbox sem `node_modules`/browser
+    real. Recomenda-se abrir o inventário em jogo e checar se dá pra ver as
+    duas versões sobrepostas antes de decidir como remover a antiga.
+
+- **[2026-08-27] Fix: removido o overlay de inventário duplicado (bug acima):**
+  - Status: **RESOLVIDO** — restaura a Frente 4 de PARCIAL pra **CONCLUÍDO**
+    no "Mapeamento Geral".
+  - **Implementado:**
+    - Removido de `GameplayHUD.tsx` o bloco inteiro do segundo overlay
+      (`{/* ── INVENTORY MODAL OVERLAY (Gothic Stone Slab Style) ── */}` até
+      seu `)}` de fechamento, ~linhas 463-569), que era gatilhado pelo mesmo
+      `isInventoryOpen` e nunca lia `equipment`/loot real (item fixos
+      hardcoded). Deixado no lugar um comentário explicando a remoção e
+      referenciando esta entrada de auditoria.
+    - Removido o estado agora morto
+      `const [inventoryActiveTab, setInventoryActiveTab] = useState<'items' |
+      'scrolls'>('items')`, usado só dentro do bloco removido.
+    - Removido `Scroll` do import de `lucide-react` em `GameplayHUD.tsx`
+      (usado só dentro do bloco removido); `Backpack` foi mantido — ainda usado
+      em outro botão do HUD.
+    - `src/components/InventoryModal.tsx` (renderizado por `App.tsx`) agora é
+      o único inventário do jogo.
+  - **Observação:** correção feita a pedido explícito do usuário, selecionada
+    dentre as opções de "novas frentes" sugeridas nesta mesma auditoria.
+  - **Validação:** balanceamento de chaves/parênteses/colchetes do arquivo
+    checado programaticamente (sandbox sem `node_modules`). Recomenda-se
+    abrir o inventário em jogo após o merge e confirmar que só um modal
+    renderiza, sem sobreposição visual, e rodar `pnpm test` / `pnpm verify` /
+    `tsc --noEmit` localmente.
