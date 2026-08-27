@@ -7,7 +7,8 @@ import { useGameStore } from '../store/gameStore';
 import { TitleScene, BASE_W, BASE_H } from '../game/scenes/TitleScene';
 
 interface MainMenuProps {
-  onStartGame: () => void;
+  onStartCampaign: () => void;
+  onStartArcade: () => void;
   onContinueGame: () => void;
   onOpenSettings: () => void;
   onOpenHighScores: () => void;
@@ -19,7 +20,8 @@ interface MainMenuProps {
 }
 
 export const MainMenu: React.FC<MainMenuProps> = ({
-  onStartGame,
+  onStartCampaign,
+  onStartArcade,
   onContinueGame,
   onOpenSettings,
   onOpenHighScores,
@@ -57,7 +59,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
       scene: [TitleScene],
     });
 
-    game.registry.set("onStartGame", onStartGame);
+    game.registry.set("onStartCampaign", onStartCampaign);
+    game.registry.set("onStartArcade", onStartArcade);
     game.registry.set("onContinueGame", onContinueGame);
     game.registry.set("onOpenSettings", onOpenSettings);
     game.registry.set("onOpenHighScores", onOpenHighScores);
@@ -76,7 +79,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   // Update registry callbacks if props change
   useEffect(() => {
     if (gameRef.current) {
-      gameRef.current.registry.set("onStartGame", onStartGame);
+      gameRef.current.registry.set("onStartCampaign", onStartCampaign);
+      gameRef.current.registry.set("onStartArcade", onStartArcade);
       gameRef.current.registry.set("onContinueGame", onContinueGame);
       gameRef.current.registry.set("onOpenSettings", onOpenSettings);
       gameRef.current.registry.set("onOpenHighScores", onOpenHighScores);
@@ -84,7 +88,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
       gameRef.current.registry.set("onOpenTalents", onOpenTalents || (() => setTalentsOpen(true)));
       gameRef.current.registry.set("onOpenBestiary", handleOpenBestiary);
     }
-  }, [onStartGame, onContinueGame, onOpenSettings, onOpenHighScores, onOpenAchievements, onOpenTalents, handleOpenBestiary]);
+  }, [onStartCampaign, onStartArcade, onContinueGame, onOpenSettings, onOpenHighScores, onOpenAchievements, onOpenTalents, handleOpenBestiary]);
 
   return (
     <motion.div

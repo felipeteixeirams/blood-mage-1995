@@ -58,7 +58,7 @@ export interface EquipmentSlots {
   relics: (LootItem | RelicItem)[];
 }
 
-export type BiomeType = 'fosso_chagas' | 'catacumbas_martires' | 'santuario_sangue';
+export type BiomeType = 'fosso_chagas' | 'catacumbas_martires' | 'santuario_sangue' | 'safe_house' | 'gloomy_woods';
 
 export interface BiomeConfig {
   id: BiomeType;

@@ -169,12 +169,23 @@ export default function App() {
     return cleanup;
   }, []);
 
-  const handleStartGame = () => {
+  const handleStartCampaign = () => {
     tryLockLandscape();
     setGameOverStats(null);
     setLevelUpData(null);
+    useGameStore.getState().setGameMode('campaign');
+    useGameStore.getState().setCampaignZone('safe_house'); // Sempre começa na safe house
     setGameState('playing');
-    telemetry.trackEvent('game_start');
+    telemetry.trackEvent('campaign_start');
+  };
+
+  const handleStartArcade = () => {
+    tryLockLandscape();
+    setGameOverStats(null);
+    setLevelUpData(null);
+    useGameStore.getState().setGameMode('arcade');
+    setGameState('playing');
+    telemetry.trackEvent('arcade_start');
   };
 
   const handleContinueGame = () => {
@@ -260,7 +271,8 @@ export default function App() {
       {/* 1. Main Menu Overlay */}
       {!isBooting && gameState === 'menu' && !gameOverStats && (
         <MainMenu
-          onStartGame={handleStartGame}
+          onStartCampaign={handleStartCampaign}
+          onStartArcade={handleStartArcade}
           onContinueGame={handleContinueGame}
           onOpenSettings={() => setSettingsOpen(true)}
           onOpenHighScores={() => setHighScoresOpen(true)}
@@ -341,7 +353,7 @@ export default function App() {
         <Suspense fallback={null}>
           <GameOverModal
             stats={gameOverStats}
-            onRestart={handleStartGame}
+            onRestart={useGameStore.getState().gameMode === 'campaign' ? handleStartCampaign : handleStartArcade}
             onGoHome={() => setGameOverStats(null)}
           />
         </Suspense>

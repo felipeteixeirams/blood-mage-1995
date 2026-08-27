@@ -1909,6 +1909,403 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     }
   });
   addTexture('fog_haze', hazeCanvas);
+
+  // 26. Safe House Wooden Floor Tile (64x32 Isometric Diamond Oak Planks)
+  const woodFloorCanvas = createPixelCanvas(64, 32, (ctx) => {
+    // Fill dark oak wood diamond base
+    ctx.fillStyle = '#2d1810';
+    ctx.beginPath();
+    ctx.moveTo(32, 0);
+    ctx.lineTo(64, 16);
+    ctx.lineTo(32, 32);
+    ctx.lineTo(0, 16);
+    ctx.closePath();
+    ctx.fill();
+
+    // Dark wood grain mortar & plank seams
+    ctx.strokeStyle = '#1a0e08';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // Wood plank horizontal divisions
+    ctx.fillStyle = '#3a2016';
+    ctx.fillRect(16, 8, 32, 4);
+    ctx.fillRect(10, 14, 44, 4);
+    ctx.fillRect(16, 20, 32, 4);
+
+    // Warm highlights on wood planks
+    ctx.fillStyle = '#4a2a1d';
+    ctx.fillRect(18, 9, 28, 1);
+    ctx.fillRect(12, 15, 40, 1);
+    ctx.fillRect(18, 21, 28, 1);
+
+    // Iron nails in planks
+    ctx.fillStyle = '#110b08';
+    ctx.fillRect(20, 10, 2, 2);
+    ctx.fillRect(42, 10, 2, 2);
+    ctx.fillRect(16, 16, 2, 2);
+    ctx.fillRect(46, 16, 2, 2);
+  });
+  addTextureWithNormalMap('tile_wood_floor', woodFloorCanvas);
+
+  // 27. Safe House Wall (32x32 Stone & Timber Beam Wall)
+  const woodWallCanvas = createPixelCanvas(32, 32, (ctx) => {
+    // Heavy timber log background
+    ctx.fillStyle = '#24140c';
+    ctx.fillRect(0, 0, 32, 32);
+
+    // Stone foundation at base
+    ctx.fillStyle = '#3f3f46';
+    ctx.fillRect(0, 22, 32, 10);
+    ctx.fillStyle = '#27272a';
+    ctx.fillRect(0, 22, 32, 2);
+    ctx.fillRect(14, 24, 2, 8);
+
+    // Wooden vertical beam
+    ctx.fillStyle = '#3a2216';
+    ctx.fillRect(2, 0, 28, 22);
+
+    // Cross-brace timber
+    ctx.fillStyle = '#4d2d1e';
+    ctx.fillRect(4, 2, 24, 4);
+    ctx.fillRect(4, 16, 24, 4);
+
+    // Highlight edge
+    ctx.fillStyle = '#5c3624';
+    ctx.fillRect(4, 3, 24, 1);
+
+    // Iron studs
+    ctx.fillStyle = '#18181b';
+    ctx.fillRect(6, 4, 2, 2);
+    ctx.fillRect(24, 4, 2, 2);
+    ctx.fillRect(6, 17, 2, 2);
+    ctx.fillRect(24, 17, 2, 2);
+  });
+  addTextureWithNormalMap('tile_wood_wall', woodWallCanvas);
+
+  // 28. Cozy Hearth Fireplace (64x64 Stone Chimney & Roaring Fire)
+  const fireplaceCanvas = createPixelCanvas(64, 64, (ctx) => {
+    // 1. Chimney & Outer Arch (Cobblestone / Brick)
+    ctx.fillStyle = '#1c1917';
+    ctx.fillRect(8, 0, 48, 60);
+
+    ctx.fillStyle = '#292524';
+    ctx.fillRect(10, 4, 44, 20);
+    // Stone brick seams
+    ctx.strokeStyle = '#0c0a09';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(10, 4, 44, 20);
+    ctx.beginPath();
+    ctx.moveTo(24, 4); ctx.lineTo(24, 14);
+    ctx.moveTo(38, 4); ctx.lineTo(38, 14);
+    ctx.moveTo(18, 14); ctx.lineTo(18, 24);
+    ctx.moveTo(32, 14); ctx.lineTo(32, 24);
+    ctx.moveTo(46, 14); ctx.lineTo(46, 24);
+    ctx.stroke();
+
+    // 2. Hearth Mantle Shelf (Polished Dark Oak)
+    ctx.fillStyle = '#451a03';
+    ctx.fillRect(6, 24, 52, 6);
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(6, 24, 52, 2); // Mantle highlight
+    ctx.fillStyle = '#1e0c03';
+    ctx.fillRect(6, 29, 52, 1);
+
+    // 3. Fireplace Cavity (Dark Arch interior)
+    ctx.fillStyle = '#0a0503';
+    ctx.beginPath();
+    ctx.arc(32, 42, 18, Math.PI, 0);
+    ctx.lineTo(50, 60);
+    ctx.lineTo(14, 60);
+    ctx.closePath();
+    ctx.fill();
+
+    // 4. Burning Firewood Logs
+    ctx.fillStyle = '#381c0c';
+    ctx.fillRect(18, 54, 28, 6);
+    ctx.fillStyle = '#1f0d06';
+    ctx.fillRect(22, 52, 20, 4);
+
+    // 5. Glowing Embers Bed
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(20, 52, 24, 4);
+    ctx.fillStyle = '#f97316';
+    ctx.fillRect(22, 50, 20, 4);
+
+    // 6. Roaring Fire Flames (Multi-layered teardrop curves)
+    ctx.fillStyle = '#dc2626';
+    ctx.beginPath();
+    ctx.arc(32, 44, 14, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#f97316';
+    ctx.beginPath();
+    ctx.arc(32, 43, 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#fef08a';
+    ctx.beginPath();
+    ctx.arc(32, 42, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 7. Warm Light Glow Ambient Bleed
+    const hearthGlow = ctx.createRadialGradient(32, 44, 4, 32, 44, 30);
+    hearthGlow.addColorStop(0, 'rgba(254, 240, 138, 0.4)');
+    hearthGlow.addColorStop(0.5, 'rgba(249, 115, 22, 0.2)');
+    hearthGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = hearthGlow;
+    ctx.fillRect(0, 14, 64, 50);
+  });
+  addTexture('spr_hearth_fireplace', fireplaceCanvas);
+
+  // 29. Rustic Straw Bed / Cot (64x48)
+  const bedCanvas = createPixelCanvas(64, 48, (ctx) => {
+    // Wooden bed frame
+    ctx.fillStyle = '#2e180d';
+    ctx.fillRect(8, 6, 48, 36);
+
+    // Frame bevel & legs
+    ctx.fillStyle = '#4a2716';
+    ctx.fillRect(8, 6, 48, 3);
+    ctx.fillRect(8, 6, 3, 36);
+    ctx.fillRect(53, 6, 3, 36);
+    ctx.fillRect(8, 39, 48, 3);
+
+    // Straw Mattress base (Golden Yellow/Brown Straw)
+    ctx.fillStyle = '#b45309';
+    ctx.fillRect(11, 9, 42, 30);
+    ctx.fillStyle = '#d97706';
+    for (let i = 0; i < 15; i++) {
+      const sx = 13 + (i * 7) % 36;
+      const sy = 11 + (i * 5) % 24;
+      ctx.fillRect(sx, sy, 5, 2);
+    }
+
+    // Rustic Wool Blanket / Quilt (Dark Teal / Forest Green)
+    ctx.fillStyle = '#1e3a2f';
+    ctx.fillRect(11, 20, 42, 19);
+    ctx.fillStyle = '#2d5a49';
+    ctx.fillRect(11, 20, 42, 2); // Folded sheet edge
+    ctx.fillStyle = '#13261f';
+    ctx.fillRect(11, 38, 42, 1);
+
+    // Pillow (Linen Cloth)
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(14, 11, 36, 8);
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillRect(16, 13, 32, 4);
+  });
+  addTexture('spr_straw_bed', bedCanvas);
+
+  // 30. Maelen the Hermit NPC Sprite (64x64)
+  const maelenCanvas = createPixelCanvas(64, 64, (ctx) => {
+    const cx = 32;
+    const cy = 32;
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 26, 14, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Wooden Staff (held in left hand)
+    ctx.fillStyle = '#451a03';
+    ctx.fillRect(cx - 16, cy - 14, 3, 42);
+    // Staff head (carved raven/amber gem)
+    ctx.fillStyle = '#d97706';
+    ctx.beginPath();
+    ctx.arc(cx - 15, cy - 16, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#fef08a';
+    ctx.fillRect(cx - 16, cy - 17, 2, 2);
+
+    // Feet / Leather Boots
+    ctx.fillStyle = '#1c100b';
+    ctx.fillRect(cx - 6, cy + 22, 5, 6);
+    ctx.fillRect(cx + 2, cy + 22, 5, 6);
+
+    // Ash Grey Hermit Robe (Body)
+    ctx.fillStyle = '#334155'; // Dark slate grey robe
+    ctx.beginPath();
+    ctx.moveTo(cx - 8, cy - 2);
+    ctx.lineTo(cx + 8, cy - 2);
+    ctx.lineTo(cx + 12, cy + 22);
+    ctx.lineTo(cx - 12, cy + 22);
+    ctx.closePath();
+    ctx.fill();
+
+    // Belt and leather pouch
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(cx - 8, cy + 6, 16, 3);
+    ctx.fillStyle = '#d97706';
+    ctx.fillRect(cx - 1, cy + 6, 3, 3); // buckle
+    ctx.fillStyle = '#451a03';
+    ctx.fillRect(cx + 4, cy + 8, 4, 5); // herb pouch
+
+    // Shoulders & Cowl
+    ctx.fillStyle = '#475569';
+    ctx.beginPath();
+    ctx.ellipse(cx, cy - 4, 11, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Hood & Face
+    ctx.fillStyle = '#1e293b';
+    ctx.beginPath();
+    ctx.arc(cx, cy - 12, 9, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Face shadow & skin
+    ctx.fillStyle = '#d4a373';
+    ctx.fillRect(cx - 4, cy - 13, 8, 6);
+
+    // Eyes (wise, calm amber eyes)
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillRect(cx - 3, cy - 12, 2, 2);
+    ctx.fillRect(cx + 2, cy - 12, 2, 2);
+
+    // Long Ash-Grey Beard
+    ctx.fillStyle = '#94a3b8';
+    ctx.beginPath();
+    ctx.moveTo(cx - 5, cy - 9);
+    ctx.lineTo(cx + 5, cy - 9);
+    ctx.lineTo(cx + 2, cy + 3);
+    ctx.lineTo(cx, cy + 5);
+    ctx.lineTo(cx - 2, cy + 3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#cbd5e1'; // Beard highlights
+    ctx.fillRect(cx - 2, cy - 7, 4, 6);
+  });
+  addTexture('spr_npc_maelen', maelenCanvas);
+
+  // 31. Maelen CRPG Dialogue Portrait (128x128 High Detail Pixel Art)
+  const maelenPortraitCanvas = createPixelCanvas(128, 128, (ctx) => {
+    // Dark moody background
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, 128, 128);
+
+    // Warm hearth light reflection on left side
+    const bgGlow = ctx.createRadialGradient(20, 64, 5, 20, 64, 70);
+    bgGlow.addColorStop(0, 'rgba(249, 115, 22, 0.35)');
+    bgGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = bgGlow;
+    ctx.fillRect(0, 0, 128, 128);
+
+    // Ornate Border Frame
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(2, 2, 124, 124);
+    ctx.strokeStyle = '#451a03';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(5, 5, 118, 118);
+
+    // Robe Shoulders (Ash Grey Wool)
+    ctx.fillStyle = '#1e293b';
+    ctx.beginPath();
+    ctx.moveTo(10, 124);
+    ctx.lineTo(34, 78);
+    ctx.lineTo(94, 78);
+    ctx.lineTo(118, 124);
+    ctx.closePath();
+    ctx.fill();
+
+    // Cowl & Scarf (Slate Blue-Grey)
+    ctx.fillStyle = '#334155';
+    ctx.beginPath();
+    ctx.moveTo(28, 80);
+    ctx.lineTo(64, 94);
+    ctx.lineTo(100, 80);
+    ctx.lineTo(88, 115);
+    ctx.lineTo(40, 115);
+    ctx.closePath();
+    ctx.fill();
+
+    // Hood (Deep Dark Slate)
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.arc(64, 48, 38, Math.PI, 0);
+    ctx.lineTo(102, 80);
+    ctx.lineTo(26, 80);
+    ctx.closePath();
+    ctx.fill();
+
+    // Hood Trim (Embroidered Rune Border)
+    ctx.strokeStyle = '#d97706';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(64, 48, 37, Math.PI + 0.3, -0.3);
+    ctx.stroke();
+
+    // Inner Hood Shadow
+    ctx.fillStyle = '#020617';
+    ctx.beginPath();
+    ctx.arc(64, 52, 30, Math.PI, 0);
+    ctx.lineTo(92, 76);
+    ctx.lineTo(36, 76);
+    ctx.closePath();
+    ctx.fill();
+
+    // Weathered Face / Features
+    ctx.fillStyle = '#b48a60';
+    ctx.beginPath();
+    ctx.ellipse(64, 54, 18, 22, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Wrinkles & Cheekbones
+    ctx.fillStyle = '#8c6239';
+    ctx.fillRect(50, 48, 8, 2);
+    ctx.fillRect(70, 48, 8, 2);
+    ctx.fillRect(48, 56, 6, 2);
+    ctx.fillRect(74, 56, 6, 2);
+
+    // Warm side light on face
+    ctx.fillStyle = 'rgba(251, 146, 60, 0.3)';
+    ctx.fillRect(44, 42, 12, 28);
+
+    // Wise Amber Eyes
+    ctx.fillStyle = '#1e1b4b'; // eye sockets
+    ctx.fillRect(50, 44, 7, 4);
+    ctx.fillRect(71, 44, 7, 4);
+
+    ctx.fillStyle = '#f59e0b'; // Amber irises
+    ctx.fillRect(52, 45, 4, 3);
+    ctx.fillRect(72, 45, 4, 3);
+
+    ctx.fillStyle = '#ffffff'; // Specular catchlight
+    ctx.fillRect(53, 45, 1, 1);
+    ctx.fillRect(73, 45, 1, 1);
+
+    // Prominent Nose
+    ctx.fillStyle = '#99693c';
+    ctx.fillRect(62, 48, 5, 14);
+    ctx.fillStyle = '#c99a6b';
+    ctx.fillRect(61, 48, 2, 14);
+
+    // Magnificent Flowing White/Grey Beard
+    ctx.fillStyle = '#94a3b8';
+    ctx.beginPath();
+    ctx.moveTo(46, 60);
+    ctx.lineTo(82, 60);
+    ctx.lineTo(76, 108);
+    ctx.lineTo(64, 116);
+    ctx.lineTo(52, 108);
+    ctx.closePath();
+    ctx.fill();
+
+    // Beard strands & lighting
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(58, 66, 12, 38);
+    ctx.fillRect(52, 70, 6, 24);
+    ctx.fillRect(70, 70, 6, 24);
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(60, 72, 8, 28);
+
+    // Hearth fire warm rim highlight on the left edge of hood & beard
+    ctx.fillStyle = '#fb923c';
+    ctx.fillRect(28, 54, 4, 26);
+    ctx.fillRect(46, 68, 3, 22);
+  });
+  addTexture('portrait_maelen', maelenPortraitCanvas);
 }
 
 /**

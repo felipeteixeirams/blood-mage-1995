@@ -878,7 +878,9 @@ class SoundEngine {
     const biome = useGameStore.getState().currentBiome;
     let selectedTheme: BGMThemeName = themeName || 'catacombs';
     if (!themeName) {
-      if (biome === 'santuario_sangue') {
+      if (biome === 'safe_house') {
+        selectedTheme = 'safe_house';
+      } else if (biome === 'santuario_sangue') {
         selectedTheme = 'sanctuary';
       } else {
         selectedTheme = 'catacombs';

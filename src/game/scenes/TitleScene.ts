@@ -421,22 +421,30 @@ export class TitleScene extends Phaser.Scene {
       const fn = this.registry.get("onContinueGame") as (() => void) | undefined;
       if (fn) fn();
     };
-    const continueBadge = mkBadge(168, BASE_H - 62, "C", "CONTINUAR", continueAction);
+    const continueBadge = mkBadge(148, BASE_H - 62, "C", "CONTINUAR", continueAction);
     this.badges.push(continueBadge);
     this.badgeActions.push(continueAction);
 
-    const startAction = () => {
-      const fn = this.registry.get("onStartGame") as (() => void) | undefined;
+    const startCampaignAction = () => {
+      const fn = this.registry.get("onStartCampaign") as (() => void) | undefined;
       if (fn) fn();
     };
-    const startBadge = mkBadge(BASE_W / 2, BASE_H - 62, "P", "JOGAR", startAction);
-    this.badges.push(startBadge);
-    this.badgeActions.push(startAction);
+    const startCampaignBadge = mkBadge(BASE_W / 2 - 120, BASE_H - 62, "P", "CAMPANHA", startCampaignAction);
+    this.badges.push(startCampaignBadge);
+    this.badgeActions.push(startCampaignAction);
+
+    const startArcadeAction = () => {
+      const fn = this.registry.get("onStartArcade") as (() => void) | undefined;
+      if (fn) fn();
+    };
+    const startArcadeBadge = mkBadge(BASE_W / 2 + 120, BASE_H - 62, "A", "ARCADE", startArcadeAction);
+    this.badges.push(startArcadeBadge);
+    this.badgeActions.push(startArcadeAction);
 
     const settingsAction = () => {
       this.toggleMenu();
     };
-    const settingsBadge = mkBadge(BASE_W - 168, BASE_H - 62, "O", "OPÇÕES", settingsAction);
+    const settingsBadge = mkBadge(BASE_W - 148, BASE_H - 62, "O", "OPÇÕES", settingsAction);
     this.badges.push(settingsBadge);
     this.badgeActions.push(settingsAction);
 
@@ -733,7 +741,10 @@ export class TitleScene extends Phaser.Scene {
     if (InputManager.isGamepadConnected()) {
       if (!this.menuOpen) {
         if (InputManager.wasButtonPressed("a") || InputManager.wasButtonPressed("start")) {
-          const fn = this.registry.get("onStartGame") as (() => void) | undefined;
+          const fn = this.registry.get("onStartCampaign") as (() => void) | undefined;
+          if (fn) fn();
+        } else if (InputManager.wasButtonPressed("x")) {
+          const fn = this.registry.get("onStartArcade") as (() => void) | undefined;
           if (fn) fn();
         } else if (InputManager.wasButtonPressed("y") || InputManager.wasButtonPressed("select")) {
           this.openMenu();

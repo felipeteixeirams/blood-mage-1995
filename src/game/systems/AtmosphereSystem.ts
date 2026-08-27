@@ -64,6 +64,24 @@ export class AtmosphereSystem {
       driftSpeedY: 0.08,
       weatherType: 'blood_rain',
     },
+    safe_house: {
+      biomeId: 'safe_house',
+      groundFogAlpha: 0.04,
+      upperHazeAlpha: 0.02,
+      tintColor: 0xd97706, // Tom âmbar/lareira suave
+      driftSpeedX: 0.02,
+      driftSpeedY: 0.01,
+      weatherType: 'none',
+    },
+    gloomy_woods: {
+      biomeId: 'gloomy_woods',
+      groundFogAlpha: 0.16,
+      upperHazeAlpha: 0.06,
+      tintColor: 0x64748b, // Tom azulado noturno
+      driftSpeedX: 0.10,
+      driftSpeedY: 0.04,
+      weatherType: 'ash_embers',
+    },
   };
 
   constructor(scene: Phaser.Scene) {

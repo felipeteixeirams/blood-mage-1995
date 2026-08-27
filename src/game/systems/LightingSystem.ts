@@ -41,6 +41,20 @@ const BIOME_LIGHTING: Record<BiomeType, BiomeLightingConfig> = {
     torchRadius: 150,
     torchColor: 0xffaa33,
   },
+  safe_house: {
+    ambientColor: 0x3d2314,
+    playerLightRadius: 220,
+    playerLightColor: 0xff9944,
+    torchRadius: 180,
+    torchColor: 0xffaa44,
+  },
+  gloomy_woods: {
+    ambientColor: 0x101a24,
+    playerLightRadius: 200,
+    playerLightColor: 0x66aaff,
+    torchRadius: 140,
+    torchColor: 0xff9944,
+  },
 };
 
 export class LightingSystem {

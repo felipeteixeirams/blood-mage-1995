@@ -1,10 +1,13 @@
 import { create } from 'zustand';
 import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, BiomeType, DroppedCorpse, CodexState, AchievementState, RunStats } from '../types/game';
+import { GameMode, ZoneType, CampaignState, DialogueTree, QuestLogEntry } from '../types/campaign';
 import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding, loadUnlockedRelics, saveUnlockedRelics, loadEquippedRelicIds, saveEquippedRelicIds, loadCodexState, saveCodexState, loadAchievements, saveAchievements, loadRunStats, saveRunStats } from '../utils/localStorage';
 import { soundEngine } from '../utils/soundEngine';
 import { CodexSystem } from '../game/systems/CodexSystem';
 import relicsData from '../data/relics.json';
 import achievementsData from '../data/achievements.json';
+import dialoguesData from '../data/dialogues.json';
+import campaignQuestsData from '../data/campaignQuests.json';
 
 type GameStateStatus = 'menu' | 'playing' | 'paused';
 
@@ -12,6 +15,16 @@ interface GameStore {
   // Game Status
   gameState: GameStateStatus;
   setGameState: (state: GameStateStatus) => void;
+
+  // Campaign State
+  gameMode: GameMode;
+  setGameMode: (mode: GameMode) => void;
+  campaignState: CampaignState;
+  startDialogue: (treeId: string) => void;
+  selectDialogueChoice: (choiceId: string) => void;
+  closeDialogue: () => void;
+  advanceQuestObjective: (questId: string, objectiveId: string, amount?: number) => void;
+  setCampaignZone: (zone: ZoneType) => void;
 
   // Settings
   settings: GameSettings;
@@ -223,6 +236,96 @@ const defaultPlayerStats: PlayerStats = {
 export const useGameStore = create<GameStore>((set, get) => ({
   gameState: 'menu',
   setGameState: (state) => set({ gameState: state }),
+
+  // Campaign State Initializer
+  gameMode: 'arcade',
+  setGameMode: (mode) => set({ gameMode: mode }),
+  campaignState: {
+    currentZone: 'safe_house',
+    chapter: 1,
+    storyFlags: {},
+    quests: {},
+    activeDialogueTree: null,
+    activeDialogueNodeId: null,
+    discoveredZones: ['safe_house'],
+  },
+  startDialogue: (treeId) => {
+    const tree = (dialoguesData as Record<string, DialogueTree>)[treeId];
+    if (tree) {
+      set((state) => ({
+        campaignState: {
+          ...state.campaignState,
+          activeDialogueTree: tree,
+          activeDialogueNodeId: tree.initialNodeId
+        }
+      }));
+    }
+  },
+  selectDialogueChoice: (choiceId) => {
+    const state = get();
+    const tree = state.campaignState.activeDialogueTree;
+    const nodeId = state.campaignState.activeDialogueNodeId;
+    if (tree && nodeId) {
+      const node = tree.nodes[nodeId];
+      const choice = node.choices.find(c => c.id === choiceId);
+      if (choice) {
+        if (choice.nextNodeId) {
+          set((s) => ({
+            campaignState: {
+              ...s.campaignState,
+              activeDialogueNodeId: choice.nextNodeId!
+            }
+          }));
+        } else {
+          get().closeDialogue();
+        }
+
+        // Handle Actions
+        if (choice.action === 'give_quest' && choice.actionPayload) {
+          get().advanceQuestObjective(choice.actionPayload, 'start');
+        }
+      }
+    }
+  },
+  closeDialogue: () => {
+    set((state) => ({
+      campaignState: {
+        ...state.campaignState,
+        activeDialogueTree: null,
+        activeDialogueNodeId: null
+      }
+    }));
+  },
+  advanceQuestObjective: (questId, objectiveId, amount = 1) => {
+    set((state) => {
+      const quests = { ...state.campaignState.quests };
+      if (!quests[questId] && objectiveId === 'start') {
+        const questDef = (campaignQuestsData as any)[questId];
+        if (questDef) {
+          quests[questId] = {
+            questId,
+            status: 'active',
+            currentObjectiveIndex: 0,
+            objectivesProgress: {}
+          };
+        }
+      }
+      return {
+        campaignState: { ...state.campaignState, quests }
+      };
+    });
+  },
+  setCampaignZone: (zone) => {
+    set((state) => ({
+      campaignState: {
+        ...state.campaignState,
+        currentZone: zone,
+        discoveredZones: state.campaignState.discoveredZones.includes(zone) 
+          ? state.campaignState.discoveredZones 
+          : [...state.campaignState.discoveredZones, zone]
+      }
+    }));
+  },
 
   settings: loadSettings(),
   updateSettings: (newSettings) => {

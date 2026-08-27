@@ -53,6 +53,30 @@ export class WorldManager {
       ambientDroneFreq: 110,
       particleWeather: 'blood_rain',
     },
+    safe_house: {
+      id: 'safe_house',
+      name: 'O Refúgio de Maelen (Zona Segura)',
+      isIndoor: true,
+      lightRadius: 360,
+      darknessColor: 0x1c130e,
+      darknessAlpha: 0.08,
+      fogAlpha: 0.05,
+      reverbLevel: 0.05,
+      ambientDroneFreq: 0,
+      particleWeather: 'none',
+    },
+    gloomy_woods: {
+      id: 'gloomy_woods',
+      name: 'Bosques Sombrios (Exterior Chuvoso)',
+      isIndoor: false,
+      lightRadius: 380,
+      darknessColor: 0x0a1014,
+      darknessAlpha: 0.14,
+      fogAlpha: 0.18,
+      reverbLevel: 0.15,
+      ambientDroneFreq: 55,
+      particleWeather: 'ash_embers',
+    },
   };
 
   private currentBiomeId: BiomeType = 'fosso_chagas';

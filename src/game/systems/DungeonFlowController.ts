@@ -84,12 +84,18 @@ export class DungeonFlowController {
       ContractSystem.initRunContracts();
     }
 
-    // Determine Biome based on Floor Depth
+    // Determine Biome based on Floor Depth or Campaign State
+    const gameMode = useGameStore.getState().gameMode;
     let biome: BiomeType = 'fosso_chagas';
-    if (floorDepth >= 5) {
-      biome = 'santuario_sangue';
-    } else if (floorDepth >= 3) {
-      biome = 'catacumbas_martires';
+    
+    if (gameMode === 'campaign') {
+      biome = useGameStore.getState().campaignState.currentZone;
+    } else {
+      if (floorDepth >= 5) {
+        biome = 'santuario_sangue';
+      } else if (floorDepth >= 3) {
+        biome = 'catacumbas_martires';
+      }
     }
 
     useGameStore.getState().setCurrentBiome(biome);
@@ -152,101 +158,126 @@ export class DungeonFlowController {
     // limpa os marcadores flutuantes do andar anterior antes de recriar os NPCs
     scene.clearNpcMarkers();
 
-    // Spawn Safe Village NPCs in Spawn Room (Room 0)
-    // 1. Cleric (Curandeiro)
-    const cleric = scene.npcsGroup.create(spawnRoom.centerX - 120, spawnRoom.centerY - 80, 'spr_cultist');
-    cleric.setTint(0x38bdf8); // Blue glow
-    cleric.setData('npcType', 'cleric');
-    scene.depthGroup.add(cleric);
-    scene.createNpcMarker(spawnRoom.centerX - 120, spawnRoom.centerY - 80, 'cleric', 0x38bdf8);
+    if (biome === 'safe_house') {
+      // Safe House Environment Props
+      const hearth = scene.wallsGroup.create(spawnRoom.centerX, spawnRoom.y + 60, 'spr_hearth_fireplace');
+      hearth.setDepth(spawnRoom.y + 60);
+      hearth.setSize(48, 48);
 
-    // 2. Alchemist (Alquimista)
-    const alchemist = scene.npcsGroup.create(spawnRoom.centerX + 120, spawnRoom.centerY - 80, 'spr_cultist');
-    alchemist.setTint(0xc084fc); // Purple glow
-    alchemist.setData('npcType', 'alchemist');
-    scene.depthGroup.add(alchemist);
-    scene.createNpcMarker(spawnRoom.centerX + 120, spawnRoom.centerY - 80, 'alchemist', 0xc084fc);
+      const bed = scene.wallsGroup.create(spawnRoom.x + 80, spawnRoom.y + 120, 'spr_straw_bed');
+      bed.setDepth(spawnRoom.y + 120);
 
-    // 3. Blacksmith (Ferreiro)
-    const blacksmith = scene.npcsGroup.create(spawnRoom.centerX - 120, spawnRoom.centerY + 80, 'spr_skeleton');
-    blacksmith.setTint(0xfacc15); // Golden glow
-    blacksmith.setData('npcType', 'blacksmith');
-    scene.depthGroup.add(blacksmith);
-    scene.createNpcMarker(spawnRoom.centerX - 120, spawnRoom.centerY + 80, 'blacksmith', 0xfacc15);
+      // Maelen NPC
+      const maelen = scene.npcsGroup.create(spawnRoom.centerX + 100, spawnRoom.centerY, 'spr_npc_maelen');
+      maelen.setData('npcType', 'maelen');
+      scene.depthGroup.add(maelen);
+      scene.createNpcMarker(spawnRoom.centerX + 100, spawnRoom.centerY - 20, 'maelen', 0xf59e0b);
 
-    // 4. Elder (Ancião)
-    const elder = scene.npcsGroup.create(spawnRoom.centerX + 120, spawnRoom.centerY + 80, 'spr_boss');
-    elder.setTint(0xf87171); // Soft Red glow
-    elder.setData('npcType', 'elder');
-    scene.depthGroup.add(elder);
-    scene.createNpcMarker(spawnRoom.centerX + 120, spawnRoom.centerY + 80, 'elder', 0xf87171);
+      // No enemies in Safe House
+      scene.totalFloorMonsters = 0;
+      scene.floorMonstersKilled = 0;
 
-    // Populate Enemies across Chambers & Boss Room
-    scene.totalFloorMonsters = 0;
-    scene.floorMonstersKilled = 0;
+      // Create a portal to the next zone at the back of the room
+      this.revealDescentPortal(spawnRoom.centerX, spawnRoom.y + 160);
+    } else {
+      if (gameMode === 'arcade') {
+        // Spawn Safe Village NPCs in Spawn Room (Room 0)
+        // 1. Cleric (Curandeiro)
+        const cleric = scene.npcsGroup.create(spawnRoom.centerX - 120, spawnRoom.centerY - 80, 'spr_cultist');
+        cleric.setTint(0x38bdf8); // Blue glow
+        cleric.setData('npcType', 'cleric');
+        scene.depthGroup.add(cleric);
+        scene.createNpcMarker(spawnRoom.centerX - 120, spawnRoom.centerY - 80, 'cleric', 0x38bdf8);
 
-    const currentWave = scene.waveConfigs[Math.min(floorDepth - 1, scene.waveConfigs.length - 1)];
+        // 2. Alchemist (Alquimista)
+        const alchemist = scene.npcsGroup.create(spawnRoom.centerX + 120, spawnRoom.centerY - 80, 'spr_cultist');
+        alchemist.setTint(0xc084fc); // Purple glow
+        alchemist.setData('npcType', 'alchemist');
+        scene.depthGroup.add(alchemist);
+        scene.createNpcMarker(spawnRoom.centerX + 120, spawnRoom.centerY - 80, 'alchemist', 0xc084fc);
 
-    rooms.forEach((room) => {
-      if (room.type === 'spawn') return; // Spawn room is safe!
+        // 3. Blacksmith (Ferreiro)
+        const blacksmith = scene.npcsGroup.create(spawnRoom.centerX - 120, spawnRoom.centerY + 80, 'spr_skeleton');
+        blacksmith.setTint(0xfacc15); // Golden glow
+        blacksmith.setData('npcType', 'blacksmith');
+        scene.depthGroup.add(blacksmith);
+        scene.createNpcMarker(spawnRoom.centerX - 120, spawnRoom.centerY + 80, 'blacksmith', 0xfacc15);
 
-      if (room.type === 'boss') {
-        // Boss Sanctum Room
-        const bossId = currentWave.isBossWave && currentWave.bossMonsterId ? currentWave.bossMonsterId : 'necro_lord_boss';
-        const boss = new Enemy(scene, room.centerX, room.centerY, bossId, { floorDepth, eliteAffix: 'none' });
-        scene.enemiesGroup.add(boss);
-        scene.depthGroup.add(boss);
-        scene.lightingPolish?.addMonsterGlow(boss, bossId);
-        this.registerEntityEffects(boss);
-        scene.totalFloorMonsters++;
-
-        if (bossId === 'necro_lord_boss' || bossId.includes('boss')) {
-          useGameStore.getState().triggerOnboardingEvent('firstBossSeen', 'CUIDADO: O Senhor das Chagas despertou! Ele entrará em fúria se ferido!');
-        }
-
-        // Add Elite Bodyguards scaled by blood_tide
-        const hasBloodTide = useGameStore.getState().activeModifiers.includes('blood_tide');
-        const spawnMultiplier = hasBloodTide ? 1.4 : 1.0;
-        const bodyguardCount = Math.round(2 * spawnMultiplier);
-        for (let i = 0; i < bodyguardCount; i++) {
-          const offset = i === 0 ? -90 : (i === 1 ? 90 : (i === 2 ? -140 : 140));
-          const guard = new Enemy(scene, room.centerX + offset, room.centerY + 50, 'cultist_acolyte', { floorDepth, eliteAffix: 'none' });
-          scene.enemiesGroup.add(guard);
-          scene.depthGroup.add(guard);
-          scene.lightingPolish?.addMonsterGlow(guard, 'cultist_acolyte');
-          this.registerEntityEffects(guard);
-          scene.totalFloorMonsters++;
-        }
-      } else {
-        // Standard Chamber: 2 to 4 enemies in patrol/guard positions scaled by blood_tide
-        const hasBloodTide = useGameStore.getState().activeModifiers.includes('blood_tide');
-        const spawnMultiplier = hasBloodTide ? 1.4 : 1.0;
-        let monsterCount = 2 + Math.floor(Math.random() * 2) + Math.min(2, floorDepth - 1);
-        monsterCount = Math.round(monsterCount * spawnMultiplier);
-
-        for (let i = 0; i < monsterCount; i++) {
-          const monsterId = Phaser.Utils.Array.GetRandom(currentWave.monsterPool);
-          const spawnX = room.x + 50 + Math.random() * (room.width - 100);
-          const spawnY = room.y + 50 + Math.random() * (room.height - 100);
-
-          scene.pendingEnemySpawns.push({ x: spawnX, y: spawnY, monsterId, room });
-          scene.totalFloorMonsters++;
-        }
+        // 4. Elder (Ancião)
+        const elder = scene.npcsGroup.create(spawnRoom.centerX + 120, spawnRoom.centerY + 80, 'spr_boss');
+        elder.setTint(0xf87171); // Soft Red glow
+        elder.setData('npcType', 'elder');
+        scene.depthGroup.add(elder);
+        scene.createNpcMarker(spawnRoom.centerX + 120, spawnRoom.centerY + 80, 'elder', 0xf87171);
       }
 
-      // Spawn Scavengeables in non-spawn rooms
-      if (Math.random() < 0.75) {
-        const numScav = Math.random() < 0.5 ? 1 : 2;
-        for (let i = 0; i < numScav; i++) {
-          const sx = room.x + 50 + Math.random() * (room.width - 100);
-          const sy = room.y + 50 + Math.random() * (room.height - 100);
-          const stype = Phaser.Utils.Array.GetRandom(['skeleton', 'corpse', 'crate']) as any;
-          const scavObj = new Scavengeable(scene, sx, sy, stype);
-          scene.scavengeablesGroup.add(scavObj);
-          scene.depthGroup.add(scavObj);
+      // Populate Enemies across Chambers & Boss Room
+      scene.totalFloorMonsters = 0;
+      scene.floorMonstersKilled = 0;
+
+      const currentWave = scene.waveConfigs[Math.min(floorDepth - 1, scene.waveConfigs.length - 1)];
+
+      rooms.forEach((room) => {
+        if (room.type === 'spawn') return; // Spawn room is safe!
+
+        if (room.type === 'boss') {
+          // Boss Sanctum Room
+          const bossId = currentWave.isBossWave && currentWave.bossMonsterId ? currentWave.bossMonsterId : 'necro_lord_boss';
+          const boss = new Enemy(scene, room.centerX, room.centerY, bossId, { floorDepth, eliteAffix: 'none' });
+          scene.enemiesGroup.add(boss);
+          scene.depthGroup.add(boss);
+          scene.lightingPolish?.addMonsterGlow(boss, bossId);
+          this.registerEntityEffects(boss);
+          scene.totalFloorMonsters++;
+
+          if (bossId === 'necro_lord_boss' || bossId.includes('boss')) {
+            useGameStore.getState().triggerOnboardingEvent('firstBossSeen', 'CUIDADO: O Senhor das Chagas despertou! Ele entrará em fúria se ferido!');
+          }
+
+          // Add Elite Bodyguards scaled by blood_tide
+          const hasBloodTide = useGameStore.getState().activeModifiers.includes('blood_tide');
+          const spawnMultiplier = hasBloodTide ? 1.4 : 1.0;
+          const bodyguardCount = Math.round(2 * spawnMultiplier);
+          for (let i = 0; i < bodyguardCount; i++) {
+            const offset = i === 0 ? -90 : (i === 1 ? 90 : (i === 2 ? -140 : 140));
+            const guard = new Enemy(scene, room.centerX + offset, room.centerY + 50, 'cultist_acolyte', { floorDepth, eliteAffix: 'none' });
+            scene.enemiesGroup.add(guard);
+            scene.depthGroup.add(guard);
+            scene.lightingPolish?.addMonsterGlow(guard, 'cultist_acolyte');
+            this.registerEntityEffects(guard);
+            scene.totalFloorMonsters++;
+          }
+        } else {
+          // Standard Chamber: 2 to 4 enemies in patrol/guard positions scaled by blood_tide
+          const hasBloodTide = useGameStore.getState().activeModifiers.includes('blood_tide');
+          const spawnMultiplier = hasBloodTide ? 1.4 : 1.0;
+          let monsterCount = 2 + Math.floor(Math.random() * 2) + Math.min(2, floorDepth - 1);
+          monsterCount = Math.round(monsterCount * spawnMultiplier);
+
+          for (let i = 0; i < monsterCount; i++) {
+            const monsterId = Phaser.Utils.Array.GetRandom(currentWave.monsterPool);
+            const spawnX = room.x + 50 + Math.random() * (room.width - 100);
+            const spawnY = room.y + 50 + Math.random() * (room.height - 100);
+
+            scene.pendingEnemySpawns.push({ x: spawnX, y: spawnY, monsterId, room });
+            scene.totalFloorMonsters++;
+          }
         }
-      }
-    });
+
+        // Spawn Scavengeables in non-spawn rooms
+        if (Math.random() < 0.75) {
+          const numScav = Math.random() < 0.5 ? 1 : 2;
+          for (let i = 0; i < numScav; i++) {
+            const sx = room.x + 50 + Math.random() * (room.width - 100);
+            const sy = room.y + 50 + Math.random() * (room.height - 100);
+            const stype = Phaser.Utils.Array.GetRandom(['skeleton', 'corpse', 'crate']) as any;
+            const scavObj = new Scavengeable(scene, sx, sy, stype);
+            scene.scavengeablesGroup.add(scavObj);
+            scene.depthGroup.add(scavObj);
+          }
+        }
+      });
+    }
 
     // Initial spawn push up to cap
     this.checkAndSpawnPendingEnemies();
@@ -332,6 +363,25 @@ export class DungeonFlowController {
     const hpRatio = scene.player.stats.hp / scene.player.stats.maxHp;
     ContractSystem.onFloorCompleted(scene.currentFloorDepth, hpRatio, scene);
 
+    const store = useGameStore.getState();
+    const gameMode = store.gameMode;
+    const currentZone = store.campaignState.currentZone;
+
+    if (gameMode === 'campaign') {
+      if (currentZone === 'safe_house') {
+        store.setCampaignZone('gloomy_woods');
+      } else if (currentZone === 'gloomy_woods') {
+        store.setCampaignZone('fosso_chagas');
+      } else if (currentZone === 'fosso_chagas') {
+        store.setCampaignZone('catacumbas_martires');
+      } else if (currentZone === 'catacumbas_martires') {
+        store.setCampaignZone('santuario_sangue');
+      } else {
+        // Keeps the same, or handle end of campaign
+        store.setCampaignZone('santuario_sangue');
+      }
+    }
+
     scene.currentFloorDepth++;
     scene.player.heal(35); // Reward floor clear with HP restore
     scene.player.addMana(50);
@@ -382,7 +432,6 @@ export class DungeonFlowController {
     scene.bloodSplatterSystem?.clearAll();
 
     // If player leaves floor without collecting corpse, it is lost
-    const store = useGameStore.getState();
     if (store.playerStats.droppedCorpse.hasDroppedCorpse) {
       store.setDroppedCorpse({
         ...store.playerStats.droppedCorpse,

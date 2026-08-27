@@ -13,7 +13,7 @@
 
 import { logger } from './logger';
 
-export type BGMThemeName = 'catacombs' | 'sanctuary' | 'boss_plutonia';
+export type BGMThemeName = 'catacombs' | 'sanctuary' | 'boss_plutonia' | 'safe_house';
 
 interface BGMThemeConfig {
   name: string;
@@ -154,10 +154,47 @@ const BOSS_PLUTONIA_THEME: BGMThemeConfig = {
   bellNote: NOTES.E2,
 };
 
+// 4. Theme: O Refúgio de Maelen / Safe House Hearth (Melancolia Gótica Suave, Violão/Harpa FM, Som Aconchegante de Lareira)
+const SAFE_HOUSE_THEME: BGMThemeConfig = {
+  name: 'O Refúgio de Maelen (Safe House)',
+  bpm: 68,
+  stepSubdivision: 4,
+  bassWave: 'sine',
+  leadWave: 'triangle',
+  filterBase: 350,
+  filterPeak: 900,
+  filterQ: 1.2,
+  bassSequence: [
+    NOTES.A1, null, null, null,
+    NOTES.F1, null, null, null,
+    NOTES.D1, null, null, null,
+    NOTES.E1, null, null, null,
+    NOTES.A1, null, null, null,
+    NOTES.G1, null, null, null,
+    NOTES.F1, null, null, null,
+    NOTES.E1, null, null, null,
+  ],
+  arpSequence: [
+    NOTES.A3, NOTES.C4, NOTES.E4, NOTES.A4,
+    NOTES.F3, NOTES.A3, NOTES.C4, NOTES.F4,
+    NOTES.D3, NOTES.F3, NOTES.A3, NOTES.D4,
+    NOTES.E3, NOTES.Gs3, NOTES.B3, NOTES.E4,
+    NOTES.A3, NOTES.C4, NOTES.E4, NOTES.C4,
+    NOTES.G3, NOTES.B3, NOTES.D4, NOTES.B3,
+    NOTES.F3, NOTES.A3, NOTES.C4, NOTES.A3,
+    NOTES.E3, NOTES.Gs3, NOTES.B3, NOTES.E4,
+  ],
+  kickSteps: [],
+  snareSteps: [],
+  bellSteps: [0, 16],
+  bellNote: NOTES.A3,
+};
+
 const THEMES: Record<BGMThemeName, BGMThemeConfig> = {
   catacombs: CATACOMBS_THEME,
   sanctuary: SANCTUARY_THEME,
   boss_plutonia: BOSS_PLUTONIA_THEME,
+  safe_house: SAFE_HOUSE_THEME,
 };
 
 export class BGMSynthesizer {

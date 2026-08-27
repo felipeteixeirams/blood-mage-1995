@@ -22,6 +22,8 @@ const BIOME_TINTS: Record<BiomeType, { ground: number; wall: number }> = {
   fosso_chagas: { ground: 0x86efac, wall: 0x15803d }, // Toxic Green tint
   catacumbas_martires: { ground: 0xcccccc, wall: 0x475569 }, // Cold Stone Brick
   santuario_sangue: { ground: 0xfca5a5, wall: 0x991b1b }, // Blood Obsidian Tint
+  safe_house: { ground: 0xffffff, wall: 0xffffff }, // No tint, use raw wood colors
+  gloomy_woods: { ground: 0x5e796e, wall: 0x2f3e46 }, // Swampy deep pine green
 };
 
 export class DungeonGenerator {
@@ -42,13 +44,17 @@ export class DungeonGenerator {
   }
 
   public generate(mapW: number, mapH: number, biome: BiomeType = 'fosso_chagas'): RoomData[] {
+    const isSafeHouse = biome === 'safe_house';
+    const groundTexture = isSafeHouse ? 'tile_wood_floor' : 'tile_ground';
     const tints = BIOME_TINTS[biome] || BIOME_TINTS.fosso_chagas;
 
     // Fill Isometric Floor Tiles with Biome Tinting
     for (let x = 0; x < mapW; x += 48) {
       for (let y = 0; y < mapH; y += 24) {
-        const tile = this.scene.add.image(x + (y % 48 === 0 ? 0 : 24), y, 'tile_ground');
-        tile.setTint(tints.ground);
+        const tile = this.scene.add.image(x + (y % 48 === 0 ? 0 : 24), y, groundTexture);
+        if (!isSafeHouse) {
+          tile.setTint(tints.ground);
+        }
         tile.setDepth(1);
         if ((this.scene as any).lightingSystem) {
           (this.scene as any).lightingSystem.applyLightPipeline(tile);
@@ -56,8 +62,34 @@ export class DungeonGenerator {
       }
     }
 
-    // Define 3x3 Room Grid Layout
+    // Define Room Grid Layout
     const rooms: RoomData[] = [];
+    
+    if (isSafeHouse) {
+      const roomW = 800;
+      const roomH = 600;
+      const rx = (mapW - roomW) / 2;
+      const ry = (mapH - roomH) / 2;
+      
+      rooms.push({
+        x: rx,
+        y: ry,
+        width: roomW,
+        height: roomH,
+        centerX: rx + roomW / 2,
+        centerY: ry + roomH / 2,
+        type: 'spawn',
+      });
+      
+      // Build safe house specific walls
+      this.buildWallLine(rx, ry, rx + roomW, ry, 0xffffff, 'tile_wood_wall', true); // Top
+      this.buildWallLine(rx, ry + roomH, rx + roomW, ry + roomH, 0xffffff, 'tile_wood_wall', true); // Bottom
+      this.buildWallLine(rx, ry, rx, ry + roomH, 0xffffff, 'tile_wood_wall', true); // Left
+      this.buildWallLine(rx + roomW, ry, rx + roomW, ry + roomH, 0xffffff, 'tile_wood_wall', true); // Right
+      
+      return rooms;
+    }
+
     const cols = 3;
     const rows = 3;
     const roomW = 440;
@@ -183,7 +215,7 @@ export class DungeonGenerator {
     return this.scene.textures.exists(key) ? key : 'spr_chest';
   }
 
-  private buildWallLine(x1: number, y1: number, x2: number, y2: number, wallTint: number) {
+  private buildWallLine(x1: number, y1: number, x2: number, y2: number, wallTint: number, textureKey: string = 'tile_wall_brick', disableTint: boolean = false) {
     const dx = x2 - x1;
     const dy = y2 - y1;
     const dist = Math.hypot(dx, dy);
@@ -194,8 +226,10 @@ export class DungeonGenerator {
       const wx = x1 + dx * t;
       const wy = y1 + dy * t;
 
-      const wall = this.wallsGroup.create(wx, wy, 'tile_wall_brick');
-      wall.setTint(wallTint);
+      const wall = this.wallsGroup.create(wx, wy, textureKey);
+      if (!disableTint) {
+        wall.setTint(wallTint);
+      }
       wall.setSize(32, 32);
       wall.setDepth(wy + 16);
       wall.refreshBody();
