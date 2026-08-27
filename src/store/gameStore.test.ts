@@ -429,4 +429,145 @@ describe('gameStore', () => {
       expect(useGameStore.getState().minimapRooms).toEqual(snapshot);
     });
   });
+
+  describe('campaign quests (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md)', () => {
+    const QUEST_ID = 'quest_ch1_first_steps';
+
+    it('advanceQuestObjective("start") activates the quest with zero progress', () => {
+      useGameStore.getState().advanceQuestObjective(QUEST_ID, 'start');
+      const log = useGameStore.getState().campaignState.quests[QUEST_ID];
+      expect(log).toBeDefined();
+      expect(log.status).toBe('active');
+      expect(log.objectivesProgress).toEqual({});
+    });
+
+    it('advanceQuestObjectiveByTarget advances only the matching objective by type+targetId', () => {
+      useGameStore.getState().advanceQuestObjective(QUEST_ID, 'start');
+
+      // "scout_beast" bate com obj_clear_woods (kill_enemy) — não deve mexer nos outros
+      useGameStore.getState().advanceQuestObjectiveByTarget('kill_enemy', 'scout_beast', 1);
+      let log = useGameStore.getState().campaignState.quests[QUEST_ID];
+      expect(log.objectivesProgress['obj_clear_woods']).toBe(1);
+      expect(log.objectivesProgress['obj_loot_chest']).toBeUndefined();
+      expect(log.status).toBe('active');
+
+      // Um monstro que não é alvo de nenhum objetivo desta quest não deve gerar erro nem progresso
+      useGameStore.getState().advanceQuestObjectiveByTarget('kill_enemy', 'skeleton_warrior', 1);
+      log = useGameStore.getState().campaignState.quests[QUEST_ID];
+      expect(log.objectivesProgress['obj_clear_woods']).toBe(1);
+    });
+
+    it('completes the quest and grants blood crystals once all objectives hit their target', () => {
+      const store = useGameStore.getState();
+      const crystalsBefore = store.bloodCrystals;
+
+      store.advanceQuestObjective(QUEST_ID, 'start');
+      store.advanceQuestObjectiveByTarget('collect_item', 'starter_dagger', 1); // obj_loot_chest (alvo 1)
+      for (let i = 0; i < 4; i++) {
+        store.advanceQuestObjectiveByTarget('kill_enemy', 'scout_beast', 1); // obj_clear_woods (alvo 4)
+      }
+      // Ainda falta obj_find_altar — quest deve continuar ativa
+      expect(useGameStore.getState().campaignState.quests[QUEST_ID].status).toBe('active');
+
+      store.advanceQuestObjectiveByTarget('discover_zone', 'altar_crimson', 1); // obj_find_altar (alvo 1)
+
+      const finalState = useGameStore.getState();
+      const log = finalState.campaignState.quests[QUEST_ID];
+      expect(log.status).toBe('completed');
+      expect(log.objectivesProgress).toEqual({ obj_loot_chest: 1, obj_clear_woods: 4, obj_find_altar: 1 });
+      expect(finalState.bloodCrystals).toBe(crystalsBefore + 25); // rewards.bloodCrystals da quest
+
+      // Chamadas extras num objetivo já concluído não devem conceder recompensa de novo
+      store.advanceQuestObjectiveByTarget('discover_zone', 'altar_crimson', 1);
+      expect(useGameStore.getState().bloodCrystals).toBe(crystalsBefore + 25);
+    });
+
+    it('onEnemyKilled advances an active kill_enemy quest objective as a side effect', () => {
+      useGameStore.getState().advanceQuestObjective(QUEST_ID, 'start');
+      useGameStore.getState().onEnemyKilled('scout_beast');
+      const log = useGameStore.getState().campaignState.quests[QUEST_ID];
+      expect(log.objectivesProgress['obj_clear_woods']).toBe(1);
+    });
+  });
+
+  describe('campaign spell unlocks — Frente 3 Zero-to-Hero (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md)', () => {
+    it('treats every spell as unlocked outside campaign mode (arcade)', () => {
+      useGameStore.getState().setGameMode('arcade');
+      expect(useGameStore.getState().isCampaignSpellUnlocked('blood_bolt')).toBe(true);
+      expect(useGameStore.getState().isCampaignSpellUnlocked('hellfire_nova')).toBe(true);
+    });
+
+    it('starts campaign mode with every spell locked', () => {
+      useGameStore.getState().setGameMode('campaign');
+      expect(useGameStore.getState().isCampaignSpellUnlocked('blood_bolt')).toBe(false);
+      expect(useGameStore.getState().campaignState.unlockedSpellIds).toEqual([]);
+    });
+
+    it('unlockCampaignSpell adds the spell id and only that id becomes unlocked', () => {
+      useGameStore.getState().setGameMode('campaign');
+      useGameStore.getState().unlockCampaignSpell('blood_bolt');
+      expect(useGameStore.getState().isCampaignSpellUnlocked('blood_bolt')).toBe(true);
+      expect(useGameStore.getState().isCampaignSpellUnlocked('hellfire_nova')).toBe(false);
+      expect(useGameStore.getState().campaignState.unlockedSpellIds).toEqual(['blood_bolt']);
+    });
+
+    it('unlockCampaignSpell is idempotent — calling it twice does not duplicate the id', () => {
+      useGameStore.getState().setGameMode('campaign');
+      useGameStore.getState().unlockCampaignSpell('blood_bolt');
+      useGameStore.getState().unlockCampaignSpell('blood_bolt');
+      expect(useGameStore.getState().campaignState.unlockedSpellIds).toEqual(['blood_bolt']);
+    });
+  });
+
+  describe('campaign state persistence (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md)', () => {
+    const CAMPAIGN_STATE_KEY = 'bloodmage_1995_campaign_state';
+    const QUEST_ID = 'quest_ch1_first_steps';
+
+    it('persists gameMode to localStorage as soon as it changes', () => {
+      useGameStore.getState().setGameMode('campaign');
+      const raw = JSON.parse(localStorage.getItem(CAMPAIGN_STATE_KEY)!);
+      expect(raw.gameMode).toBe('campaign');
+    });
+
+    it('persists the current zone and discovered zones on setCampaignZone', () => {
+      useGameStore.getState().setCampaignZone('gloomy_woods');
+      const raw = JSON.parse(localStorage.getItem(CAMPAIGN_STATE_KEY)!);
+      expect(raw.currentZone).toBe('gloomy_woods');
+      expect(raw.discoveredZones).toEqual(['safe_house', 'gloomy_woods']);
+    });
+
+    it('persists quest progress on advanceQuestObjective', () => {
+      useGameStore.getState().advanceQuestObjective(QUEST_ID, 'start');
+      useGameStore.getState().advanceQuestObjectiveByTarget('kill_enemy', 'scout_beast', 1);
+      const raw = JSON.parse(localStorage.getItem(CAMPAIGN_STATE_KEY)!);
+      expect(raw.quests[QUEST_ID].objectivesProgress.obj_clear_woods).toBe(1);
+      expect(raw.quests[QUEST_ID].status).toBe('active');
+    });
+
+    it('persists unlocked spells on unlockCampaignSpell', () => {
+      useGameStore.getState().unlockCampaignSpell('blood_bolt');
+      const raw = JSON.parse(localStorage.getItem(CAMPAIGN_STATE_KEY)!);
+      expect(raw.unlockedSpellIds).toEqual(['blood_bolt']);
+    });
+
+    it('a fresh store read from the same localStorage restores zone, quests and unlocks (simulated reload)', () => {
+      useGameStore.getState().setGameMode('campaign');
+      useGameStore.getState().setCampaignZone('gloomy_woods');
+      useGameStore.getState().advanceQuestObjective(QUEST_ID, 'start');
+      useGameStore.getState().advanceQuestObjectiveByTarget('collect_item', 'starter_dagger', 1);
+      useGameStore.getState().unlockCampaignSpell('blood_bolt');
+
+      // `loadCampaignState()` é o que o store chama na inicialização do módulo
+      // (recarregar a página); aqui simulamos isso lendo direto do mesmo
+      // localStorage que as ações acima já escreveram.
+      const persisted = JSON.parse(localStorage.getItem(CAMPAIGN_STATE_KEY)!);
+      expect(persisted.gameMode).toBe('campaign');
+      expect(persisted.currentZone).toBe('gloomy_woods');
+      expect(persisted.quests[QUEST_ID].objectivesProgress.obj_loot_chest).toBe(1);
+      expect(persisted.unlockedSpellIds).toEqual(['blood_bolt']);
+      // Estado de sessão (diálogo aberto) nunca deve estar no snapshot salvo.
+      expect(persisted).not.toHaveProperty('activeDialogueTree');
+      expect(persisted).not.toHaveProperty('activeDialogueNodeId');
+    });
+  });
 });

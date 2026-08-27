@@ -7,6 +7,8 @@ import { SkillsOverlay } from './hud/SkillsOverlay';
 import { TargetFrame } from './hud/TargetFrame';
 import { ContractHUD } from './hud/ContractHUD';
 import { Minimap } from './hud/Minimap';
+import { QuestTracker } from './hud/QuestTracker';
+import { DialogueModal } from './hud/DialogueModal';
 import { RecordsDisplay } from './hud/RecordsDisplay';
 import palettesData from '../data/palettes.json';
 import { useFloatingJoystick } from '../hooks/useFloatingJoystick';
@@ -143,6 +145,8 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
     setActiveNPC,
     closestNPCType,
     setClosestNPCType,
+    campaignState,
+    startDialogue,
     buyCurative,
     useCurative,
     bloodCrystals,
@@ -405,6 +409,9 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
 
         {/* Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md */}
         <Minimap />
+
+        {/* Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md — só aparece com quest ativa */}
+        <QuestTracker />
 
         {/* Compact action buttons row to clean the view for smartphones */}
         <div className="flex gap-1.5">
@@ -821,10 +828,10 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       )}
 
       {/* ── NPC Interaction Prompt ── */}
-      {closestNPCType && !activeNPC && (
+      {closestNPCType && !activeNPC && !campaignState.activeDialogueTree && (
         <div className="fixed bottom-1/4 inset-x-0 mx-auto max-w-xs bg-[#0c0a09] border-2 border-[#b8860b]/40 shadow-[4px_4px_10px_rgba(0,0,0,0.85)] p-2.5 text-center z-40 flex flex-col items-center gap-1.5 text-[#E3DAC9] pointer-events-auto select-none">
           <span className="text-[#e8c76a] text-xs font-bold uppercase tracking-wider block">
-            👤 {closestNPCType === 'cleric' ? 'CLÉRIGO' : closestNPCType === 'alchemist' ? 'ALQUIMISTA' : closestNPCType === 'blacksmith' ? 'FERREIRO' : 'ANCIÃO'} ESTÁ PRÓXIMO
+            👤 {closestNPCType === 'cleric' ? 'CLÉRIGO' : closestNPCType === 'alchemist' ? 'ALQUIMISTA' : closestNPCType === 'blacksmith' ? 'FERREIRO' : closestNPCType === 'maelen' ? 'MAELEN' : 'ANCIÃO'} ESTÁ PRÓXIMO
           </span>
           <span className="text-[9px] text-gray-400 font-sans block leading-none uppercase">
             Aproxime-se e pressione <span className="text-[#e8c76a] font-bold">[E]</span> para falar.
@@ -834,7 +841,13 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
               e.preventDefault();
               e.stopPropagation();
               soundEngine.playButtonClick();
-              setActiveNPC(closestNPCType);
+              // Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: Maelen abre a
+              // árvore de diálogo de campanha; os outros NPCs continuam no modal de loja.
+              if (closestNPCType === 'maelen') {
+                startDialogue('safe_house_maelen_intro');
+              } else {
+                setActiveNPC(closestNPCType);
+              }
             }}
             className="mt-1 px-3 py-1.5 bg-[#171309] border border-[#b8860b] text-[#e8c76a] hover:bg-[#282216] active:scale-95 text-[9px] font-bold uppercase cursor-pointer shadow-[inset_1px_1px_2px_rgba(0,0,0,0.8)]"
           >
@@ -842,6 +855,9 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
           </button>
         </div>
       )}
+
+      {/* ── Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: Diálogo de Campanha ── */}
+      <DialogueModal />
 
       {/* ── NPC Dialogue Modal ── */}
       {activeNPC && (

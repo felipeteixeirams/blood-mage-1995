@@ -78,6 +78,10 @@ export class DungeonFlowController {
     const scene = this.scene;
     // Clear pending spawns
     scene.pendingEnemySpawns = [];
+    // Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: descarta marcos
+    // descobríveis do andar anterior (os sprites já foram destruídos junto com o
+    // resto do cenário — aqui só limpamos a lista pra não checar objetos mortos)
+    scene.campaignDiscoverables = [];
 
     // Initialize contracts on first floor
     if (floorDepth === 1) {
@@ -167,6 +171,18 @@ export class DungeonFlowController {
       const bed = scene.wallsGroup.create(spawnRoom.x + 80, spawnRoom.y + 120, 'spr_straw_bed');
       bed.setDepth(spawnRoom.y + 120);
 
+      // Frente 1/2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: baú inicial
+      // de suprimentos — abrir dá a Adaga de Aço garantida e avança o objetivo
+      // obj_loot_chest de quest_ch1_first_steps (ver CollisionHandlers.ts).
+      const suppliesChest = scene.chestsGroup.create(
+        spawnRoom.centerX - 90,
+        spawnRoom.y + 90,
+        scene.dungeonGenerator.getChestTextureKey('south')
+      );
+      suppliesChest.setData('questChest', 'starter_dagger');
+      suppliesChest.setDepth(spawnRoom.y + 90);
+      if (scene.lightingSystem) scene.lightingSystem.applyLightPipeline(suppliesChest);
+
       // Maelen NPC
       const maelen = scene.npcsGroup.create(spawnRoom.centerX + 100, spawnRoom.centerY, 'spr_npc_maelen');
       maelen.setData('npcType', 'maelen');
@@ -216,6 +232,50 @@ export class DungeonFlowController {
       scene.floorMonstersKilled = 0;
 
       const currentWave = scene.waveConfigs[Math.min(floorDepth - 1, scene.waveConfigs.length - 1)];
+
+      // Frente 2/3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: gloomy_woods é
+      // a "orla da floresta" logo após a Safe House — intro leve com só os
+      // batedores corrompidos que o diálogo do Maelen menciona
+      // (quest_ch1_first_steps > obj_clear_woods, 4 kills), sem chefe nem elite, e
+      // o Altar Ancestral (obj_find_altar) pra descobrir. Reaproveita o grid 3x3
+      // padrão do DungeonGenerator (portas, tochas, chests aleatórios), só troca a
+      // população de inimigos/marcos por uma leva dedicada e mais fraca.
+      if (biome === 'gloomy_woods') {
+        const totalScouts = 4;
+        let scoutsSpawned = 0;
+        const huntingGrounds = rooms.filter((r) => r.type !== 'spawn' && r.type !== 'boss');
+
+        huntingGrounds.forEach((room, idx) => {
+          if (scoutsSpawned >= totalScouts) return;
+          const isLastRoom = idx === huntingGrounds.length - 1;
+          const remaining = totalScouts - scoutsSpawned;
+          const countHere = isLastRoom ? remaining : Math.min(1 + Math.floor(Math.random() * 2), remaining);
+
+          for (let i = 0; i < countHere; i++) {
+            const spawnX = room.x + 50 + Math.random() * (room.width - 100);
+            const spawnY = room.y + 50 + Math.random() * (room.height - 100);
+            scene.pendingEnemySpawns.push({ x: spawnX, y: spawnY, monsterId: 'scout_beast', room });
+            scene.totalFloorMonsters++;
+            scoutsSpawned++;
+          }
+        });
+
+        // Altar Ancestral — sala secret_treasure do grid genérico já fica no
+        // canto oposto ao spawn, serve bem como "escombros do altar ao leste"
+        const altarRoom = rooms.find((r) => r.type === 'secret_treasure') || rooms[rooms.length - 1];
+        if (altarRoom) {
+          const altar = scene.add.image(altarRoom.centerX, altarRoom.centerY, 'spr_altar_crimson');
+          altar.setDepth(altarRoom.centerY);
+          altar.setData('campaignDiscoverableId', 'altar_crimson');
+          scene.depthGroup.add(altar);
+          if (scene.lightingSystem) scene.lightingSystem.applyLightPipeline(altar);
+          scene.campaignDiscoverables.push(altar);
+        }
+
+        this.checkAndSpawnPendingEnemies();
+        this.showFloorBanner(floorDepth);
+        return;
+      }
 
       rooms.forEach((room) => {
         if (room.type === 'spawn') return; // Spawn room is safe!

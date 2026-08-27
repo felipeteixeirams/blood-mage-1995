@@ -98,7 +98,11 @@ export interface WorldZoneConfig {
 }
 
 export interface CampaignState {
-  gameMode: GameMode;
+  // Nota: o modo (Campanha/Arcade) NÃO vive aqui — fica em `GameStore.gameMode`,
+  // um nível acima. Havia um campo `gameMode` duplicado aqui que nunca era lido
+  // em lugar nenhum do código (dado morto); removido em 27/08 ao corrigir um
+  // erro de typecheck (`campaignState` no `gameStore.ts` não preenchia essa
+  // propriedade "obrigatória").
   currentZone: ZoneType;
   chapter: number;
   storyFlags: Record<string, boolean>;
@@ -106,4 +110,10 @@ export interface CampaignState {
   activeDialogueTree: DialogueTree | null;
   activeDialogueNodeId: string | null;
   discoveredZones: ZoneType[];
+  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero):
+  // no modo campanha o jogador começa sem magias — cada spellId aqui foi
+  // conquistado por progressão de história (ex.: blood_bolt no Altar Ancestral).
+  // Não confundir com `playerStats.unlockedSpells` (herança do modo arcade,
+  // sempre cheio) — ver observação em `gameStore.ts`.
+  unlockedSpellIds: string[];
 }

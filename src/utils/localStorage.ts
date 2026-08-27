@@ -624,3 +624,87 @@ export function saveRunStats(stats: RunStats): void {
     logger.error('PERSISTENCE', 'Failed to save run stats', e);
   }
 }
+
+// Persistência do progresso de campanha — docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md.
+// Só a parte "de save" de `CampaignState` é persistida aqui: zona atual, capítulo,
+// flags de história, quests (com progresso real de objetivos), zonas descobertas e
+// magias desbloqueadas — além do `gameMode` (nível superior na store, não dentro de
+// `CampaignState`), pra "Continuar" depois de recarregar a página voltar pro modo
+// Campanha certo. `activeDialogueTree`/`activeDialogueNodeId` ficam de fora de
+// propósito: são estado de sessão (o diálogo aberto na tela), não progresso — recarregar
+// no meio de uma conversa simplesmente fecha o modal em vez de tentar retomá-lo.
+import { GameMode, ZoneType, QuestLogEntry } from '../types/campaign';
+
+const CAMPAIGN_STATE_KEY = 'bloodmage_1995_campaign_state';
+
+export interface PersistedCampaignState {
+  gameMode: GameMode;
+  currentZone: ZoneType;
+  chapter: number;
+  storyFlags: Record<string, boolean>;
+  quests: Record<string, QuestLogEntry>;
+  discoveredZones: ZoneType[];
+  unlockedSpellIds: string[];
+}
+
+export const defaultCampaignState: PersistedCampaignState = {
+  gameMode: 'arcade',
+  currentZone: 'safe_house',
+  chapter: 1,
+  storyFlags: {},
+  quests: {},
+  discoveredZones: ['safe_house'],
+  unlockedSpellIds: [],
+};
+
+const ZoneTypeSchema = z.enum(['safe_house', 'gloomy_woods', 'ruined_village', 'catacombs_depths']);
+
+const QuestLogEntrySchema = z.object({
+  questId: z.string().max(100),
+  status: z.enum(['not_started', 'active', 'completed', 'failed']).catch('not_started'),
+  currentObjectiveIndex: z.number().int().nonnegative().max(1_000).catch(0),
+  objectivesProgress: z.record(z.string().max(100), z.number().int().nonnegative().max(1_000_000)).catch({}),
+}).strict();
+
+const CampaignStateSchema = z.object({
+  gameMode: z.enum(['arcade', 'campaign']).catch('arcade'),
+  currentZone: ZoneTypeSchema.catch('safe_house'),
+  chapter: z.number().int().positive().max(100).catch(1),
+  storyFlags: z.record(z.string().max(100), z.boolean()).catch({}),
+  quests: z.record(z.string().max(100), QuestLogEntrySchema).catch({}),
+  discoveredZones: z.array(ZoneTypeSchema).max(20).catch(['safe_house']),
+  unlockedSpellIds: z.array(z.string().max(100)).max(50).catch([]),
+}).strict();
+
+export function loadCampaignState(): PersistedCampaignState {
+  try {
+    const raw = localStorage.getItem(CAMPAIGN_STATE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const validated = CampaignStateSchema.safeParse(parsed);
+      if (validated.success) {
+        logger.debug('PERSISTENCE', 'Campaign state loaded successfully from localStorage');
+        return validated.data;
+      } else {
+        logger.warn('PERSISTENCE', 'Estado de campanha inválido no localStorage. Restaurando padrão.', { raw });
+      }
+    }
+  } catch (e) {
+    logger.warn('PERSISTENCE', 'Failed to load campaign state', e);
+  }
+  return { ...defaultCampaignState, storyFlags: {}, quests: {}, discoveredZones: [...defaultCampaignState.discoveredZones], unlockedSpellIds: [] };
+}
+
+export function saveCampaignState(state: PersistedCampaignState): void {
+  try {
+    const validated = CampaignStateSchema.safeParse(state);
+    const valueToSave = validated.success ? validated.data : defaultCampaignState;
+    if (!validated.success) {
+      logger.warn('PERSISTENCE', 'Tentativa de salvar estado de campanha inválido. Usando padrão.');
+    }
+    localStorage.setItem(CAMPAIGN_STATE_KEY, JSON.stringify(valueToSave));
+    logger.debug('PERSISTENCE', 'Campaign state saved successfully to localStorage');
+  } catch (e) {
+    logger.error('PERSISTENCE', 'Failed to save campaign state', e);
+  }
+}

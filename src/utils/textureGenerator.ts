@@ -2306,6 +2306,69 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     ctx.fillRect(46, 68, 3, 22);
   });
   addTexture('portrait_maelen', maelenPortraitCanvas);
+
+  // 32. Altar Ancestral Sombrio (Crimson Altar) — 56x48
+  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: marco descobrível
+  // em gloomy_woods onde a quest_ch1_first_steps é concluída (obj_find_altar).
+  // Curvas + degradê desde o início, no mesmo padrão orgânico validado na Fase 2
+  // de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md.
+  const altarCanvas = createPixelCanvas(56, 48, (ctx) => {
+    drawShadow(ctx, 28, 44, 20, 4);
+
+    // Base de pedra — tampo afunilado nas bordas via curvas, degradê lateral
+    const stoneGrad = ctx.createLinearGradient(4, 0, 52, 0);
+    stoneGrad.addColorStop(0, '#171309');
+    stoneGrad.addColorStop(0.5, '#292420');
+    stoneGrad.addColorStop(1, '#3f382e');
+    ctx.fillStyle = stoneGrad;
+    ctx.beginPath();
+    ctx.moveTo(6, 30);
+    ctx.quadraticCurveTo(4, 20, 10, 18);
+    ctx.lineTo(46, 18);
+    ctx.quadraticCurveTo(52, 20, 50, 30);
+    ctx.quadraticCurveTo(52, 40, 44, 42);
+    ctx.lineTo(12, 42);
+    ctx.quadraticCurveTo(4, 40, 6, 30);
+    ctx.closePath();
+    ctx.fill();
+
+    // Tampo superior (onde o tomo repousa) — elipse com degradê radial
+    const topGrad = ctx.createRadialGradient(28, 17, 2, 28, 17, 22);
+    topGrad.addColorStop(0, '#4a4238');
+    topGrad.addColorStop(1, '#211d17');
+    ctx.fillStyle = topGrad;
+    ctx.beginPath();
+    ctx.ellipse(28, 17, 22, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Runas satânicas entalhadas — mantidas retas (entalhe geométrico faz sentido)
+    ctx.strokeStyle = '#990000';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(14, 30); ctx.lineTo(20, 22); ctx.lineTo(26, 30);
+    ctx.moveTo(30, 34); ctx.lineTo(36, 24); ctx.lineTo(42, 34);
+    ctx.stroke();
+
+    // Halo pulsante de energia sangrenta sobre o tampo
+    const glowGrad = ctx.createRadialGradient(28, 15, 2, 28, 15, 18);
+    glowGrad.addColorStop(0, 'rgba(153, 0, 0, 0.55)');
+    glowGrad.addColorStop(1, 'rgba(153, 0, 0, 0)');
+    ctx.fillStyle = glowGrad;
+    ctx.beginPath();
+    ctx.ellipse(28, 15, 18, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Tomo arcano fechado sobre o altar
+    ctx.fillStyle = '#450a0a';
+    ctx.fillRect(21, 11, 14, 8);
+    ctx.fillStyle = '#B8860B';
+    ctx.fillRect(21, 11, 14, 2);
+    ctx.fillStyle = '#E3DAC9';
+    ctx.beginPath();
+    ctx.arc(28, 15, 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  addTextureWithNormalMap('spr_altar_crimson', altarCanvas);
 }
 
 /**

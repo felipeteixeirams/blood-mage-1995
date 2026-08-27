@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, BiomeType, DroppedCorpse, CodexState, AchievementState, RunStats } from '../types/game';
-import { GameMode, ZoneType, CampaignState, DialogueTree, QuestLogEntry } from '../types/campaign';
-import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding, loadUnlockedRelics, saveUnlockedRelics, loadEquippedRelicIds, saveEquippedRelicIds, loadCodexState, saveCodexState, loadAchievements, saveAchievements, loadRunStats, saveRunStats } from '../utils/localStorage';
+import { GameMode, ZoneType, CampaignState, DialogueTree, QuestLogEntry, QuestDefinition, QuestObjective } from '../types/campaign';
+import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding, loadUnlockedRelics, saveUnlockedRelics, loadEquippedRelicIds, saveEquippedRelicIds, loadCodexState, saveCodexState, loadAchievements, saveAchievements, loadRunStats, saveRunStats, loadCampaignState, saveCampaignState } from '../utils/localStorage';
 import { soundEngine } from '../utils/soundEngine';
 import { CodexSystem } from '../game/systems/CodexSystem';
 import relicsData from '../data/relics.json';
@@ -24,7 +24,10 @@ interface GameStore {
   selectDialogueChoice: (choiceId: string) => void;
   closeDialogue: () => void;
   advanceQuestObjective: (questId: string, objectiveId: string, amount?: number) => void;
+  advanceQuestObjectiveByTarget: (type: QuestObjective['type'], targetId: string, amount?: number) => void;
   setCampaignZone: (zone: ZoneType) => void;
+  unlockCampaignSpell: (spellId: string) => void;
+  isCampaignSpellUnlocked: (spellId: string) => boolean;
 
   // Settings
   settings: GameSettings;
@@ -233,21 +236,44 @@ const defaultPlayerStats: PlayerStats = {
   },
 };
 
+// Snapshot salvo depois de qualquer mutação em `gameMode`/`campaignState` que
+// represente progresso real (não estado de sessão como o diálogo aberto na
+// tela) — ver observação em `src/utils/localStorage.ts`.
+function persistCampaignSnapshot(gameMode: GameMode, campaignState: CampaignState): void {
+  saveCampaignState({
+    gameMode,
+    currentZone: campaignState.currentZone,
+    chapter: campaignState.chapter,
+    storyFlags: campaignState.storyFlags,
+    quests: campaignState.quests,
+    discoveredZones: campaignState.discoveredZones,
+    unlockedSpellIds: campaignState.unlockedSpellIds,
+  });
+}
+
+const loadedCampaignState = loadCampaignState();
+
 export const useGameStore = create<GameStore>((set, get) => ({
   gameState: 'menu',
   setGameState: (state) => set({ gameState: state }),
 
-  // Campaign State Initializer
-  gameMode: 'arcade',
-  setGameMode: (mode) => set({ gameMode: mode }),
+  // Campaign State Initializer — carrega o progresso salvo (zona, quests,
+  // magias desbloqueadas, gameMode) do localStorage; `activeDialogueTree`/
+  // `activeDialogueNodeId` nunca são persistidos, começam sempre fechados.
+  gameMode: loadedCampaignState.gameMode,
+  setGameMode: (mode) => {
+    set({ gameMode: mode });
+    persistCampaignSnapshot(mode, get().campaignState);
+  },
   campaignState: {
-    currentZone: 'safe_house',
-    chapter: 1,
-    storyFlags: {},
-    quests: {},
+    currentZone: loadedCampaignState.currentZone,
+    chapter: loadedCampaignState.chapter,
+    storyFlags: loadedCampaignState.storyFlags,
+    quests: loadedCampaignState.quests,
     activeDialogueTree: null,
     activeDialogueNodeId: null,
-    discoveredZones: ['safe_house'],
+    discoveredZones: loadedCampaignState.discoveredZones,
+    unlockedSpellIds: loadedCampaignState.unlockedSpellIds,
   },
   startDialogue: (treeId) => {
     const tree = (dialoguesData as Record<string, DialogueTree>)[treeId];
@@ -296,12 +322,25 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
     }));
   },
+  // Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md — "gatilhos" do
+  // Capítulo 1 (baú/scout/altar): `objectiveId === 'start'` continua sendo o
+  // pseudo-id usado pela escolha de diálogo `give_quest` pra ativar a quest
+  // (ver `selectDialogueChoice`); qualquer outro `objectiveId` agora incrementa
+  // o progresso de verdade e fecha a quest quando todos os objetivos batem o alvo.
   advanceQuestObjective: (questId, objectiveId, amount = 1) => {
+    // `justCompleted` é lido fora do updater do `set` de propósito — chamar
+    // get().addBloodCrystals() (que por sua vez chama set()) enquanto ESTE set()
+    // ainda está no meio da própria atualização é reentrância desnecessária;
+    // aqui a recompensa só é concedida depois que o set() de baixo já terminou.
+    let justCompletedQuestId: string | null = null;
+
     set((state) => {
       const quests = { ...state.campaignState.quests };
-      if (!quests[questId] && objectiveId === 'start') {
-        const questDef = (campaignQuestsData as any)[questId];
-        if (questDef) {
+      const questDef = (campaignQuestsData as Record<string, QuestDefinition>)[questId];
+      if (!questDef) return { campaignState: state.campaignState };
+
+      if (objectiveId === 'start') {
+        if (!quests[questId]) {
           quests[questId] = {
             questId,
             status: 'active',
@@ -309,10 +348,62 @@ export const useGameStore = create<GameStore>((set, get) => ({
             objectivesProgress: {}
           };
         }
+        return { campaignState: { ...state.campaignState, quests } };
       }
-      return {
-        campaignState: { ...state.campaignState, quests }
+
+      const log = quests[questId];
+      if (!log || log.status !== 'active') return { campaignState: state.campaignState };
+
+      const objective = questDef.objectives.find((o) => o.id === objectiveId);
+      if (!objective) return { campaignState: state.campaignState };
+
+      const prevProgress = log.objectivesProgress[objectiveId] ?? objective.currentCount;
+      if (prevProgress >= objective.targetCount) return { campaignState: state.campaignState }; // já concluído
+
+      const nextProgress = Math.min(objective.targetCount, prevProgress + amount);
+      const nextObjectivesProgress = { ...log.objectivesProgress, [objectiveId]: nextProgress };
+      const allDone = questDef.objectives.every(
+        (o) => (nextObjectivesProgress[o.id] ?? o.currentCount) >= o.targetCount
+      );
+
+      quests[questId] = {
+        ...log,
+        objectivesProgress: nextObjectivesProgress,
+        status: allDone ? 'completed' : 'active',
       };
+
+      if (allDone) justCompletedQuestId = questId;
+
+      return { campaignState: { ...state.campaignState, quests } };
+    });
+
+    // Recompensa concedida só na transição pra 'completed' (evita duplicar).
+    // Nota de escopo: só Cristais de Sangue por enquanto — não existe um
+    // "addXp"/unlock de magia genérico na store hoje (XP de gameplay é
+    // aplicado direto em Player.ts via scene.player.addXp), então o XP e o
+    // spellUnlockId da recompensa da quest ficam para uma próxima leva.
+    if (justCompletedQuestId) {
+      const questDef = (campaignQuestsData as Record<string, QuestDefinition>)[justCompletedQuestId];
+      if (questDef) get().addBloodCrystals(questDef.rewards.bloodCrystals);
+    }
+    persistCampaignSnapshot(get().gameMode, get().campaignState);
+  },
+  // Ponto único usado pelos gatilhos de gameplay (chest, kill, discover) — cada
+  // um só sabe "que tipo de coisa aconteceu" (ex.: matou um scout_beast), não
+  // precisa saber qual questId/objectiveId isso corresponde. Varre as quests
+  // ativas procurando um objetivo do tipo+alvo certo e delega pro
+  // `advanceQuestObjective` de cima.
+  advanceQuestObjectiveByTarget: (type, targetId, amount = 1) => {
+    const state = get();
+    Object.values(state.campaignState.quests).forEach((log) => {
+      if (log.status !== 'active') return;
+      const questDef = (campaignQuestsData as Record<string, QuestDefinition>)[log.questId];
+      if (!questDef) return;
+      const objective = questDef.objectives.find((o) => o.type === type && o.targetId === targetId);
+      if (!objective) return;
+      const prevProgress = log.objectivesProgress[objective.id] ?? objective.currentCount;
+      if (prevProgress >= objective.targetCount) return; // já concluído
+      get().advanceQuestObjective(log.questId, objective.id, amount);
     });
   },
   setCampaignZone: (zone) => {
@@ -320,11 +411,33 @@ export const useGameStore = create<GameStore>((set, get) => ({
       campaignState: {
         ...state.campaignState,
         currentZone: zone,
-        discoveredZones: state.campaignState.discoveredZones.includes(zone) 
-          ? state.campaignState.discoveredZones 
+        discoveredZones: state.campaignState.discoveredZones.includes(zone)
+          ? state.campaignState.discoveredZones
           : [...state.campaignState.discoveredZones, zone]
       }
     }));
+    persistCampaignSnapshot(get().gameMode, get().campaignState);
+  },
+  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero).
+  unlockCampaignSpell: (spellId) => {
+    const alreadyUnlocked = get().campaignState.unlockedSpellIds.includes(spellId);
+    set((state) => {
+      if (state.campaignState.unlockedSpellIds.includes(spellId)) return state; // já desbloqueado
+      return {
+        campaignState: {
+          ...state.campaignState,
+          unlockedSpellIds: [...state.campaignState.unlockedSpellIds, spellId],
+        },
+      };
+    });
+    if (!alreadyUnlocked) persistCampaignSnapshot(get().gameMode, get().campaignState);
+  },
+  // No modo arcade nunca há bloqueio (mantém o comportamento de sempre — todas
+  // as magias liberadas). Só o modo campanha consulta `unlockedSpellIds`.
+  isCampaignSpellUnlocked: (spellId) => {
+    const state = get();
+    if (state.gameMode !== 'campaign') return true;
+    return state.campaignState.unlockedSpellIds.includes(spellId);
   },
 
   settings: loadSettings(),
@@ -434,6 +547,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const { nextState } = CodexSystem.recordKill(monsterId, currentState);
     saveCodexState(nextState);
     set({ codexState: nextState });
+    // Gatilho da quest_ch1_first_steps (obj_clear_woods) — qualquer quest ativa
+    // com um objetivo kill_enemy pra esse monsterId avança sozinha.
+    get().advanceQuestObjectiveByTarget('kill_enemy', monsterId, 1);
   },
   claimCodexMilestone: (entryId, killCount) => {
     const currentState = get().codexState;

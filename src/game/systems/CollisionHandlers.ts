@@ -92,6 +92,40 @@ export class CollisionHandlers {
     soundEngine.playChestOpen();
     ContractSystem.onChestOpened(scene);
 
+    // Frente 1/2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: o baú de
+    // suprimentos da Safe House não sorteia loot aleatório — dá a Adaga de Aço
+    // garantida (item fixo, não LootSystem.generateLoot) e avança
+    // obj_loot_chest de quest_ch1_first_steps.
+    const questChestTarget = chest.getData('questChest') as string | undefined;
+    if (questChestTarget === 'starter_dagger') {
+      const starterDagger = {
+        id: 'starter_dagger',
+        name: 'Adaga de Aço',
+        type: 'weapon' as const,
+        rarity: 'common' as const,
+        description: 'A primeira lâmina que Maelen deixou no baú. Modesta, mas afiada o bastante pra abrir caminho.',
+        stats: { damageMultiplier: 0.05, critChanceBonus: 0.02 },
+      };
+      const lootSprite = new LootSprite(scene, chest.x, chest.y - 10, starterDagger);
+      scene.lootGroup.add(lootSprite);
+      scene.lightingPolish?.addItemGlow(lootSprite, starterDagger.rarity);
+      scene.spawnFloatingText(chest.x, chest.y - 25, 'ADAGA DE AÇO', '#B8860B', true);
+      useGameStore.getState().advanceQuestObjectiveByTarget('collect_item', 'starter_dagger', 1);
+
+      const openKeyQuest = chest.texture.key.startsWith('spr_chest_')
+        ? chest.texture.key.replace('spr_chest_', 'spr_chest_open_')
+        : 'spr_chest_open';
+      if (scene.textures.exists(openKeyQuest)) {
+        chest.setTexture(openKeyQuest);
+      } else if (scene.textures.exists('spr_chest_open')) {
+        chest.setTexture('spr_chest_open');
+      } else {
+        chest.setTint(0x444444);
+      }
+      scene.tweens.add({ targets: chest, alpha: 0, delay: 1500, duration: 500, onComplete: () => chest.destroy() });
+      return;
+    }
+
     // Chest: guaranteed equipment loot + blood crystals (no XP/HP drops)
     // Grant some XP directly
     scene.player.addXp(30);
@@ -182,6 +216,55 @@ export class CollisionHandlers {
     } else if (isCrit || finalDamage > enemy.maxHp * 0.25) {
       // Non-lethal heavy hit / crit drops tactical blood splatters on floor
       scene.bloodSplatterSystem?.addHitSplatter(enemy.x, enemy.y, proj.rotation, isCrit);
+    }
+  }
+
+  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero):
+  // dano do golpe de adaga — mesmo caminho de efeitos do handleProjectileHitEnemy
+  // acima (crit roll, floating text, vampirismo, morte/splatter), só sem
+  // Projectile (golpe instantâneo, sem objeto de projétil pra liberar/girar).
+  private readonly DAGGER_BASE_DAMAGE = 10;
+
+  public handleMeleeHitEnemy(enemyObj: any) {
+    const scene = this.scene;
+    const enemy = enemyObj as Enemy;
+    if (!enemy.active) return;
+
+    if (scene.bloodEmitter) {
+      scene.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 4);
+    }
+
+    this.triggerGroupAlert(enemy.x, enemy.y, 220);
+
+    const isCrit = Math.random() < 0.15;
+    const rawDamage = this.DAGGER_BASE_DAMAGE * scene.player.getEffectiveDamageMultiplier();
+    const finalDamage = isCrit ? rawDamage * 1.75 : rawDamage;
+
+    const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
+    const isDead = enemy.takeDamage(finalDamage, scene.player.x, scene.player.y, isCrit, false);
+    CombatFeel.handleHitImpact(scene, finalDamage, isCrit, false, enemy.hp / enemy.maxHp);
+    scene.applyRelicOnHitEffects(enemy);
+
+    if (isCrit && scene.lightingPolish) {
+      scene.lightingPolish.addCriticalImpactGlow(enemy.x, enemy.y);
+    }
+
+    const dmgText = Math.round(finalDamage).toString();
+    scene.spawnFloatingText(enemy.x, enemy.y, isCrit ? `${dmgText}!` : dmgText, isCrit ? '#facc15' : '#ffffff', isCrit);
+
+    const effVamp = scene.player.getEffectiveVampirism();
+    if (effVamp > 0) {
+      const stolen = finalDamage * effVamp;
+      scene.player.heal(stolen);
+      scene.spawnFloatingText(scene.player.x, scene.player.y - 12, `+${Math.round(stolen)}`, '#22c55e', false);
+      scene.lightingPolish?.addHealGlow(scene.player.x, scene.player.y);
+    }
+
+    if (isDead) {
+      scene.handleEnemyDeath(enemy, 'dagger_strike', wasLowHp);
+    } else if (isCrit || finalDamage > enemy.maxHp * 0.25) {
+      const hitAngle = Phaser.Math.Angle.Between(scene.player.x, scene.player.y, enemy.x, enemy.y);
+      scene.bloodSplatterSystem?.addHitSplatter(enemy.x, enemy.y, hitAngle, isCrit);
     }
   }
 

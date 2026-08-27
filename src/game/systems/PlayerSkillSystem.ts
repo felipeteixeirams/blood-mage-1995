@@ -31,6 +31,20 @@ export class PlayerSkillSystem {
   private lastGamepadButtonStates: boolean[] = [];
   private boneShieldVisuals: Phaser.GameObjects.Sprite[] = [];
 
+  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero):
+  // mapeamento skillKey → spellId real, usado só pra checar
+  // `isCampaignSpellUnlocked` — as demais habilidades (não o blood_bolt, que
+  // é o ataque automático tratado em Player.ts) ficam bloqueadas por padrão
+  // no modo campanha até uma quest futura desbloquear cada uma.
+  private static readonly SKILL_KEY_TO_SPELL_ID: Record<string, string> = {
+    nova: 'hellfire_nova',
+    syphon: 'syphon_soul',
+    bone_shield: 'bone_shield',
+    crimson_scythe: 'crimson_scythe',
+    blood_ritual_circle: 'blood_ritual_circle',
+    hemomancy_beam: 'hemomancy_beam',
+  };
+
   constructor(private scene: GameScene) {}
 
   public triggerSkill(
@@ -38,6 +52,12 @@ export class PlayerSkillSystem {
   ) {
     const scene = this.scene;
     if (scene.isPaused) return;
+
+    const spellId = PlayerSkillSystem.SKILL_KEY_TO_SPELL_ID[skillKey];
+    if (spellId && !useGameStore.getState().isCampaignSpellUnlocked(spellId)) {
+      scene.spawnFloatingText(scene.player.x, scene.player.y - 20, 'FEITIÇO NÃO DESCOBERTO', '#6b7280', false);
+      return;
+    }
 
     let success = false;
     if (skillKey === 'nova' && scene.player.castNova()) {

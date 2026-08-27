@@ -117,6 +117,11 @@ export class GameScene extends Phaser.Scene {
   private exploredRoomIndices: Set<number> = new Set();
   private minimapPushAccumMs: number = 0;
 
+  // Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: marcos descobríveis
+  // da campanha (ex.: Altar Ancestral em gloomy_woods) — checados por proximidade
+  // em update(), público: preenchido por DungeonFlowController.
+  public campaignDiscoverables: Phaser.GameObjects.Image[] = [];
+
   private currentWaveIndex: number = 0;
   public waveConfigs: WaveConfig[] = wavesData as WaveConfig[]; // público: usado por DungeonFlowController
 
@@ -1037,9 +1042,41 @@ export class GameScene extends Phaser.Scene {
     // bob suave + esconde o marcador do NPC com quem o jogador está conversando agora
     if (this.npcMarkers.length > 0) {
       const bob = Math.sin(time * 0.004) * 3;
+      const isInCampaignDialogue = store.campaignState.activeDialogueTree !== null;
       this.npcMarkers.forEach((m) => {
         m.container.y = m.baseY + bob;
-        m.container.setVisible(store.activeNPC !== m.npcType);
+        m.container.setVisible(store.activeNPC !== m.npcType && !isInCampaignDialogue);
+      });
+    }
+
+    // Frente 2/3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: checa proximidade
+    // com marcos descobríveis da campanha (ex.: Altar Ancestral) e avança o
+    // objetivo discover_zone correspondente uma única vez por marco.
+    if (this.campaignDiscoverables.length > 0 && this.player && this.player.active) {
+      const discoverRadius = 70;
+      this.campaignDiscoverables.forEach((marker) => {
+        if (!marker.active || marker.getData('discovered')) return;
+        const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, marker.x, marker.y);
+        if (dist < discoverRadius) {
+          marker.setData('discovered', true);
+          const targetId = marker.getData('campaignDiscoverableId') as string;
+          useGameStore.getState().advanceQuestObjectiveByTarget('discover_zone', targetId, 1);
+          soundEngine.playOrbPickup();
+          this.spawnFloatingText(marker.x, marker.y - 30, 'ALTAR DESCOBERTO', '#990000', true);
+
+          // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero):
+          // o Altar Ancestral é onde o jogador desarmado ganha seu primeiro
+          // feitiço — desbloqueio imediato na descoberta, não só quando a quest
+          // inteira (baú + batedores) fecha.
+          const SPELL_UNLOCK_BY_DISCOVERABLE: Record<string, string> = {
+            altar_crimson: 'blood_bolt',
+          };
+          const spellToUnlock = SPELL_UNLOCK_BY_DISCOVERABLE[targetId];
+          if (spellToUnlock) {
+            useGameStore.getState().unlockCampaignSpell(spellToUnlock);
+            this.spawnFloatingText(marker.x, marker.y - 46, 'BLOOD BOLT DESBLOQUEADO!', '#B8860B', true);
+          }
+        }
       });
     }
 
@@ -1184,7 +1221,14 @@ export class GameScene extends Phaser.Scene {
       if (Phaser.Input.Keyboard.JustDown(this.keys.E)) {
         if (closestNPC) {
           const type = (closestNPC as Phaser.Physics.Arcade.Sprite).getData('npcType');
-          store.setActiveNPC(type);
+          // Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: Maelen abre a
+          // árvore de diálogo de campanha (mesma rota do botão "FALAR COM NPC" no HUD);
+          // os outros NPCs continuam no modal de loja via setActiveNPC.
+          if (type === 'maelen') {
+            store.startDialogue('safe_house_maelen_intro');
+          } else {
+            store.setActiveNPC(type);
+          }
         } else if (closestScav) {
           this.startScavenging(closestScav);
         } else {
@@ -1242,6 +1286,17 @@ export class GameScene extends Phaser.Scene {
     if (this.player.stats.mana < lastMana - 1) {
       this.firePlayerBloodBolt();
       this.emitSound(this.player.x, this.player.y, 360); // Firing spell noise!
+    }
+
+    // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero):
+    // updatePlayer() marcou um golpe de adaga elegível — aplica o dano aqui
+    // (fora do Player, que não deve conhecer gore/blood-splatter) e limpa o
+    // sinalizador, no mesmo espírito do delta de mana do blood_bolt acima.
+    if (this.player.pendingMeleeHitTarget) {
+      const meleeTarget = this.player.pendingMeleeHitTarget;
+      this.player.pendingMeleeHitTarget = null;
+      this.collisionHandlers.handleMeleeHitEnemy(meleeTarget);
+      this.emitSound(this.player.x, this.player.y, 180); // Golpe curto — bem mais discreto que magia
     }
 
     // Status Condition DoT (bleeding/poison) can trigger Definitive Death on its own,

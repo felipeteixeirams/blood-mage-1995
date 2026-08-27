@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Flame, HeartPulse, Shield, Sword, CircleDot, Zap,
+  Flame, HeartPulse, Shield, Sword, CircleDot, Zap, Lock,
 } from 'lucide-react';
 import { PlayerStats, SpellConfig } from '../../types/game';
 import spellsData from '../../data/spells.json';
@@ -70,9 +70,14 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
     active: false
   });
 
+  const checkIsLocked = (spellId: string): boolean => {
+    return !useGameStore.getState().isCampaignSpellUnlocked(spellId);
+  };
+
   const checkCanCast = (spellId: string): boolean => {
     const spell = typedSpells[spellId];
     if (!spell) return false;
+    if (checkIsLocked(spellId)) return false;
     if (getCooldownRemaining(spellId) > 0) return false;
     if (stats.mana < spell.manaCost) return false;
     if (spell.hpCost && stats.hp <= spell.hpCost) return false;
@@ -144,6 +149,7 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
     if (!skillKey) return null;
 
     const cd = getCooldownRemaining(spellId);
+    const isLocked = checkIsLocked(spellId);
     const canCast = checkCanCast(spellId);
     const Icon = ICON_MAP[spell.icon] || Flame;
     const activeCls = COLOR_ACTIVE[spellId] || 'bg-gray-900 border-gray-600 text-gray-300';
@@ -223,6 +229,27 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
               L
             </span>
           </div>
+        </button>
+      );
+    }
+
+    if (isLocked) {
+      return (
+        <button
+          key={spellId}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            CombatFeel.triggerVibration('cooldown_warning');
+          }}
+          className={`absolute rounded-full border-2 border-dashed border-gray-800 bg-black/70
+            flex flex-col items-center justify-center gap-0.5 grayscale opacity-60
+            cursor-not-allowed touch-manipulation select-none ${sizeClasses}`}
+          style={layout ? { position: 'fixed', left: layout.x, top: layout.y, zIndex: 100 } : { ...defaultPositionStyle, zIndex: 100 }}
+          title="Feitiço não descoberto"
+          aria-label={`${spell.name} (bloqueado)`}
+        >
+          <Lock className={`${iconSize} text-gray-500 drop-shadow-[1px_1px_2px_rgba(0,0,0,0.9)]`} />
+          <span className="text-[7px] font-pixel text-gray-500 font-bold leading-none">???</span>
         </button>
       );
     }

@@ -1,4 +1,36 @@
 {
+  "scout_beast": {
+    "id": "scout_beast",
+    "name": "Batedor Corrompido",
+    "description": "Vira-lata selvagem mutado que patrulha a orla dos Bosques Sombrios. Mais fraco que um Cão Infernal completo, mas ainda caça em matilha.",
+    "hp": 40,
+    "speed": 80,
+    "damage": 8,
+    "spriteKey": "spr_hound",
+    "goreEffect": "blood_splatter_red",
+    "xpDrop": 12,
+    "attackRange": 30,
+    "behavior": "charger",
+    "temperament": "aggressive",
+    "gaitType": "quadruped",
+    "bodyType": "beast_quadruped",
+    "fragility": 0.75,
+    "visionDistance": 220,
+    "visionConeDegrees": 130,
+    "hearingSensitivity": 1.3,
+    "dodgeChance": 0.08,
+    "courage": 0.5,
+    "color": "#57534e",
+    "scale": 0.85,
+    "scoreValue": 60,
+    "executionFragments": 3,
+    "executionImpulse": 150,
+    "executionBloodScale": 2.0,
+    "statusEffectOnHit": {
+      "type": "bleeding",
+      "chance": 0.15
+    }
+  },
   "skeleton_warrior": {
     "id": "skeleton_warrior",
     "name": "Guerreiro Esqueleto",

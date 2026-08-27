@@ -12,6 +12,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private aimVector: Phaser.Math.Vector2 = new Phaser.Math.Vector2(1, 0);
   private manualAimTimer: number = 0;
   private lastAutoShootTime: number = 0;
+  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero):
+  // ataque físico de adaga — curto alcance, sem custo de HP/mana, usado no
+  // lugar do blood_bolt enquanto o feitiço ainda não foi descoberto no modo
+  // campanha. `pendingMeleeHitTarget` é consumido por GameScene.update() logo
+  // depois de updatePlayer(), no mesmo espírito do delta de mana que já
+  // sinaliza quando um blood_bolt foi disparado.
+  private lastMeleeAttackTime: number = 0;
+  private readonly MELEE_COOLDOWN_MS = 500;
+  public readonly MELEE_RANGE = 50;
+  public pendingMeleeHitTarget: any | null = null;
   // Duração fixa da pose de conjuração (6 frames @ 10fps = 600ms), disparada uma
   // única vez por tiro em vez de reavaliada a cada frame — evita que a animação
   // reinicie/"dance" a cada frame por causa de auto-fire contínuo ou do alvo se
@@ -465,6 +475,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
     });
 
+    // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero):
+    // no modo campanha, antes do blood_bolt ser descoberto (Altar Ancestral),
+    // o "ataque automático" primário é a adaga — curto alcance, sem projétil,
+    // sem custo. Fora da campanha (ou já com blood_bolt desbloqueado) o
+    // comportamento de sempre continua idêntico.
+    const isUnarmedCampaign = !useGameStore.getState().isCampaignSpellUnlocked('blood_bolt');
+
     // Auto Shoot Primary (Blood Bolt) with Intelligent Directional Cone Aiming
     const bloodBoltConfig = (spellsData as Record<string, SpellConfig>)['blood_bolt'];
     const autoCd = bloodBoltConfig.cooldownMs * (1 - this.getEffectiveCooldownReduction());
@@ -472,7 +489,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const pointer = this.scene && this.scene.input && this.scene.input.activePointer;
     const isPointerDown = pointer && pointer.isDown;
 
-    const targetEnemy = this.findBestTarget(380);
+    const targetEnemy = this.findBestTarget(isUnarmedCampaign ? this.MELEE_RANGE : 380);
     const hasEnemyInRange = targetEnemy !== null;
 
     // If an enemy is found and user is not manually aiming with right stick/pointer,
@@ -486,7 +503,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
     }
 
-    if ((isPointerDown || hasEnemyInRange) && time > this.lastAutoShootTime + autoCd) {
+    if (isUnarmedCampaign) {
+      if (targetEnemy && time > this.lastMeleeAttackTime + this.MELEE_COOLDOWN_MS) {
+        this.castDaggerStrike(time, targetEnemy);
+      }
+    } else if ((isPointerDown || hasEnemyInRange) && time > this.lastAutoShootTime + autoCd) {
       this.castBloodBolt(time);
     }
 
@@ -732,6 +753,27 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.castAnimTimer = 600;
     this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     soundEngine.playBloodBolt();
+    return true;
+  }
+
+  /**
+   * Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero):
+   * ataque físico de adaga — sem custo de HP/mana, curto alcance, sem
+   * projétil. Não aplica dano diretamente (Player não deve conhecer
+   * gore/blood-splatter/dismemberment); só valida elegibilidade, marca o
+   * cooldown/animação e deixa o alvo em `pendingMeleeHitTarget` pra
+   * GameScene.update() aplicar o dano via CollisionHandlers, no mesmo
+   * espírito de como o blood_bolt sinaliza disparo via delta de mana.
+   */
+  public castDaggerStrike(time: number, target: any): boolean {
+    if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
+    if (!target || !target.active) return false;
+
+    this.lastMeleeAttackTime = time;
+    this.pendingMeleeHitTarget = target;
+    this.castAnimTimer = 300; // golpe curto — mais rápido que a pose de conjuração
+    this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
+    soundEngine.playSwing();
     return true;
   }
 

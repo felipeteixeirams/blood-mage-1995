@@ -22,8 +22,11 @@ import {
   saveAchievements,
   loadCodexState,
   saveCodexState,
+  loadCampaignState,
+  saveCampaignState,
   defaultSettings,
   defaultHighScores,
+  defaultCampaignState,
 } from './localStorage';
 
 vi.mock('./logger', () => ({
@@ -244,6 +247,64 @@ describe('localStorage persistence', () => {
       saveEquippedRelicIds(['selo_hemorragico', 'olho_de_carmim']);
       const loaded = loadEquippedRelicIds();
       expect(loaded).toEqual(['selo_hemorragico', 'olho_de_carmim']);
+    });
+  });
+
+  describe('Campaign State (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md — persistência)', () => {
+    it('returns defaults when nothing is stored', () => {
+      expect(loadCampaignState()).toEqual(defaultCampaignState);
+    });
+
+    it('round-trips zone, quests and unlocked spells', () => {
+      const custom = {
+        gameMode: 'campaign' as const,
+        currentZone: 'gloomy_woods' as const,
+        chapter: 1,
+        storyFlags: { maelen_intro_seen: true },
+        quests: {
+          quest_ch1_first_steps: {
+            questId: 'quest_ch1_first_steps',
+            status: 'active' as const,
+            currentObjectiveIndex: 0,
+            objectivesProgress: { obj_loot_chest: 1, obj_clear_woods: 2 },
+          },
+        },
+        discoveredZones: ['safe_house' as const, 'gloomy_woods' as const],
+        unlockedSpellIds: ['blood_bolt'],
+      };
+      saveCampaignState(custom);
+      expect(loadCampaignState()).toEqual(custom);
+    });
+
+    it('falls back to defaults on corrupted JSON', () => {
+      localStorage.setItem('bloodmage_1995_campaign_state', '{not valid json');
+      expect(loadCampaignState()).toEqual(defaultCampaignState);
+    });
+
+    it('sanitizes an invalid gameMode/zone back to defaults for those fields', () => {
+      localStorage.setItem(
+        'bloodmage_1995_campaign_state',
+        JSON.stringify({ ...defaultCampaignState, gameMode: 'god_mode', currentZone: 'nowhere' }),
+      );
+      const loaded = loadCampaignState();
+      expect(loaded.gameMode).toBe('arcade');
+      expect(loaded.currentZone).toBe('safe_house');
+    });
+
+    it('strips unknown keys via strict schema (prototype pollution guard)', () => {
+      localStorage.setItem(
+        'bloodmage_1995_campaign_state',
+        JSON.stringify({ ...defaultCampaignState, malicious: '__proto__' }),
+      );
+      const loaded = loadCampaignState();
+      expect(loaded).not.toHaveProperty('malicious');
+    });
+
+    it('never persists activeDialogueTree/activeDialogueNodeId (session-only, not part of the shape)', () => {
+      saveCampaignState({ ...defaultCampaignState, gameMode: 'campaign' } as any);
+      const raw = localStorage.getItem('bloodmage_1995_campaign_state');
+      expect(raw).not.toContain('activeDialogueTree');
+      expect(raw).not.toContain('activeDialogueNodeId');
     });
   });
 });
