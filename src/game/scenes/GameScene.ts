@@ -9,6 +9,7 @@ import { LootSystem } from '../systems/LootSystem';
 import { PlayerStats, WaveConfig, UpgradeOption } from '../../types/game';
 import wavesData from '../../data/waves.json';
 import upgradesData from '../../data/upgrades.json';
+import campaignItemsData from '../../data/campaignItems.json';
 import { soundEngine } from '../../utils/soundEngine';
 import HapticFeedback from '../../utils/haptics';
 import ScreenEffects from '../systems/ScreenEffects';
@@ -1297,6 +1298,30 @@ export class GameScene extends Phaser.Scene {
       this.player.pendingMeleeHitTarget = null;
       this.collisionHandlers.handleMeleeHitEnemy(meleeTarget);
       this.emitSound(this.player.x, this.player.y, 180); // Golpe curto — bem mais discreto que magia
+    }
+
+    // Fecha os gaps da Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md:
+    // ações de diálogo (heal_player/give_weapon) e recompensas de quest (XP)
+    // que dependem de `scene.player` — a store só enfileira, quem aplica é aqui
+    // (mesmo motivo do bloco de golpe de adaga acima).
+    const campaignEffects = useGameStore.getState().drainCampaignEffects();
+    for (const effect of campaignEffects) {
+      if (effect.type === 'heal_player') {
+        this.player.heal(this.player.stats.maxHp);
+        this.player.addMana(this.player.stats.maxMana);
+        this.spawnFloatingText(this.player.x, this.player.y - 30, 'CURADO', '#4ade80', true);
+      } else if (effect.type === 'give_xp') {
+        this.player.addXp(effect.amount);
+        this.spawnFloatingText(this.player.x, this.player.y - 30, `+${effect.amount} XP`, '#3b82f6', false);
+      } else if (effect.type === 'give_weapon') {
+        const itemData = (campaignItemsData as Record<string, any>)[effect.itemId];
+        if (itemData) {
+          const lootSprite = new LootSprite(this, this.player.x, this.player.y - 10, itemData);
+          this.lootGroup.add(lootSprite);
+          this.lightingPolish?.addItemGlow(lootSprite, itemData.rarity);
+          this.spawnFloatingText(this.player.x, this.player.y - 25, itemData.name.toUpperCase(), '#B8860B', true);
+        }
+      }
     }
 
     // Status Condition DoT (bleeding/poison) can trigger Definitive Death on its own,

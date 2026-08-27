@@ -657,7 +657,10 @@ export const defaultCampaignState: PersistedCampaignState = {
   unlockedSpellIds: [],
 };
 
-const ZoneTypeSchema = z.enum(['safe_house', 'gloomy_woods', 'ruined_village', 'catacombs_depths']);
+// `ZoneType` (types/campaign.ts) agora é alias de `BiomeType` (types/game.ts) —
+// mesma lista de valores usada pela progressão de campanha em
+// `DungeonFlowController.ts`, ver observação lá.
+const ZoneTypeSchema = z.enum(['safe_house', 'gloomy_woods', 'fosso_chagas', 'catacumbas_martires', 'santuario_sangue']);
 
 const QuestLogEntrySchema = z.object({
   questId: z.string().max(100),

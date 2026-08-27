@@ -152,11 +152,16 @@ export class DungeonGenerator {
           (this.scene as any).lightingSystem.applyLightPipeline(star);
           (this.scene as any).lightingSystem.applyLightPipeline(circle);
         }
-      } else 
-      // Spikes and Barrels in regular chambers
-      if (room.type === 'chamber') {
+      } else
+      // Spikes and Barrels in regular chambers — mas não em `gloomy_woods`
+      // (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md, observação de escopo da
+      // Frente 2/3): é a introdução da Campanha, o jogador começa desarmado e
+      // corpo a corpo contra os scout_beast — armadilhas de área/barril
+      // explosivo empilhadas em cima disso é punitivo demais pra quem ainda tá
+      // aprendendo o combate corpo a corpo, sem nenhuma magia de escape.
+      if (room.type === 'chamber' && biome !== 'gloomy_woods') {
         const gameScene = this.scene as GameScene;
-        
+
         // 40% chance of traps
         if (Math.random() < 0.40) {
           // Trap cluster in center

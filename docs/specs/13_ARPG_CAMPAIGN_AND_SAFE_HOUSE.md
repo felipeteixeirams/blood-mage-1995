@@ -12,7 +12,7 @@ Transformar a estrutura de sessão do *Blood Mage 1995* de um arcade isolado par
 - **NPC Interativo:** Presença de Maelen (o ermitão que resgatou o protagonista). Ao aproximar-se e interagir (tecla E ou toque no mobile), abre a janela de diálogo CRPG.
 - **Baú Inicial de Suprimentos:** Um baú interativo no chão que contém a primeira arma física (Adaga de Aço) e ataduras.
 
-### [PARCIAL] Frente 2: Sistema de Diálogos & Quests (React HUD Overlay)
+### [CONCLUÍDO] Frente 2: Sistema de Diálogos & Quests (React HUD Overlay)
 - **Interface CRPG:** Caixa de diálogo em React com retrato 9-slice, texto formatado em máquina de escrever, subtítulo do locutor e opções de resposta ramificadas.
 - **Gerenciamento de Estado:** Zustand sincronizado com a árvore de diálogos (`src/data/dialogues.json`) e registro de missões ativas (`src/data/campaignQuests.json`).
 - **Ações de Diálogo:** Respostas que podem disparar ações no jogo (entregar missão, destravar arma, curar jogador, fechar diálogo).
@@ -47,9 +47,9 @@ Transformar a estrutura de sessão do *Blood Mage 1995* de um arcade isolado par
 1. [x] Ao iniciar o jogo no Modo Campanha, o jogador acorda no Refúgio sem magias equipadas na barra. — `campaignState.unlockedSpellIds` agora começa vazio e `isCampaignSpellUnlocked(spellId)` retorna `false` pra tudo em modo Campanha (retorna `true` sempre em modo Arcade, pra não quebrar o jogo existente); a barra (`SkillsOverlay.tsx`) mostra os slots trancados com cadeado em vez de esconder/mostrar a magia liberada.
 2. [x] O NPC Maelen está presente no cenário com indicador de interação ("Pressione E para conversar").
 3. [x] Abrir a conversa exibe a interface com o retrato de Maelen e a fala *"Ah... você finalmente acordou"*, permitindo navegar pelas ramificações. — retrato é textual (nome/título + ícone), não uma imagem; ver observação.
-4. [x] Concluir o diálogo concede a primeira missão no Rastreador de Quests do HUD, e agora os 3 objetivos (baú, batedores, altar) progridem de verdade até a quest fechar como `completed`.
+4. [x] Concluir o diálogo concede a primeira missão no Rastreador de Quests do HUD, e agora os 3 objetivos (baú, batedores, altar) progridem de verdade até a quest fechar como `completed`, com XP, Cristais de Sangue e o desbloqueio de `blood_bolt` concedidos de verdade ao completar.
 5. [x] Coletar a adaga no baú equipa a arma e permite desferir ataques físicos nos batedores da floresta. — a "adaga" ainda não é um item equipável de verdade: em modo Campanha, sem `blood_bolt` desbloqueado, o auto-ataque do jogador vira corpo a corpo automaticamente (mesmo padrão de auto-mira já usado pro Blood Bolt), sem custo de HP/Mana. Ver observação de escopo no changelog.
-6. [ ] A bateria de testes automatizados (`pnpm test`) deve passar com 100% de sucesso sem quebrar o modo Arcade existente. — não executado neste ambiente (sandbox sem `node_modules`/rede para instalar dependências); testes novos foram escritos (Frente 2 e Frente 3) mas nunca rodados de verdade. Falta você rodar `pnpm test` + `pnpm verify` localmente.
+6. [ ] A bateria de testes automatizados (`pnpm test`) deve passar com 100% de sucesso sem quebrar o modo Arcade existente. — não executado neste ambiente (sandbox sem `node_modules`/rede para instalar dependências); testes novos foram escritos (Frente 2 e Frente 3) mas nunca rodados de verdade aqui. `pnpm verify` (`tsc --noEmit`) rodou de verdade na sua máquina em 27/08 e achou ~29 erros — a maioria dívida técnica preexistente sem relação com a Campanha (ver changelog "Dívida técnica de typecheck"), mas incluiu 1 bug real nosso (`CampaignState.gameMode`, já corrigido). Falta você rodar `pnpm test` + `pnpm verify` localmente de novo pra confirmar que os ~10 erros ligados a `ZoneType`/`BiomeType`/`closestNPCType` também sumiram.
 
 ---
 
@@ -88,10 +88,13 @@ Transformar a estrutura de sessão do *Blood Mage 1995* de um arcade isolado par
     - ~~`advanceQuestObjective` só marca a quest como `active`, não incrementa
       `currentCount` dos objetivos~~ — **resolvido em 27/08** (ver changelog
       abaixo): os 3 gatilhos existem e o progresso real funciona.
-    - Ações de diálogo além de `give_quest` (`give_weapon`, `give_spell`,
+    - ~~Ações de diálogo além de `give_quest` (`give_weapon`, `give_spell`,
       `heal_player`, `open_shop`) existem só no tipo `DialogueChoice['action']`, sem
       handler na store — não bloqueia a conversa do Maelen (só usa `give_quest`),
-      mas qualquer diálogo futuro que dependa delas ainda não faz nada.
+      mas qualquer diálogo futuro que dependa delas ainda não faz nada.~~ —
+      **resolvido em 27/08** (ver changelog abaixo): as 4 ações agora têm
+      handler; nenhum diálogo existente as usa ainda, mas o próximo capítulo já
+      pode.
     - ~~`campaignState` não é persistido no `localStorage` — recarregar a página no
       meio da campanha perde o diálogo/quest em andamento.~~ — **resolvido em
       27/08** (ver changelog abaixo): zona, quests, zonas descobertas e magias
@@ -132,12 +135,14 @@ Transformar a estrutura de sessão do *Blood Mage 1995* de um arcade isolado par
       `campaignDiscoverables` (lista de marcos) checada por proximidade em
       `update()` — a 70px do altar, dispara `discover_zone` uma única vez
       (`setData('discovered', true)` evita repetir).
-  - **Observação de escopo:** a recompensa de XP e o `spellUnlockId` da quest
+  - ~~**Observação de escopo:** a recompensa de XP e o `spellUnlockId` da quest
     não são concedidos ainda (ver nota no código de `advanceQuestObjective`) —
     só Cristais de Sangue. Também não reduzi/pulei os `SpikeTrap`/`ExplosiveBarrel`
     que o `DungeonGenerator` normal ainda gera em `gloomy_woods` (não é uma
     masmorra dedicada, reaproveita o grid 3x3 padrão) — pode valer revisar se
-    isso é duro demais pra uma introdução desarmada, quando a Frente 3 entrar.
+    isso é duro demais pra uma introdução desarmada, quando a Frente 3 entrar.~~
+    — **resolvido em 27/08** (ver changelog abaixo): XP/spellUnlockId agora são
+    concedidos, e `gloomy_woods` não gera mais `SpikeTrap`/`ExplosiveBarrel`.
   - **Validação:** 4 testes novos em `gameStore.test.ts` (`describe('campaign
     quests...')`) cobrindo ativação, progresso por tipo+alvo, conclusão da
     quest com recompensa única e o efeito colateral de `onEnemyKilled`.
@@ -272,3 +277,86 @@ Transformar a estrutura de sessão do *Blood Mage 1995* de um arcade isolado par
     `pnpm test` + `pnpm verify` localmente e validar em jogo**: abrir o baú,
     matar um `scout_beast`, dar F5 na página, conferir que a quest continua com
     o progresso salvo e que o modo Campanha é restaurado.
+
+- **[2026-08-27] Quatro frentes em paralelo — dívida técnica, gaps de diálogo, balanceamento e reset:**
+  - Status: fecha a Frente 2 de vez (sobe pra **CONCLUÍDO**, tag atualizada
+    acima) e cobre observações de escopo que vinham se acumulando desde as
+    levas anteriores; não abre nenhuma Frente nova.
+  - **1) Dívida técnica de typecheck (`ZoneType`/`BiomeType`/`closestNPCType`):**
+    ao tentar comitar a leva anterior, `pnpm verify` rodou de verdade pela
+    primeira vez e voltou com ~29 erros de TypeScript. A maior parte (imports
+    de `AtmosphereSystem`/`EnemyTelegraphSystem`/`BloodSplatterSystem`,
+    `dialogues.json`/`campaignQuests.json` "não encontrados",
+    `SoundEngine.setBGMTheme`, `LightingPolish.addAreaSpellGlow`,
+    `PlayerStats.sacrificeDiscount`, `EliteAffix` sem `'teleporter'`/`'reflective'`)
+    era só o repositório local do Felipe estar desatualizado em relação ao
+    `origin/main` (histórico divergente por causa de um `force-push` anterior —
+    resolvido via `git reset --hard origin/main` + `git stash pop` com
+    conflitos, tudo já mesclado no commit `af2cfe7`). Dois erros, porém, eram
+    reais e continuavam depois da sincronização:
+    - `ZoneType` (types/campaign.ts) tinha valores placeholder
+      (`'ruined_village'`, `'catacombs_depths'`) que nunca bateram com os
+      nomes de bioma de verdade que `DungeonFlowController.ts` já usava pra
+      avançar a campanha (`fosso_chagas`, `catacumbas_martires`,
+      `santuario_sangue` — os mesmos nomes de `BiomeType`, modo Arcade).
+      `ZoneType` agora é só `export type ZoneType = BiomeType;` — não existem
+      dois conceitos de "zona/bioma" no jogo. `localStorage.ts` (schema Zod de
+      persistência) atualizado pra bater com os valores reais.
+    - `closestNPCType`/`setClosestNPCType` (gameStore.ts) não incluíam
+      `'maelen'` no union type, embora `GameScene.ts`/`GameplayHUD.tsx` já
+      comparassem contra esse valor desde a Frente 1. Corrigido adicionando
+      `'maelen'` ao tipo (só em `closestNPCType`, não em `activeNPC` — Maelen
+      nunca abre o modal de NPC genérico, sempre vai por `startDialogue`).
+    - Também corrigido nesta leva (antes de sincronizar): `CampaignState`
+      tinha um campo `gameMode` obrigatório que `campaignState` no
+      `gameStore.ts` nunca preenchia — dado morto (nunca lido em lugar
+      nenhum), removido da interface em vez de inventar um valor.
+  - **2) Gaps de diálogo da Frente 2:** as 4 ações de `DialogueChoice['action']`
+    que só existiam no tipo, sem handler, agora funcionam em
+    `selectDialogueChoice` (`gameStore.ts`): `give_spell` chama
+    `unlockCampaignSpell` direto; `open_shop` chama `setActiveNPC`; `heal_player`
+    e `give_weapon` (que dependem de `scene.player`, que a store não enxerga)
+    enfileiram um `CampaignEffect` novo (`types/campaign.ts`) que
+    `GameScene.update()` drena e aplica — mesmo padrão de "sinal pendente" já
+    usado pro golpe de adaga e pro desbloqueio de magia no altar. Novo catálogo
+    `src/data/campaignItems.json` (por ora só `starter_dagger`, no mesmo
+    formato que já existia hardcoded em `CollisionHandlers.ts` — os dois não
+    foram unificados nesta leva, ficou como duplicação conhecida) dá ao
+    `give_weapon` um item de verdade pra materializar como `LootSprite` perto
+    do jogador. A recompensa de quest (`advanceQuestObjective`) também passou a
+    conceder XP (via `CampaignEffect` do tipo `give_xp`) e `spellUnlockId`
+    (`unlockCampaignSpell` direto) além dos Cristais de Sangue — pra
+    `quest_ch1_first_steps` isso significa 150 XP e `blood_bolt` desbloqueado
+    de verdade ao completar (antes só os Cristais eram concedidos).
+    **Observação:** nenhum diálogo do jogo usa `give_weapon`/`give_spell`/
+    `heal_player`/`open_shop` hoje — é infraestrutura pronta pro próximo
+    capítulo, testada com uma árvore de diálogo sintética injetada direto no
+    `campaignState` (`gameStore.test.ts`), não com conteúdo real em jogo.
+  - **3) Balanceamento de `gloomy_woods` pro início desarmado:**
+    `DungeonGenerator.ts` não spawna mais `SpikeTrap`/`ExplosiveBarrel` em
+    `gloomy_woods` (`room.type === 'chamber' && biome !== 'gloomy_woods'`) —
+    era o gap que a leva anterior já tinha documentado como "pode ser duro
+    demais pra quem começa sem magia". Mudança de uma linha, sem teste
+    automatizado novo (o projeto não tem harness de teste pra classes que
+    dependem de `Phaser.Scene`, mesma limitação de sempre — verificado só por
+    leitura de código).
+  - **4) Reset real de progresso ("Nova Campanha"):** novo
+    `resetCampaignProgress()` em `gameStore.ts` zera `quests`,
+    `unlockedSpellIds`, `discoveredZones`, `chapter`, `storyFlags` e a zona de
+    volta pra `safe_house` (e persiste o reset). `App.tsx`'s
+    `handleStartCampaign` agora detecta se já existe progresso salvo (zona ≠
+    safe_house, ou alguma quest, ou alguma magia desbloqueada) e, se sim, pede
+    confirmação (`window.confirm`) antes de chamar o reset — clicar em "Nova
+    Campanha" sem progresso salvo (primeira vez) continua indo direto, sem
+    diálogo de confirmação. "Continuar" (`handleContinueGame`) não foi tocado —
+    continua só retomando `gameState: 'playing'` com o que já estiver
+    salvo/carregado.
+  - **Validação:** 8 testes novos em `gameStore.test.ts` (4 pras ações de
+    diálogo sintéticas, 1 pra recompensa de XP/spellUnlockId, 1 pro reset — os
+    outros 2 já existiam e foram só verificados que continuam passando na
+    leitura). Verificado por leitura de código + balance-check de
+    chaves/parênteses em todos os arquivos tocados (sandbox sem
+    `node_modules`). **Falta rodar `pnpm test` + `pnpm verify` localmente**
+    (esse é o teste real de que a dívida técnica do item 1 foi mesmo resolvida)
+    **e validar em jogo**: floresta sem armadilhas/barris, "Nova Campanha" com
+    progresso salvo pedindo confirmação antes de zerar.

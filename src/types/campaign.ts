@@ -1,6 +1,17 @@
+import { BiomeType } from './game';
+
 export type GameMode = 'arcade' | 'campaign';
 
-export type ZoneType = 'safe_house' | 'gloomy_woods' | 'ruined_village' | 'catacombs_depths';
+// `ZoneType` era um enum próprio com nomes placeholder ('ruined_village',
+// 'catacombs_depths') que nunca bateram com os biomas de verdade usados pela
+// progressão de campanha em `DungeonFlowController.ts` (que avança
+// safe_house → gloomy_woods → fosso_chagas → catacumbas_martires →
+// santuario_sangue, os mesmos nomes de `BiomeType` do modo Arcade). Isso
+// causava ~10 erros reais de typecheck (biome/currentZone incompatíveis).
+// `ZoneType` agora é só um alias de `BiomeType` — não existem dois conceitos
+// de "zona/bioma" no jogo, e o modo Campanha reaproveita os mesmos biomas do
+// Arcade conforme o jogador avança de andar.
+export type ZoneType = BiomeType;
 
 export type WeatherType = 'none' | 'gentle_rain' | 'thunderstorm' | 'thick_fog' | 'blood_mist';
 
@@ -80,6 +91,18 @@ export interface QuestLogEntry {
   currentObjectiveIndex: number;
   objectivesProgress: Record<string, number>;
 }
+
+// Fila de efeitos que a store (React/dialogue) pede pro Phaser (`GameScene`)
+// executar de verdade — mesmo padrão de "sinal pendente lido no update()" já
+// usado por `pendingMeleeHitTarget`/`SPELL_UNLOCK_BY_DISCOVERABLE`: a store não
+// tem acesso a `scene.player`, então efeitos que mexem em HP/mana/loot físico
+// são só enfileirados aqui e o `GameScene.update()` os drena e aplica.
+// Efeitos que são puro estado de store (`unlockCampaignSpell`, `setActiveNPC`)
+// NÃO passam por aqui — são aplicados direto onde a ação é decidida.
+export type CampaignEffect =
+  | { type: 'heal_player' }
+  | { type: 'give_xp'; amount: number }
+  | { type: 'give_weapon'; itemId: string };
 
 export interface WorldZoneConfig {
   id: ZoneType;

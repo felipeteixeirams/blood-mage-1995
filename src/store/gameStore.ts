@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, BiomeType, DroppedCorpse, CodexState, AchievementState, RunStats } from '../types/game';
-import { GameMode, ZoneType, CampaignState, DialogueTree, QuestLogEntry, QuestDefinition, QuestObjective } from '../types/campaign';
+import { GameMode, ZoneType, CampaignState, DialogueTree, QuestLogEntry, QuestDefinition, QuestObjective, CampaignEffect } from '../types/campaign';
 import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding, loadUnlockedRelics, saveUnlockedRelics, loadEquippedRelicIds, saveEquippedRelicIds, loadCodexState, saveCodexState, loadAchievements, saveAchievements, loadRunStats, saveRunStats, loadCampaignState, saveCampaignState } from '../utils/localStorage';
 import { soundEngine } from '../utils/soundEngine';
 import { CodexSystem } from '../game/systems/CodexSystem';
@@ -8,6 +8,7 @@ import relicsData from '../data/relics.json';
 import achievementsData from '../data/achievements.json';
 import dialoguesData from '../data/dialogues.json';
 import campaignQuestsData from '../data/campaignQuests.json';
+import campaignItemsData from '../data/campaignItems.json';
 
 type GameStateStatus = 'menu' | 'playing' | 'paused';
 
@@ -28,6 +29,13 @@ interface GameStore {
   setCampaignZone: (zone: ZoneType) => void;
   unlockCampaignSpell: (spellId: string) => void;
   isCampaignSpellUnlocked: (spellId: string) => boolean;
+  resetCampaignProgress: () => void;
+  // Fila drenada pelo `GameScene.update()` — ver comentário em `CampaignEffect`
+  // (types/campaign.ts). Não é persistida: se a página recarregar com efeitos
+  // pendentes (janela de um frame), eles só se perdem, não corrompem nada.
+  pendingCampaignEffects: CampaignEffect[];
+  queueCampaignEffect: (effect: CampaignEffect) => void;
+  drainCampaignEffects: () => CampaignEffect[];
 
   // Settings
   settings: GameSettings;
@@ -187,8 +195,12 @@ interface GameStore {
 
   activeNPC: 'cleric' | 'alchemist' | 'blacksmith' | 'elder' | null;
   setActiveNPC: (npc: 'cleric' | 'alchemist' | 'blacksmith' | 'elder' | null) => void;
-  closestNPCType: 'cleric' | 'alchemist' | 'blacksmith' | 'elder' | null;
-  setClosestNPCType: (type: 'cleric' | 'alchemist' | 'blacksmith' | 'elder' | null) => void;
+  // 'maelen' foi adicionado com a Safe House (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md)
+  // — só o NPC "mais próximo" pode ser Maelen; `activeNPC` (o modal genérico de
+  // loja) nunca recebe 'maelen' porque a interação com ele sempre é roteada
+  // pra `startDialogue`, não pro modal de NPC comum (ver GameplayHUD.tsx/GameScene.ts).
+  closestNPCType: 'cleric' | 'alchemist' | 'blacksmith' | 'elder' | 'maelen' | null;
+  setClosestNPCType: (type: 'cleric' | 'alchemist' | 'blacksmith' | 'elder' | 'maelen' | null) => void;
 
   currentTarget: { id: string; name: string; hp: number; maxHp: number; level?: number; isBoss?: boolean; lastAttacked: number } | null;
   setCurrentTarget: (target: { id: string; name: string; hp: number; maxHp: number; level?: number; isBoss?: boolean } | null) => void;
@@ -275,6 +287,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
     discoveredZones: loadedCampaignState.discoveredZones,
     unlockedSpellIds: loadedCampaignState.unlockedSpellIds,
   },
+  pendingCampaignEffects: [],
+  queueCampaignEffect: (effect) => {
+    set((state) => ({ pendingCampaignEffects: [...state.pendingCampaignEffects, effect] }));
+  },
+  drainCampaignEffects: () => {
+    const effects = get().pendingCampaignEffects;
+    if (effects.length > 0) set({ pendingCampaignEffects: [] });
+    return effects;
+  },
   startDialogue: (treeId) => {
     const tree = (dialoguesData as Record<string, DialogueTree>)[treeId];
     if (tree) {
@@ -306,9 +327,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
           get().closeDialogue();
         }
 
-        // Handle Actions
+        // Handle Actions — nenhum diálogo hoje usa give_weapon/give_spell/
+        // heal_player/open_shop (só `safe_house_maelen_intro` > give_quest),
+        // mas o handler já existe pronto pra próximos capítulos/NPCs.
         if (choice.action === 'give_quest' && choice.actionPayload) {
           get().advanceQuestObjective(choice.actionPayload, 'start');
+        } else if (choice.action === 'give_spell' && choice.actionPayload) {
+          get().unlockCampaignSpell(choice.actionPayload);
+        } else if (choice.action === 'open_shop' && choice.actionPayload) {
+          const npcType = choice.actionPayload as 'cleric' | 'alchemist' | 'blacksmith' | 'elder';
+          get().setActiveNPC(npcType);
+        } else if (choice.action === 'heal_player') {
+          get().queueCampaignEffect({ type: 'heal_player' });
+        } else if (choice.action === 'give_weapon' && choice.actionPayload) {
+          get().queueCampaignEffect({ type: 'give_weapon', itemId: choice.actionPayload });
         }
       }
     }
@@ -378,13 +410,24 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
 
     // Recompensa concedida só na transição pra 'completed' (evita duplicar).
-    // Nota de escopo: só Cristais de Sangue por enquanto — não existe um
-    // "addXp"/unlock de magia genérico na store hoje (XP de gameplay é
-    // aplicado direto em Player.ts via scene.player.addXp), então o XP e o
-    // spellUnlockId da recompensa da quest ficam para uma próxima leva.
+    // Cristais de Sangue e spellUnlockId são puro estado de store (aplicados
+    // direto); XP e itemRewardId dependem de `scene.player`, que a store não
+    // enxerga — vão pra fila de `CampaignEffect` que o `GameScene.update()`
+    // drena (mesmo motivo de `heal_player`/`give_weapon` em `selectDialogueChoice`).
     if (justCompletedQuestId) {
       const questDef = (campaignQuestsData as Record<string, QuestDefinition>)[justCompletedQuestId];
-      if (questDef) get().addBloodCrystals(questDef.rewards.bloodCrystals);
+      if (questDef) {
+        get().addBloodCrystals(questDef.rewards.bloodCrystals);
+        if (questDef.rewards.xp > 0) {
+          get().queueCampaignEffect({ type: 'give_xp', amount: questDef.rewards.xp });
+        }
+        if (questDef.rewards.spellUnlockId) {
+          get().unlockCampaignSpell(questDef.rewards.spellUnlockId);
+        }
+        if (questDef.rewards.itemRewardId) {
+          get().queueCampaignEffect({ type: 'give_weapon', itemId: questDef.rewards.itemRewardId });
+        }
+      }
     }
     persistCampaignSnapshot(get().gameMode, get().campaignState);
   },
@@ -438,6 +481,26 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const state = get();
     if (state.gameMode !== 'campaign') return true;
     return state.campaignState.unlockedSpellIds.includes(spellId);
+  },
+  // Apaga quests/unlocks/zona salvos e volta pro estado inicial da Safe House —
+  // usado por "Nova Campanha" (App.tsx) quando já existe progresso salvo, pra
+  // dar um jeito real de recomeçar do zero em vez de só reaproveitar o save
+  // antigo por cima. `gameMode` NÃO é tocado aqui de propósito (quem decide
+  // isso é `setGameMode`, chamado separadamente por quem inicia a campanha).
+  resetCampaignProgress: () => {
+    set({
+      campaignState: {
+        currentZone: 'safe_house',
+        chapter: 1,
+        storyFlags: {},
+        quests: {},
+        activeDialogueTree: null,
+        activeDialogueNodeId: null,
+        discoveredZones: ['safe_house'],
+        unlockedSpellIds: [],
+      },
+    });
+    persistCampaignSnapshot(get().gameMode, get().campaignState);
   },
 
   settings: loadSettings(),

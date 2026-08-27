@@ -570,4 +570,102 @@ describe('gameStore', () => {
       expect(persisted).not.toHaveProperty('activeDialogueNodeId');
     });
   });
+
+  describe('dialogue actions beyond give_quest (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md — gap da Frente 2)', () => {
+    // Nenhum diálogo real hoje usa give_spell/open_shop/heal_player/give_weapon
+    // (só safe_house_maelen_intro > give_quest) — injeta uma árvore sintética
+    // direto no campaignState pra exercitar o handler de cada ação.
+    function primeDialogueWithChoice(choice: {
+      id: string;
+      text: string;
+      action?: string;
+      actionPayload?: string;
+    }) {
+      useGameStore.setState((state) => ({
+        campaignState: {
+          ...state.campaignState,
+          activeDialogueTree: {
+            id: 'test_tree',
+            npcId: 'test_npc',
+            initialNodeId: 'n1',
+            nodes: {
+              n1: { id: 'n1', speakerName: 'Teste', text: 'texto de teste', choices: [choice as any] },
+            },
+          },
+          activeDialogueNodeId: 'n1',
+        },
+      }));
+    }
+
+    it('give_spell desbloqueia a magia do payload', () => {
+      useGameStore.getState().setGameMode('campaign');
+      primeDialogueWithChoice({ id: 'c1', text: '...', action: 'give_spell', actionPayload: 'hellfire_nova' });
+      useGameStore.getState().selectDialogueChoice('c1');
+      expect(useGameStore.getState().isCampaignSpellUnlocked('hellfire_nova')).toBe(true);
+    });
+
+    it('open_shop define activeNPC com o payload', () => {
+      primeDialogueWithChoice({ id: 'c1', text: '...', action: 'open_shop', actionPayload: 'blacksmith' });
+      useGameStore.getState().selectDialogueChoice('c1');
+      expect(useGameStore.getState().activeNPC).toBe('blacksmith');
+    });
+
+    it('heal_player enfileira um CampaignEffect pro GameScene consumir', () => {
+      primeDialogueWithChoice({ id: 'c1', text: '...', action: 'heal_player' });
+      useGameStore.getState().selectDialogueChoice('c1');
+      expect(useGameStore.getState().drainCampaignEffects()).toEqual([{ type: 'heal_player' }]);
+      // drenar esvazia a fila
+      expect(useGameStore.getState().drainCampaignEffects()).toEqual([]);
+    });
+
+    it('give_weapon enfileira um CampaignEffect com o id do item', () => {
+      primeDialogueWithChoice({ id: 'c1', text: '...', action: 'give_weapon', actionPayload: 'starter_dagger' });
+      useGameStore.getState().selectDialogueChoice('c1');
+      expect(useGameStore.getState().drainCampaignEffects()).toEqual([
+        { type: 'give_weapon', itemId: 'starter_dagger' },
+      ]);
+    });
+  });
+
+  describe('recompensa de quest — XP e spellUnlockId (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md — gap da Frente 2)', () => {
+    const QUEST_ID = 'quest_ch1_first_steps';
+
+    it('concede XP (via CampaignEffect) e desbloqueia a magia da recompensa ao completar a quest', () => {
+      useGameStore.getState().setGameMode('campaign');
+      useGameStore.getState().advanceQuestObjective(QUEST_ID, 'start');
+      useGameStore.getState().advanceQuestObjectiveByTarget('collect_item', 'starter_dagger', 1);
+      for (let i = 0; i < 4; i++) {
+        useGameStore.getState().advanceQuestObjectiveByTarget('kill_enemy', 'scout_beast', 1);
+      }
+      useGameStore.getState().advanceQuestObjectiveByTarget('discover_zone', 'altar_crimson', 1);
+
+      expect(useGameStore.getState().campaignState.quests[QUEST_ID].status).toBe('completed');
+      expect(useGameStore.getState().isCampaignSpellUnlocked('blood_bolt')).toBe(true);
+      expect(useGameStore.getState().drainCampaignEffects()).toContainEqual({ type: 'give_xp', amount: 150 });
+    });
+  });
+
+  describe("resetCampaignProgress — reset real de \"Nova Campanha\" (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md)", () => {
+    it('limpa quests, magias desbloqueadas e zona de volta pro estado inicial, e persiste o reset', () => {
+      useGameStore.getState().setGameMode('campaign');
+      useGameStore.getState().setCampaignZone('gloomy_woods');
+      useGameStore.getState().advanceQuestObjective('quest_ch1_first_steps', 'start');
+      useGameStore.getState().unlockCampaignSpell('blood_bolt');
+
+      useGameStore.getState().resetCampaignProgress();
+
+      const state = useGameStore.getState();
+      expect(state.campaignState.currentZone).toBe('safe_house');
+      expect(state.campaignState.quests).toEqual({});
+      expect(state.campaignState.unlockedSpellIds).toEqual([]);
+      expect(state.campaignState.discoveredZones).toEqual(['safe_house']);
+      // resetCampaignProgress não mexe no modo — só limpa o progresso salvo
+      expect(state.gameMode).toBe('campaign');
+
+      const persisted = JSON.parse(localStorage.getItem('bloodmage_1995_campaign_state')!);
+      expect(persisted.quests).toEqual({});
+      expect(persisted.unlockedSpellIds).toEqual([]);
+      expect(persisted.currentZone).toBe('safe_house');
+    });
+  });
 });

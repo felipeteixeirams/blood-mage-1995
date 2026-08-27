@@ -173,8 +173,26 @@ export default function App() {
     tryLockLandscape();
     setGameOverStats(null);
     setLevelUpData(null);
-    useGameStore.getState().setGameMode('campaign');
-    useGameStore.getState().setCampaignZone('safe_house'); // Sempre começa na safe house
+    const store = useGameStore.getState();
+    // docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md — "Nova Campanha" hoje só
+    // forçava a zona pra Safe House, mas o `campaignState` persistido
+    // (quests/magias desbloqueadas/zona) continuava intacto por baixo — ou
+    // seja, na prática sempre "continuava" o save antigo. Se já existe
+    // progresso salvo, confirma antes de apagar; senão (primeira vez, ou já
+    // está tudo zerado) começa direto.
+    const hasExistingProgress =
+      store.campaignState.currentZone !== 'safe_house' ||
+      Object.keys(store.campaignState.quests).length > 0 ||
+      store.campaignState.unlockedSpellIds.length > 0;
+    if (hasExistingProgress) {
+      const confirmed = window.confirm(
+        'Isso vai apagar seu progresso salvo na Campanha (missões, magias desbloqueadas e zona atual) e recomeçar do zero na Safe House. Continuar?'
+      );
+      if (!confirmed) return;
+      store.resetCampaignProgress();
+    }
+    store.setGameMode('campaign');
+    store.setCampaignZone('safe_house'); // Sempre começa na safe house
     setGameState('playing');
     telemetry.trackEvent('campaign_start');
   };
