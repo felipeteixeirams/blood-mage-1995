@@ -30,6 +30,17 @@ class SoundEngine {
   private masterLowPassFilter: BiquadFilterNode | null = null;
   private isTinnitusActive: boolean = false;
 
+  // Tension Drone (docs/specs/11_VISUAL_POLISH_FRONTS.md, Frente 6 — 27/08):
+  // drone contínuo de sub-grave cuja intensidade/frequência reagem à "tensão
+  // do ambiente" (nº de inimigos hostis próximos + HP baixo), distinto do
+  // Tinnitus (agudo, só dispara perto da morte/elite) — os dois podem tocar
+  // juntos.
+  private tensionDroneOsc: OscillatorNode | null = null;
+  private tensionDroneLFO: OscillatorNode | null = null;
+  private tensionDroneLFOGain: GainNode | null = null;
+  private tensionDroneFilter: BiquadFilterNode | null = null;
+  private tensionDroneGain: GainNode | null = null;
+
   constructor() {
     // Lazy init audio context on first user interaction
   }
@@ -240,6 +251,99 @@ class SoundEngine {
     }
   }
 
+  /**
+   * Frente 6 (spec 11) — Pitch Shifting aleatório. Retorna um multiplicador de
+   * frequência (ex.: 0.94–1.06 pra rangePercent=0.06) usado pra variar o tom
+   * de um SFX repetitivo a cada disparo, evitando o efeito "metralhadora" de
+   * ouvir a mesma nota idêntica dezenas de vezes numa run. Só aplicado nos
+   * SFX de combate/ação disparados com frequência — sons melódicos de
+   * múltiplas notas (level up, baú, contrato) ficam de fora de propósito,
+   * porque desafinar notas de uma escala musical soa quebrado, não orgânico.
+   */
+  private pitchJitter(rangePercent: number = 0.06): number {
+    return 1 + (Math.random() * 2 - 1) * rangePercent;
+  }
+
+  /**
+   * Frente 6 (spec 11) — Tension Drone: cria (uma única vez) o oscilador de
+   * sub-grave contínuo cuja intensidade/frequência são ajustadas por
+   * `updateTensionDrone()` a cada frame, conforme o "ambiente" de perigo.
+   */
+  private initTensionDrone() {
+    if (!this.ctx || this.tensionDroneOsc) return;
+    const now = this.ctx.currentTime;
+
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sawtooth'; // rico em harmônicos — soa como um rosnado grave, não um tom limpo
+    osc.frequency.setValueAtTime(38, now); // sub-grave profundo, quase mais sentido que ouvido
+
+    // LFO lento modulando o ganho — simula uma "respiração"/pulsação de tensão,
+    // em vez de um zumbido estático e cansativo.
+    const lfo = this.ctx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.setValueAtTime(0.18, now);
+    const lfoGain = this.ctx.createGain();
+    lfoGain.gain.setValueAtTime(0, now); // profundidade da modulação, ajustada em update
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(160, now); // mantém só o sub-grave, sem harmônicos ásperos
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0, now); // começa em silêncio; sobe conforme o perigo
+
+    lfo.connect(lfoGain);
+    lfoGain.connect(gain.gain);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(now);
+    lfo.start(now);
+
+    this.tensionDroneOsc = osc;
+    this.tensionDroneLFO = lfo;
+    this.tensionDroneLFOGain = lfoGain;
+    this.tensionDroneFilter = filter;
+    this.tensionDroneGain = gain;
+  }
+
+  /**
+   * Frente 6 (spec 11) — atualiza o drone de tensão a cada frame. `alertCount`
+   * é o nº de inimigos hostis em combate/frenzy perto do jogador (mesmo sinal
+   * já calculado em `updateThreatIndicator`, GameScene.ts) e `hpRatio` o HP
+   * atual — mais inimigos e HP baixo somam pra um "score" de perigo (0-1) que
+   * controla volume e frequência do drone. Sutil de propósito (ganho máx.
+   * ~5% do sfxVolume): é textura ambiente, não deve dominar a mixagem.
+   */
+  public updateTensionDrone(alertCount: number, hpRatio: number) {
+    if (this.isMuted || this.sfxVolume <= 0) {
+      if (this.tensionDroneGain && this.ctx) {
+        this.tensionDroneGain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.3);
+      }
+      return;
+    }
+
+    this.initCtx();
+    if (!this.ctx) return;
+    this.initTensionDrone();
+    if (!this.tensionDroneGain || !this.tensionDroneOsc || !this.tensionDroneLFOGain) return;
+
+    const now = this.ctx.currentTime;
+    const dangerFromEnemies = Math.min(1, Math.max(0, alertCount) / 5); // satura com 5+ hostis simultâneos
+    const dangerFromHp = hpRatio < 0.5 ? (0.5 - hpRatio) * 1.6 : 0; // HP baixo soma tensão extra
+    const danger = Math.min(1, dangerFromEnemies + dangerFromHp);
+
+    const targetGain = danger > 0.02 ? this.sfxVolume * 0.05 * danger : 0;
+    this.tensionDroneGain.gain.linearRampToValueAtTime(targetGain, now + (danger > 0.02 ? 0.8 : 1.0));
+
+    // Mais tensão = frequência um pouco mais alta e modulação mais audível
+    // (a "respiração" acelera/aprofunda conforme o perigo aumenta).
+    const targetFreq = 38 + danger * 14; // 38Hz calmo -> 52Hz tenso
+    this.tensionDroneOsc.frequency.linearRampToValueAtTime(targetFreq, now + 0.8);
+    this.tensionDroneLFOGain.gain.linearRampToValueAtTime(4 + danger * 10, now + 0.8);
+  }
+
   public playBloodBolt() {
     if (this.isMuted || this.sfxVolume <= 0) return;
     this.initCtx();
@@ -252,10 +356,11 @@ class SoundEngine {
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
+    const jitter = this.pitchJitter(); // Frente 6: cada blood_bolt soa levemente diferente
 
     osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(420, now);
-    osc.frequency.exponentialRampToValueAtTime(110, now + 0.12);
+    osc.frequency.setValueAtTime(420 * jitter, now);
+    osc.frequency.exponentialRampToValueAtTime(110 * jitter, now + 0.12);
 
     gain.gain.setValueAtTime(this.sfxVolume * 0.3, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
@@ -273,6 +378,7 @@ class SoundEngine {
     if (!this.ctx) return;
 
     const now = this.ctx.currentTime;
+    const jitter = this.pitchJitter(0.08); // Frente 6: varia o "timbre" da explosão a cada disparo
     // Noise buffer for explosion
     const bufferSize = this.ctx.sampleRate * 0.35;
     const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
@@ -286,8 +392,8 @@ class SoundEngine {
 
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(800, now);
-    filter.frequency.exponentialRampToValueAtTime(80, now + 0.35);
+    filter.frequency.setValueAtTime(800 * jitter, now);
+    filter.frequency.exponentialRampToValueAtTime(80 * jitter, now + 0.35);
 
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(this.sfxVolume * 0.5, now);
@@ -309,9 +415,12 @@ class SoundEngine {
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
 
+    // Frente 6: já tinha uma randomização parcial na frequência inicial —
+    // mantida (é o som de hit mais repetido do jogo) e complementada com o
+    // fim do sweep também variando, pra variar o som inteiro, não só o começo.
     osc.type = 'sine';
     osc.frequency.setValueAtTime(150 + Math.random() * 80, now);
-    osc.frequency.linearRampToValueAtTime(60, now + 0.1);
+    osc.frequency.linearRampToValueAtTime(60 * this.pitchJitter(0.15), now + 0.1);
 
     gain.gain.setValueAtTime(this.sfxVolume * 0.4, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
@@ -382,10 +491,11 @@ class SoundEngine {
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
+    const jitter = this.pitchJitter(0.08); // Frente 6: orbe é o pickup mais repetido do jogo
 
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(600, now);
-    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.08);
+    osc.frequency.setValueAtTime(600 * jitter, now);
+    osc.frequency.exponentialRampToValueAtTime(1200 * jitter, now + 0.08);
 
     gain.gain.setValueAtTime(this.sfxVolume * 0.25, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
@@ -487,10 +597,11 @@ class SoundEngine {
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
+    const jitter = this.pitchJitter(); // Frente 6: hit sofrido repetidamente não deve soar em loop idêntico
 
     osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(180, now);
-    osc.frequency.exponentialRampToValueAtTime(50, now + 0.18);
+    osc.frequency.setValueAtTime(180 * jitter, now);
+    osc.frequency.exponentialRampToValueAtTime(50 * jitter, now + 0.18);
 
     gain.gain.setValueAtTime(this.sfxVolume * 0.5, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
@@ -532,11 +643,12 @@ class SoundEngine {
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
+    const jitter = this.pitchJitter(); // Frente 6: cada uivo soa um pouco diferente
 
     osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(220, now);
-    osc.frequency.linearRampToValueAtTime(480, now + 0.3);
-    osc.frequency.exponentialRampToValueAtTime(140, now + 0.8);
+    osc.frequency.setValueAtTime(220 * jitter, now);
+    osc.frequency.linearRampToValueAtTime(480 * jitter, now + 0.3);
+    osc.frequency.exponentialRampToValueAtTime(140 * jitter, now + 0.8);
 
     gain.gain.setValueAtTime(this.sfxVolume * 0.45, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
@@ -564,10 +676,11 @@ class SoundEngine {
     const noise = this.ctx.createBufferSource();
     noise.buffer = buffer;
 
+    const jitter = this.pitchJitter(0.08); // Frente 6: gore explode a cada dismember/morte, muito frequente
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(600, now);
-    filter.frequency.exponentialRampToValueAtTime(60, now + 0.45);
+    filter.frequency.setValueAtTime(600 * jitter, now);
+    filter.frequency.exponentialRampToValueAtTime(60 * jitter, now + 0.45);
 
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(this.sfxVolume * 0.55, now);
@@ -671,10 +784,11 @@ class SoundEngine {
     const noise = this.ctx.createBufferSource();
     noise.buffer = buffer;
 
+    const jitter = this.pitchJitter(0.1); // Frente 6: golpe é o SFX mais repetido de todos (jogador + inimigos)
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(1200, now);
-    filter.frequency.exponentialRampToValueAtTime(300, now + 0.12);
+    filter.frequency.setValueAtTime(1200 * jitter, now);
+    filter.frequency.exponentialRampToValueAtTime(300 * jitter, now + 0.12);
     filter.Q.value = 3;
 
     const gain = this.ctx.createGain();
@@ -696,10 +810,11 @@ class SoundEngine {
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
+    const jitter = this.pitchJitter(0.08); // Frente 6: telegraph dispara por inimigo/tentativa, muito repetitivo
 
     osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(140, now);
-    osc.frequency.exponentialRampToValueAtTime(280, now + 0.15);
+    osc.frequency.setValueAtTime(140 * jitter, now);
+    osc.frequency.exponentialRampToValueAtTime(280 * jitter, now + 0.15);
 
     gain.gain.setValueAtTime(this.sfxVolume * 0.25, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
@@ -719,10 +834,11 @@ class SoundEngine {
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
+    const jitter = this.pitchJitter(); // Frente 6: skill spammável em combate
 
     osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(380, now);
-    osc.frequency.exponentialRampToValueAtTime(120, now + 0.2);
+    osc.frequency.setValueAtTime(380 * jitter, now);
+    osc.frequency.exponentialRampToValueAtTime(120 * jitter, now + 0.2);
 
     gain.gain.setValueAtTime(this.sfxVolume * 0.45, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
@@ -856,10 +972,11 @@ class SoundEngine {
     const noise = this.ctx.createBufferSource();
     noise.buffer = buffer;
 
+    const jitter = this.pitchJitter(0.1); // Frente 6: dash é usado o tempo todo (player + inimigos escavengers)
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(1000, now);
-    filter.frequency.exponentialRampToValueAtTime(150, now + 0.15);
+    filter.frequency.setValueAtTime(1000 * jitter, now);
+    filter.frequency.exponentialRampToValueAtTime(150 * jitter, now + 0.15);
     filter.Q.value = 2;
 
     const gain = this.ctx.createGain();

@@ -32,7 +32,7 @@ const MAX_ACTIVE_BLOOM_TARGETS = 16;
 export class LightingPolish {
   private scene: Phaser.Scene;
   private glowLights: Map<Phaser.GameObjects.GameObject, Phaser.GameObjects.Light> = new Map();
-  private bloomTargets: Set<Phaser.GameObjects.Sprite> = new Set();
+  private bloomTargets: Set<Phaser.GameObjects.Image> = new Set();
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -70,7 +70,7 @@ export class LightingPolish {
    * num sprite reciclado de ObjectPool limpa o filtro anterior antes, pra não
    * empilhar Glows de spells/cores diferentes no mesmo objeto reutilizado.
    */
-  private applyBloomFilter(sprite: Phaser.GameObjects.Sprite, color: number, strength: number = 3): void {
+  private applyBloomFilter(sprite: Phaser.GameObjects.Image, color: number, strength: number = 3): void {
     if (!sprite || !this.isBloomEnabled()) return;
     const filters = (sprite as any).filters;
     if (!filters || !filters.internal || typeof filters.internal.addGlow !== 'function') return;
@@ -220,6 +220,53 @@ export class LightingPolish {
       repeat: -1,
       ease: 'Sine.easeInOut',
     });
+  }
+
+  /**
+   * Frente 8 (spec 11, 27/08) — pulso ambiente sutil para estruturas
+   * interativas da campanha (Altar Ancestral): luz vermelha suave + leve
+   * "respiração" de escala/alpha, sempre ativa desde a criação do objeto —
+   * mais discreta que `addPortalGlow` (o altar é um marco de descoberta, não
+   * um chamariz gritante). Chamar uma vez, na criação do sprite.
+   */
+  public addAltarGlow(sprite: Phaser.GameObjects.Image): void {
+    if (!sprite || !sprite.active) return;
+
+    const color = 0x990000; // vermelho sangue, tom do altar
+    this.addGlowEffect(sprite, color, 0.5, 60);
+    this.applyBloomFilter(sprite, color, 1.6);
+
+    this.scene.tweens.add({
+      targets: sprite,
+      scale: { from: sprite.scale, to: sprite.scale * 1.045 },
+      alpha: { from: 0.92, to: 1.0 },
+      duration: 1600,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+  }
+
+  /**
+   * Frente 8 (spec 11, 27/08) — reage à proximidade do jogador: dentro do
+   * raio de "sensor" (maior que o raio de descoberta efetivo), intensifica o
+   * tint do altar pra um vermelho mais vivo conforme o jogador se aproxima —
+   * um aviso visual de "há algo aqui" antes mesmo do texto de descoberta
+   * aparecer. Chamar a cada frame com o `distanceRatio` (0 = em cima do
+   * altar, 1 = na borda do raio de sensor ou além).
+   */
+  public updateAltarProximity(sprite: Phaser.GameObjects.Image, distanceRatio: number): void {
+    if (!sprite || !sprite.active) return;
+    // Clamp manual (não Phaser.Math.Clamp): tocar o namespace Phaser.Math em
+    // runtime cascateia o carregamento de um chunk interno do bundle do
+    // Phaser 4 que espera um `canvas.getContext('2d')` de verdade — quebra em
+    // jsdom sem o pacote opcional `canvas` instalado (achado rodando `pnpm
+    // test` de verdade, 27/08 — LightingPolish.test.ts passava antes desta
+    // linha existir). Resultado idêntico, sem tocar o runtime do Phaser.
+    const t = Math.max(0, Math.min(1, 1 - distanceRatio));
+    const g = Math.round(255 - t * 153); // 255 (neutro) -> 102 conforme se aproxima
+    const b = Math.round(255 - t * 153);
+    sprite.setTint((0xff << 16) | (g << 8) | b);
   }
 
   /**
@@ -433,7 +480,7 @@ export class LightingPolish {
    * Adiciona o light2D acoplado ao ciclo de vida do Sprite
    */
   private addGlowEffect(
-    sprite: Phaser.GameObjects.Sprite,
+    sprite: Phaser.GameObjects.Image,
     color: number,
     intensity: number,
     radius: number

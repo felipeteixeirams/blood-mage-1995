@@ -259,4 +259,99 @@ describe('BloodSplatterSystem', () => {
     system.clearAll();
     expect(system.getActiveDecalCount()).toBe(0);
   });
+
+  describe('Pegadas ensanguentadas (spec 11, Frente 3 — 27/08)', () => {
+    it('isNearWetBlood detecta poça de sangue fresca (não seca) dentro do raio', () => {
+      const system = new BloodSplatterSystem(mockScene);
+      system.addDecal({
+        x: 100,
+        y: 100,
+        textureKey: 'blood_pool_stain',
+        type: 'blood_pool',
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        alpha: 0.9,
+      });
+
+      expect(system.isNearWetBlood(110, 105, 40)).toBe(true);
+      expect(system.isNearWetBlood(500, 500, 40)).toBe(false); // longe demais
+    });
+
+    it('isNearWetBlood ignora sangue já seco e tipos não-líquidos (bone_dust/corpse)', () => {
+      const system = new BloodSplatterSystem(mockScene);
+      system.addDecal({
+        x: 100,
+        y: 100,
+        textureKey: 'blood_pool_stain',
+        type: 'blood_pool',
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        alpha: 0.9,
+        dryingDurationMs: 1000,
+        dryTint: 0x450a0a,
+      });
+      system.update(1000 + 1500); // passa do dryAt -> seca
+
+      expect(system.isNearWetBlood(100, 100, 40)).toBe(false);
+
+      const system2 = new BloodSplatterSystem(mockScene);
+      system2.addDecal({
+        x: 100,
+        y: 100,
+        textureKey: 'particle_bone_dust',
+        type: 'bone_dust',
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        alpha: 0.9,
+      });
+      expect(system2.isNearWetBlood(100, 100, 40)).toBe(false);
+    });
+
+    it('isNearWetBlood retorna false quando o sistema está desabilitado', () => {
+      const system = new BloodSplatterSystem(mockScene);
+      system.addDecal({
+        x: 100,
+        y: 100,
+        textureKey: 'blood_pool_stain',
+        type: 'blood_pool',
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        alpha: 0.9,
+      });
+      system.setEnabled(false);
+      expect(system.isNearWetBlood(100, 100, 40)).toBe(false);
+    });
+
+    it('addFootprintDecal cria um decal do tipo footprint, offset lateral alternando por pé', () => {
+      const system = new BloodSplatterSystem(mockScene);
+      system.addFootprintDecal(100, 100, 0, true, 1);
+      system.addFootprintDecal(100, 100, 0, false, 1);
+
+      expect(createdImages.length).toBe(2);
+      const [left, right] = createdImages;
+      // Ângulo 0 (movendo pra direita) -> offset perpendicular no eixo Y, sinais opostos
+      expect(left.y).not.toBeCloseTo(right.y, 1);
+      expect(left.texture.key).toBe('footprint_bloody');
+    });
+
+    it('addFootprintDecal esmaece o alpha conforme fadeRatio cai (trilha secando)', () => {
+      const system = new BloodSplatterSystem(mockScene);
+      system.addFootprintDecal(0, 0, 0, true, 1.0);
+      system.addFootprintDecal(0, 0, 0, true, 0.2);
+
+      const [freshest, faintest] = createdImages;
+      expect(faintest.alpha).toBeLessThan(freshest.alpha);
+    });
+
+    it('addFootprintDecal não faz nada quando o sistema está desabilitado', () => {
+      const system = new BloodSplatterSystem(mockScene);
+      system.setEnabled(false);
+      system.addFootprintDecal(0, 0, 0, true, 1);
+      expect(createdImages.length).toBe(0);
+    });
+  });
 });

@@ -5,6 +5,7 @@ import talentsData from '../../data/talents.json';
 import { soundEngine } from '../../utils/soundEngine';
 import { useGameStore } from '../../store/gameStore';
 import { safePlayAnimation } from '../animations/animationManager';
+import { getEquipmentRarityTint, shouldEmitLegendarySparks } from '../../utils/equipmentPalette';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   public stats: PlayerStats;
@@ -33,6 +34,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private lastIdleDir: string = 'south';
   private skillCooldowns: Record<string, number> = {};
   public isInvulnerable: boolean = false;
+  // Frente 7 (spec 11, 27/08): emissor lazy de faíscas pra equipamento
+  // lendário — ver `updateLegendarySparks()`.
+  private legendarySparkEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
   private invulnerableTimer: number = 0;
   public equippedLoot: LootItem[] = [];
 
@@ -152,6 +156,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public applyCosmeticTint() {
+    // Frente 7 (spec 11, 27/08) — Palette Swap procedural: raridade do
+    // equipamento (arma/armadura) tem precedência sobre a paleta cosmética
+    // escolhida manualmente em Configurações quando rare+, sinalizando de
+    // longe "esse jogador está bem equipado". Ver `utils/equipmentPalette.ts`.
+    const equipmentTint = getEquipmentRarityTint(useGameStore.getState().equipment);
+    if (equipmentTint !== null) {
+      this.setTint(equipmentTint);
+      return;
+    }
+
     const activeId = useGameStore.getState().settings.activePaletteId || 'crimson';
     const palettes = [
       { id: "crimson", color: "#ffffff" },
@@ -165,6 +179,50 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.setTint(tintHex);
     } else {
       this.clearTint();
+    }
+  }
+
+  /**
+   * Frente 7 (spec 11, 27/08): alias de `applyCosmeticTint()` pro contrato
+   * genérico `StatusTarget.applyBaseTint` que `StatusEffectSystem.ts` já
+   * chama pra restaurar o tint "de base" quando um status (burning/frozen/
+   * cursed) expira — `Enemy.ts` já implementa isso, o Player nunca tinha
+   * (o `typeof target.applyBaseTint === 'function'` falhava silenciosamente
+   * pra ele, então o restore caía no `clearTint()` genérico, perdendo o tint
+   * de equipamento/paleta cosmética depois de um status desses expirar).
+   */
+  public applyBaseTint() {
+    this.applyCosmeticTint();
+  }
+
+  /**
+   * Frente 7 (spec 11, 27/08): emissor de partículas afixado (faíscas) só
+   * pra equipamento lendário — mesmo padrão de `StatusEffectSystem`'s
+   * `emberEmitter.emitParticleAt(...)` probabilístico por frame, em vez de
+   * um emissor contínuo com `.startFollow()`/`.start()`/`.stop()` (sem
+   * precedente nesta base de código).
+   */
+  private updateLegendarySparks(): void {
+    if (!this.scene || !this.scene.add || typeof (this.scene.add as any).particles !== 'function') return;
+    if (!shouldEmitLegendarySparks(useGameStore.getState().equipment)) return;
+
+    if (!this.legendarySparkEmitter) {
+      if (!this.scene.textures?.exists?.('particle_ember_spark')) return;
+      this.legendarySparkEmitter = this.scene.add.particles(0, 0, 'particle_ember_spark', {
+        speedY: { min: -55, max: -95 },
+        speedX: { min: -20, max: 20 },
+        scale: { start: 0.9, end: 0.15 },
+        alpha: { start: 0.85, end: 0 },
+        lifespan: 500,
+        emitting: false,
+      }).setDepth(1850);
+    }
+
+    if (Math.random() < 0.25) {
+      this.legendarySparkEmitter.emitParticleAt(
+        this.x + (Math.random() - 0.5) * 14,
+        this.y + 4 + (Math.random() - 0.5) * 10
+      );
     }
   }
 
@@ -450,6 +508,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
           this.applyCosmeticTint();
         }
       }
+
+      this.updateLegendarySparks();
     }
 
     // Mana Regeneration (+4 MP/sec, reduced by 50% if poisoned)

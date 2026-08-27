@@ -114,7 +114,9 @@ export class GameScene extends Phaser.Scene {
   private npcMarkers: { npcType: string; container: Phaser.GameObjects.Container; baseY: number }[] = []; // público via métodos: usado por DungeonFlowController
 
   // Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
-  // minimap mínimo — grade 3x3 fixa (mesma ordem row-major de DungeonGenerator).
+  // minimap mínimo — rastreia por índice do array `rooms` (layout orgânico
+  // desde a Frente 1 da spec 11, 27/08: número/tamanho de salas varia por
+  // andar, não é mais uma grade fixa).
   private exploredRoomIndices: Set<number> = new Set();
   private minimapPushAccumMs: number = 0;
 
@@ -137,6 +139,11 @@ export class GameScene extends Phaser.Scene {
 
   // Noise Emission Timer
   private lastFootstepNoiseTime: number = 0;
+  // Frente 3 (spec 11, 27/08) — trilha de pegadas ensanguentadas: quantos
+  // passos "molhados" ainda restam (decrementa a cada passo até secar) e qual
+  // pé foi o último a pisar (alterna esquerda/direita).
+  private playerWetFootstepsRemaining: number = 0;
+  private playerFootSideToggle: boolean = false;
 
   // Spawn queue for density throttling
   public pendingEnemySpawns: { x: number; y: number; monsterId: string; room: RoomData }[] = []; // público: usado por DungeonFlowController
@@ -1055,9 +1062,16 @@ export class GameScene extends Phaser.Scene {
     // objetivo discover_zone correspondente uma única vez por marco.
     if (this.campaignDiscoverables.length > 0 && this.player && this.player.active) {
       const discoverRadius = 70;
+      // Frente 8 (spec 11, 27/08): raio de "pré-aviso" visual, maior que o de
+      // descoberta — o altar intensifica o realce vermelho conforme o
+      // jogador se aproxima, mesmo antes de disparar a descoberta.
+      const altarSensorRadius = 260;
       this.campaignDiscoverables.forEach((marker) => {
         if (!marker.active || marker.getData('discovered')) return;
         const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, marker.x, marker.y);
+        if (dist < altarSensorRadius) {
+          this.lightingPolish?.updateAltarProximity(marker, dist / altarSensorRadius);
+        }
         if (dist < discoverRadius) {
           marker.setData('discovered', true);
           const targetId = marker.getData('campaignDiscoverableId') as string;
@@ -1277,6 +1291,20 @@ export class GameScene extends Phaser.Scene {
     if (isMoving && time > this.lastFootstepNoiseTime + 450) {
       this.lastFootstepNoiseTime = time;
       this.emitSound(this.player.x, this.player.y, 220); // Running footsteps noise
+
+      // Frente 3 (spec 11, 27/08): mesma cadência de passo pra trilha de
+      // pegadas ensanguentadas — pisar perto de sangue fresco "molha a sola"
+      // por alguns passos, deixando uma trilha que vai sumindo.
+      if (this.bloodSplatterSystem?.isNearWetBlood(this.player.x, this.player.y, 40)) {
+        this.playerWetFootstepsRemaining = 6;
+      }
+      if (this.playerWetFootstepsRemaining > 0) {
+        const moveAngle = Math.atan2(my, mx);
+        const fadeRatio = this.playerWetFootstepsRemaining / 6;
+        this.playerFootSideToggle = !this.playerFootSideToggle;
+        this.bloodSplatterSystem?.addFootprintDecal(this.player.x, this.player.y + 10, moveAngle, this.playerFootSideToggle, fadeRatio);
+        this.playerWetFootstepsRemaining--;
+      }
     }
 
     // 2. Update Player
@@ -1594,14 +1622,20 @@ export class GameScene extends Phaser.Scene {
         const hpRatio = this.player.stats.maxHp > 0 ? this.player.stats.hp / this.player.stats.maxHp : 1.0;
         const isEliteThreatClose = isEliteOrBoss && dist < 220;
         soundEngine.updateTinnitusState(hpRatio, isEliteThreatClose);
+        // Frente 6 (spec 11) — Drone de tensão: reaproveita o `alertCount`
+        // (nº de inimigos em combate/frenzy) já calculado acima nesta mesma
+        // função, sem nova iteração sobre os inimigos.
+        soundEngine.updateTensionDrone(alertCount, hpRatio);
       } else {
         soundEngine.updateSpatialThreat(0, 0, false);
         const hpRatio = this.player.stats.maxHp > 0 ? this.player.stats.hp / this.player.stats.maxHp : 1.0;
         soundEngine.updateTinnitusState(hpRatio, false);
+        soundEngine.updateTensionDrone(alertCount, hpRatio);
       }
     } else {
       soundEngine.updateSpatialThreat(0, 0, false);
       soundEngine.updateTinnitusState(1.0, false);
+      soundEngine.updateTensionDrone(0, 1.0);
     }
 
     // 4.3 & 4.4 — Vinheta Pulsante & Iluminação Dinâmica (WorldManager)

@@ -105,87 +105,14 @@ export class CombatFeel {
     }
   }
 
-  /**
-   * Hit Flash com dissolução carmesim — Fase 4
-   * Transição: branco puro no frame de acerto → escarlate → tint original do sprite.
-   * Funciona em qualquer Phaser.GameObjects.Sprite/Image sem exigir WebGL.
-   *
-   * @param sprite O sprite do inimigo que recebeu dano
-   * @param originalTint Cor original do sprite (hex int, ex: 0xffffff). Padrão 0xffffff (branco)
-   * @param isCrit Se true, amplia o flash para duração maior e tom mais vibrante
-   */
-  public static triggerHitFlash(
-    scene: Phaser.Scene,
-    sprite: Phaser.GameObjects.Sprite | Phaser.GameObjects.Image,
-    originalTint: number = 0xffffff,
-    isCrit: boolean = false,
-  ): void {
-    if (!sprite?.active) return;
-
-    const flashDuration = isCrit ? 80 : 50;
-    const scarleDuration = isCrit ? 120 : 80;
-
-    // Frame 1: flash branco total
-    // Phaser 4: setTintFill(color) foi descontinuado — agora é setTint(color) + setTintMode(FILL).
-    // Ver: changelog/v4/4.0/MIGRATION-GUIDE.md
-    sprite.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
-
-    // Frame 2: dissolve para escarlate
-    scene.time.delayedCall(flashDuration, () => {
-      if (!sprite?.active) return;
-      sprite.setTint(isCrit ? 0xff1a1a : 0xcc2222).setTintMode(Phaser.TintModes.FILL);
-    });
-
-    // Frame 3: restaura tint original (volta ao modo MULTIPLY padrão, senão o fill persiste)
-    scene.time.delayedCall(flashDuration + scarleDuration, () => {
-      if (!sprite?.active) return;
-      sprite.setTintMode(Phaser.TintModes.MULTIPLY);
-      // clearTint() se o tint original é branco, senão aplica via setTint
-      if (originalTint === 0xffffff) {
-        sprite.clearTint();
-      } else {
-        sprite.setTint(originalTint);
-      }
-    });
-  }
-
-  /**
-   * Squash & Stretch Inercial — Fase 4
-   * Aplica uma deformação de escala rápida (comprimir no impacto, esticar na saída)
-   * que dá peso orgânico ao sprite ao receber dano.
-   *
-   * @param sprite O sprite a deformar
-   * @param baseScaleX Escala base X do sprite
-   * @param baseScaleY Escala base Y do sprite
-   * @param isCrit Intensidade maior para críticos
-   */
-  public static triggerSquashStretch(
-    scene: Phaser.Scene,
-    sprite: Phaser.GameObjects.Sprite | Phaser.GameObjects.Image,
-    baseScaleX: number = 1.0,
-    baseScaleY: number = 1.0,
-    isCrit: boolean = false,
-  ): void {
-    if (!sprite?.active) return;
-
-    const squashX = isCrit ? 1.35 : 1.18;
-    const squashY = isCrit ? 0.72 : 0.85;
-    const stretchX = isCrit ? 0.80 : 0.90;
-    const stretchY = isCrit ? 1.30 : 1.15;
-
-    // Squash: esmagamento lateral no frame de impacto
-    sprite.setScale(baseScaleX * squashX, baseScaleY * squashY);
-
-    // Stretch: esticamento vertical (recuo)
-    scene.time.delayedCall(60, () => {
-      if (!sprite?.active) return;
-      sprite.setScale(baseScaleX * stretchX, baseScaleY * stretchY);
-    });
-
-    // Restaurar escala original
-    scene.time.delayedCall(140, () => {
-      if (!sprite?.active) return;
-      sprite.setScale(baseScaleX, baseScaleY);
-    });
-  }
+  // Frente 4 (spec 11, 27/08): `triggerHitFlash`/`triggerSquashStretch` foram
+  // removidos daqui — eram implementações completas porém NUNCA chamadas em
+  // lugar nenhum do jogo (dead code, achado na auditoria de 27/08). O Hit
+  // Flash real que o jogo usa é o inline em `Enemy.ts` (`takeDamage()`),
+  // já testado lá. Squash & Stretch nunca chegou a ser usado — `Enemy.ts` tem
+  // seu próprio sistema de escala (isométrico/"coil", recalculado a cada
+  // frame em `update()`, + `setFlipX`) que provavelmente entraria em conflito
+  // com um `setScale()` direto vindo de fora; conectar exigiria investigar
+  // essa interação primeiro, fora do escopo desta limpeza. Ver changelog da
+  // spec 11 pra rationale completo.
 }

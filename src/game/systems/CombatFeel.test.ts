@@ -2,15 +2,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { CombatFeel } from './CombatFeel';
 import { useGameStore } from '../../store/gameStore';
 
-vi.mock('phaser', () => ({
-  default: {
-    TintModes: {
-      FILL: 1,
-      MULTIPLY: 0,
-    },
-  },
-}));
-
 const initialStore = useGameStore.getState();
 
 function resetStore() {
@@ -163,75 +154,8 @@ describe('CombatFeel', () => {
     });
   });
 
-  describe('triggerHitFlash', () => {
-    it('applies hit flash sequence to active sprite', () => {
-      const delayedCalls: Array<{ delay: number; cb: () => void }> = [];
-      const fakeScene = {
-        time: {
-          delayedCall: vi.fn((delay, cb) => {
-            delayedCalls.push({ delay, cb });
-          }),
-        },
-      };
-
-      const mockSprite = {
-        active: true,
-        setTint: vi.fn().mockReturnThis(),
-        setTintMode: vi.fn().mockReturnThis(),
-        clearTint: vi.fn().mockReturnThis(),
-      };
-
-      CombatFeel.triggerHitFlash(fakeScene as never, mockSprite as never, 0xffffff, false);
-
-      expect(mockSprite.setTint).toHaveBeenCalledWith(0xffffff);
-      expect(mockSprite.setTintMode).toHaveBeenCalled();
-      expect(fakeScene.time.delayedCall).toHaveBeenCalledTimes(2);
-
-      // Execute frame 2 (dissolve)
-      delayedCalls[0].cb();
-      expect(mockSprite.setTint).toHaveBeenCalledWith(0xcc2222);
-
-      // Execute frame 3 (restore)
-      delayedCalls[1].cb();
-      expect(mockSprite.clearTint).toHaveBeenCalled();
-    });
-
-    it('does nothing if sprite is inactive', () => {
-      const fakeScene = { time: { delayedCall: vi.fn() } };
-      const inactiveSprite = { active: false };
-      CombatFeel.triggerHitFlash(fakeScene as never, inactiveSprite as never);
-      expect(fakeScene.time.delayedCall).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('triggerSquashStretch', () => {
-    it('applies squash and stretch scale animation sequence', () => {
-      const delayedCalls: Array<{ delay: number; cb: () => void }> = [];
-      const fakeScene = {
-        time: {
-          delayedCall: vi.fn((delay, cb) => {
-            delayedCalls.push({ delay, cb });
-          }),
-        },
-      };
-
-      const mockSprite = {
-        active: true,
-        setScale: vi.fn(),
-      };
-
-      CombatFeel.triggerSquashStretch(fakeScene as never, mockSprite as never, 1.0, 1.0, true);
-
-      expect(mockSprite.setScale).toHaveBeenCalledWith(1.35, 0.72);
-      expect(fakeScene.time.delayedCall).toHaveBeenCalledTimes(2);
-
-      // Execute stretch call
-      delayedCalls[0].cb();
-      expect(mockSprite.setScale).toHaveBeenCalledWith(0.8, 1.3);
-
-      // Execute restore call
-      delayedCalls[1].cb();
-      expect(mockSprite.setScale).toHaveBeenCalledWith(1.0, 1.0);
-    });
-  });
+  // Frente 4 (spec 11, 27/08): `triggerHitFlash`/`triggerSquashStretch` e seus
+  // testes foram removidos — eram dead code, nunca chamados no jogo de
+  // verdade (ver CombatFeel.ts e o changelog da spec 11). O Hit Flash real
+  // (`Enemy.ts.takeDamage()`) tem cobertura de teste própria, não tocada aqui.
 });

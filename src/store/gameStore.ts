@@ -167,9 +167,13 @@ interface GameStore {
 
   /**
    * Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
-   * snapshot do minimap (grade 3x3 fixa gerada por DungeonGenerator — o índice
-   * do array já é a posição na grade, row-major). GameScene empurra um novo
-   * snapshot periodicamente; hud/Minimap.tsx só lê.
+   * snapshot do minimap — layout de salas gerado por DungeonGenerator (Frente 1
+   * da spec 11, 27/08: BSP + Cellular Automata, número/tamanho/posição das
+   * salas variam por andar, não é mais um grid fixo). `hud/Minimap.tsx` lê
+   * `x/y/width/height` de cada sala e renderiza por bounding-box percentual,
+   * não por índice de grade — `index` aqui é só a posição no array, sem
+   * significado geométrico. GameScene empurra um novo snapshot periodicamente;
+   * hud/Minimap.tsx só lê.
    */
   minimapRooms: {
     index: number;
@@ -753,6 +757,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
       saveEquippedRelicIds(updated.relics.map((r) => r.id));
     }
     set({ equipment: updated });
+    // Frente 7 (spec 11, 27/08): Palette Swap procedural — troca de
+    // arma/armadura pode mudar o tint/faíscas do personagem, reaproveita o
+    // mesmo canal de refresh já usado pela paleta cosmética manual (ver
+    // Player.applyCosmeticTint()/PhaserGame.tsx).
+    get().bumpCosmeticTint();
   },
   clearInventoryOnDeath: () => {
     set((state) => ({
@@ -762,6 +771,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         curatives: { bandages: 0, antidotes: 0, antibiotics: 0 }
       }
     }));
+    get().bumpCosmeticTint();
   },
   retrieveCorpseLoot: () => {
     const state = get();
@@ -775,6 +785,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           droppedCorpse: { ...corpse, hasDroppedCorpse: false }
         }
       });
+      get().bumpCosmeticTint();
       state.addLootLog("Equipamentos e itens recuperados com sucesso!");
     }
   },

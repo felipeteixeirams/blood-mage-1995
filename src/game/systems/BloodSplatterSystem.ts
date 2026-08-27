@@ -7,7 +7,8 @@ export type DecalType =
   | 'splatter_directional'
   | 'gore_chunk'
   | 'bone_dust'
-  | 'corpse';
+  | 'corpse'
+  | 'footprint';
 
 export interface DecalConfig {
   x: number;
@@ -513,6 +514,66 @@ export class BloodSplatterSystem {
         persistDurationMs: 20000,
       });
     }
+  }
+
+  /**
+   * Frente 3 (spec 11, 27/08): tipos de decal considerados "sangue fresco"
+   * pra fins de pegada — poças e respingos molham a sola; ossos/cadáver/
+   * pegada em si não contam.
+   */
+  private static readonly WET_DECAL_TYPES: ReadonlySet<DecalType> = new Set([
+    'blood_pool',
+    'blood_pool_large',
+    'splatter_small',
+    'splatter_directional',
+    'gore_chunk',
+  ]);
+
+  /**
+   * Frente 3 (spec 11, 27/08) — verifica se há sangue fresco (não seco) a
+   * `radius` px de (x,y). Usado pra decidir se o jogador "molhou a sola" e
+   * deve começar a deixar uma trilha de pegadas ensanguentadas.
+   */
+  public isNearWetBlood(x: number, y: number, radius: number = 40): boolean {
+    if (!this.enabled) return false;
+    const radiusSq = radius * radius;
+    for (const entry of this.decals) {
+      if (entry.isDry || !BloodSplatterSystem.WET_DECAL_TYPES.has(entry.type)) continue;
+      if (!entry.image || !entry.image.active) continue;
+      const dx = entry.image.x - x;
+      const dy = entry.image.y - y;
+      if (dx * dx + dy * dy <= radiusSq) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Frente 3 (spec 11, 27/08) — adiciona uma pegada ensanguentada individual
+   * no chão. `footSide` alterna esquerda/direita (offset lateral leve) e
+   * `fadeRatio` (0-1) escurece/dessatura o alpha conforme a trilha "seca"
+   * (pegadas mais distantes da fonte de sangue ficam mais fracas).
+   */
+  public addFootprintDecal(x: number, y: number, angle: number, footSide: boolean, fadeRatio: number = 1): void {
+    if (!this.enabled) return;
+    const perpOffset = 3.2;
+    const ox = Math.cos(angle + Math.PI / 2) * perpOffset * (footSide ? 1 : -1);
+    const oy = Math.sin(angle + Math.PI / 2) * perpOffset * (footSide ? 1 : -1);
+
+    this.addDecal({
+      x: x + ox,
+      y: y + oy,
+      textureKey: 'footprint_bloody',
+      type: 'footprint',
+      scaleX: 0.85 + Math.random() * 0.15,
+      scaleY: 0.85 + Math.random() * 0.15,
+      rotation: angle + Math.PI / 2,
+      alpha: Math.max(0.15, 0.65 * fadeRatio),
+      dryTint: 0x2a0505,
+      dryingDurationMs: 4000,
+      persistDurationMs: 18000,
+      fadeDurationMs: 6000,
+      depth: 1, // abaixo das poças/respingos (depth 2+) — pegada é uma camada mais rasa
+    });
   }
 
   /**

@@ -35,15 +35,19 @@ function makeMockScene() {
 function makeBloomSprite(overrides: Partial<{ x: number; y: number }> = {}) {
   const addGlow = vi.fn();
   const clear = vi.fn();
+  const setTint = vi.fn(function (this: any, t: number) { this.tint = t; return this; });
   return {
     x: overrides.x ?? 10,
     y: overrides.y ?? 20,
     scale: 1,
+    tint: 0xffffff,
     active: true,
     once: vi.fn(),
     filters: { internal: { addGlow, clear } },
+    setTint,
     __addGlow: addGlow,
     __clear: clear,
+    __setTint: setTint,
   } as any;
 }
 
@@ -244,6 +248,70 @@ describe('LightingPolish', () => {
 
       const appliedCount = sprites.filter((s) => s.__addGlow.mock.calls.length > 0).length;
       expect(appliedCount).toBe(16);
+    });
+  });
+
+  describe('Altar Ancestral (spec 11, Frente 8 — pulso ambiente e proximidade)', () => {
+    it('addAltarGlow adiciona luz vermelha suave, Glow e tween de "respiração" contínuo', () => {
+      const { scene, lights, tweens } = makeMockScene();
+      const polish = new LightingPolish(scene as any);
+      const sprite = makeBloomSprite();
+
+      polish.addAltarGlow(sprite);
+
+      expect(lights.addLight).toHaveBeenCalledWith(sprite.x, sprite.y, 60, 0x990000, 0.5);
+      expect(sprite.__addGlow).toHaveBeenCalledWith(0x990000, expect.any(Number), 0, 1, false, 8, 12);
+      expect(tweens.add).toHaveBeenCalledWith(
+        expect.objectContaining({
+          targets: sprite,
+          duration: 1600,
+          yoyo: true,
+          repeat: -1,
+        })
+      );
+    });
+
+    it('addAltarGlow não faz nada em sprite inativo/nulo', () => {
+      const { scene, lights, tweens } = makeMockScene();
+      const polish = new LightingPolish(scene as any);
+      const sprite = makeBloomSprite();
+      sprite.active = false;
+
+      polish.addAltarGlow(sprite);
+      expect(lights.addLight).not.toHaveBeenCalled();
+      expect(tweens.add).not.toHaveBeenCalled();
+    });
+
+    it('updateAltarProximity intensifica o tint pra vermelho vivo quando o jogador está perto (distanceRatio baixo)', () => {
+      const { scene } = makeMockScene();
+      const polish = new LightingPolish(scene as any);
+      const sprite = makeBloomSprite();
+
+      polish.updateAltarProximity(sprite, 0); // em cima do altar
+      expect(sprite.__setTint).toHaveBeenCalledWith(0xff6666); // g=b=102 (0x66)
+    });
+
+    it('updateAltarProximity mantém o tint neutro na borda do raio de sensor (distanceRatio 1)', () => {
+      const { scene } = makeMockScene();
+      const polish = new LightingPolish(scene as any);
+      const sprite = makeBloomSprite();
+
+      polish.updateAltarProximity(sprite, 1);
+      expect(sprite.__setTint).toHaveBeenCalledWith(0xffffff);
+    });
+
+    it('updateAltarProximity ignora ratio fora de [0,1] (clamp) e sprite inativo', () => {
+      const { scene } = makeMockScene();
+      const polish = new LightingPolish(scene as any);
+      const sprite = makeBloomSprite();
+
+      polish.updateAltarProximity(sprite, -5);
+      expect(sprite.__setTint).toHaveBeenCalledWith(0xff6666); // clamp -> 0, igual ao caso "em cima do altar"
+
+      const inactiveSprite = makeBloomSprite();
+      inactiveSprite.active = false;
+      polish.updateAltarProximity(inactiveSprite, 0);
+      expect(inactiveSprite.__setTint).not.toHaveBeenCalled();
     });
   });
 });

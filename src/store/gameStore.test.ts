@@ -177,6 +177,27 @@ describe('gameStore', () => {
       expect(relics).toContainEqual(r4);
       expect(relics).not.toContainEqual(r1);
     });
+
+    // Frente 7 (spec 11, 27/08): Palette Swap procedural — troca de
+    // arma/armadura precisa disparar o mesmo canal de refresh que a paleta
+    // cosmética manual já usa (Player.applyCosmeticTint() via PhaserGame.tsx).
+    it('equipItem incrementa cosmeticTintVersion ao equipar arma/armadura (Frente 7 — Palette Swap)', () => {
+      const start = useGameStore.getState().cosmeticTintVersion;
+      useGameStore.getState().equipItem(makeItem({ type: 'weapon', rarity: 'legendary' }));
+      expect(useGameStore.getState().cosmeticTintVersion).toBe(start + 1);
+
+      useGameStore.getState().equipItem(makeItem({ type: 'armor', rarity: 'epic' }));
+      expect(useGameStore.getState().cosmeticTintVersion).toBe(start + 2);
+    });
+
+    it('clearInventoryOnDeath e retrieveCorpseLoot também incrementam cosmeticTintVersion', () => {
+      useGameStore.getState().equipItem(makeItem({ type: 'weapon', rarity: 'legendary' }));
+      const afterEquip = useGameStore.getState().cosmeticTintVersion;
+
+      useGameStore.getState().clearInventoryOnDeath();
+      expect(useGameStore.getState().cosmeticTintVersion).toBe(afterEquip + 1);
+      expect(useGameStore.getState().equipment.weapon).toBeNull();
+    });
   });
 
   describe('curatives', () => {

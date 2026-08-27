@@ -1361,6 +1361,29 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   });
   addTexture('particle_bone_dust', boneDustCanvas);
 
+  // 15g. Pegada Ensanguentada (docs/specs/11_VISUAL_POLISH_FRONTS.md, Frente 3
+  // — 27/08): silhueta simples de bota, usada em trilha decrescente atrás do
+  // jogador logo após pisar perto de sangue fresco (ver `BloodSplatterSystem.
+  // addFootprintDecal` / `GameScene.ts`, gatilho no mesmo timer de cadência de
+  // passos que já emite o ruído de "correndo"). 12x18, pequena o bastante pra
+  // não competir visualmente com as poças/respingos.
+  const footprintBloodyCanvas = createPixelCanvas(12, 18, (ctx) => {
+    ctx.fillStyle = 'rgba(120, 10, 18, 0.75)';
+    // Sola (calcanhar arredondado + antepé mais largo)
+    ctx.beginPath();
+    ctx.ellipse(6, 13, 3.4, 4.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(6, 4.5, 2.6, 3.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Realce mais escuro no centro (pisada mais funda)
+    ctx.fillStyle = 'rgba(80, 5, 10, 0.5)';
+    ctx.beginPath();
+    ctx.ellipse(6, 13, 1.8, 2.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  addTexture('footprint_bloody', footprintBloodyCanvas);
+
   // 16. Dungeon Stone Brick Wall Block (32x32)
   // Fase 4 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
   // esse tile se repete lado a lado por todo corredor — a grade perfeita de retângulos

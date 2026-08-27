@@ -237,8 +237,9 @@ export class DungeonFlowController {
       // a "orla da floresta" logo após a Safe House — intro leve com só os
       // batedores corrompidos que o diálogo do Maelen menciona
       // (quest_ch1_first_steps > obj_clear_woods, 4 kills), sem chefe nem elite, e
-      // o Altar Ancestral (obj_find_altar) pra descobrir. Reaproveita o grid 3x3
-      // padrão do DungeonGenerator (portas, tochas, chests aleatórios), só troca a
+      // o Altar Ancestral (obj_find_altar) pra descobrir. Reaproveita o layout
+      // orgânico padrão do DungeonGenerator (Frente 1 da spec 11, 27/08: BSP +
+      // Cellular Automata — portas, tochas, chests aleatórios), só troca a
       // população de inimigos/marcos por uma leva dedicada e mais fraca.
       if (biome === 'gloomy_woods') {
         const totalScouts = 4;
@@ -269,6 +270,9 @@ export class DungeonFlowController {
           altar.setData('campaignDiscoverableId', 'altar_crimson');
           scene.depthGroup.add(altar);
           if (scene.lightingSystem) scene.lightingSystem.applyLightPipeline(altar);
+          // Frente 8 (spec 11, 27/08): pulso ambiente sutil, sempre ativo —
+          // sinaliza de longe que o altar é uma estrutura interativa.
+          scene.lightingPolish?.addAltarGlow(altar);
           scene.campaignDiscoverables.push(altar);
         }
 

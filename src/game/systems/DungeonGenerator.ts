@@ -13,6 +13,16 @@ export interface RoomData {
   type: 'spawn' | 'chamber' | 'secret_treasure' | 'boss';
 }
 
+// Frente 1 (spec 11, 27/08): retângulo de partição do BSP, ANTES de esculpir a
+// sala dentro dele — não faz parte do contrato público (`RoomData`), é só o
+// espaço bruto que `carveRoomFromLeaf` usa pra decidir tamanho/posição da sala.
+interface BspLeaf {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 // Fase 3.2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
 // exportado pra GameScene.ts (posicionamento de tochas) usar o MESMO número em vez de um
 // valor solto (±70) que nunca foi conferido contra o vão de porta real.
@@ -62,15 +72,13 @@ export class DungeonGenerator {
       }
     }
 
-    // Define Room Grid Layout
-    const rooms: RoomData[] = [];
-    
     if (isSafeHouse) {
+      const rooms: RoomData[] = [];
       const roomW = 800;
       const roomH = 600;
       const rx = (mapW - roomW) / 2;
       const ry = (mapH - roomH) / 2;
-      
+
       rooms.push({
         x: rx,
         y: ry,
@@ -80,42 +88,83 @@ export class DungeonGenerator {
         centerY: ry + roomH / 2,
         type: 'spawn',
       });
-      
+
       // Build safe house specific walls
       this.buildWallLine(rx, ry, rx + roomW, ry, 0xffffff, 'tile_wood_wall', true); // Top
       this.buildWallLine(rx, ry + roomH, rx + roomW, ry + roomH, 0xffffff, 'tile_wood_wall', true); // Bottom
       this.buildWallLine(rx, ry, rx, ry + roomH, 0xffffff, 'tile_wood_wall', true); // Left
       this.buildWallLine(rx + roomW, ry, rx + roomW, ry + roomH, 0xffffff, 'tile_wood_wall', true); // Right
-      
+
       return rooms;
     }
 
-    const cols = 3;
-    const rows = 3;
-    const roomW = 440;
-    const roomH = 320;
+    // Frente 1 (spec 11, 27/08) — layout orgânico via BSP + Cellular Automata,
+    // substitui o grid fixo 3x3 que existia antes (auditoria de 27/08 apontou
+    // que o dungeon sempre gerava a MESMA malha, só o conteúdo das salas
+    // variava). Ver `bspSplit`/`computeCorridorZoneGrid` mais abaixo e o
+    // changelog da spec pra rationale completo.
+    const originX = 90;
+    const originY = 70;
+    const usableW = mapW - originX - 90;
+    const usableH = mapH - originY - 70;
+    const minLeafW = 380;
+    const minLeafH = 320;
+    // Math.random()-based, não Phaser.Math.Between: acessar o namespace
+    // Phaser.Math em runtime (em vez de só como tipo) cascateia o carregamento
+    // de um chunk interno do bundle do Phaser 4 que espera um
+    // `canvas.getContext('2d')' de verdade — quebra em jsdom sem o pacote
+    // opcional `canvas` instalado (achado rodando `pnpm test` de verdade,
+    // 27/08). Resultado idêntico, sem tocar o runtime do Phaser.
+    const targetLeafCount = 6 + Math.floor(Math.random() * 4); // 6..9 inclusive
 
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const rx = 100 + c * 580;
-        const ry = 80 + r * 440;
-        let type: 'spawn' | 'chamber' | 'secret_treasure' | 'boss' = 'chamber';
+    const leaves = this.bspSplit(
+      { x: originX, y: originY, width: usableW, height: usableH },
+      targetLeafCount,
+      minLeafW,
+      minLeafH
+    );
 
-        if (r === 0 && c === 0) type = 'spawn';
-        else if (r === 2 && c === 2) type = 'boss';
-        else if (r === 0 && c === 2) type = 'secret_treasure';
+    const caCols = 6;
+    const caRows = 5;
+    const corridorGrid = this.computeCorridorZoneGrid(caCols, caRows);
 
-        rooms.push({
-          x: rx,
-          y: ry,
-          width: roomW,
-          height: roomH,
-          centerX: rx + roomW / 2,
-          centerY: ry + roomH / 2,
-          type,
-        });
+    const cells = leaves.map((leaf) => ({
+      leaf,
+      room: this.carveRoomFromLeaf(leaf, corridorGrid, caCols, caRows, originX, originY, usableW, usableH),
+    }));
+
+    // Sala de spawn: a mais próxima do canto superior-esquerdo utilizável —
+    // igual ao antigo (0,0) do grid, mantém `rooms[0]` como sala de spawn
+    // (contrato usado por DungeonFlowController).
+    let spawnCell = cells[0];
+    cells.forEach((cell) => {
+      if (cell.room.centerX + cell.room.centerY < spawnCell.room.centerX + spawnCell.room.centerY) {
+        spawnCell = cell;
       }
-    }
+    });
+    spawnCell.room.type = 'spawn';
+
+    const distFromSpawn = (c: typeof cells[number]) =>
+      Math.hypot(c.room.centerX - spawnCell.room.centerX, c.room.centerY - spawnCell.room.centerY);
+
+    let bossCell: typeof cells[number] | null = null;
+    cells.forEach((cell) => {
+      if (cell === spawnCell) return;
+      if (!bossCell || distFromSpawn(cell) > distFromSpawn(bossCell)) bossCell = cell;
+    });
+    if (bossCell) (bossCell as typeof cells[number]).room.type = 'boss';
+
+    let treasureCell: typeof cells[number] | null = null;
+    cells.forEach((cell) => {
+      if (cell === spawnCell || cell === bossCell) return;
+      if (!treasureCell || distFromSpawn(cell) > distFromSpawn(treasureCell)) treasureCell = cell;
+    });
+    if (treasureCell) (treasureCell as typeof cells[number]).room.type = 'secret_treasure';
+
+    // rooms[0] precisa ser sempre a sala de spawn (DungeonFlowController lê
+    // `rooms[0]` direto pra posicionar o jogador).
+    const orderedCells = [spawnCell, ...cells.filter((c) => c !== spawnCell)];
+    const rooms: RoomData[] = orderedCells.map((c) => c.room);
 
     // Outer Perimeter Walls
     this.buildWallLine(0, 0, mapW, 0, tints.wall); // Top
@@ -124,19 +173,20 @@ export class DungeonGenerator {
     this.buildWallLine(mapW - 32, 0, mapW - 32, mapH, tints.wall); // Right
 
     // Build Partition Walls around rooms with door openings
-    rooms.forEach((room) => {
+    orderedCells.forEach(({ room, leaf }) => {
       const doorWidth = DOOR_WIDTH;
 
-      // Top Wall
-      if (room.y > 100) {
+      // Top Wall — só se a folha BSP desta sala não encostar na borda superior
+      // utilizável (senão a parede/porta duplicaria a Outer Perimeter Wall).
+      if (leaf.y > originY + 1) {
         const midX = room.centerX;
         this.buildWallLine(room.x, room.y, midX - doorWidth / 2, room.y, tints.wall);
         this.buildWallLine(midX + doorWidth / 2, room.y, room.x + room.width, room.y, tints.wall);
         this.scene.add.image(midX, room.y, 'tile_door').setDepth(2);
       }
 
-      // Left Wall
-      if (room.x > 120) {
+      // Left Wall — mesma lógica, pra borda esquerda utilizável.
+      if (leaf.x > originX + 1) {
         const midY = room.centerY;
         this.buildWallLine(room.x, room.y, room.x, midY - doorWidth / 2, tints.wall);
         this.buildWallLine(room.x, midY + doorWidth / 2, room.x, room.y + room.height, tints.wall);
@@ -211,6 +261,157 @@ export class DungeonGenerator {
     });
 
     return rooms;
+  }
+
+  /**
+   * Frente 1 (spec 11, 27/08) — Binary Space Partitioning: parte recursivamente
+   * o retângulo `root` em `targetCount` folhas (ou até não haver mais nenhuma
+   * folha grande o bastante pra dividir de novo, o que vier primeiro). Cada
+   * iteração escolhe a folha de MAIOR área ainda divisível e a corta ao meio
+   * (com uma variação de 42%-58%, não sempre exatamente no centro) ao longo do
+   * seu eixo mais longo — troca de eixo automática quando só um dos dois cabe
+   * o `minW`/`minH` mínimo. É isso que substitui o grid fixo 3x3: o número, o
+   * tamanho e a posição das folhas variam a cada geração.
+   */
+  private bspSplit(root: BspLeaf, targetCount: number, minW: number, minH: number): BspLeaf[] {
+    const leaves: BspLeaf[] = [root];
+    let safety = 0;
+
+    while (leaves.length < targetCount && safety < 200) {
+      safety++;
+
+      let bestIdx = -1;
+      let bestArea = 0;
+      for (let i = 0; i < leaves.length; i++) {
+        const leaf = leaves[i];
+        const canSplitH = leaf.width >= minW * 2 + 20;
+        const canSplitV = leaf.height >= minH * 2 + 20;
+        if (!canSplitH && !canSplitV) continue;
+        const area = leaf.width * leaf.height;
+        if (area > bestArea) {
+          bestArea = area;
+          bestIdx = i;
+        }
+      }
+      if (bestIdx === -1) break; // nenhuma folha grande o bastante pra dividir
+
+      const leaf = leaves[bestIdx];
+      const canSplitH = leaf.width >= minW * 2 + 20;
+      const canSplitV = leaf.height >= minH * 2 + 20;
+      const splitHorizontally = canSplitH && (leaf.width > leaf.height || !canSplitV);
+      const ratio = 0.42 + Math.random() * 0.16;
+
+      let a: BspLeaf;
+      let b: BspLeaf;
+      if (splitHorizontally) {
+        const splitAt = Math.round(leaf.width * ratio);
+        a = { x: leaf.x, y: leaf.y, width: splitAt, height: leaf.height };
+        b = { x: leaf.x + splitAt, y: leaf.y, width: leaf.width - splitAt, height: leaf.height };
+      } else {
+        const splitAt = Math.round(leaf.height * ratio);
+        a = { x: leaf.x, y: leaf.y, width: leaf.width, height: splitAt };
+        b = { x: leaf.x, y: leaf.y + splitAt, width: leaf.width, height: leaf.height - splitAt };
+      }
+      leaves.splice(bestIdx, 1, a, b);
+    }
+
+    return leaves;
+  }
+
+  /**
+   * Frente 1 (spec 11, 27/08) — Cellular Automata clássico (regra 4-5 de
+   * vizinhança 8-direcional, bordas contam como "vivas" pra fechar bolhas em
+   * vez de vazar infinitamente): gera um mapa grosseiro `caRows x caCols` de
+   * zonas "corredor natural" (true) vs. "cripta quadrada" (false). Cada folha
+   * do BSP amostra a zona sob o centro dela em `carveRoomFromLeaf` — zonas de
+   * corredor esculpem salas mais estreitas e deslocadas dentro da própria
+   * folha; zonas de cripta esculpem salas que preenchem quase toda a folha.
+   * É exatamente a mistura que o mapeamento geral desta spec descreve:
+   * "corredores naturais com criptas quadradas".
+   */
+  private computeCorridorZoneGrid(cols: number, rows: number): boolean[][] {
+    let grid: boolean[][] = [];
+    for (let r = 0; r < rows; r++) {
+      grid[r] = [];
+      for (let c = 0; c < cols; c++) {
+        grid[r][c] = Math.random() < 0.45;
+      }
+    }
+
+    const countAliveNeighbors = (g: boolean[][], r: number, c: number): number => {
+      let count = 0;
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          const nr = r + dr;
+          const nc = c + dc;
+          if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) {
+            count++; // borda conta como "viva" — fecha bolsões em vez de vazar
+          } else if (g[nr][nc]) {
+            count++;
+          }
+        }
+      }
+      return count;
+    };
+
+    for (let iter = 0; iter < 2; iter++) {
+      const next: boolean[][] = [];
+      for (let r = 0; r < rows; r++) {
+        next[r] = [];
+        for (let c = 0; c < cols; c++) {
+          const n = countAliveNeighbors(grid, r, c);
+          next[r][c] = n >= 5 ? true : n <= 3 ? false : grid[r][c];
+        }
+      }
+      grid = next;
+    }
+
+    return grid;
+  }
+
+  /**
+   * Frente 1 (spec 11, 27/08) — esculpe a sala real dentro da folha do BSP:
+   * nunca preenche a folha inteira (a "sobra" à direita/embaixo vira o espaço
+   * aberto que conecta com a próxima sala, igual ao antigo grid, só que agora
+   * com folgas variáveis em vez de sempre 140x120px fixos). O fator de
+   * preenchimento vem da zona do Cellular Automata sob o centro da folha.
+   */
+  private carveRoomFromLeaf(
+    leaf: BspLeaf,
+    corridorGrid: boolean[][],
+    caCols: number,
+    caRows: number,
+    originX: number,
+    originY: number,
+    usableW: number,
+    usableH: number
+  ): RoomData {
+    // Clamp manual (não Phaser.Math.Clamp) pelo mesmo motivo do comentário em
+    // `generate()` — evita tocar o namespace Phaser.Math em runtime.
+    const gc = Math.max(0, Math.min(caCols - 1, Math.floor(((leaf.x + leaf.width / 2 - originX) / usableW) * caCols)));
+    const gr = Math.max(0, Math.min(caRows - 1, Math.floor(((leaf.y + leaf.height / 2 - originY) / usableH) * caRows)));
+    const isCorridorZone = corridorGrid[gr][gc];
+
+    const pad = 30;
+    const [fillMin, fillMax] = isCorridorZone ? [0.5, 0.68] : [0.74, 0.9];
+    const fillW = fillMin + Math.random() * (fillMax - fillMin);
+    const fillH = fillMin + Math.random() * (fillMax - fillMin);
+
+    const width = Math.max(220, Math.round((leaf.width - pad) * fillW));
+    const height = Math.max(190, Math.round((leaf.height - pad) * fillH));
+    const x = Math.round(leaf.x + pad / 2);
+    const y = Math.round(leaf.y + pad / 2);
+
+    return {
+      x,
+      y,
+      width,
+      height,
+      centerX: x + width / 2,
+      centerY: y + height / 2,
+      type: 'chamber',
+    };
   }
 
   public getChestTextureKey(dir?: string): string {
