@@ -14,6 +14,12 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     include: ['src/**/*.test.{ts,tsx}'],
+    // Quick win #1 de docs/reviews/AUDIT_REPORT_QUALIDADE_CODIGO_2026.md
+    // (27/08): mock global mínimo de `phaser` (ver tests/setup.ts pro porquê
+    // e pro que NÃO foi consolidado de propósito) — roda antes de cada
+    // arquivo de teste; suítes com `vi.mock('phaser', ...)` próprio
+    // continuam sobrescrevendo esse default normalmente.
+    setupFiles: ['./tests/setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary'],

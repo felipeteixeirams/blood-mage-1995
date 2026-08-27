@@ -6,9 +6,10 @@ import { Projectile } from '../objects/Projectile';
 import { Collectible } from '../objects/Collectible';
 import { LootSprite } from '../objects/Loot';
 import { LootSystem } from '../systems/LootSystem';
-import { PlayerStats, WaveConfig, UpgradeOption } from '../../types/game';
+import { PlayerStats, WaveConfig, UpgradeOption, SpellConfig } from '../../types/game';
 import wavesData from '../../data/waves.json';
 import upgradesData from '../../data/upgrades.json';
+import spellsData from '../../data/spells.json';
 import campaignItemsData from '../../data/campaignItems.json';
 import { soundEngine } from '../../utils/soundEngine';
 import HapticFeedback from '../../utils/haptics';
@@ -124,6 +125,11 @@ export class GameScene extends Phaser.Scene {
   // da campanha (ex.: Altar Ancestral em gloomy_woods) — checados por proximidade
   // em update(), público: preenchido por DungeonFlowController.
   public campaignDiscoverables: Phaser.GameObjects.Image[] = [];
+  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (27/08): último
+  // `player.stats.level` já checado pra desbloqueio de feitiço por nível
+  // (ver `checkLevelSpellUnlocks` em gameStore.ts) — evita rechecar todo
+  // frame sem um level-up de verdade ter acontecido.
+  private lastCheckedPlayerLevel: number = 1;
 
   private currentWaveIndex: number = 0;
   public waveConfigs: WaveConfig[] = wavesData as WaveConfig[]; // público: usado por DungeonFlowController
@@ -1093,6 +1099,33 @@ export class GameScene extends Phaser.Scene {
           }
         }
       });
+    }
+
+    // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (27/08): fecha
+    // o gap dos 6 feitiços sem gatilho de desbloqueio (ver
+    // CAMPAIGN_SPELL_UNLOCK_LEVEL em gameStore.ts) — checa a cada frame se o
+    // nível do jogador subiu desde a última checagem (mesmo padrão de "campo
+    // comparado a cada update()" já usado alhures nesta cena) e, se sim,
+    // destrava tudo que já bateu o nível-requisito. `addXp()`/level-up rodam
+    // em vários lugares diferentes (CombatEffectsSystem, CollisionHandlers,
+    // ScavengingSystem, ContractSystem) — checar aqui, central, evita
+    // duplicar essa lógica em cada um deles.
+    if (store.gameMode === 'campaign' && this.player && this.player.active) {
+      const currentLevel = this.player.stats.level;
+      if (currentLevel > this.lastCheckedPlayerLevel) {
+        this.lastCheckedPlayerLevel = currentLevel;
+        const newlyUnlocked = store.checkLevelSpellUnlocks(currentLevel);
+        newlyUnlocked.forEach((spellId, i) => {
+          const spell = (spellsData as Record<string, SpellConfig>)[spellId];
+          this.spawnFloatingText(
+            this.player.x,
+            this.player.y - 40 - i * 16,
+            `${(spell?.name || spellId).toUpperCase()} DESBLOQUEADO!`,
+            spell?.color || '#B8860B',
+            true
+          );
+        });
+      }
     }
 
     // Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:

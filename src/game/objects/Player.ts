@@ -540,7 +540,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // o "ataque automático" primário é a adaga — curto alcance, sem projétil,
     // sem custo. Fora da campanha (ou já com blood_bolt desbloqueado) o
     // comportamento de sempre continua idêntico.
-    const isUnarmedCampaign = !useGameStore.getState().isCampaignSpellUnlocked('blood_bolt');
+    const isMeleePhase = !useGameStore.getState().isCampaignSpellUnlocked('blood_bolt');
+    // Fechamento do gap descrito na "Observação de escopo" da Frente 3 (27/08):
+    // o corpo a corpo só deve funcionar se a Adaga de Aço já estiver
+    // FISICAMENTE equipada (`equipItem` roda no pickup do baú de suprimentos —
+    // ver `CollisionHandlers.handleCollectLoot`), não só porque blood_bolt
+    // ainda está trancado. Sem a adaga (jogador ainda não abriu o baú), o
+    // personagem fica sem ataque automático algum nessa fase — fiel ao texto
+    // do critério de aceite #5 ("adaga fisicamente equipada como
+    // pré-requisito do corpo a corpo"), e ao fluxo real da campanha (Safe
+    // House → abrir baú → só então floresta com inimigos).
+    const hasMeleeWeaponEquipped = useGameStore.getState().equipment.weapon !== null;
+    const canMelee = isMeleePhase && hasMeleeWeaponEquipped;
 
     // Auto Shoot Primary (Blood Bolt) with Intelligent Directional Cone Aiming
     const bloodBoltConfig = (spellsData as Record<string, SpellConfig>)['blood_bolt'];
@@ -549,7 +560,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const pointer = this.scene && this.scene.input && this.scene.input.activePointer;
     const isPointerDown = pointer && pointer.isDown;
 
-    const targetEnemy = this.findBestTarget(isUnarmedCampaign ? this.MELEE_RANGE : 380);
+    const targetEnemy = this.findBestTarget(isMeleePhase ? this.MELEE_RANGE : 380);
     const hasEnemyInRange = targetEnemy !== null;
 
     // If an enemy is found and user is not manually aiming with right stick/pointer,
@@ -563,10 +574,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
     }
 
-    if (isUnarmedCampaign) {
-      if (targetEnemy && time > this.lastMeleeAttackTime + this.MELEE_COOLDOWN_MS) {
+    if (isMeleePhase) {
+      if (canMelee && targetEnemy && time > this.lastMeleeAttackTime + this.MELEE_COOLDOWN_MS) {
         this.castDaggerStrike(time, targetEnemy);
       }
+      // Sem a adaga equipada e sem blood_bolt desbloqueado: nenhum
+      // ataque automático dispara (ver comentário de `canMelee` acima).
     } else if ((isPointerDown || hasEnemyInRange) && time > this.lastAutoShootTime + autoCd) {
       this.castBloodBolt(time);
     }
@@ -828,6 +841,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   public castDaggerStrike(time: number, target: any): boolean {
     if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
     if (!target || !target.active) return false;
+    // Defesa em profundidade (27/08, fechamento do gap da Frente 3): mesmo
+    // se algum caller futuro pular o guard de `updatePlayer()`, o golpe de
+    // adaga não deve disparar sem a arma fisicamente equipada.
+    if (useGameStore.getState().equipment.weapon === null) return false;
 
     this.lastMeleeAttackTime = time;
     this.pendingMeleeHitTarget = target;

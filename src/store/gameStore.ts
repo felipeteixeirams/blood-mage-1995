@@ -29,6 +29,14 @@ interface GameStore {
   setCampaignZone: (zone: ZoneType) => void;
   unlockCampaignSpell: (spellId: string) => void;
   isCampaignSpellUnlocked: (spellId: string) => boolean;
+  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (27/08, fecha o
+  // gap dos "6 feitiços sem gatilho" — ver CAMPAIGN_SPELL_UNLOCK_LEVEL):
+  // chamado do `GameScene.update()` sempre que `player.stats.level` sobe em
+  // modo Campanha; destrava todo feitiço cujo nível-requisito já foi
+  // alcançado e devolve só os ids recém-destravados nesta chamada (pra quem
+  // chamou poder mostrar feedback tipo "X DESBLOQUEADO!" sem duplicar
+  // checagem de "já tinha desbloqueado?").
+  checkLevelSpellUnlocks: (level: number) => string[];
   resetCampaignProgress: () => void;
   // Fila drenada pelo `GameScene.update()` — ver comentário em `CampaignEffect`
   // (types/campaign.ts). Não é persistida: se a página recarregar com efeitos
@@ -250,6 +258,28 @@ const defaultPlayerStats: PlayerStats = {
     equipment: { weapon: null, armor: null, relics: [] },
     curatives: { bandages: 0, antidotes: 0, antibiotics: 0 },
   },
+};
+
+// Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (27/08) — gatilho
+// simples por progressão pros 6 feitiços que ficavam permanentemente
+// trancados em modo Campanha (`unlockCampaignSpell` só estava ligado ao
+// blood_bolt/altar). Não existe conteúdo de Capítulo 2+ ainda (quests/zonas/
+// altares novos) pra dar um gatilho narrativo a cada um — ver "Observação de
+// escopo" na Frente 3 do spec — então cada um destrava por nível de
+// personagem, na ordem crescente de custo/poder de `spells.json` (mana +
+// custo de HP): hellfire_nova (AoE barata, sem HP) → bone_shield (defesa,
+// sem HP) → crimson_scythe (mana baixa, HP baixo, dano alto) → syphon_soul
+// (drain caro) → hemomancy_beam (feixe caro, HP médio) → blood_ritual_circle
+// (grátis em mana, mas o HP mais caro — ritual "definitivo"). `blood_bolt`
+// fica de fora deste mapa de propósito: continua exclusivo do Altar Ancestral
+// (Frente 2), não teria sentido também destravar por nível.
+const CAMPAIGN_SPELL_UNLOCK_LEVEL: Record<string, number> = {
+  hellfire_nova: 3,
+  bone_shield: 5,
+  crimson_scythe: 7,
+  syphon_soul: 9,
+  hemomancy_beam: 11,
+  blood_ritual_circle: 13,
 };
 
 // Snapshot salvo depois de qualquer mutação em `gameMode`/`campaignState` que
@@ -485,6 +515,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const state = get();
     if (state.gameMode !== 'campaign') return true;
     return state.campaignState.unlockedSpellIds.includes(spellId);
+  },
+  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (27/08) — ver
+  // CAMPAIGN_SPELL_UNLOCK_LEVEL acima. Fora do modo Campanha é sempre um
+  // no-op que devolve `[]` (não há o que destravar — `isCampaignSpellUnlocked`
+  // já libera tudo direto fora da Campanha).
+  checkLevelSpellUnlocks: (level) => {
+    if (get().gameMode !== 'campaign') return [];
+    const { unlockedSpellIds } = get().campaignState;
+    const newlyUnlocked: string[] = [];
+    Object.entries(CAMPAIGN_SPELL_UNLOCK_LEVEL).forEach(([spellId, requiredLevel]) => {
+      if (level >= requiredLevel && !unlockedSpellIds.includes(spellId)) {
+        get().unlockCampaignSpell(spellId);
+        newlyUnlocked.push(spellId);
+      }
+    });
+    return newlyUnlocked;
   },
   // Apaga quests/unlocks/zona salvos e volta pro estado inicial da Safe House —
   // usado por "Nova Campanha" (App.tsx) quando já existe progresso salvo, pra

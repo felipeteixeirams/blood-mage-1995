@@ -17,7 +17,7 @@ Transformar a estrutura de sessão do *Blood Mage 1995* de um arcade isolado par
 - **Gerenciamento de Estado:** Zustand sincronizado com a árvore de diálogos (`src/data/dialogues.json`) e registro de missões ativas (`src/data/campaignQuests.json`).
 - **Ações de Diálogo:** Respostas que podem disparar ações no jogo (entregar missão, destravar arma, curar jogador, fechar diálogo).
 
-### [PARCIAL] Frente 3: Economia Tática de Combate & Progressão Zero-to-Hero
+### [CONCLUÍDO] Frente 3: Economia Tática de Combate & Progressão Zero-to-Hero
 - **Desacoplamento de Habilidades Iniciais:** No modo Campanha, o jogador inicia com `unlockedSpells: []`. A barra de habilidades exibe slots bloqueados ou vazios.
 - **Ataque Físico Básico:** Ataque corpo a corpo com a Adaga (sem consumo de HP ou Mana). Inimigos iniciais exigem de 4 a 5 acertos, encorajando movimentação e tática.
 - **Descoberta do Primeiro Feitiço:** O primeiro tomo arcano (`blood_bolt`) é descoberto em um Altar Ancestral na orla da floresta, introduzindo o projétil leve e o dilema do custo de vida.
@@ -194,15 +194,17 @@ Transformar a estrutura de sessão do *Blood Mage 1995* de um arcade isolado par
       estiver em `unlockedSpellIds`, mostra "FEITIÇO NÃO DESCOBERTO" flutuante e
       cancela o cast, cobrindo hotkeys/gamepad/drag-aim (o mesmo caminho que
       `SkillsOverlay` já cobre pro toque no botão).
-  - **Observação de escopo:** a "Adaga de Aço" que sai do baú (Frente 2) continua
-    sendo um `LootItem` de inventário comum — ela **não** é o gatilho que ativa o
-    corpo a corpo; o corpo a corpo liga sozinho sempre que `blood_bolt` está
-    trancado em modo Campanha, tenha o jogador pego a adaga do baú ou não. Isso
-    cobre o critério de aceite #5 na prática (dá pra bater nos batedores sem
-    magia), mas quem quiser fidelidade 100% ao texto do critério (adaga
-    fisicamente equipada como pré-requisito do corpo a corpo) ainda precisaria de
-    um sistema de arma equipada, que não existe. Além disso, o desbloqueio via
-    `unlockCampaignSpell` só está ligado a `blood_bolt`/altar — os outros 6
+  - **Observação de escopo (⚠️ texto original de 27/08 — gap fechado no mesmo
+    dia, ver entrada "Adaga equipável de verdade" logo abaixo):** a "Adaga de
+    Aço" que sai do baú (Frente 2) continua sendo um `LootItem` de inventário
+    comum — ela **não** é o gatilho que ativa o corpo a corpo; o corpo a corpo
+    liga sozinho sempre que `blood_bolt` está trancado em modo Campanha, tenha
+    o jogador pego a adaga do baú ou não. Isso cobre o critério de aceite #5 na
+    prática (dá pra bater nos batedores sem magia), mas quem quiser fidelidade
+    100% ao texto do critério (adaga fisicamente equipada como pré-requisito
+    do corpo a corpo) ainda precisaria de um sistema de arma equipada, que não
+    existe. Além disso, o desbloqueio via `unlockCampaignSpell` só está ligado
+    a `blood_bolt`/altar — os outros 6
     feitiços que existiam na lista antiga e morta de `unlockedSpells`
     (`hellfire_nova`, `syphon_soul`, `bone_shield`, `crimson_scythe`,
     `blood_ritual_circle`, `hemomancy_beam`) continuam sem nenhum gatilho de
@@ -219,6 +221,100 @@ Transformar a estrutura de sessão do *Blood Mage 1995* de um arcade isolado par
     entrar em modo Campanha, conferir barra de skills com cadeados, bater em um
     `scout_beast` corpo a corpo sem gastar mana, achar o altar e conferir que o
     Blood Bolt desbloqueia e o auto-ataque volta a ser à distância.
+
+- **[2026-08-27] Adaga equipável de verdade — fecha o gap da "Observação de
+  escopo" acima:**
+  - Status: fecha esse gap específico da Frente 3; a Frente segue **PARCIAL**
+    porque o gap dos 6 feitiços sem gatilho de desbloqueio (mencionado acima)
+    continua aberto e não fazia parte do pedido desta leva. (⚠️ fechado
+    também no mesmo dia — ver entrada "Gatilho por progressão dos 6
+    feitiços" logo abaixo; a partir dela a Frente 3 vira **CONCLUÍDO**.)
+  - **Implementado:** `Player.updatePlayer()` agora só entra no branch de
+    corpo a corpo se, além de `blood_bolt` estar trancado
+    (`isMeleePhase`, renomeado de `isUnarmedCampaign` pra refletir que
+    "trancado" já não implica mais "vai bater com a adaga"), o jogador também
+    tiver `equipment.weapon !== null` (`hasMeleeWeaponEquipped`) — ou seja, já
+    ter passado pelo baú de suprimentos da Safe House e pego a Adaga de Aço
+    (que se auto-equipa no pickup via `CollisionHandlers.handleCollectLoot` →
+    `useGameStore().equipItem`, o único ponto de mutação de equipamento do
+    jogo — não existe um passo manual de "equipar" separado do pickup).
+    `castDaggerStrike(time, target)` ganhou o mesmo guard direto (defesa em
+    profundidade, mesmo padrão que os outros métodos `castX` já usam pra
+    validar seus próprios pré-requisitos — ex.: `castNova` checando mana
+    antes de gastar). Sem a adaga equipada, o jogador fica sem nenhum ataque
+    automático nessa fase — comportamento intencional: o fluxo real da
+    campanha sempre passa pela Safe House (baú garantido) antes de qualquer
+    inimigo aparecer, então isso nunca deixa o jogador "preso" sem conseguir
+    atacar num combate de verdade; fecha o critério de aceite #5 ao pé da
+    letra ("adaga fisicamente equipada como pré-requisito do corpo a corpo"),
+    não só na prática.
+  - **Validação:** `src/game/objects/Player.test.ts` (novo arquivo — não
+    havia teste nenhum pra `Player.ts` antes) com 4 testes focados em
+    `castDaggerStrike` isoladamente (via `Object.create(Player.prototype)`,
+    sem instanciar o `Phaser.Physics.Arcade.Sprite` real — construtor pesado
+    que o resto da suíte também evita): golpe recusado com
+    `equipment.weapon === null`, golpe disparando normalmente com a Adaga de
+    Aço equipada, e os dois guards pré-existentes (inconsciente/morto, sem
+    alvo ativo) continuando a funcionar mesmo com a adaga equipada. Verificado
+    por leitura de código + balance-check de chaves/parênteses (sandbox sem
+    `node_modules`). **Falta rodar `pnpm test` + `pnpm verify` localmente e
+    validar em jogo**: em modo Campanha, tentar bater num `scout_beast` ANTES
+    de abrir o baú de suprimentos (deve ficar sem ataque algum) e DEPOIS de
+    abrir o baú (corpo a corpo volta a funcionar).
+
+- **[2026-08-27] Gatilho por progressão dos 6 feitiços — fecha a Frente 3 por
+  completo (sobe pra CONCLUÍDO):**
+  - Status: fecha o último gap aberto da Frente 3 (mencionado na "Observação
+    de escopo" acima) — `hellfire_nova`, `syphon_soul`, `bone_shield`,
+    `crimson_scythe`, `blood_ritual_circle` e `hemomancy_beam` deixam de
+    ficar permanentemente trancados em modo Campanha. Frente 3 sobe pra
+    **CONCLUÍDO** (tag atualizada no topo do arquivo).
+  - **Decisão de escopo (conversada antes de implementar):** hoje a campanha
+    só tem o Capítulo 1 (`quest_ch1_first_steps`) — não existe Capítulo 2+
+    com zonas/altares/diálogos novos pra dar um gatilho narrativo a cada
+    feitiço, no mesmo espírito do Altar Ancestral do `blood_bolt`. Desenhar
+    esse conteúdo é um esforço bem maior (várias levas de quest/zona/diálogo
+    novos) e ficou fora do pedido desta leva — combinamos um gatilho simples
+    por **nível de personagem** em vez disso: fecha o critério técnico
+    ("todo feitiço tem algum jeito de ser desbloqueado, nenhum fica morto
+    pra sempre") sem inventar conteúdo narrativo que a spec não pediu. Se no
+    futuro o Capítulo 2 for desenhado de verdade, esses gatilhos por nível
+    podem virar (ou conviver com) descobertas de zona, do jeito que
+    `blood_bolt` já funciona.
+  - **Implementado:** `gameStore.ts` ganhou `CAMPAIGN_SPELL_UNLOCK_LEVEL`
+    (mapa `spellId → nível-requisito`) e a ação `checkLevelSpellUnlocks(level)`
+    — no-op fora do modo Campanha (devolve `[]`), senão destrava (via
+    `unlockCampaignSpell`, que já era idempotente e já persistia) todo
+    feitiço cujo nível já foi alcançado e ainda não estava destravado,
+    devolvendo só os ids recém-destravados nesta chamada. A ordem dos níveis
+    segue o custo/poder crescente de `spells.json` (mana + custo de HP):
+    `hellfire_nova` (3) → `bone_shield` (5) → `crimson_scythe` (7) →
+    `syphon_soul` (9) → `hemomancy_beam` (11) → `blood_ritual_circle` (13).
+    `blood_bolt` fica de fora do mapa de propósito — continua exclusivo do
+    Altar Ancestral. `GameScene.update()` ganhou um novo bloco (mesmo padrão
+    de "campo comparado a cada frame" já usado pro `campaignDiscoverables`
+    logo acima): compara `player.stats.level` contra um novo campo
+    `lastCheckedPlayerLevel`, e ao subir chama `checkLevelSpellUnlocks` e
+    mostra um floating text "X DESBLOQUEADO!" (cor da própria magia, de
+    `spells.json`) pra cada id recém-destravado — cobre o caso de um salto
+    grande de nível (várias magias de uma vez, ex.: XP de baú) mostrando um
+    texto por magia, empilhados verticalmente. Centralizado em `update()` em
+    vez de duplicado nos 4 lugares que chamam `player.addXp()`
+    (`CombatEffectsSystem`, `CollisionHandlers`, `ScavengingSystem`,
+    `ContractSystem`) — nenhum deles precisou ser tocado.
+  - **Validação:** 6 testes novos em `gameStore.test.ts`
+    (`describe('checkLevelSpellUnlocks...')`): no-op fora da Campanha, nada
+    destrava abaixo do primeiro nível-requisito, destrava um feitiço por vez
+    nos níveis certos, um salto grande de nível destrava todos os elegíveis
+    de uma vez na ordem do mapa, idempotência (rechecar o mesmo nível não
+    duplica nem devolve nada de novo), e `blood_bolt` nunca é tocado por este
+    caminho. Verificado por leitura de código + balance-check de
+    chaves/parênteses (sandbox sem `node_modules`). **Falta rodar
+    `pnpm test` + `pnpm verify` localmente e validar em jogo**: em modo
+    Campanha, subir de nível (matar inimigos/abrir baús) até o nível 3 e
+    conferir o floating text + cadeado sumindo de `hellfire_nova` na barra de
+    skills, e depois um salto de vários níveis de uma vez (ex.: bônus de XP
+    de contrato) pra ver vários textos empilhados.
 
 - **[2026-08-27] Persistência do `campaignState`:**
   - Status: fecha o gap de persistência apontado na Frente 2 (item já riscado

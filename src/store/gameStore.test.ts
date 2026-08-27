@@ -540,6 +540,59 @@ describe('gameStore', () => {
     });
   });
 
+  describe('checkLevelSpellUnlocks — gatilho por progressão dos 6 feitiços sem quest (27/08, fecha o gap da Frente 3)', () => {
+    it('é um no-op fora do modo Campanha (devolve [] e não mexe em unlockedSpellIds)', () => {
+      useGameStore.getState().setGameMode('arcade');
+      const result = useGameStore.getState().checkLevelSpellUnlocks(20);
+      expect(result).toEqual([]);
+      expect(useGameStore.getState().campaignState.unlockedSpellIds).toEqual([]);
+    });
+
+    it('não destrava nada abaixo do nível-requisito do primeiro feitiço (hellfire_nova, nível 3)', () => {
+      useGameStore.getState().setGameMode('campaign');
+      const result = useGameStore.getState().checkLevelSpellUnlocks(2);
+      expect(result).toEqual([]);
+      expect(useGameStore.getState().campaignState.unlockedSpellIds).toEqual([]);
+    });
+
+    it('destrava só o feitiço cujo nível-requisito foi alcançado, um de cada vez', () => {
+      useGameStore.getState().setGameMode('campaign');
+      expect(useGameStore.getState().checkLevelSpellUnlocks(3)).toEqual(['hellfire_nova']);
+      expect(useGameStore.getState().campaignState.unlockedSpellIds).toEqual(['hellfire_nova']);
+
+      expect(useGameStore.getState().checkLevelSpellUnlocks(5)).toEqual(['bone_shield']);
+      expect(useGameStore.getState().campaignState.unlockedSpellIds).toEqual(['hellfire_nova', 'bone_shield']);
+    });
+
+    it('um salto grande de nível (ex.: XP de baú) destrava todos os feitiços elegíveis de uma vez, na ordem do mapa', () => {
+      useGameStore.getState().setGameMode('campaign');
+      const result = useGameStore.getState().checkLevelSpellUnlocks(13);
+      expect(result).toEqual([
+        'hellfire_nova',
+        'bone_shield',
+        'crimson_scythe',
+        'syphon_soul',
+        'hemomancy_beam',
+        'blood_ritual_circle',
+      ]);
+      expect(useGameStore.getState().campaignState.unlockedSpellIds).toEqual(result);
+    });
+
+    it('é idempotente — rechecar o mesmo nível não devolve nem duplica nada', () => {
+      useGameStore.getState().setGameMode('campaign');
+      useGameStore.getState().checkLevelSpellUnlocks(3);
+      const result = useGameStore.getState().checkLevelSpellUnlocks(3);
+      expect(result).toEqual([]);
+      expect(useGameStore.getState().campaignState.unlockedSpellIds).toEqual(['hellfire_nova']);
+    });
+
+    it('não mexe em blood_bolt — continua exclusivo do Altar Ancestral (unlockCampaignSpell direto), não por nível', () => {
+      useGameStore.getState().setGameMode('campaign');
+      useGameStore.getState().checkLevelSpellUnlocks(50);
+      expect(useGameStore.getState().campaignState.unlockedSpellIds).not.toContain('blood_bolt');
+    });
+  });
+
   describe('campaign state persistence (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md)', () => {
     const CAMPAIGN_STATE_KEY = 'bloodmage_1995_campaign_state';
     const QUEST_ID = 'quest_ch1_first_steps';

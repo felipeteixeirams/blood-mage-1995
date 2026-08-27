@@ -3,7 +3,9 @@ import { ContractSystem } from './ContractSystem';
 import { useGameStore } from '../../store/gameStore';
 import contractsData from '../../data/contracts.json';
 
-vi.mock('phaser', () => ({ default: {} }));
+// Mock global de `phaser` agora vem de tests/setup.ts (quick win #1 de
+// docs/reviews/AUDIT_REPORT_QUALIDADE_CODIGO_2026.md, 27/08) — este arquivo
+// só precisava do stub mínimo, igual o default.
 vi.mock('../objects/Enemy', () => ({ Enemy: class Enemy {} }));
 vi.mock('../scenes/GameScene', () => ({ GameScene: class GameScene {} }));
 
