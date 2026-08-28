@@ -25,11 +25,12 @@ Como o sistema funciona *hoje*. Leitura obrigatória antes de refatorar sistemas
 O que estamos testando agora. Estas não são specs rígidas, são hipóteses de *Game Feel*.
 * `docs/experiments/01_CAMERA_AND_CONTROLS.md` - Ajustes de Câmera, Touchpad e Deadzones.
 
-### 3. 📦 Produto e Estratégia (Fundações)
+### 3. 📦 Produto, Especificações e Estratégia (Fundações)
 As regras de produto, onde estamos e para onde vamos, divididas por Fases.
 * `docs/product/ROADMAP.md` - Fases do projeto (0 a 5).
 * `docs/product/ACCOUNT_AND_DATA.md` - Estratégia de Salvamento e Autenticação (Local Only).
 * `docs/product/RELEASE_STRATEGY.md` - Requisitos para quando formos para a Play Store.
+* `docs/specs/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md` - **Spec 16:** Evolução Gráfica, Resolução Adaptativa UI & Terreno Procedural 2.5D/3D.
 
 ### 4. 🔍 Auditorias e Qualidade de Código (Reviews & Quality)
 Relatórios de auditoria técnica, cobertura de testes e análise de segurança.
