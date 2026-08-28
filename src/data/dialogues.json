@@ -1,0 +1,114 @@
+{
+  "safe_house_maelen_intro": {
+    "id": "safe_house_maelen_intro",
+    "npcId": "npc_maelen",
+    "initialNodeId": "node_awakening",
+    "nodes": {
+      "node_awakening": {
+        "id": "node_awakening",
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "speakerPortrait": "portrait_maelen",
+        "text": "Ah... você finalmente acordou. Suas mãos ainda estavam queimando em brasas rubras quando te encontrei caído na lama perto do desfiladeiro. Por um momento, achei que a feitiçaria de sangue tivesse consumido seu coração.",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "Onde estou? O que aconteceu com minha família... minha esposa e filha?!",
+            "nextNodeId": "node_family"
+          },
+          {
+            "id": "c2",
+            "text": "Que poder é esse que ferve em minhas veias? Sinto gosto de ferro na boca...",
+            "nextNodeId": "node_curse"
+          },
+          {
+            "id": "c3",
+            "text": "Preciso me levantar. Tenho que continuar a busca agora mesmo.",
+            "nextNodeId": "node_rush"
+          }
+        ]
+      },
+      "node_family": {
+        "id": "node_family",
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "speakerPortrait": "portrait_maelen",
+        "text": "Você está no meu refúgio nas bordas dos Bosques Sombrios. Vasculhei a trilha após o massacre... não encontrei corpos de mulher ou criança. Há rastros de carruagens blindadas rumando às catacumbas do norte. Elas foram levadas como cativas.",
+        "choices": [
+          {
+            "id": "c4",
+            "text": "Então ainda há esperança. Preciso de uma arma para abrir caminho.",
+            "nextNodeId": "node_arm_up"
+          },
+          {
+            "id": "c5",
+            "text": "Por que arriscou sua vida para me resgatar?",
+            "nextNodeId": "node_why_help"
+          }
+        ]
+      },
+      "node_curse": {
+        "id": "node_curse",
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "speakerPortrait": "portrait_maelen",
+        "text": "Você abateu o Carrasco Carmesim... mas o poder do sangue nunca morre. Ele salta compulsoriamente para o hospedeiro que o derrotou. Você nunca foi um mago, eu sei... mas agora essa energia maldita corre nas suas veias. Cada feitiço exigirá a sua própria essência vital se você abusar dela.",
+        "choices": [
+          {
+            "id": "c6",
+            "text": "Eu abomino esse poder. Só quero minha família de volta.",
+            "nextNodeId": "node_family"
+          },
+          {
+            "id": "c7",
+            "text": "Se esse poder pode me ajudar a resgatá-las, eu o dominarei.",
+            "nextNodeId": "node_arm_up"
+          }
+        ]
+      },
+      "node_why_help": {
+        "id": "node_why_help",
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "speakerPortrait": "portrait_maelen",
+        "text": "Porque há anos ninguém conseguia ferir aquele monstro. Vi em você a centelha de um homem que luta por amor, não por glória sanguinária. Se alguém pode quebrar essa linhagem de tiranos, é você.",
+        "choices": [
+          {
+            "id": "c8",
+            "text": "Obrigado, velho amigo. Como devo proceder?",
+            "nextNodeId": "node_arm_up"
+          }
+        ]
+      },
+      "node_rush": {
+        "id": "node_rush",
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "speakerPortrait": "portrait_maelen",
+        "text": "Calma, rapaz! Se sair cambaleando desarmado na tempestade lá fora, as matilhas corrompidas vão devorar seus ossos antes que você ande cem passos.",
+        "choices": [
+          {
+            "id": "c9",
+            "text": "Tem razão. Minha mente ainda está turva... me conte o que sabe.",
+            "nextNodeId": "node_family"
+          }
+        ]
+      },
+      "node_arm_up": {
+        "id": "node_arm_up",
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "speakerPortrait": "portrait_maelen",
+        "text": "Deixei uma Adaga de Aço e um frasco de ataduras no baú ao lado da lareira. A floresta está agitada. Elimine os batedores que cercam o perímetro e procure pelo antigo tomo nos escombros do altar ao leste.",
+        "choices": [
+          {
+            "id": "c10",
+            "text": "Vou pegar a lâmina e investigar a trilha do norte.",
+            "action": "give_quest",
+            "actionPayload": "quest_ch1_first_steps"
+          }
+        ]
+      }
+    }
+  }
+}

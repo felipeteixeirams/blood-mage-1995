@@ -1,0 +1,43 @@
+{
+  "quest_ch1_first_steps": {
+    "id": "quest_ch1_first_steps",
+    "title": "Capítulo I: O Despertar na Tempestade",
+    "chapter": 1,
+    "summary": "Recupere equipamentos básicos no refúgio e saia para o bosque.",
+    "loreDescription": "Após sobreviver ao confronto com o Carrasco Carmesim, você acordou na cabana de Maelen com um poder maldito pulsando em suas veias. Sua família foi levada para o norte.",
+    "objectives": [
+      {
+        "id": "obj_loot_chest",
+        "description": "Abra o baú rústico perto da lareira para pegar a Adaga de Aço",
+        "type": "collect_item",
+        "targetId": "starter_dagger",
+        "targetCount": 1,
+        "currentCount": 0,
+        "isCompleted": false
+      },
+      {
+        "id": "obj_clear_woods",
+        "description": "Elimine os 4 batedores corrompidos na orla do bosque",
+        "type": "kill_enemy",
+        "targetId": "scout_beast",
+        "targetCount": 4,
+        "currentCount": 0,
+        "isCompleted": false
+      },
+      {
+        "id": "obj_find_altar",
+        "description": "Encontre o Altar Ancestral e canalize o primeiro feitiço de sangue",
+        "type": "discover_zone",
+        "targetId": "altar_crimson",
+        "targetCount": 1,
+        "currentCount": 0,
+        "isCompleted": false
+      }
+    ],
+    "rewards": {
+      "xp": 150,
+      "bloodCrystals": 25,
+      "spellUnlockId": "blood_bolt"
+    }
+  }
+}

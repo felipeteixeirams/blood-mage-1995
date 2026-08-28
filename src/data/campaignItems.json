@@ -1,0 +1,10 @@
+{
+  "starter_dagger": {
+    "id": "starter_dagger",
+    "name": "Adaga de Aço",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "A primeira lâmina que Maelen deixou no baú. Modesta, mas afiada o bastante pra abrir caminho.",
+    "stats": { "damageMultiplier": 0.05, "critChanceBonus": 0.02 }
+  }
+}

@@ -1,0 +1,146 @@
+[
+  {
+    "id": "bloodless_victory",
+    "title": "Vitória sem Sangue",
+    "description": "Limpe um andar inteiro sem usar poções e sem sofrer nenhum dano.",
+    "category": "challenge",
+    "metric": "bloodless_floor",
+    "target": 1,
+    "reward": 150
+  },
+  {
+    "id": "first_blood",
+    "title": "Primeiro Sangue",
+    "description": "Abata seu primeiro inimigo na masmorra.",
+    "category": "combat",
+    "metric": "kills_total",
+    "target": 1,
+    "reward": 25
+  },
+  {
+    "id": "slayer_10",
+    "title": "Matador das Sombras",
+    "description": "Abata 10 inimigos em combate.",
+    "category": "combat",
+    "metric": "kills_total",
+    "target": 10,
+    "reward": 50
+  },
+  {
+    "id": "slayer_50",
+    "title": "Ceifador de Almas",
+    "description": "Abata 50 inimigos nas profundezas.",
+    "category": "combat",
+    "metric": "kills_total",
+    "target": 50,
+    "reward": 120
+  },
+  {
+    "id": "gargoyle_hunter",
+    "title": "Caçador de Gárgulas",
+    "description": "Destrua 15 Gárgulas em qualquer run.",
+    "category": "combat",
+    "metric": "kills_gargoyle",
+    "target": 15,
+    "reward": 100
+  },
+  {
+    "id": "depth_10",
+    "title": "Descida Profunda",
+    "description": "Alcance o 10º andar do labirinto.",
+    "category": "progression",
+    "metric": "floor_depth_max",
+    "target": 10,
+    "reward": 200
+  },
+  {
+    "id": "depth_25",
+    "title": "Abismo Eterno",
+    "description": "Alcance o 25º andar do labirinto.",
+    "category": "progression",
+    "metric": "floor_depth_max",
+    "target": 25,
+    "reward": 500
+  },
+  {
+    "id": "all_spells",
+    "title": "Mago Supremo",
+    "description": "Desbloqueie todos os 7 feitiços arcanos no grimório.",
+    "category": "magic",
+    "metric": "spells_unlocked_total",
+    "target": 7,
+    "reward": 300
+  },
+  {
+    "id": "five_knockouts",
+    "title": "Resiliência Sombria",
+    "description": "Desmaie e levante-se 5 vezes em batalha.",
+    "category": "challenge",
+    "metric": "knockouts_total",
+    "target": 5,
+    "reward": 150
+  },
+  {
+    "id": "speedrun_floor3",
+    "title": "A Pressa da Morte",
+    "description": "Alcance o Andar 3 em menos de 3 minutos.",
+    "category": "challenge",
+    "metric": "speedrun_f3",
+    "target": 1,
+    "reward": 200
+  },
+  {
+    "id": "inevitable_sacrifice",
+    "title": "Sacrifício Inevitável",
+    "description": "Morra 10 vezes. A morte é apenas o começo.",
+    "category": "progression",
+    "metric": "deaths_total",
+    "target": 10,
+    "reward": 50
+  },
+  {
+    "id": "blood_master",
+    "title": "Mestre do Sangue",
+    "description": "Cure um total de 500 HP usando magias de sangue.",
+    "category": "magic",
+    "metric": "hp_healed_magic",
+    "target": 500,
+    "reward": 120
+  },
+  {
+    "id": "butcher",
+    "title": "O Açougueiro",
+    "description": "Desmembre 50 inimigos com ataques críticos.",
+    "category": "combat",
+    "metric": "dismemberments_total",
+    "target": 50,
+    "reward": 150
+  },
+  {
+    "id": "rune_collector",
+    "title": "Guardião das Runas",
+    "description": "Colete 50 Orbes de Mana em uma única run.",
+    "category": "collection",
+    "metric": "mana_orbs_run",
+    "target": 50,
+    "reward": 80
+  },
+  {
+    "id": "dark_wealth",
+    "title": "Riqueza Sombria",
+    "description": "Acumule 1000 Cristais de Sangue no seu grimório.",
+    "category": "progression",
+    "metric": "crystals_hoarded",
+    "target": 1000,
+    "reward": 250
+  },
+  {
+    "id": "abyss_walker",
+    "title": "Caminhante do Abismo",
+    "description": "Sobreviva por 15 minutos em uma única run ininterrupta.",
+    "category": "challenge",
+    "metric": "survival_time_run",
+    "target": 900,
+    "reward": 300
+  }
+]
