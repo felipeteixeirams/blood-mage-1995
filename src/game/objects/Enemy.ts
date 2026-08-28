@@ -5,6 +5,7 @@ import { soundEngine } from '../../utils/soundEngine';
 import { useGameStore } from '../../store/gameStore';
 import { safePlayAnimation } from '../animations/animationManager';
 import { DismembermentSystem } from '../systems/DismembermentSystem';
+import { CombatFeel } from '../systems/CombatFeel';
 
 export interface EnemyOptions {
   floorDepth?: number;
@@ -1004,6 +1005,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Visual: blood burst particles
     if (this.active) {
       (this.scene as any).spawnBloodBurst?.(this.x, this.y, isCrit ? 12 : 6);
+      if (isCrit) {
+        CombatFeel.triggerVibration('critical_hit');
+      }
     }
 
     // Alert instantly to combat when damaged!

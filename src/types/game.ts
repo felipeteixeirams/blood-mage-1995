@@ -314,6 +314,15 @@ export interface AchievementState {
   redeemed: boolean;
 }
 
+export interface UnlockedAchievementNotification {
+  id: number;
+  achievementId: string;
+  title: string;
+  description: string;
+  reward: number;
+  category: string;
+}
+
 export interface RunStats {
   bloodless_floor: number;
   kills_total: number;
@@ -325,6 +334,9 @@ export interface RunStats {
   mana_orbs_run: number;
   crystals_hoarded: number;
   survival_time_run: number;
+  floor_depth_max: number;
+  spells_unlocked_total: number;
+  knockouts_total: number;
 }
 
 export * from './campaign';

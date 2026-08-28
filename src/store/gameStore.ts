@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, BiomeType, DroppedCorpse, CodexState, AchievementState, RunStats } from '../types/game';
+import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, BiomeType, DroppedCorpse, CodexState, AchievementState, RunStats, UnlockedAchievementNotification } from '../types/game';
 import { GameMode, ZoneType, CampaignState, DialogueTree, QuestLogEntry, QuestDefinition, QuestObjective, CampaignEffect } from '../types/campaign';
 import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding, loadUnlockedRelics, saveUnlockedRelics, loadEquippedRelicIds, saveEquippedRelicIds, loadCodexState, saveCodexState, loadAchievements, saveAchievements, loadRunStats, saveRunStats, loadCampaignState, saveCampaignState } from '../utils/localStorage';
 import { soundEngine } from '../utils/soundEngine';
@@ -221,9 +221,12 @@ interface GameStore {
   // Achievements & Stats
   achievements: Record<string, AchievementState>;
   runStats: RunStats;
+  lastUnlockedAchievement: UnlockedAchievementNotification | null;
+  clearLastUnlockedAchievement: () => void;
   redeemAchievement: (id: string, rewardAmount: number) => void;
   unlockAchievement: (id: string) => void;
   incrementRunStat: (metric: keyof RunStats, amount: number) => void;
+  setRunStat: (metric: keyof RunStats, value: number) => void;
   resetRunStats: () => void;
 }
 
@@ -507,7 +510,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
         },
       };
     });
-    if (!alreadyUnlocked) persistCampaignSnapshot(get().gameMode, get().campaignState);
+    if (!alreadyUnlocked) {
+      persistCampaignSnapshot(get().gameMode, get().campaignState);
+      get().setRunStat('spells_unlocked_total', get().campaignState.unlockedSpellIds.length);
+    }
   },
   // No modo arcade nunca há bloqueio (mantém o comportamento de sempre — todas
   // as magias liberadas). Só o modo campanha consulta `unlockedSpellIds`.
@@ -652,6 +658,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const next = current + finalAmount;
     saveBloodCrystals(next);
     set({ bloodCrystals: next });
+    get().setRunStat('crystals_hoarded', next);
   },
 
   codexState: loadCodexState(),
@@ -974,7 +981,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   achievements: loadAchievements(),
   runStats: loadRunStats(),
-  
+  lastUnlockedAchievement: null,
+  clearLastUnlockedAchievement: () => set({ lastUnlockedAchievement: null }),
+
   redeemAchievement: (id, rewardAmount) => set((state) => {
     const ach = state.achievements[id];
     if (ach && ach.unlocked && !ach.redeemed) {
@@ -1003,41 +1012,103 @@ export const useGameStore = create<GameStore>((set, get) => ({
         [id]: { ...ach, unlocked: true }
       };
       saveAchievements(nextAchievements);
+
+      const achData = achievementsData.find((a) => a.id === id);
+      if (achData) {
+        soundEngine.playContractComplete();
+        const notif: UnlockedAchievementNotification = {
+          id: Date.now(),
+          achievementId: achData.id,
+          title: achData.title,
+          description: achData.description,
+          reward: achData.reward,
+          category: achData.category,
+        };
+        return { achievements: nextAchievements, lastUnlockedAchievement: notif };
+      }
+
       return { achievements: nextAchievements };
     }
     return state;
   }),
   
   incrementRunStat: (metric, amount) => set((state) => {
-    const nextStats = {
+    const nextStats: RunStats = {
       ...state.runStats,
       [metric]: (state.runStats[metric] || 0) + amount
     };
-    
+
     // Check achievements
     const unlockedNow: Record<string, AchievementState> = {};
-    let achievementUnlocked = false;
-    
+    let latestUnlockedAchData: typeof achievementsData[0] | null = null;
+
     for (const achData of achievementsData) {
       if (achData.metric === metric) {
         const achState = state.achievements[achData.id] || { id: achData.id, unlocked: false, redeemed: false };
         if (!achState.unlocked && nextStats[metric] >= achData.target) {
           unlockedNow[achData.id] = { ...achState, unlocked: true };
-          achievementUnlocked = true;
-          // Optionally notify player here via soundEngine or toast
-          console.log(`Achievement unlocked: ${achData.title}`);
+          latestUnlockedAchData = achData;
+          soundEngine.playContractComplete();
         }
       }
     }
-    
+
     saveRunStats(nextStats);
-    
-    if (achievementUnlocked) {
+
+    if (latestUnlockedAchData) {
       const nextAchievements = { ...state.achievements, ...unlockedNow };
       saveAchievements(nextAchievements);
-      return { runStats: nextStats, achievements: nextAchievements };
+      const notif: UnlockedAchievementNotification = {
+        id: Date.now(),
+        achievementId: latestUnlockedAchData.id,
+        title: latestUnlockedAchData.title,
+        description: latestUnlockedAchData.description,
+        reward: latestUnlockedAchData.reward,
+        category: latestUnlockedAchData.category,
+      };
+      return { runStats: nextStats, achievements: nextAchievements, lastUnlockedAchievement: notif };
     }
-    
+
+    return { runStats: nextStats };
+  }),
+
+  setRunStat: (metric, value) => set((state) => {
+    const nextStats: RunStats = {
+      ...state.runStats,
+      [metric]: value
+    };
+
+    // Check achievements
+    const unlockedNow: Record<string, AchievementState> = {};
+    let latestUnlockedAchData: typeof achievementsData[0] | null = null;
+
+    for (const achData of achievementsData) {
+      if (achData.metric === metric) {
+        const achState = state.achievements[achData.id] || { id: achData.id, unlocked: false, redeemed: false };
+        if (!achState.unlocked && nextStats[metric] >= achData.target) {
+          unlockedNow[achData.id] = { ...achState, unlocked: true };
+          latestUnlockedAchData = achData;
+          soundEngine.playContractComplete();
+        }
+      }
+    }
+
+    saveRunStats(nextStats);
+
+    if (latestUnlockedAchData) {
+      const nextAchievements = { ...state.achievements, ...unlockedNow };
+      saveAchievements(nextAchievements);
+      const notif: UnlockedAchievementNotification = {
+        id: Date.now(),
+        achievementId: latestUnlockedAchData.id,
+        title: latestUnlockedAchData.title,
+        description: latestUnlockedAchData.description,
+        reward: latestUnlockedAchData.reward,
+        category: latestUnlockedAchData.category,
+      };
+      return { runStats: nextStats, achievements: nextAchievements, lastUnlockedAchievement: notif };
+    }
+
     return { runStats: nextStats };
   }),
   
@@ -1052,7 +1123,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       dismemberments_total: 0,
       mana_orbs_run: 0,
       crystals_hoarded: 0,
-      survival_time_run: 0
+      survival_time_run: 0,
+      floor_depth_max: 0,
+      spells_unlocked_total: 0,
+      knockouts_total: 0,
     };
     saveRunStats(emptyStats);
     set({ runStats: emptyStats });

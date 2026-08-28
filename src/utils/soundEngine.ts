@@ -507,6 +507,52 @@ class SoundEngine {
     osc.stop(now + 0.08);
   }
 
+
+  public playMenuBlip() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(600, now);
+
+    gain.gain.setValueAtTime(this.sfxVolume * 0.1, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.05);
+  }
+
+  public playDialogueBlip() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    const jitter = this.pitchJitter();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(800 * jitter, now);
+
+    gain.gain.setValueAtTime(this.sfxVolume * 0.05, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.04);
+  }
+
   public playButtonClick() {
     if (this.isMuted || this.sfxVolume <= 0) return;
     this.initCtx();

@@ -30,7 +30,8 @@ tags: [critical, troubleshooting, known-issues, assets, phaser]
 13. [Regressão: `preload()` Gerando Fallback Procedural Antes de Tentar o Asset Real (TitleScene/SettingsScene/RecordsScene)](#13-regressão-preload-gerando-fallback-procedural-antes-de-tentar-o-asset-real)
 14. [Corrupção de PNG/JPG "Volta Sozinha" Após Recuperação Manual (Corrupção Committada + Fonte de Recuperação Também Contaminada)](#14-corrupção-de-pngjpg-volta-sozinha-após-recuperação-manual-corrupção-committada--fonte-de-recuperação-também-contaminada)
 15. [Reconstrução do Spritesheet do Jogador a Partir do PixelLab (e a Armadilha 48x48 vs 68x68)](#15-reconstrução-do-spritesheet-do-jogador-a-partir-do-pixellab-e-a-armadilha-48x48-vs-68x68)
-16. [Tabela de Diagnóstico Rápido](#16-tabela-de-diagnóstico-rápido)
+16. [Conflito entre Sistemas Paralelos de Conquistas e Notificações (Phaser Canvas vs React Overlay)](#16-conflito-entre-sistemas-paralelos-de-conquistas-e-notificações-phaser-canvas-vs-react-overlay)
+17. [Tabela de Diagnóstico Rápido](#17-tabela-de-diagnóstico-rápido)
 
 ---
 
@@ -502,7 +503,23 @@ Como as células continuam 68x68, **nada mais precisa mudar** — nem `assetMani
 
 ---
 
-## 16. Tabela de Diagnóstico Rápido
+## 16. Conflito entre Sistemas Paralelos de Conquistas e Notificações (Phaser Canvas vs React Overlay)
+
+### 🔴 Sintoma
+Existência de dois sistemas independentes e concorrentes de conquistas (`AchievementSystem.ts` no motor Phaser e `achievements` no `gameStore.ts`). Além disso, as notificações de conquista eram renderizadas diretamente dentro do canvas do Phaser através de `AchievementNotification.ts` (usando `Phaser.GameObjects.Container`, `Graphics` e `Text`), violando a **Guardrail 7 (Strict UI Layering: React DOM vs Phaser Canvas)**.
+
+### 🔍 Causa-Raiz
+Durante fases anteriores do desenvolvimento, um sistema de conquistas procedural foi instanciado dentro de `GameScene.ts` enquanto a UI do HUD React e o catálogo de dados (`src/data/achievements.json`) evoluíam na camada React/Zustand. Isso causava discrepâncias de pontuação/recompensas, duplicação de persistência e renderização de elementos de UI diretamente sobre a camada WebGL/Canvas em vez do DOM.
+
+### 🛠️ Procedimento de Resolução
+1. **Remoção de Classes Legadas de UI/Sistema do Phaser**: `AchievementNotification.ts` e `AchievementSystem.ts` foram removidos do motor Phaser.
+2. **Avaliação Centralizada no Zustand (`src/store/gameStore.ts`)**: Adição de `runStats` e do método unificado `evaluateAchievements(stats, state)`. Qualquer evento de combate (morte de monstro, avanço de andar, dano tomado, knockout, desmembramento, feitiço desbloqueado) notifica a store via `incrementRunStat` ou `setRunStat`.
+3. **UI Exclusiva no React DOM (`src/components/hud/AchievementToast.tsx`)**: O componente React subscrito a `lastUnlockedAchievement` renderiza o toast animado com badge de raridade e recompensas no topo da tela e executa auto-dismiss após 4.5 segundos.
+4. **Persistência Segura**: Conquistas salvas em `localStorage` validadas estritamente via Zod schemas em `src/utils/localStorage.ts`.
+
+---
+
+## 17. Tabela de Diagnóstico Rápido
 
 | Sintoma | Causa Mais Provável | Ferramenta / Comando de Diagnóstico | Ação Imediata |
 |---|---|---|---|
@@ -526,6 +543,7 @@ Como as células continuam 68x68, **nada mais precisa mudar** — nem `assetMani
 | Personagem em arte procedural com animações funcionando | `bloodmage.png` foi gerado pelo script procedural, não pela arte real | Abrir o PNG: bonecos geométricos = placeholder | `pixellab_client.cjs download` + `build_bloodmage_spritesheet.cjs` |
 | Personagem "pula" alguns pixels ao parar de andar | Frames idle (48x48) e walk (68x68) alinhados pela borda do arquivo | Comparar dimensões dos PNGs de origem | Alinhar pela caixa do conteúdo, não pela tela (item 15) |
 | Personagem anda virado para a direção errada | Ordem das direções do montador difere da de `animationManager.ts` | Conferir o array `DIRS` nos dois arquivos | Manter `south, south-east, east, north-east, north, north-west, west, south-west` |
+| Conquistas e notificações desenhadas no canvas do jogo | Sistema legado de conquistas no Phaser (`AchievementSystem`/`AchievementNotification`) | Inspecionar instâncias em `GameScene.ts` | Migrar para `runStats` no Zustand + overlay React `AchievementToast.tsx` |
 
 
 ---

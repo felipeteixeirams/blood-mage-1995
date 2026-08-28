@@ -9,14 +9,15 @@
 - [x] Testes / Estabilidade do Build / Vercel Deploy
 - [x] Segurança (Secrets fora do client)
 - [x] Workflow dos agentes ajustado e documentação limpa (Modo: Context-Driven)
-- [x] Isolamento de Storage no `localStorage` (evitar que gameplay acesse direto, usar Zod schemas) — **fechado (27/08):** `src/utils/localStorage.ts` cobre 100% do storage do jogo com Zod (settings, high scores, cristais, talentos, relíquias, codex, achievements, run stats, `campaignState` — ver `docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md`, e agora também o progresso do `AchievementSystem.ts`). Os 3 pontos de acesso direto/sem validação encontrados na auditoria foram corrigidos: `RecordsScene.ts` e `RecordsDisplay.tsx` liam de chaves mortas (`bloodmage_1995_high_scores`/`bloodmage.records`) que nunca eram escritas em lugar nenhum — o "Salão dos Recordes" do menu de pausa sempre mostrava dados fake; agora ambos usam `loadHighScores()`. `AchievementSystem.ts` lia/escrevia direto na chave não-namespaceada `achievements_progress`; agora usa `loadAchievementProgress`/`saveAchievementProgress` (novo par de funções em `utils/localStorage.ts`, chave `bloodmage_1995_achievements_progress`, com migração automática da chave antiga). **Observação:** `AchievementSystem.ts` continua sendo um sistema de conquistas paralelo e com formato diferente do baseado em store (`gameStore.ts`/`data/achievements.json`/`AchievementsModal.tsx`) — unificar os dois é um item novo, não coberto por esta correção.
+- [x] Isolamento de Storage no `localStorage` (evitar que gameplay acesse direto, usar Zod schemas) — **fechado (27/08):** `src/utils/localStorage.ts` cobre 100% do storage do jogo com Zod (settings, high scores, cristais, talentos, relíquias, codex, achievements, run stats, `campaignState` — ver `docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md`, e agora também o progresso do `AchievementSystem.ts`). Os 3 pontos de acesso direto/sem validação encontrados na auditoria foram corrigidos: `RecordsScene.ts` e `RecordsDisplay.tsx` liam de chaves mortas (`bloodmage_1995_high_scores`/`bloodmage.records`) que nunca eram escritas em lugar nenhum — o "Salão dos Recordes" do menu de pausa sempre mostrava dados fake; agora ambos usam `loadHighScores()`. `AchievementSystem.ts` lia/escrevia direto na chave não-namespaceada `achievements_progress`; agora usa `loadAchievementProgress`/`saveAchievementProgress` (novo par de funções em `utils/localStorage.ts`, chave `bloodmage_1995_achievements_progress`, com migração automática da chave antiga).
+- [x] Unificação do Sistema de Conquistas e Estatísticas — **fechado (27/08):** Sistema legado (`AchievementSystem.ts`, `AchievementNotification.ts`) totalmente unificado com `gameStore.ts`, `achievements.json` e o componente React `AchievementToast.tsx`. Todas as conquistas de combate, profundidade e sobrevivência são avaliadas centralizadamente pela store e renderizadas na camada React (respeitando estritamente a regra de UI Layering do Canvas vs DOM).
 
 ## 🟡 FASE 1 — Descoberta do Jogo (Foco Atual)
 **Objetivo:** Descobrir que jogo realmente queremos fazer (Experimentação Rápida).
 *Nada aqui precisa estar "final".*
-- [ ] Câmera & Zoom (Game Feel)
-- [ ] Controles Touch / Virtual Joystick
-- [ ] Sensação do Combate / Hit-stop / Screen Shake
+- [x] Câmera & Zoom (Game Feel) (Spec 14 - Look-Ahead)
+- [x] Controles Touch / Virtual Joystick (Twin-Stick Update)
+- [x] Sensação do Combate / Hit-stop / Screen Shake (Spec 14 - Haptics)
 - [ ] Habilidades (Blood Bolt, AoE, MP Drain)
 - [ ] Inimigos & Densidade
 - [ ] Mapa e Ambientação

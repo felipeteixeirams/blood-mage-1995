@@ -43,12 +43,14 @@ export class PlayerSkillSystem {
     crimson_scythe: 'crimson_scythe',
     blood_ritual_circle: 'blood_ritual_circle',
     hemomancy_beam: 'hemomancy_beam',
+    blood_tendrils: 'blood_tendrils',
+    corpse_burst: 'corpse_burst',
   };
 
   constructor(private scene: GameScene) {}
 
   public triggerSkill(
-    skillKey: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam'
+    skillKey: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | 'blood_tendrils' | 'corpse_burst'
   ) {
     const scene = this.scene;
     if (scene.isPaused) return;
@@ -89,6 +91,16 @@ export class PlayerSkillSystem {
       this.executeHemomancyBeamEffect();
       scene.emitSound(scene.player.x, scene.player.y, 520);
       ContractSystem.onSpellCasted('hemomancy_beam', scene);
+      success = true;
+    } else if (skillKey === 'blood_tendrils' && scene.player.castBloodTendrils()) {
+      this.executeBloodTendrilsEffect();
+      scene.emitSound(scene.player.x, scene.player.y, 450);
+      ContractSystem.onSpellCasted('blood_tendrils', scene);
+      success = true;
+    } else if (skillKey === 'corpse_burst' && scene.player.castCorpseBurst()) {
+      this.executeCorpseBurstEffect();
+      scene.emitSound(scene.player.x, scene.player.y, 600);
+      ContractSystem.onSpellCasted('corpse_burst', scene);
       success = true;
     }
 
@@ -135,7 +147,7 @@ export class PlayerSkillSystem {
     }
   }
 
-  private getSkillKeyFromSpellId(spellId: string): 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | null {
+  private getSkillKeyFromSpellId(spellId: string): 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | 'blood_tendrils' | 'corpse_burst' | null {
     switch (spellId) {
       case 'hellfire_nova': return 'nova';
       case 'syphon_soul': return 'syphon';
@@ -143,6 +155,8 @@ export class PlayerSkillSystem {
       case 'crimson_scythe': return 'crimson_scythe';
       case 'blood_ritual_circle': return 'blood_ritual_circle';
       case 'hemomancy_beam': return 'hemomancy_beam';
+      case 'blood_tendrils': return 'blood_tendrils';
+      case 'corpse_burst': return 'corpse_burst';
       default: return null;
     }
   }
@@ -341,6 +355,7 @@ export class PlayerSkillSystem {
     const scene = this.scene;
     this.boneShieldVisuals.forEach((s) => s.destroy());
     this.boneShieldVisuals = [];
+    scene.player.isBoneShieldActive = true;
 
     for (let i = 0; i < 3; i++) {
       const bone = scene.add.sprite(scene.player.x, scene.player.y, 'particle_blood_red').setTint(0xe2e8f0).setScale(1.8).setDepth(1800);
@@ -358,6 +373,20 @@ export class PlayerSkillSystem {
         this.boneShieldVisuals.forEach((bone, idx) => {
           const boneAngle = angle + (idx * Math.PI * 2) / 3;
           bone.setPosition(scene.player.x + Math.cos(boneAngle) * 45, scene.player.y + Math.sin(boneAngle) * 45);
+
+          // Projectile interception check
+          if (scene.enemyProjectilesGroup && scene.enemyProjectilesGroup.getChildren) {
+            scene.enemyProjectilesGroup.getChildren().forEach((projObj: any) => {
+              if (projObj && projObj.active) {
+                const dist = Phaser.Math.Distance.Between(bone.x, bone.y, projObj.x, projObj.y);
+                if (dist < 35) {
+                  projObj.releaseToPool ? projObj.releaseToPool() : projObj.destroy();
+                  soundEngine.playScytheSlash();
+                  if (scene.bloodEmitter) scene.bloodEmitter.emitParticleAt(bone.x, bone.y, 5);
+                }
+              }
+            });
+          }
 
           scene.enemiesGroup.getChildren().forEach((enemyObj: any) => {
             const enemy = enemyObj as Enemy;
@@ -378,6 +407,7 @@ export class PlayerSkillSystem {
         if (loopCount >= maxLoops) {
           this.boneShieldVisuals.forEach((s) => s.destroy());
           this.boneShieldVisuals = [];
+          if (scene.player) scene.player.isBoneShieldActive = false;
         }
       },
       repeat: maxLoops,
@@ -583,6 +613,85 @@ export class PlayerSkillSystem {
           }
 
           if (isDead) scene.handleEnemyDeath(enemy, 'hemomancy_beam', wasLowHp);
+        }
+      }
+    });
+  }
+
+  public executeBloodTendrilsEffect() {
+    const scene = this.scene;
+    const px = scene.player.x;
+    const py = scene.player.y;
+    const radius = 220;
+
+    scene.cameras.main.shake(200, 0.012);
+    const tendrilRing = scene.add.circle(px, py, 10, 0xdc2626, 0.6).setDepth(1700);
+    scene.tweens.add({
+      targets: tendrilRing,
+      radius: radius,
+      alpha: 0,
+      duration: 400,
+      onComplete: () => tendrilRing.destroy(),
+    });
+
+    const tendrilDmgCfg = (spellsData as Record<string, SpellConfig>)['blood_tendrils'].baseDamage;
+    const tendrilDmg = Math.round(tendrilDmgCfg * scene.player.getEffectiveDamageMultiplier());
+
+    scene.enemiesGroup.getChildren().forEach((enemyObj: any) => {
+      const enemy = enemyObj as Enemy;
+      if (enemy.active) {
+        const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
+        if (dist <= radius) {
+          if (scene.bloodEmitter) scene.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 8);
+          const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
+          const isDead = enemy.takeDamage(tendrilDmg);
+          CombatFeel.handleHitImpact(scene, tendrilDmg, false, false, enemy.hp / enemy.maxHp);
+          this.applyRelicOnHitEffects(enemy);
+          scene.spawnFloatingText(enemy.x, enemy.y, `${tendrilDmg}`, '#dc2626', false);
+
+          if (!isDead && scene.statusEffectSystem) {
+            scene.statusEffectSystem.applyStatus(enemy, 'bleeding', 4000, 15);
+          }
+          if (isDead) scene.handleEnemyDeath(enemy, 'blood_tendrils', wasLowHp);
+        }
+      }
+    });
+  }
+
+  public executeCorpseBurstEffect() {
+    const scene = this.scene;
+    const px = scene.player.x;
+    const py = scene.player.y;
+    const radius = 260;
+
+    scene.cameras.main.shake(350, 0.022);
+    scene.cameras.main.flash(180, 150, 0, 0, false);
+
+    const burstRing = scene.add.circle(px, py, 20, 0x991b1b, 0.8).setDepth(1750);
+    scene.tweens.add({
+      targets: burstRing,
+      radius: radius,
+      alpha: 0,
+      duration: 500,
+      onComplete: () => burstRing.destroy(),
+    });
+
+    const burstDmgCfg = (spellsData as Record<string, SpellConfig>)['corpse_burst'].baseDamage;
+    const burstDmg = Math.round(burstDmgCfg * scene.player.getEffectiveDamageMultiplier());
+
+    scene.enemiesGroup.getChildren().forEach((enemyObj: any) => {
+      const enemy = enemyObj as Enemy;
+      if (enemy.active) {
+        const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
+        if (dist <= radius) {
+          if (scene.bloodEmitter) scene.bloodEmitter.emitParticleAt(enemy.x, enemy.y, 18);
+          const wasLowHp = (enemy.hp <= enemy.maxHp * 0.15);
+          const isDead = enemy.takeDamage(burstDmg);
+          CombatFeel.handleHitImpact(scene, burstDmg, true, true, enemy.hp / enemy.maxHp);
+          this.applyRelicOnHitEffects(enemy);
+          scene.spawnFloatingText(enemy.x, enemy.y, `${burstDmg}!`, '#991b1b', true);
+
+          if (isDead) scene.handleEnemyDeath(enemy, 'corpse_burst', true);
         }
       }
     });

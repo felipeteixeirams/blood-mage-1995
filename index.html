@@ -12,10 +12,19 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <title>Bloodmage 1995 / NecroArcade</title>
     <!-- Local Fonts defined in index.css -->
+  <style>
+      /* Standalone PWA adjustments */
+      body, html {
+        touch-action: none; /* Prevents double-tap zoom */
+        -webkit-user-select: none; /* Safari */
+        user-select: none; /* Standard */
+        -webkit-touch-callout: none;
+        overscroll-behavior: none;
+      }
+    </style>
   </head>
   <body class="bg-black text-gray-200 select-none overflow-hidden touch-none font-mono">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

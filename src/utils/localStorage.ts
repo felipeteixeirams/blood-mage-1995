@@ -565,6 +565,9 @@ const RunStatsSchema = z.object({
   mana_orbs_run: z.number().catch(0),
   crystals_hoarded: z.number().catch(0),
   survival_time_run: z.number().catch(0),
+  floor_depth_max: z.number().catch(0),
+  spells_unlocked_total: z.number().catch(0),
+  knockouts_total: z.number().catch(0),
 }).catch({
   bloodless_floor: 0,
   kills_total: 0,
@@ -576,6 +579,9 @@ const RunStatsSchema = z.object({
   mana_orbs_run: 0,
   crystals_hoarded: 0,
   survival_time_run: 0,
+  floor_depth_max: 0,
+  spells_unlocked_total: 0,
+  knockouts_total: 0,
 });
 
 export function loadRunStats(): RunStats {
@@ -600,6 +606,9 @@ export function loadRunStats(): RunStats {
     mana_orbs_run: 0,
     crystals_hoarded: 0,
     survival_time_run: 0,
+    floor_depth_max: 0,
+    spells_unlocked_total: 0,
+    knockouts_total: 0,
   };
 }
 
@@ -617,6 +626,9 @@ export function saveRunStats(stats: RunStats): void {
       mana_orbs_run: 0,
       crystals_hoarded: 0,
       survival_time_run: 0,
+      floor_depth_max: 0,
+      spells_unlocked_total: 0,
+      knockouts_total: 0,
     };
     localStorage.setItem(RUN_STATS_KEY, JSON.stringify(valueToSave));
     logger.debug('PERSISTENCE', 'Run stats saved successfully');

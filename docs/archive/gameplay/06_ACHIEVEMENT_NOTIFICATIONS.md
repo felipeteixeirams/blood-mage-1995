@@ -1,284 +1,188 @@
 ---
-agent_context: frontend, game-designer
-target_module: src/game/systems/AchievementNotification.ts, src/game/scenes/GameScene.ts
+agent_context: frontend, game-designer, state-management
+target_module: src/components/hud/AchievementToast.tsx, src/store/gameStore.ts, src/data/achievements.json
 priority: medium
-status: complete
-last_updated: 2026-08-14
-tags: [gameplay, achievements, notifications, ui, hud]
+status: unified (React DOM Overlay + Zustand)
+last_updated: 2026-08-27
+tags: [gameplay, achievements, notifications, ui, hud, react, zustand, layering]
 ---
 
-# 🏆 Achievement Notifications System
+# 🏆 Achievement Notifications & Stats System (Unificado)
 
-Sistema visual elegante para notificar o jogador quando um achievement é desbloqueado.
+> **Nota de Arquitetura (27/08/2026):** O sistema legado de conquistas (`AchievementSystem.ts`) e notificações no canvas (`AchievementNotification.ts`) foi **100% unificado** com a `gameStore.ts`, o arquivo canônico `src/data/achievements.json` e a camada React DOM (`src/components/hud/AchievementToast.tsx`), eliminando duplicação de regras e respeitando a **Guardrail 7 (Strict UI Layering: React DOM vs Phaser Canvas)**.
 
 ---
 
 ## 📋 Visão Geral
 
-Quando um jogador desbloqueia um achievement (ex: "Slayer 10" ao matar 10 inimigos), uma notificação visual aparece no topo da tela com:
+Quando um jogador atinge os requisitos de um achievement (ex: "Slayer 10" ao matar 10 inimigos, ou "First Blood" no primeiro abate), uma notificação visual estilizada em tema gótico surge no topo da tela através de um overlay React:
 
 - **Nome do Achievement** — ex: "SLAYER 10"
-- **Descrição** — ex: "Você matou 10 inimigos!"
-- **Ícone** — emoji temático (⚔️, 🩸, 💀, etc)
-- **Rewards** — Cristais de Sangue + Talent Points
-- **Rarity Badge** — Cor indica raridade (comum, rare, epic, legendary)
-
-### Animação
-
-```
-[Scale 0.8] ↗️ [Slide in] ↗️ [Pulsação] ↗️ [Hold 5s] ↗️ [Fade out]
-```
+- **Descrição** — ex: "Mate 10 inimigos em um único andar"
+- **Ícone** — emoji / glifo temático (⚔️, 🩸, 💀, etc)
+- **Rewards** — Cristais de Sangue + Talent Points (adicionados automaticamente ao saldo global)
+- **Rarity Badge** — Cor e borda indicando raridade (`common`, `rare`, `epic`, `legendary`)
+- **Auto-dismiss com saída animada** — 4.5 segundos de exibição com fade/slide.
 
 ---
 
-## 🎨 Exemplo Visual
-
-```
-┌─────────────────────────────────────────┐
-│ 🏆 ACHIEVEMENT UNLOCKED                 │
-│                                         │
-│ ⚔️  SLAYER 10                          │
-│     Você matou 10 inimigos!             │
-│     💎 +50 Blood Crystals               │
-│     ⭐ +5 Talent Points                 │
-└─────────────────────────────────────────┘
-```
-
----
-
-## 🏗️ Arquitetura
+## 🏗️ Arquitetura Unificada (Zustand + React DOM)
 
 ### Componentes
 
 ```typescript
-// 1. AchievementNotification (src/game/systems/AchievementNotification.ts)
-//    - Renderiza UI
-//    - Gerencia animações
-//    - Controla duração
+// 1. Definições Canônicas (src/data/achievements.json)
+//    - Catálogo central com 10 achievements canônicos (requisitos, ícones, raridade e recompensas).
 
-// 2. GameScene (integração)
-//    - Instancia AchievementNotification
-//    - Chama show() quando achievement desbloqueia
+// 2. Estado Global & Evaluator (src/store/gameStore.ts)
+//    - Gerencia `runStats` e mapa `achievements`.
+//    - `incrementRunStat(key, amount)` e `setRunStat(key, value)` avaliam gatilhos em tempo real.
+//    - Ao desbloquear, seta `lastUnlockedAchievement` e credita `bloodCrystals` e `talentPoints`.
 
-// 3. AchievementSystem (já existente)
-//    - Rastreia desbloqueamentos
-//    - Retorna dados do achievement
+// 3. UI Overlay (src/components/hud/AchievementToast.tsx)
+//    - Subscrito a `lastUnlockedAchievement` da store.
+//    - Renderiza Toast gótico 9-slice / border com animação CSS suave.
+//    - Auto-dismiss em 4.5s limpando o toast.
 ```
 
-### Flow
+### Fluxo de Execução
 
 ```
-Achievement desbloqueado
+Evento de Gameplay (Phaser / React)
         ↓
-GameScene.handleEnemyDeath() / onFloorCompleted()
+gameStore.incrementRunStat('kills_total', 1)  [ou setRunStat / onEnemyKilled]
         ↓
-this.achievements.unlock('achievement_key')
+gameStore verifica se o threshold do achievement foi atingido
         ↓
-Verifica se retorna achievement data (não-null = primeira vez)
+Se novo unlock:
+  - Marca achievements[id].unlocked = true
+  - Persiste via utils/localStorage.ts com validação Zod
+  - Incrementa bloodCrystals e talentPoints
+  - Atribui lastUnlockedAchievement = { id, title, description, icon, rarity, rewards }
         ↓
-this.achievementNotification.show(config)
+AchievementToast.tsx reage à mudança de lastUnlockedAchievement
         ↓
-Renderiza notificação com animação
+Renderiza Toast animado no topo da tela com Rarity Badge e Recompensas
         ↓
-Auto-remove após 5 segundos
+Auto-dismiss limpa o Toast após 4.5 segundos
 ```
 
 ---
 
 ## 💻 Implementação
 
-### AchievementNotification.ts
+### Componente React Toast
 
-**Arquivo:** `src/game/systems/AchievementNotification.ts`  
-**Linhas:** ~180  
-**Métodos principais:**
+**Arquivo:** `src/components/hud/AchievementToast.tsx`
 
-| Método | O que faz |
-|--------|-----------|
-| `show(config)` | Renderiza notificação com animação de entrada |
-| `hide()` | Remove com fade out |
-| `destroy()` | Limpa recursos |
-
-### Configuração
-
-```typescript
-interface AchievementNotificationConfig {
-  name: string;           // "SLAYER 10"
-  description: string;    // "Você matou 10 inimigos!"
-  icon?: string;          // "⚔️" (emoji)
-  rewards?: {
-    bloodCrystals?: number;  // +50
-    talentPoints?: number;   // +5
-  };
-  rarity?: 'common' | 'rare' | 'epic' | 'legendary';
+```tsx
+export function AchievementToast() {
+  const lastUnlockedAchievement = useGameStore((s) => s.lastUnlockedAchievement);
+  const clearLastUnlockedAchievement = useGameStore((s) => s.clearLastUnlockedAchievement);
+  // Animação com temporizador de 4.5s
+  ...
 }
 ```
 
-### Wiring em GameScene
+### Métodos no Motor Phaser (Chamadas Sincronizadas)
 
-**Arquivo:** `src/game/scenes/GameScene.ts`
+No motor Phaser (`GameScene.ts`, `CollisionHandlers.ts`, `Player.ts`, `CombatEffectsSystem.ts`, `DungeonFlowController.ts`), o código simplesmente notifica as métricas para a store:
 
 ```typescript
-// Inicialização em create()
-this.achievementNotification = new AchievementNotification(this);
+// Morte de inimigo
+useGameStore.getState().incrementRunStat('kills_total', 1);
+useGameStore.getState().incrementRunStat('slayer_floor_kills', 1);
 
-// Uso ao desbloquear achievement
-if (this.achievements) {
-  const ach = this.achievements.unlock('slayer_10');
-  if (ach && this.achievementNotification) {
-    this.achievementNotification.show({
-      name: ach.name,
-      description: ach.description,
-      icon: '⚔️',
-      rewards: {
-        bloodCrystals: ach.rewards?.bloodCrystals,
-        talentPoints: ach.rewards?.talentPoints,
-      },
-      rarity: 'epic',
-    });
-  }
-}
+// Dano recebido
+useGameStore.getState().setRunStat('damage_taken_this_floor', currentDamage);
+
+// Avanço de andar / profundidade
+useGameStore.getState().incrementRunStat('depth_cleared', 1);
+useGameStore.getState().setRunStat('damage_taken_this_floor', 0);
+useGameStore.getState().setRunStat('slayer_floor_kills', 0);
+
+// Desmembramentos de gore
+useGameStore.getState().incrementRunStat('dismemberments_total', 1);
+
+// Desmaio / Knockout
+useGameStore.getState().incrementRunStat('knockouts_total', 1);
 ```
 
 ---
 
-## 🎯 Achievements Wired com Notificações
+## 🎯 Achievements Canônicos
 
-| Achievement | Trigger | Icon | Rarity | Rewards |
-|-------------|---------|------|--------|---------|
-| **first_blood** | 1º kill | 🩸 | rare | 25 crystals |
-| **slayer_10** | 10 kills | ⚔️ | epic | 50 crystals |
-| **slayer_50** | 50 kills | 💀 | legendary | 100 crystals |
-| **depth_10** | Andar 10 | 🔻 | epic | 50 crystals |
-| **depth_25** | Andar 25 | 🌑 | legendary | 150 crystals |
+| Achievement | Requisito / Stat | Icon | Rarity | Recompensas |
+|-------------|------------------|------|--------|-------------|
+| **first_blood** | 1 kill total (`kills_total >= 1`) | 🩸 | rare | 25 cristais, 1 talento |
+| **slayer_10** | 10 kills no andar (`slayer_floor_kills >= 10`) | ⚔️ | rare | 50 cristais, 2 talentos |
+| **slayer_50** | 50 kills no andar (`slayer_floor_kills >= 50`) | 💀 | epic | 100 cristais, 5 talentos |
+| **wealth_1000** | 1000 cristais acumulados | 💎 | rare | 100 cristais, 3 talentos |
+| **no_damage** | Andar sem dano (`depth_cleared >= 1` & `damage_taken_this_floor == 0`) | 🛡️ | legendary | 150 cristais, 5 talentos |
+| **five_knockouts** | 5 knockouts (`knockouts_total >= 5`) | ⚰️ | common | 30 cristais, 1 talento |
+| **depth_10** | Andar 10 alcançado (`depth_cleared >= 10`) | 🔻 | epic | 75 cristais, 3 talentos |
+| **depth_25** | Andar 25 alcançado (`depth_cleared >= 25`) | 🌑 | legendary | 200 cristais, 10 talentos |
+| **all_spells** | 5 feitiços desbloqueados | 📜 | epic | 120 cristais, 5 talentos |
+| **speedrun** | Andar 5 em < 5 min | ⏱️ | legendary | 250 cristais, 10 talentos |
+
+> **Nota (28/08/2026):** esta tabela é histórica/arquivada e ficou defasada frente ao catálogo real em `src/data/achievements.json`, que hoje tem 12 achievements (inclui `bloodless_victory`, `gargoyle_hunter`, `speedrun_floor3`, `inevitable_sacrifice`, `blood_master`, `butcher`, `rune_collector`, `dark_wealth`, `abyss_walker` — e usa `spells_unlocked_total` com target 7, não mais em sincronia com os 8 feitiços atuais em `spells.json` após a Frente de hemomancia expandida). Ver `src/data/achievements.json` como fonte de verdade.
 
 ---
 
-## 🎨 Styling
+## 🎨 Styling e Feedback de UI (React DOM)
 
-### Cores por Rarity
+### Cores por Rarity no Toast
 
 ```typescript
-const colors = {
-  common:    0x666666,  // Cinza
-  rare:      0x3b82f6,  // Azul
-  epic:      0xa855f7,  // Roxo
-  legendary: 0xf59e0b,  // Dourado
+const RARITY_COLORS = {
+  common:    'border-zinc-600 bg-zinc-950/90 text-zinc-300',
+  rare:      'border-blue-700 bg-slate-950/90 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.3)]',
+  epic:      'border-purple-700 bg-purple-950/90 text-purple-200 shadow-[0_0_15px_rgba(168,85,247,0.35)]',
+  legendary: 'border-amber-500 bg-amber-950/90 text-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.45)]',
 };
 ```
 
-### Tipografia
-
-| Elemento | Font | Size | Color |
-|----------|------|------|-------|
-| "ACHIEVEMENT UNLOCKED" | Press Start 2P | 10px | #ffff00 (amarelo) |
-| Nome (SLAYER 10) | Press Start 2P | 12px | #ffffff (branco) |
-| Descrição | Arial | 10px | #e0e0e0 (cinza claro) |
-| Rewards | Arial | 9px | #ff6b6b / #ffd700 |
-
 ---
 
-## ⏱️ Timeline de Animação
+## ⏱️ Ciclo de Exibição do Toast
 
 ```
-T=0ms:    Container aparece (scale 0.8) em y - 20
-T=0-400ms: Slide in + scale to 1.0 (ease: Back.out)
-T=200-800ms: Pulsação de fundo (glow, repeat 2x)
-T=5000ms: Inicia fade out
-T=5400ms: Destruído
+T=0ms:       Componente monta com animação CSS slide-down/fade-in
+T=0-4500ms:  Toast permanece visível com badge de raridade e recompensas (+Cristais / +Talentos)
+T=4500ms:    clearLastUnlockedAchievement() reseta o estado e fecha o Toast
 ```
 
 ---
 
-## 📊 Performance
+## 📊 Performance e Guardrails
 
-- **Overhead:** Negligível (gráficos simples, sem physics)
-- **Draw Calls:** +1 (container + gráficos)
-- **Memory:** ~50KB temporário, destruído após 5s
-- **FPS Impact:** 0% (fora do game loop principal)
-
----
-
-## ✅ Checklist de Teste
-
-- [x] Notificação aparece ao desbloquear achievement
-- [x] Animação de entrada suave (Back.out easing)
-- [x] Cores corretas por rarity
-- [x] Rewards mostram corretamente
-- [x] Auto-remove após 5 segundos
-- [x] Fade out suave
-- [x] Sem overlap de notificações (fila)
-- [x] Funciona offline (não depende de API)
+- **UI Layering:** 100% de conformidade com a Guardrail 7 do `AGENTS.md` (Canvas exclusivo para o mundo do jogo; UI em React DOM).
+- **Overhead no Phaser:** 0% (elimina criação de `Phaser.GameObjects.Container`/`Graphics`/`Text` para UI).
+- **Resiliência:** Validação via Zod schemas em `src/utils/localStorage.ts` para persistência das conquistas desbloqueadas.
 
 ---
 
-## 🚀 Próximas Melhorias (Opcional)
+## ✅ Checklist de Validação
 
-- [ ] Sound effect ao desbloquear (achievement_unlock.wav)
-- [ ] Partículas de confete no fundo
-- [ ] Toque para descartar antes de 5s
-- [ ] Fila para múltiplos achievements simultâneos
-- [ ] Persistência em localStorage (mostrar apenas uma vez por sessão)
-
----
-
-## 📝 Exemplo de Uso
-
-```typescript
-// Criar achievement notification
-const notif = new AchievementNotification(gameScene);
-
-// Mostrar quando desbloquear
-notif.show({
-  name: 'First Blood',
-  description: 'Mate o primeiro inimigo!',
-  icon: '🩸',
-  rewards: {
-    bloodCrystals: 25,
-    talentPoints: 2,
-  },
-  rarity: 'rare',
-});
-
-// Cleanup (automático após 5s)
-// notif.destroy();
-```
+- [x] Conquistas avaliadas centralizadamente pela `gameStore.ts`
+- [x] Toast renderizado em React DOM via `AchievementToast.tsx`
+- [x] Cores e badges dinâmicos por raridade
+- [x] Recompensas creditadas automaticamente no store
+- [x] Persistência em `localStorage` com validação Zod
+- [x] Zero chamadas legadas de UI no motor Phaser
 
 ---
 
-## 📦 Arquivos Envolvidos
+## 📦 Arquivos Envolvidos na Arquitetura Unificada
 
 ```
-src/game/systems/
-└── AchievementNotification.ts      (180 linhas, novo)
-
-src/game/scenes/
-└── GameScene.ts                    (modificado: +wiring)
-
-src/game/systems/
-└── AchievementSystem.ts            (já existente, sem mudança)
+src/
+├── data/
+│   └── achievements.json           (definições canônicas)
+├── store/
+│   └── gameStore.ts                (avaliação de regras, runStats, lastUnlockedAchievement)
+├── components/hud/
+│   └── AchievementToast.tsx        (overlay React DOM para notificação)
+└── utils/
+    └── localStorage.ts             (persistência segura com Zod)
 ```
-
----
-
-## 🎯 Impacto no Projeto
-
-| Métrica | Status |
-|---------|--------|
-| **Feedback Visual** | ✅ Enormemente melhorado |
-| **Gamification** | ✅ Achievements agora visíveis |
-| **Polish** | ✅ Tela se sente AAA indie |
-| **Performance** | ✅ Zero impacto (0 FPS loss) |
-| **Regressão** | ✅ Nenhuma (feature pura) |
-
----
-
-## 📢 Comunicação para Felipe
-
-> "Achievement Notifications estão 100% implementadas. Quando jogador desbloqueia um achievement, notificação elegante aparece no topo da tela com animação suave, mostrando nome, descrição, ícone e rewards. Sistema é robusto, sem impacto de performance e totalmente pronto para produção."
-
----
-
-**Data:** 2026-08-11  
-**Status:** ✅ COMPLETO E TESTADO  
-**Pronto para:** Produção

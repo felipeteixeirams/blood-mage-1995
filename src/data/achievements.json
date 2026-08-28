@@ -18,6 +18,24 @@
     "reward": 25
   },
   {
+    "id": "slayer_10",
+    "title": "Matador das Sombras",
+    "description": "Abata 10 inimigos em combate.",
+    "category": "combat",
+    "metric": "kills_total",
+    "target": 10,
+    "reward": 50
+  },
+  {
+    "id": "slayer_50",
+    "title": "Ceifador de Almas",
+    "description": "Abata 50 inimigos nas profundezas.",
+    "category": "combat",
+    "metric": "kills_total",
+    "target": 50,
+    "reward": 120
+  },
+  {
     "id": "gargoyle_hunter",
     "title": "Caçador de Gárgulas",
     "description": "Destrua 15 Gárgulas em qualquer run.",
@@ -25,6 +43,42 @@
     "metric": "kills_gargoyle",
     "target": 15,
     "reward": 100
+  },
+  {
+    "id": "depth_10",
+    "title": "Descida Profunda",
+    "description": "Alcance o 10º andar do labirinto.",
+    "category": "progression",
+    "metric": "floor_depth_max",
+    "target": 10,
+    "reward": 200
+  },
+  {
+    "id": "depth_25",
+    "title": "Abismo Eterno",
+    "description": "Alcance o 25º andar do labirinto.",
+    "category": "progression",
+    "metric": "floor_depth_max",
+    "target": 25,
+    "reward": 500
+  },
+  {
+    "id": "all_spells",
+    "title": "Mago Supremo",
+    "description": "Desbloqueie todos os 7 feitiços arcanos no grimório.",
+    "category": "magic",
+    "metric": "spells_unlocked_total",
+    "target": 7,
+    "reward": 300
+  },
+  {
+    "id": "five_knockouts",
+    "title": "Resiliência Sombria",
+    "description": "Desmaie e levante-se 5 vezes em batalha.",
+    "category": "challenge",
+    "metric": "knockouts_total",
+    "target": 5,
+    "reward": 150
   },
   {
     "id": "speedrun_floor3",

@@ -11,7 +11,7 @@ interface AchievementsModalProps {
 }
 
 export const AchievementsModal: React.FC<AchievementsModalProps> = ({ onClose }) => {
-  const { achievements, redeemAchievement } = useGameStore();
+  const { achievements, runStats, redeemAchievement } = useGameStore();
 
   const handleRedeem = (id: string, rewardAmount: number) => {
     soundEngine.playContractComplete();
@@ -26,6 +26,10 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ onClose })
           const isUnlocked = state?.unlocked;
           const isRedeemed = state?.redeemed;
           const isReadyToRedeem = isUnlocked && !isRedeemed;
+
+          const currentVal = achievement.metric ? (runStats[achievement.metric as keyof typeof runStats] || 0) : 0;
+          const targetVal = achievement.target || 1;
+          const percent = Math.min(100, Math.round((currentVal / targetVal) * 100));
 
           return (
             <div
@@ -47,11 +51,16 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ onClose })
                   {achievement.description}
                 </div>
                 
-                {/* Progress bar (simplified for now, you can enhance this with actual metric tracking) */}
+                {/* Progress bar */}
                 {!isUnlocked && (
-                    <div className="mt-2 w-full max-w-[200px] h-1.5 bg-black rounded-full overflow-hidden border border-[#2a1d12]">
-                        <div className="h-full bg-gray-700" style={{ width: '0%' }}></div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="w-full max-w-[160px] h-1.5 bg-black rounded-full overflow-hidden border border-[#2a1d12]">
+                      <div className="h-full bg-[#8c1f22]" style={{ width: `${percent}%` }}></div>
                     </div>
+                    <span className="font-pixel text-[8px] text-gray-500">
+                      {currentVal}/{targetVal}
+                    </span>
+                  </div>
                 )}
               </div>
 

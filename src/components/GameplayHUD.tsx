@@ -10,6 +10,7 @@ import { Minimap } from './hud/Minimap';
 import { QuestTracker } from './hud/QuestTracker';
 import { DialogueModal } from './hud/DialogueModal';
 import { RecordsDisplay } from './hud/RecordsDisplay';
+import { AchievementToast } from './hud/AchievementToast';
 import palettesData from '../data/palettes.json';
 import { useFloatingJoystick } from '../hooks/useFloatingJoystick';
 import { soundEngine } from '../utils/soundEngine';
@@ -959,6 +960,9 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
         isOpen={isRecordsOpen}
         onClose={() => setRecordsOpen(false)}
       />
+
+      {/* Unified Achievement Notification Toast */}
+      <AchievementToast />
     </div>
   );
 };

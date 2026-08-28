@@ -2,14 +2,18 @@ import Phaser from 'phaser';
 import { applyJoystickResponse } from '../../utils/joystickResponse';
 
 export interface VirtualJoystickConfig {
-  maxRadius?: number;
+  x?: number;
+  y?: number;
   baseRadius?: number;
+  maxRadius?: number;
   deadzone?: number;
   curve?: number;
   sensitivity?: number;
   opacity?: number;
-  dragToFollow?: boolean;
   enabled?: boolean;
+  dragToFollow?: boolean;
+  zone?: 'left' | 'right' | 'all';
+  colorTheme?: 'red' | 'purple';
 }
 
 export interface JoystickVector {
@@ -27,13 +31,15 @@ export class VirtualJoystickSystem {
   private glowGraphics: Phaser.GameObjects.Graphics | null = null;
 
   // Configuration
-  private maxRadius: number = 54;
+  private maxRadius: number = 75;
   private baseRadius: number = 66;
   private deadzone: number = 0.08;
   private curve: number = 1.0;
   private sensitivity: number = 1.0;
   private opacity: number = 0.85;
-  private dragToFollow: boolean = true;
+  private dragToFollow: boolean = false;
+  private zone: 'left' | 'right' | 'all' = 'left';
+  private colorTheme: 'red' | 'purple' = 'red';
   private enabled: boolean = true;
 
   // Active state
@@ -135,11 +141,18 @@ export class VirtualJoystickSystem {
     // ==========================================
     // 1. BASE (OUTER RING)
     // ==========================================
-    
+
+    const cRedLight = this.colorTheme === 'purple' ? 0xd8b4fe : 0xf87171;
+    const cRedBase = this.colorTheme === 'purple' ? 0xa855f7 : 0xef4444;
+    const cRedGlow = this.colorTheme === 'purple' ? 0xc084fc : 0xf43f5e;
+    const cRedDark = this.colorTheme === 'purple' ? 0x4c1d95 : 0x881337;
+    const cRedCore = this.colorTheme === 'purple' ? 0x581c87 : 0x991b1b;
+    const cRedDeep = this.colorTheme === 'purple' ? 0x2e1065 : 0x450a0a;
+
     // Outer ambient glow (Additive)
-    glowG.fillStyle(0xef4444, alpha * 0.22);
+    glowG.fillStyle(cRedBase, alpha * 0.22);
     glowG.fillCircle(bx, by, this.baseRadius + 14);
-    glowG.fillStyle(0x881337, alpha * 0.35);
+    glowG.fillStyle(cRedDark, alpha * 0.35);
     glowG.fillCircle(bx, by, this.baseRadius + 6);
 
     // Glassmorphism background (dark ruby/black)
@@ -147,7 +160,7 @@ export class VirtualJoystickSystem {
     g.fillCircle(bx, by, this.baseRadius);
 
     // Outer Border Glow (Additive)
-    glowG.lineStyle(5, 0xef4444, alpha * 0.35);
+    glowG.lineStyle(5, cRedBase, alpha * 0.35);
     glowG.strokeCircle(bx, by, this.baseRadius);
 
     // Inner Metallic Gold Ring
@@ -155,7 +168,7 @@ export class VirtualJoystickSystem {
     g.strokeCircle(bx, by, this.baseRadius);
 
     // Deep Inner Track Ring
-    g.lineStyle(1.5, 0x991b1b, alpha * 0.5);
+    g.lineStyle(1.5, cRedCore, alpha * 0.5);
     g.strokeCircle(bx, by, this.baseRadius * 0.6);
 
     // Directional Cardinal Notches (N, S, E, W) - with enhanced golden visibility
@@ -219,11 +232,11 @@ export class VirtualJoystickSystem {
     // 3. CONNECTION TETHER
     // ==========================================
     if (forceRatio > 0.05) {
-      g.lineStyle(1.5 + (forceRatio * 3.5), 0xef4444, alpha * (0.4 + (forceRatio * 0.5)));
+      g.lineStyle(1.5 + (forceRatio * 3.5), cRedBase, alpha * (0.4 + (forceRatio * 0.5)));
       g.lineBetween(bx, by, kx, ky);
-      
+
       // Additive glow on tether
-      glowG.lineStyle(5 + (forceRatio * 5), 0xf43f5e, alpha * (0.2 + (forceRatio * 0.3)));
+      glowG.lineStyle(5 + (forceRatio * 5), cRedGlow, alpha * (0.2 + (forceRatio * 0.3)));
       glowG.lineBetween(bx, by, kx, ky);
     }
 
@@ -233,21 +246,21 @@ export class VirtualJoystickSystem {
     const knobRadius = 26;
 
     // Dynamic Thumb Glow (expands and brightens based on movement force)
-    glowG.fillStyle(0xef4444, alpha * (0.25 + (forceRatio * 0.35)));
+    glowG.fillStyle(cRedBase, alpha * (0.25 + (forceRatio * 0.35)));
     glowG.fillCircle(kx, ky, knobRadius + 8 + (forceRatio * 8));
-    glowG.fillStyle(0xf87171, alpha * (0.35 + (forceRatio * 0.35)));
+    glowG.fillStyle(cRedLight, alpha * (0.35 + (forceRatio * 0.35)));
     glowG.fillCircle(kx, ky, knobRadius + 4);
 
     // Knob Outer Body (Dark Crimson Ruby)
-    g.fillStyle(0x450a0a, alpha * 0.95);
+    g.fillStyle(cRedDeep, alpha * 0.95);
     g.fillCircle(kx, ky, knobRadius);
 
     // Knob Mid-Core
-    g.fillStyle(0x991b1b, alpha * 0.9);
+    g.fillStyle(cRedCore, alpha * 0.9);
     g.fillCircle(kx, ky, knobRadius * 0.7);
 
     // Knob Inner Glowing Core
-    g.fillStyle(0xef4444, alpha * 0.95);
+    g.fillStyle(cRedBase, alpha * 0.95);
     g.fillCircle(kx, ky, knobRadius * 0.4);
 
     // Knob Golden Border
@@ -276,10 +289,16 @@ export class VirtualJoystickSystem {
     const width = this.scene.scale.width;
     const height = this.scene.scale.height;
 
-    // Movement zone: Left 48% of screen, lower 75%
-    const isLeftZone = pointer.x < width * 0.48 && pointer.y > height * 0.20;
+    let inZone = false;
+    if (this.zone === 'left') {
+      inZone = pointer.x < width * 0.48 && pointer.y > height * 0.20;
+    } else if (this.zone === 'right') {
+      inZone = pointer.x > width * 0.52 && pointer.y > height * 0.20;
+    } else {
+      inZone = true;
+    }
 
-    if (isLeftZone) {
+    if (inZone) {
       this.active = true;
       this.pointerId = pointer.id;
       this.baseX = pointer.x;
@@ -345,11 +364,19 @@ export class VirtualJoystickSystem {
     this.pointerId = null;
     this.vector = { x: 0, y: 0 };
     this.rawVector = { x: 0, y: 0 };
-    
+
     // Return to default position
     const width = this.scene.scale.width;
     const height = this.scene.scale.height;
-    this.baseX = Math.min(width * 0.12, 100);
+
+    if (this.zone === 'left') {
+      this.baseX = Math.min(width * 0.12, 100);
+    } else if (this.zone === 'right') {
+      this.baseX = Math.max(width * 0.88, width - 100);
+    } else {
+      this.baseX = width / 2;
+    }
+
     this.baseY = height - Math.min(height * 0.20, 100);
     this.knobX = this.baseX;
     this.knobY = this.baseY;

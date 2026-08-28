@@ -85,7 +85,7 @@ export class CombatFeel {
   /**
    * Specific vibration patterns from spec
    */
-  public static triggerVibration(type: 'damage_taken' | 'dodge_success' | 'level_up' | 'execution' | 'cooldown_warning') {
+  public static triggerVibration(type: 'damage_taken' | 'dodge_success' | 'level_up' | 'execution' | 'cooldown_warning' | 'critical_hit' | 'bleeding_tick' | 'explosion') {
     switch (type) {
       case 'damage_taken':
         this.triggerHapticFeedback(50);
@@ -101,6 +101,15 @@ export class CombatFeel {
         break;
       case 'cooldown_warning':
         this.triggerHapticFeedback(10);
+        break;
+      case 'critical_hit':
+        this.triggerHapticFeedback([20, 15, 20]); // Dois toques rapidos
+        break;
+      case 'bleeding_tick':
+        this.triggerHapticFeedback(15); // Pulsos curtinhos de coracao
+        break;
+      case 'explosion':
+        this.triggerHapticFeedback([50, 40, 80, 20, 150]); // Tremor forte
         break;
     }
   }

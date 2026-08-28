@@ -110,5 +110,37 @@
     "color": "#f43f5e",
     "hotkey": "Skill 6 (F)",
     "level": 1
+  },
+  "blood_tendrils": {
+    "id": "blood_tendrils",
+    "name": "Tentáculos do Abismo",
+    "description": "Emerge gavinhas carmesins do solo para enraizar e estraçalhar monstros na área.",
+    "manaCost": 18,
+    "hpCost": 5,
+    "cooldownMs": 7000,
+    "baseDamage": 75,
+    "projectileSpeed": 0,
+    "type": "nova",
+    "gibPower": 1.5,
+    "icon": "activity",
+    "color": "#dc2626",
+    "hotkey": "Skill 7",
+    "level": 1
+  },
+  "corpse_burst": {
+    "id": "corpse_burst",
+    "name": "Detonação Cadavérica",
+    "description": "Detona carcaças e poças de sangue próximas em uma reação em cadeia visceral.",
+    "manaCost": 22,
+    "hpCost": 8,
+    "cooldownMs": 9000,
+    "baseDamage": 140,
+    "projectileSpeed": 0,
+    "type": "nova",
+    "gibPower": 3.0,
+    "icon": "skull",
+    "color": "#991b1b",
+    "hotkey": "Skill 8",
+    "level": 1
   }
 }

@@ -430,6 +430,7 @@ export class CollisionHandlers {
     } else if (item.type === 'mana') {
       scene.player.addMana(item.amount);
       scene.spawnFloatingText(scene.player.x, scene.player.y - 12, `+${item.amount} MP`, '#a855f7', false);
+      useGameStore.getState().incrementRunStat('mana_orbs_run', 1);
     }
 
     item.destroy();

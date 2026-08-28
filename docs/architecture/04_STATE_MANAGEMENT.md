@@ -3,8 +3,8 @@ agent_context: frontend, backend
 target_module: src/store
 priority: high
 status: active
-last_updated: 2026-08-25
-tags: [architecture, zustand, zod, state]
+last_updated: 2026-08-27
+tags: [architecture, zustand, zod, state, achievements, bridge]
 ---
 # 📊 Gerenciamento de Estado (Zustand + Zod)
 
@@ -23,3 +23,10 @@ Toda a comunicação entre o HUD React e o `GameScene` do Phaser passa pelo Zust
 - **Valor + versão** (qualquer direção, incluindo alta frequência): um campo guarda o estado atual (`touchMoveInput`, `touchAimInput`, `dragAim` durante o gesto, `lastLootPickup`), e o `useEffect` reage a toda mudança de valor — inclusive quando o "valor" é só um contador sem payload real (`cosmeticTintVersion`).
 
 Essa migração (histórico completo, motivação e decisões de cada ponte) está documentada em [[06_PHASER_REACT_BRIDGE_MIGRATION.md]].
+
+## 🏆 Conquistas e Estatísticas de Run Unificadas (desde 27/08/2026)
+
+O rastreamento de conquistas e progresso de run opera de forma desacoplada no Zustand:
+- **Estatísticas de Run (`runStats`)**: Métricas de gameplay (`kills_total`, `slayer_floor_kills`, `depth_cleared`, `damage_taken_this_floor`, `knockouts_total`, `dismemberments_total`, `spells_unlocked`) são atualizadas pelo motor Phaser via `incrementRunStat` e `setRunStat`.
+- **Avaliador Central de Regras**: Cada atualização de stat avalia os requisitos definidos no catálogo canônico `src/data/achievements.json`.
+- **Notificação e Recompensas**: Ao atingir um requisito, o store atualiza `achievements[id].unlocked = true`, credita Cristais de Sangue e Pontos de Talento, e publica `lastUnlockedAchievement`. O componente React DOM `AchievementToast.tsx` renderiza o feedback visual sem nenhuma injeção de UI no canvas Phaser (aderindo estritamente à Guardrail 7 de UI Layering).

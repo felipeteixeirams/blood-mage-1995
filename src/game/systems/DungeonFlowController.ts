@@ -450,40 +450,8 @@ export class DungeonFlowController {
     scene.player.heal(35); // Reward floor clear with HP restore
     scene.player.addMana(50);
 
-    // Fase 5: Achievement Wiring - Depth-based achievements
-    if (scene.achievements) {
-      if (scene.currentFloorDepth >= 10) {
-        const achDepth = scene.achievements.unlock('depth_10');
-        if (achDepth && scene.achievementNotification) {
-          scene.achievementNotification.show({
-            name: achDepth.name,
-            description: achDepth.description,
-            icon: '🔻',
-            rewards: {
-              bloodCrystals: achDepth.reward?.bloodCrystals,
-              talentPoints: achDepth.reward?.talentPoints,
-            },
-            rarity: 'epic',
-          });
-        }
-      }
-
-      if (scene.currentFloorDepth >= 25) {
-        const achDeep = scene.achievements.unlock('depth_25');
-        if (achDeep && scene.achievementNotification) {
-          scene.achievementNotification.show({
-            name: achDeep.name,
-            description: achDeep.description,
-            icon: '🌑',
-            rewards: {
-              bloodCrystals: achDeep.reward?.bloodCrystals,
-              talentPoints: achDeep.reward?.talentPoints,
-            },
-            rarity: 'legendary',
-          });
-        }
-      }
-    }
+    // Conquistas unificadas: atualiza profundidade máxima
+    useGameStore.getState().setRunStat('floor_depth_max', scene.currentFloorDepth);
 
     // Clear old map entities
     scene.wallsGroup.clear(true, true);

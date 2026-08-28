@@ -25,12 +25,10 @@ import { ReflectionSystem } from '../systems/ReflectionSystem';
 import { AtmosphereSystem } from '../systems/AtmosphereSystem';
 import { EnemyTelegraphSystem } from '../systems/EnemyTelegraphSystem';
 import { BloodSplatterSystem } from '../systems/BloodSplatterSystem';
-import AchievementNotification from '../systems/AchievementNotification';
 import { useGameStore } from '../../store/gameStore';
 import { telemetry } from '../../utils/telemetry';
 import { CombatFeel } from '../systems/CombatFeel';
 import { ContractSystem } from '../systems/ContractSystem';
-import AchievementSystem from '../systems/AchievementSystem';
 import ObjectPool from '../systems/ObjectPool';
 import ViewportCuller from '../systems/ViewportCuller';
 import PerformanceMonitor from '../systems/PerformanceMonitor';
@@ -53,6 +51,7 @@ import { DungeonGenerator, RoomData, DOOR_WIDTH } from '../systems/DungeonGenera
 
 export class GameScene extends Phaser.Scene {
   public player!: Player;
+  public cameraTarget!: Phaser.GameObjects.Sprite;
   public depthGroup!: Phaser.GameObjects.Group; // público: usado por DungeonFlowController
   // Público: acessado por PlayerSkillSystem (extraído do GameScene — item 4
   // do roadmap de refatoração). Mudança de visibilidade apenas, sem
@@ -76,7 +75,6 @@ export class GameScene extends Phaser.Scene {
 
   // --- Visual improvements ---
   public rooms: RoomData[] = []; // público: usado por CollisionHandlers
-  public achievements: AchievementSystem = new AchievementSystem(); // público: usado por DungeonFlowController
   public screenEffects: ScreenEffects | null = null; // público: usado por CollisionHandlers
   public postFX: PostFXSystem | null = null; // público: usado por CollisionHandlers
   public lightingSystem: LightingSystem | null = null; // público: usado por DungeonFlowController
@@ -87,7 +85,7 @@ export class GameScene extends Phaser.Scene {
   public shadowSystem: ShadowSystem | null = null;
   public reflectionSystem: ReflectionSystem | null = null;
   public virtualJoystick: VirtualJoystickSystem | null = null;
-  public achievementNotification: AchievementNotification | null = null; // público: usado por DungeonFlowController
+  public aimJoystick: VirtualJoystickSystem | null = null;
   private darknessOverlay!: Phaser.GameObjects.Graphics;
 
   // Fase 5: Pooling, culling e monitor de performance
@@ -438,7 +436,12 @@ export class GameScene extends Phaser.Scene {
 
     // Camera setup
     this.cameras.main.setBounds(0, 0, mapW, mapH);
-    this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+
+    // Frente 2 da Spec 14 (Look-Ahead Lerp):
+    // Em vez de seguir o player diretamente, a câmera segue um alvo invisível
+    // que se adianta na direção do movimento.
+    this.cameraTarget = this.add.sprite(this.player.x, this.player.y, '').setVisible(false);
+    this.cameras.main.startFollow(this.cameraTarget, true, 0.08, 0.08); // Um pouco mais suave que 0.1
 
     // Fase 5: Inicializar sistemas de polimento visual e gameplay
     this.advancedParticles = new AdvancedParticles(this);
@@ -461,9 +464,6 @@ export class GameScene extends Phaser.Scene {
       this.shadowSystem.registerEntity(this.player as any);
       this.reflectionSystem.registerEntity(this.player as any);
     }
-
-    // Fase 5 Final: Achievement Notifications - UI visual para desbloqueamentos
-    this.achievementNotification = new AchievementNotification(this);
 
     // Fase 5: InputManager unificado (gamepad/keyboard) + monitor de performance (toggle dev via ?perf=1)
     InputManager.init();
@@ -494,14 +494,26 @@ export class GameScene extends Phaser.Scene {
     // 4. Mobile / Touch Virtual Joystick (Canvas-Native, 60 FPS)
     const settings = useGameStore.getState().settings;
     this.virtualJoystick = new VirtualJoystickSystem(this, {
+      colorTheme: 'red',
       deadzone: settings.joystickDeadzone,
       curve: settings.joystickCurve,
       sensitivity: settings.touchSensitivity,
       opacity: settings.virtualControlsOpacity,
       enabled: settings.controlsMode !== 'keyboard',
-      dragToFollow: true,
+      zone: 'left'
     });
     this.virtualJoystick.init();
+
+    this.aimJoystick = new VirtualJoystickSystem(this, {
+      deadzone: settings.joystickDeadzone,
+      curve: settings.joystickCurve,
+      sensitivity: settings.touchSensitivity,
+      opacity: settings.virtualControlsOpacity,
+      enabled: settings.controlsMode !== 'keyboard',
+      zone: 'right',
+      colorTheme: 'purple'
+    });
+    this.aimJoystick.init();
 
     // 4.1 Keyboard Controls
     if (this.input.keyboard) {
@@ -512,11 +524,11 @@ export class GameScene extends Phaser.Scene {
     // PhaserGame.tsx e docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md.
     // useCurativeItem() já era público (também usado pelos atalhos Z/X/V abaixo).
 
-    // Mouse / Touch Aim (ignoring movement pointer when virtual joystick is active)
+    // Mouse / Touch Aim (ignoring movement pointers when virtual joysticks are active)
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
-      if (this.virtualJoystick && this.virtualJoystick.isActive() && pointer.id === (this.virtualJoystick as any).pointerId) {
-        return;
-      }
+      if (this.virtualJoystick && this.virtualJoystick.isActive() && pointer.id === (this.virtualJoystick as any).pointerId) return;
+      if (this.aimJoystick && this.aimJoystick.isActive() && pointer.id === (this.aimJoystick as any).pointerId) return;
+
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
       const dx = worldPoint.x - this.player.x;
       const dy = worldPoint.y - this.player.y;
@@ -526,9 +538,9 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      if (this.virtualJoystick && this.virtualJoystick.isActive() && pointer.id === (this.virtualJoystick as any).pointerId) {
-        return;
-      }
+      if (this.virtualJoystick && this.virtualJoystick.isActive() && pointer.id === (this.virtualJoystick as any).pointerId) return;
+      if (this.aimJoystick && this.aimJoystick.isActive() && pointer.id === (this.aimJoystick as any).pointerId) return;
+
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
       this.player.setAimInput(worldPoint.x - this.player.x, worldPoint.y - this.player.y);
     });
@@ -609,6 +621,10 @@ export class GameScene extends Phaser.Scene {
         this.virtualJoystick.destroy();
         this.virtualJoystick = null;
       }
+      if (this.aimJoystick) {
+        this.aimJoystick.destroy();
+        this.aimJoystick = null;
+      }
       if (this.enemyTelegraphSystem) {
         this.enemyTelegraphSystem.cleanup();
         this.enemyTelegraphSystem = null;
@@ -623,6 +639,10 @@ export class GameScene extends Phaser.Scene {
       if (this.virtualJoystick) {
         this.virtualJoystick.destroy();
         this.virtualJoystick = null;
+      }
+      if (this.aimJoystick) {
+        this.aimJoystick.destroy();
+        this.aimJoystick = null;
       }
       if (this.enemyTelegraphSystem) {
         this.enemyTelegraphSystem.cleanup();
@@ -1256,6 +1276,26 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
+    // Twin-stick aim: right-side canvas joystick (Spec 14) drives player aim
+    // continuously while dragged, same pattern as virtualJoystick for movement.
+    if (this.aimJoystick) {
+      const currentSettings = store.settings;
+      this.aimJoystick.updateConfig({
+        deadzone: currentSettings.joystickDeadzone,
+        curve: currentSettings.joystickCurve,
+        sensitivity: currentSettings.touchSensitivity,
+        opacity: currentSettings.virtualControlsOpacity,
+        enabled: currentSettings.controlsMode !== 'keyboard',
+      });
+      this.aimJoystick.update(time, delta);
+      if (this.aimJoystick.isActive()) {
+        const aimVec = this.aimJoystick.getMovementVector();
+        if (aimVec.x !== 0 || aimVec.y !== 0) {
+          this.player.setAimInput(aimVec.x, aimVec.y);
+        }
+      }
+    }
+
     if (this.keys) {
       if (this.keys.W.isDown || this.keys.UP.isDown) my = -1;
       if (this.keys.S.isDown || this.keys.DOWN.isDown) my = 1;
@@ -1314,6 +1354,18 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.player.setMoveInput(mx, my);
+
+    // Frente 2 da Spec 14 (Look-Ahead Lerp): desliza cameraTarget na direção do
+    // movimento atual, adiantando a câmera pra dar mais visão à frente do
+    // personagem. Sem isso o alvo ficaria estático no ponto de spawn, travando
+    // o acompanhamento da câmera (startFollow segue cameraTarget, não o player).
+    if (this.cameraTarget) {
+      const lookAheadDist = 60;
+      const targetX = this.player.x + mx * lookAheadDist;
+      const targetY = this.player.y + my * lookAheadDist;
+      this.cameraTarget.x = Phaser.Math.Linear(this.cameraTarget.x, targetX, 0.06);
+      this.cameraTarget.y = Phaser.Math.Linear(this.cameraTarget.y, targetY, 0.06);
+    }
 
     if (this.touchAimVector.x !== 0 || this.touchAimVector.y !== 0) {
       this.player.setAimInput(this.touchAimVector.x, this.touchAimVector.y);

@@ -105,53 +105,13 @@ export class CombatEffectsSystem {
       scene.lightingPolish.addDeathGlow(enemy.x, enemy.y);
     }
 
-    // Fase 5: Achievement Wiring - Kill-based achievements
-    if (scene.achievements) {
-      const ach = scene.achievements.unlock('first_blood'); // Sempre desbloqueado no 1º kill
-      if (ach && scene.achievementNotification) {
-        scene.achievementNotification.show({
-          name: ach.name,
-          description: ach.description,
-          icon: '🩸',
-          rewards: {
-            bloodCrystals: ach.reward?.bloodCrystals,
-            talentPoints: ach.reward?.talentPoints,
-          },
-          rarity: 'rare',
-        });
-      }
-
-      if (scene.player.stats.kills >= 10) {
-        const achKills = scene.achievements.unlock('slayer_10');
-        if (achKills && scene.achievementNotification) {
-          scene.achievementNotification.show({
-            name: achKills.name,
-            description: achKills.description,
-            icon: '⚔️',
-            rewards: {
-              bloodCrystals: achKills.reward?.bloodCrystals,
-              talentPoints: achKills.reward?.talentPoints,
-            },
-            rarity: 'epic',
-          });
-        }
-      }
-
-      if (scene.player.stats.kills >= 50) {
-        const achSlayer = scene.achievements.unlock('slayer_50');
-        if (achSlayer && scene.achievementNotification) {
-          scene.achievementNotification.show({
-            name: achSlayer.name,
-            description: achSlayer.description,
-            icon: '💀',
-            rewards: {
-              bloodCrystals: achSlayer.reward?.bloodCrystals,
-              talentPoints: achSlayer.reward?.talentPoints,
-            },
-            rarity: 'legendary',
-          });
-        }
-      }
+    // Conquistas unificadas: incrementa as métricas na store unificada (dispara
+    // first_blood/slayer_10/slayer_50 via gameStore.incrementRunStat — o wiring
+    // antigo direto em scene.achievements/achievementNotification foi removido
+    // daqui por ser um sistema paralelo e redundante, ver docs/archive/gameplay/06_ACHIEVEMENT_NOTIFICATIONS.md)
+    useGameStore.getState().incrementRunStat('kills_total', 1);
+    if (enemy.config?.id === 'gargoyle' || enemy.config?.id === 'stone_gargoyle') {
+      useGameStore.getState().incrementRunStat('kills_gargoyle', 1);
     }
 
     // Onboarding trigger
@@ -226,6 +186,10 @@ export class CombatEffectsSystem {
 
     if (isExecution || dismemberResult.type === 'total_destruction') {
       ContractSystem.onExecutionDone(scene);
+    }
+
+    if (dismemberResult.type !== 'normal_collapse') {
+      useGameStore.getState().incrementRunStat('dismemberments_total', 1);
     }
 
     // 4. Grant XP directly to player (no gems to collect)

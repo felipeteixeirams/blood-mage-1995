@@ -6,6 +6,7 @@ import { soundEngine } from '../../utils/soundEngine';
 import { useGameStore } from '../../store/gameStore';
 import { safePlayAnimation } from '../animations/animationManager';
 import { getEquipmentRarityTint, shouldEmitLegendarySparks } from '../../utils/equipmentPalette';
+import { CombatFeel } from '../systems/CombatFeel';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   public stats: PlayerStats;
@@ -53,6 +54,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private readonly DASH_DURATION = 150; // ms
   private readonly DASH_INVULNERABILITY = 200; // ms
   private readonly DASH_COOLDOWN = 3000; // ms
+  public isBoneShieldActive: boolean = false;
 
   // Movement acceleration (Dungeon Siege feel)
   private currentVx: number = 0;
@@ -64,6 +66,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private directionReticleGraphics?: Phaser.GameObjects.Graphics;
   private currentFacingAngle: number = Math.PI / 2; // Default facing south
   private currentLockedTarget: any = null;
+  private targetLockGraphics?: Phaser.GameObjects.Graphics;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'spr_bloodmage');
@@ -455,6 +458,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
           if (this.scene && 'spawnFloatingText' in this.scene) {
             (this.scene as any).spawnFloatingText(this.x, this.y - 12, '-3 SANGRAMENTO', '#ef4444', false);
           }
+          CombatFeel.triggerVibration('bleeding_tick');
         }
 
         // Leave blood droplets on the floor while walking with bleeding status
@@ -586,6 +590,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Directional indicator rendering
     this.renderDirectionReticle();
+    this.renderTargetLockReticle(time);
   }
 
   /**
@@ -676,6 +681,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.directionReticleGraphics.destroy();
       this.directionReticleGraphics = undefined;
     }
+    if (this.targetLockGraphics) {
+      this.targetLockGraphics.destroy();
+      this.targetLockGraphics = undefined;
+    }
     super.destroy(fromScene);
   }
 
@@ -684,6 +693,60 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    * If moving, strongly weights enemies in the forward direction.
    * If stationary, selects closest radial enemy.
    */
+  /**
+   * Renders a pulsing runic reticle under the currently locked target.
+   */
+  private renderTargetLockReticle(time: number): void {
+    if (!this.scene || !this.scene.add || !this.currentLockedTarget || !this.currentLockedTarget.active || this.currentLockedTarget.hp <= 0) {
+      if (this.targetLockGraphics) {
+        this.targetLockGraphics.clear();
+      }
+      return;
+    }
+
+    if (!this.targetLockGraphics) {
+      this.targetLockGraphics = this.scene.add.graphics();
+    }
+
+    // Make sure it's drawn under the target (usually depth 0 or depth - 1)
+    this.targetLockGraphics.setDepth(this.currentLockedTarget.depth - 0.1 || 0);
+
+    const g = this.targetLockGraphics;
+    g.clear();
+
+    const target = this.currentLockedTarget;
+    const tx = target.x;
+    const ty = target.y + (target.height * 0.4 || 10); // slightly offset to feet
+
+    // Pulse effect
+    const pulse = Math.sin(time / 200) * 0.15 + 0.85;
+    const radius = (target.width * 0.6 || 16) * pulse;
+
+    // Outer dashed/runic ring
+    g.lineStyle(1.5, 0xef4444, 0.7 * pulse);
+    const dashCount = 8;
+    const dashAngle = (Math.PI * 2) / dashCount;
+    const rotation = time / 1000; // slow rotation
+
+    for (let i = 0; i < dashCount; i++) {
+        g.beginPath();
+        g.arc(tx, ty, radius, rotation + i * dashAngle, rotation + i * dashAngle + dashAngle * 0.6, false);
+        g.strokePath();
+    }
+
+    // Inner solid ring
+    g.lineStyle(1, 0x991b1b, 0.5 * pulse);
+    g.strokeCircle(tx, ty, radius * 0.7);
+
+    // Small inner dots/runes
+    g.fillStyle(0xef4444, 0.8 * pulse);
+    for (let i = 0; i < 4; i++) {
+        const ax = tx + Math.cos(-rotation * 2 + i * Math.PI/2) * (radius * 0.4);
+        const ay = ty + Math.sin(-rotation * 2 + i * Math.PI/2) * (radius * 0.4);
+        g.fillCircle(ax, ay, 1.5);
+    }
+  }
+
   public findBestTarget(maxRange: number = 380): any | null {
     if (!this.scene || !('enemiesGroup' in this.scene)) return null;
     const enemiesGroup = (this.scene as any).enemiesGroup;
@@ -979,6 +1042,50 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     return true;
   }
 
+  public castBloodTendrils(): boolean {
+    if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
+    const spell = (spellsData as Record<string, SpellConfig>)['blood_tendrils'];
+    if (this.getCooldownRemaining('blood_tendrils') > 0) return false;
+    const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
+    const relicMods = useGameStore.getState().getRelicModifiers();
+    const discount = relicMods.spellCostDiscount || 0;
+    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
+    const hpCost = Math.max(0, Math.round((spell.hpCost || 0) * (1 - discount)));
+    if (this.stats.mana < cost) return false;
+    if (this.stats.hp <= hpCost) return false;
+
+    this.stats.mana -= cost;
+    this.stats.hp -= hpCost;
+    this.castAnimTimer = 600;
+    this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
+    const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
+    this.skillCooldowns['blood_tendrils'] = cd;
+    soundEngine.playScytheSlash();
+    return true;
+  }
+
+  public castCorpseBurst(): boolean {
+    if (this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
+    const spell = (spellsData as Record<string, SpellConfig>)['corpse_burst'];
+    if (this.getCooldownRemaining('corpse_burst') > 0) return false;
+    const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
+    const relicMods = useGameStore.getState().getRelicModifiers();
+    const discount = relicMods.spellCostDiscount || 0;
+    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
+    const hpCost = Math.max(0, Math.round((spell.hpCost || 0) * (1 - discount)));
+    if (this.stats.mana < cost) return false;
+    if (this.stats.hp <= hpCost) return false;
+
+    this.stats.mana -= cost;
+    this.stats.hp -= hpCost;
+    this.castAnimTimer = 600;
+    this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
+    const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
+    this.skillCooldowns['corpse_burst'] = cd;
+    soundEngine.playNova();
+    return true;
+  }
+
   /**
    * Fase 3: Survival Status Conditions (Dead Frontier 2 style).
    * Non-brutal, gradual tension damage. Never triggers invulnerability frames
@@ -1027,11 +1134,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.currentVx = 0;
         this.currentVy = 0;
 
+        useGameStore.getState().incrementRunStat('knockouts_total', 1);
         useGameStore.getState().setUnconscious(true);
         useGameStore.getState().setPlayerStats({ ...this.stats });
         soundEngine.playPlayerHurt();
       } else {
         this.stats.isDefinitivelyDead = true;
+        useGameStore.getState().incrementRunStat('deaths_total', 1);
         useGameStore.getState().setDefinitivelyDead(true);
         useGameStore.getState().setPlayerStats({ ...this.stats });
         soundEngine.playPlayerHurt();
@@ -1042,15 +1151,25 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   public takeDamage(amount: number): boolean {
     if (this.isInvulnerable || this.stats.isUnconscious || this.stats.isDefinitivelyDead) return false;
 
+    // Bone Shield active defense: 30% damage reduction
+    if (this.isBoneShieldActive) {
+      amount *= 0.7;
+    }
+
     // Infection increases damage taken by 20%
     if (this.stats.statusConditions?.infection) {
       amount *= 1.2;
     }
 
     this.stats.hp = Math.max(0, this.stats.hp - amount);
-
     // Sync HP immediately to state
     useGameStore.getState().setPlayerStats({ ...this.stats });
+
+    // Screenshake and Haptics for taking damage
+    if (this.scene && (this.scene as any).screenShake) {
+        (this.scene as any).screenShake.trigger(150, 4); // intense short shake
+    }
+    CombatFeel.triggerVibration('damage_taken');
 
     if (this.stats.hp <= 0) {
       if (this.stats.knockoutCount < 2) {
@@ -1061,6 +1180,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.currentVx = 0;
         this.currentVy = 0;
 
+        useGameStore.getState().incrementRunStat('knockouts_total', 1);
         useGameStore.getState().setUnconscious(true);
         useGameStore.getState().setPlayerStats({ ...this.stats });
 
@@ -1069,6 +1189,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       } else {
         // 3rd knock down -> Definitive Death!
         this.stats.isDefinitivelyDead = true;
+        useGameStore.getState().incrementRunStat('deaths_total', 1);
         useGameStore.getState().setDefinitivelyDead(true);
         useGameStore.getState().setPlayerStats({ ...this.stats });
         soundEngine.playPlayerHurt();
@@ -1084,7 +1205,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public heal(amount: number) {
+    const oldHp = this.stats.hp;
     this.stats.hp = Math.min(this.stats.maxHp, this.stats.hp + amount);
+    const actualHealed = this.stats.hp - oldHp;
+    if (actualHealed > 0) {
+      useGameStore.getState().incrementRunStat('hp_healed_magic', Math.round(actualHealed));
+    }
   }
 
   public addMana(amount: number) {

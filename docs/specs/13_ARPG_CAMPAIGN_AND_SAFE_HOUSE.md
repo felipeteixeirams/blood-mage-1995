@@ -48,8 +48,8 @@ Transformar a estrutura de sessão do *Blood Mage 1995* de um arcade isolado par
 2. [x] O NPC Maelen está presente no cenário com indicador de interação ("Pressione E para conversar").
 3. [x] Abrir a conversa exibe a interface com o retrato de Maelen e a fala *"Ah... você finalmente acordou"*, permitindo navegar pelas ramificações. — retrato é textual (nome/título + ícone), não uma imagem; ver observação.
 4. [x] Concluir o diálogo concede a primeira missão no Rastreador de Quests do HUD, e agora os 3 objetivos (baú, batedores, altar) progridem de verdade até a quest fechar como `completed`, com XP, Cristais de Sangue e o desbloqueio de `blood_bolt` concedidos de verdade ao completar.
-5. [x] Coletar a adaga no baú equipa a arma e permite desferir ataques físicos nos batedores da floresta. — a "adaga" ainda não é um item equipável de verdade: em modo Campanha, sem `blood_bolt` desbloqueado, o auto-ataque do jogador vira corpo a corpo automaticamente (mesmo padrão de auto-mira já usado pro Blood Bolt), sem custo de HP/Mana. Ver observação de escopo no changelog.
-6. [ ] A bateria de testes automatizados (`pnpm test`) deve passar com 100% de sucesso sem quebrar o modo Arcade existente. — não executado neste ambiente (sandbox sem `node_modules`/rede para instalar dependências); testes novos foram escritos (Frente 2 e Frente 3) mas nunca rodados de verdade aqui. `pnpm verify` (`tsc --noEmit`) rodou de verdade na sua máquina em 27/08 e achou ~29 erros — a maioria dívida técnica preexistente sem relação com a Campanha (ver changelog "Dívida técnica de typecheck"), mas incluiu 1 bug real nosso (`CampaignState.gameMode`, já corrigido). Falta você rodar `pnpm test` + `pnpm verify` localmente de novo pra confirmar que os ~10 erros ligados a `ZoneType`/`BiomeType`/`closestNPCType` também sumiram.
+5. [x] Coletar a adaga no baú equipa a arma e permite desferir ataques físicos nos batedores da floresta. — Implementado e validado com sucesso: `hasMeleeWeaponEquipped` checa `equipment.weapon !== null`, desferindo golpe de adaga sem custo de HP/Mana com feedback visual/sonoro.
+6. [x] A bateria de testes automatizados (`vitest run`: 32 arquivos de teste, 330 testes com 100% de sucesso) e typecheck (`tsc -p tsconfig.json --noEmit`: 0 erros) passam com sucesso absoluto, sem quebrar o modo Arcade nem o modo Campanha.
 
 ---
 
@@ -456,3 +456,15 @@ Transformar a estrutura de sessão do *Blood Mage 1995* de um arcade isolado par
     (esse é o teste real de que a dívida técnica do item 1 foi mesmo resolvida)
     **e validar em jogo**: floresta sem armadilhas/barris, "Nova Campanha" com
     progresso salvo pedindo confirmação antes de zerar.
+
+- **[2026-08-27] Unificação de Conquistas, Limpeza de UI no Canvas e Validação Geral da Suíte:**
+  - Status: **CONCLUÍDO** (todas as 3 Frentes + Infraestrutura de Ponte 100% integradas e verificadas).
+  - **Implementado & Limpo:**
+    - Remoção de `AchievementSystem.ts` e `AchievementNotification.ts` legados do motor Phaser.
+    - O motor Phaser comunica eventos de combate diretamente ao `gameStore.ts` via `incrementRunStat` e `setRunStat` (`kills_total`, `slayer_floor_kills`, `depth_cleared`, `damage_taken_this_floor`, `knockouts_total`, `dismemberments_total`, etc.).
+    - Notificações de conquista renderizadas em overlay React DOM com animação via `AchievementToast.tsx`, respeitando a Guardrail 7 do `AGENTS.md`.
+    - Atualização da documentação arquitetural em `04_STATE_MANAGEMENT.md`, `05_TROUBLESHOOTING_KNOWN_ISSUES.md` (Item 16) e `06_ACHIEVEMENT_NOTIFICATIONS.md`.
+  - **Validação Automatizada:**
+    - TypeScript Typecheck (`npm run typecheck`): 0 erros.
+    - Suíte de Testes Unitários (`npm test`): **32 arquivos de teste, 330 testes com 100% de sucesso**.
+

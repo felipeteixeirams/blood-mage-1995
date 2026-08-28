@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Flame, HeartPulse, Shield, Sword, CircleDot, Zap, Lock,
+  Flame, HeartPulse, Shield, Sword, CircleDot, Zap, Lock, Activity, Skull,
 } from 'lucide-react';
 import { PlayerStats, SpellConfig } from '../../types/game';
 import spellsData from '../../data/spells.json';
@@ -9,7 +9,7 @@ import { SkillPresetEditor } from './SkillPresetEditor';
 import { soundEngine } from '../../utils/soundEngine';
 import { CombatFeel } from '../../game/systems/CombatFeel';
 
-type SkillKey = 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam';
+type SkillKey = 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | 'blood_tendrils' | 'corpse_burst';
 
 const SPELL_TO_SKILLKEY: Record<string, SkillKey> = {
   hellfire_nova: 'nova',
@@ -18,6 +18,8 @@ const SPELL_TO_SKILLKEY: Record<string, SkillKey> = {
   crimson_scythe: 'crimson_scythe',
   blood_ritual_circle: 'blood_ritual_circle',
   hemomancy_beam: 'hemomancy_beam',
+  blood_tendrils: 'blood_tendrils',
+  corpse_burst: 'corpse_burst',
 };
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -27,6 +29,8 @@ const ICON_MAP: Record<string, React.ElementType> = {
   sword: Sword,
   'circle-dot': CircleDot,
   zap: Zap,
+  activity: Activity,
+  skull: Skull,
 };
 
 const COLOR_ACTIVE: Record<string, string> = {
@@ -36,6 +40,8 @@ const COLOR_ACTIVE: Record<string, string> = {
   crimson_scythe: 'bg-red-950/80 border-red-700 text-red-300 shadow-[0_0_12px_rgba(239,68,68,0.4)]',
   blood_ritual_circle: 'bg-rose-950/80 border-rose-700 text-rose-300 shadow-[0_0_12px_rgba(244,63,94,0.4)]',
   hemomancy_beam: 'bg-orange-950/80 border-orange-600 text-orange-200 shadow-[0_0_12px_rgba(251,146,60,0.4)]',
+  blood_tendrils: 'bg-red-950/80 border-red-600 text-red-200 shadow-[0_0_12px_rgba(220,38,38,0.4)]',
+  corpse_burst: 'bg-rose-950/90 border-rose-800 text-rose-200 shadow-[0_0_12px_rgba(153,27,27,0.5)]',
 };
 
 interface SkillsOverlayProps {
