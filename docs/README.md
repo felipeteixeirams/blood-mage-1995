@@ -25,12 +25,12 @@ Como o sistema funciona *hoje*. Leitura obrigatória antes de refatorar sistemas
 O que estamos testando agora. Estas não são specs rígidas, são hipóteses de *Game Feel*.
 * `docs/experiments/01_CAMERA_AND_CONTROLS.md` - Ajustes de Câmera, Touchpad e Deadzones.
 
-### 3. 📦 Produto, Especificações e Estratégia (Fundações)
-As regras de produto, onde estamos e para onde vamos, divididas por Fases.
+### 3. 📦 Produto, Estratégia e Bíblia de Sucesso
+As regras de produto, onde estamos, diretrizes de retenção mobile e para onde vamos:
+* `docs/product/00_MOBILE_FIRST_SUCCESS_BIBLE.md` - **A Bíblia de Sucesso Mobile & Framework de Retenção** (Evidence-based KPIs, Time to Fun <10s, Carga Cognitiva, Filtro de Discovery & Specs).
 * `docs/product/ROADMAP.md` - Fases do projeto (0 a 5).
 * `docs/product/ACCOUNT_AND_DATA.md` - Estratégia de Salvamento e Autenticação (Local Only).
 * `docs/product/RELEASE_STRATEGY.md` - Requisitos para quando formos para a Play Store.
-* `docs/specs/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md` - **Spec 16:** Evolução Gráfica, Resolução Adaptativa UI & Terreno Procedural 2.5D/3D.
 
 ### 4. 🔍 Auditorias e Qualidade de Código (Reviews & Quality)
 Relatórios de auditoria técnica, cobertura de testes e análise de segurança.
@@ -47,3 +47,4 @@ Specs originais, planos passados e documentação desatualizada. **Não use como
 2. **Evite Acoplamento Precoce:** Não adicione código para lidar com Auth, Firebase, Supabase ou Cloud Save. 
 3. **Mantenha o Fallback:** Sempre que adicionar assets, utilize os scripts híbridos de fallback.
 4. **Isolamento de React e Phaser:** A comunicação React <-> Phaser se dá por eventos (Event Bus) e Zustand Store. Não passe instâncias do React para o Phaser nem vice-versa.
+5. **Filtro de Sucesso Mobile Mandatório:** Toda nova proposta ou spec de feature deve passar pelo filtro de `docs/product/00_MOBILE_FIRST_SUCCESS_BIBLE.md` (Time to Fun <10s, impacto em D1/D7/D30, ergonomia touch e 60 FPS).
