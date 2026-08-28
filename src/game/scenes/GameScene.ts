@@ -434,12 +434,14 @@ export class GameScene extends Phaser.Scene {
       emitting: false,
     }).setDepth(2100);
 
-    // Camera setup
+// Camera setup
     this.cameras.main.setBounds(0, 0, mapW, mapH);
-
+    
     // Frente 2 da Spec 14 (Look-Ahead Lerp):
     // Em vez de seguir o player diretamente, a câmera segue um alvo invisível
-    // que se adianta na direção do movimento.
+    // que se adianta na direção do movimento — reposicionado a cada frame no
+    // início de update() (fix 28/08: esse reposicionamento estava faltando,
+    // deixando a câmera travada no spawn — ver comentário lá).
     this.cameraTarget = this.add.sprite(this.player.x, this.player.y, '').setVisible(false);
     this.cameras.main.startFollow(this.cameraTarget, true, 0.08, 0.08); // Um pouco mais suave que 0.1
 
@@ -493,8 +495,8 @@ export class GameScene extends Phaser.Scene {
 
     // 4. Mobile / Touch Virtual Joystick (Canvas-Native, 60 FPS)
     const settings = useGameStore.getState().settings;
-    this.virtualJoystick = new VirtualJoystickSystem(this, {
-      colorTheme: 'red',
+this.virtualJoystick = new VirtualJoystickSystem(this, {
+      colorTheme: "red",
       deadzone: settings.joystickDeadzone,
       curve: settings.joystickCurve,
       sensitivity: settings.touchSensitivity,
@@ -524,7 +526,7 @@ export class GameScene extends Phaser.Scene {
     // PhaserGame.tsx e docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md.
     // useCurativeItem() já era público (também usado pelos atalhos Z/X/V abaixo).
 
-    // Mouse / Touch Aim (ignoring movement pointers when virtual joysticks are active)
+// Mouse / Touch Aim (ignoring movement pointers when virtual joysticks are active)
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       if (this.virtualJoystick && this.virtualJoystick.isActive() && pointer.id === (this.virtualJoystick as any).pointerId) return;
       if (this.aimJoystick && this.aimJoystick.isActive() && pointer.id === (this.aimJoystick as any).pointerId) return;
@@ -969,6 +971,24 @@ export class GameScene extends Phaser.Scene {
   update(time: number, delta: number) {
     if (this.isPaused) return;
 
+    // Frente 2 da Spec 14 (Look-Ahead Lerp) — fix (28/08, achado nesta
+    // revisão): `cameraTarget` era criado uma vez em create() (ver comentário
+    // lá) e recebia `startFollow`, mas nunca era reposicionado depois disso —
+    // a câmera ficava travada no ponto de spawn pro resto da partida em vez
+    // de acompanhar o jogador. Todo frame, desloca o alvo até 80px à frente
+    // do jogador na direção do `aimVector` (já cai pro vetor de movimento
+    // quando não há alvo travado — ver `Player.updatePlayer()`), interpolado
+    // suavemente (lerp 0.1, igual ao texto original da spec).
+    if (this.cameraTarget && this.player && this.player.active) {
+      const aim = this.player.getAimVector();
+      const lookAheadDist = 80;
+      const lerpFactor = 0.1;
+      const desiredX = this.player.x + aim.x * lookAheadDist;
+      const desiredY = this.player.y + aim.y * lookAheadDist;
+      this.cameraTarget.x += (desiredX - this.cameraTarget.x) * lerpFactor;
+      this.cameraTarget.y += (desiredY - this.cameraTarget.y) * lerpFactor;
+    }
+
     // Fase 5: Update visual effects systems
     if (this.screenShake) {
       this.screenShake.update(delta);
@@ -1276,26 +1296,6 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    // Twin-stick aim: right-side canvas joystick (Spec 14) drives player aim
-    // continuously while dragged, same pattern as virtualJoystick for movement.
-    if (this.aimJoystick) {
-      const currentSettings = store.settings;
-      this.aimJoystick.updateConfig({
-        deadzone: currentSettings.joystickDeadzone,
-        curve: currentSettings.joystickCurve,
-        sensitivity: currentSettings.touchSensitivity,
-        opacity: currentSettings.virtualControlsOpacity,
-        enabled: currentSettings.controlsMode !== 'keyboard',
-      });
-      this.aimJoystick.update(time, delta);
-      if (this.aimJoystick.isActive()) {
-        const aimVec = this.aimJoystick.getMovementVector();
-        if (aimVec.x !== 0 || aimVec.y !== 0) {
-          this.player.setAimInput(aimVec.x, aimVec.y);
-        }
-      }
-    }
-
     if (this.keys) {
       if (this.keys.W.isDown || this.keys.UP.isDown) my = -1;
       if (this.keys.S.isDown || this.keys.DOWN.isDown) my = 1;
@@ -1354,18 +1354,6 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.player.setMoveInput(mx, my);
-
-    // Frente 2 da Spec 14 (Look-Ahead Lerp): desliza cameraTarget na direção do
-    // movimento atual, adiantando a câmera pra dar mais visão à frente do
-    // personagem. Sem isso o alvo ficaria estático no ponto de spawn, travando
-    // o acompanhamento da câmera (startFollow segue cameraTarget, não o player).
-    if (this.cameraTarget) {
-      const lookAheadDist = 60;
-      const targetX = this.player.x + mx * lookAheadDist;
-      const targetY = this.player.y + my * lookAheadDist;
-      this.cameraTarget.x = Phaser.Math.Linear(this.cameraTarget.x, targetX, 0.06);
-      this.cameraTarget.y = Phaser.Math.Linear(this.cameraTarget.y, targetY, 0.06);
-    }
 
     if (this.touchAimVector.x !== 0 || this.touchAimVector.y !== 0) {
       this.player.setAimInput(this.touchAimVector.x, this.touchAimVector.y);

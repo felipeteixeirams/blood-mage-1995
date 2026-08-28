@@ -41,6 +41,7 @@ vi.mock('../../utils/soundEngine', () => ({
   soundEngine: {
     playSwing: vi.fn(),
     playBloodBolt: vi.fn(),
+    playPlayerHurt: vi.fn(),
   },
 }));
 
@@ -110,5 +111,67 @@ describe('Player.castDaggerStrike — Frente 3 (spec 13): adaga fisicamente equi
 
     expect(player.castDaggerStrike(1000, { active: false })).toBe(false);
     expect(player.castDaggerStrike(1000, null)).toBe(false);
+  });
+});
+
+/**
+ * Revisão de 28/08 (regressão introduzida por trabalho externo — Google AI
+ * Studio): `takeDamage()` ganhou uma chamada `(this.scene as
+ * any).screenShake.trigger(150, 4)` pro feedback de screen shake da Spec 14.
+ * `ScreenShake` (src/game/systems/ScreenShake.ts) nunca teve um método
+ * `trigger(duration, intensity)` — a API real é `shake(profile)` + presets
+ * nomeados (`light`/`medium`/`heavy`/`continuous`), os mesmos já usados em
+ * `CombatEffectsSystem.ts`/`CollisionHandlers.ts`. O cast `as any` escondeu
+ * isso do typecheck; em runtime, `.trigger` é `undefined` e a chamada
+ * lançava `TypeError: screenShake.trigger is not a function` a cada dano
+ * recebido — e nenhum teste existente cobria `takeDamage()`, por isso nunca
+ * foi pego. Corrigido pra usar `.medium()` (mesmo padrão do resto do
+ * código); estes testes travam a API certa.
+ */
+function makeBareDamagePlayer() {
+  const p: any = Object.create(Player.prototype);
+  p.stats = {
+    isUnconscious: false,
+    isDefinitivelyDead: false,
+    hp: 100,
+    maxHp: 100,
+    knockoutCount: 0,
+    statusConditions: {},
+  };
+  p.isInvulnerable = false;
+  p.isBoneShieldActive = false;
+  p.invulnerableTimer = 0;
+  return p as Player;
+}
+
+describe('Player.takeDamage — feedback de screen shake (regressão de 28/08)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (useGameStore.getState as any).mockReturnValue({
+      setPlayerStats: vi.fn(),
+      incrementRunStat: vi.fn(),
+      setUnconscious: vi.fn(),
+      setDefinitivelyDead: vi.fn(),
+    });
+  });
+
+  it('chama screenShake.medium() em dano não-letal — NÃO screenShake.trigger (método que não existe)', () => {
+    const shake = { medium: vi.fn(), light: vi.fn(), heavy: vi.fn() };
+    const player = makeBareDamagePlayer();
+    (player as any).scene = { screenShake: shake };
+
+    const result = player.takeDamage(10);
+
+    expect(result).toBe(false);
+    expect(shake.medium).toHaveBeenCalledTimes(1);
+    expect((shake as any).trigger).toBeUndefined();
+    expect((player as any).stats.hp).toBe(90);
+  });
+
+  it('não quebra se scene.screenShake não existir (guard já previa isso)', () => {
+    const player = makeBareDamagePlayer();
+    (player as any).scene = {};
+
+    expect(() => player.takeDamage(10)).not.toThrow();
   });
 });

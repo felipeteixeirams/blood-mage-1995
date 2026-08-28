@@ -6,7 +6,6 @@ import { soundEngine } from '../../utils/soundEngine';
 import { useGameStore } from '../../store/gameStore';
 import { safePlayAnimation } from '../animations/animationManager';
 import { getEquipmentRarityTint, shouldEmitLegendarySparks } from '../../utils/equipmentPalette';
-import { CombatFeel } from '../systems/CombatFeel';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   public stats: PlayerStats;
@@ -458,7 +457,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
           if (this.scene && 'spawnFloatingText' in this.scene) {
             (this.scene as any).spawnFloatingText(this.x, this.y - 12, '-3 SANGRAMENTO', '#ef4444', false);
           }
-          CombatFeel.triggerVibration('bleeding_tick');
+          import('../systems/CombatFeel').then(m => m.CombatFeel.triggerVibration('bleeding_tick'));
         }
 
         // Leave blood droplets on the floor while walking with bleeding status
@@ -676,7 +675,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     g.fillCircle(tipX, tipY, 2.5);
   }
 
-  public destroy(fromScene?: boolean): void {
+    public destroy(fromScene?: boolean): void {
     if (this.directionReticleGraphics) {
       this.directionReticleGraphics.destroy();
       this.directionReticleGraphics = undefined;
@@ -693,7 +692,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    * If moving, strongly weights enemies in the forward direction.
    * If stationary, selects closest radial enemy.
    */
-  /**
+    /**
    * Renders a pulsing runic reticle under the currently locked target.
    */
   private renderTargetLockReticle(time: number): void {
@@ -707,7 +706,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (!this.targetLockGraphics) {
       this.targetLockGraphics = this.scene.add.graphics();
     }
-
+    
     // Make sure it's drawn under the target (usually depth 0 or depth - 1)
     this.targetLockGraphics.setDepth(this.currentLockedTarget.depth - 0.1 || 0);
 
@@ -721,23 +720,23 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Pulse effect
     const pulse = Math.sin(time / 200) * 0.15 + 0.85;
     const radius = (target.width * 0.6 || 16) * pulse;
-
+    
     // Outer dashed/runic ring
     g.lineStyle(1.5, 0xef4444, 0.7 * pulse);
     const dashCount = 8;
     const dashAngle = (Math.PI * 2) / dashCount;
     const rotation = time / 1000; // slow rotation
-
+    
     for (let i = 0; i < dashCount; i++) {
         g.beginPath();
         g.arc(tx, ty, radius, rotation + i * dashAngle, rotation + i * dashAngle + dashAngle * 0.6, false);
         g.strokePath();
     }
-
+    
     // Inner solid ring
     g.lineStyle(1, 0x991b1b, 0.5 * pulse);
     g.strokeCircle(tx, ty, radius * 0.7);
-
+    
     // Small inner dots/runes
     g.fillStyle(0xef4444, 0.8 * pulse);
     for (let i = 0; i < 4; i++) {
@@ -1161,15 +1160,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       amount *= 1.2;
     }
 
-    this.stats.hp = Math.max(0, this.stats.hp - amount);
+this.stats.hp = Math.max(0, this.stats.hp - amount);
     // Sync HP immediately to state
     useGameStore.getState().setPlayerStats({ ...this.stats });
-
+    
     // Screenshake and Haptics for taking damage
+    // Correção (28/08, achado nesta revisão): `ScreenShake` não expõe um
+    // método `trigger(duration, intensity)` — a API real é `shake(profile)`
+    // + presets nomeados (`light`/`medium`/`heavy`/`continuous`, ver
+    // ScreenShake.ts), os mesmos já usados em CombatEffectsSystem.ts e
+    // CollisionHandlers.ts. A chamada original usava `(this.scene as any)`,
+    // o que escondeu do typecheck que `.trigger` não existe — em runtime
+    // isso lançava `TypeError: screenShake.trigger is not a function` a
+    // cada vez que o jogador tomava QUALQUER dano (nenhum teste existente
+    // cobre `takeDamage()`, por isso passou despercebido). `medium()` (150ms,
+    // intensidade 6) é o preset mais próximo da intenção original ("intense
+    // short shake", 150ms/intensidade 4).
     if (this.scene && (this.scene as any).screenShake) {
-        (this.scene as any).screenShake.trigger(150, 4); // intense short shake
+        (this.scene as any).screenShake.medium();
     }
-    CombatFeel.triggerVibration('damage_taken');
+    import('../systems/CombatFeel').then(m => m.CombatFeel.triggerVibration('damage_taken'));
 
     if (this.stats.hp <= 0) {
       if (this.stats.knockoutCount < 2) {
