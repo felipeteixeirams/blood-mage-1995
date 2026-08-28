@@ -804,7 +804,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
       // Proximity score: closer is higher
       const distScore = 1000 / (dist + 40);
-      const totalScore = distScore * dirMultiplier;
+
+      // Spec 16 (Cap. 2.4 - Target Lock Assistance Formula):
+      // Score(E) = w1 * (1 / Dist) + w2 * (1 - HP_e / HP_max) + w3 * ThreatTier
+      const missingHpPct = enemy.maxHp ? Math.max(0, 1 - enemy.hp / enemy.maxHp) : 0;
+      const isBoss = enemy.config?.behavior === 'boss' || enemy.config?.id?.includes('boss');
+      const isElite = enemy.eliteAffix && enemy.eliteAffix !== 'none';
+      const threatTierWeight = isBoss ? 3.0 : isElite ? 2.0 : 1.0;
+
+      const priorityScore = (distScore * 0.5) + (missingHpPct * 120) + (threatTierWeight * 150);
+      const totalScore = priorityScore * dirMultiplier;
 
       if (totalScore > highestScore) {
         highestScore = totalScore;

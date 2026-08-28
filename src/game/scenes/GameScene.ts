@@ -987,6 +987,15 @@ this.virtualJoystick = new VirtualJoystickSystem(this, {
       const desiredY = this.player.y + aim.y * lookAheadDist;
       this.cameraTarget.x += (desiredX - this.cameraTarget.x) * lerpFactor;
       this.cameraTarget.y += (desiredY - this.cameraTarget.y) * lerpFactor;
+
+      // Spec 16 (Cap. 2.3 - Dynamic Boss Zoom Out):
+      // Afasta a câmera em 15% (zoom 0.85) suavemente durante encontros com Boss para enquadrar AOE indicators
+      const hasBossEngagement = this.isBossActive();
+      const targetZoom = hasBossEngagement ? 0.85 : 1.0;
+      const currentZoom = this.cameras.main.zoom;
+      if (Math.abs(currentZoom - targetZoom) > 0.002) {
+        this.cameras.main.setZoom(currentZoom + (targetZoom - currentZoom) * 0.04);
+      }
     }
 
     // Fase 5: Update visual effects systems
@@ -1724,10 +1733,11 @@ this.virtualJoystick = new VirtualJoystickSystem(this, {
     }
   }
 
-  private isBossActive(): boolean {
+  public isBossActive(): boolean {
+    if (!this.enemiesGroup) return false;
     return this.enemiesGroup.getChildren().some((enemyObj: any) => {
       const enemy = enemyObj as Enemy;
-      return enemy.active && enemy.config.behavior === 'boss';
+      return enemy && enemy.active && enemy.hp > 0 && (enemy.config?.behavior === 'boss' || enemy.config?.id?.includes('boss'));
     });
   }
 

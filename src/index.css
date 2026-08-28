@@ -64,6 +64,26 @@ body {
     image-rendering: pixelated;
     image-rendering: crisp-edges;
   }
+
+  /* Spec 16: Safe Area Margins & Adaptive Layout */
+  .safe-area-top {
+    padding-top: max(16px, env(safe-area-inset-top, 16px));
+  }
+  .safe-area-bottom {
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  }
+  .safe-area-left {
+    padding-left: max(20px, env(safe-area-inset-left, 20px));
+  }
+  .safe-area-right {
+    padding-right: max(20px, env(safe-area-inset-right, 20px));
+  }
+  .safe-area-container {
+    padding-top: max(16px, env(safe-area-inset-top, 16px));
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    padding-left: max(20px, env(safe-area-inset-left, 20px));
+    padding-right: max(20px, env(safe-area-inset-right, 20px));
+  }
 }
 
 /* CRT Scanline Overlay */

@@ -351,8 +351,8 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
         />
       </div>
 
-      {/* ── TOP LEFT HUD: Segmented HP/MP & Portrait ── */}
-      <div className="absolute top-2 left-2 p-1 z-30 pointer-events-auto flex flex-col gap-1">
+      {/* ── TOP LEFT HUD: Segmented HP/MP & Portrait (Spec 16 Safe Area) ── */}
+      <div className="absolute top-2 left-2 safe-area-left safe-area-top p-1 z-30 pointer-events-auto flex flex-col gap-1">
         <PlayerStatus stats={stats} />
         {(stats.statusConditions?.bleeding || stats.statusConditions?.poison || stats.statusConditions?.infection) && (
           <div className="flex gap-1 pl-0.5">
@@ -374,9 +374,9 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                 onClick={() => useCurative('antidotes')}
                 disabled={(stats.curatives?.antidotes || 0) < 1}
                 className="flex items-center gap-1 bg-[#0c0a09]/95 border border-lime-700 px-1 py-0.5 shadow-[2px_2px_0px_#000000] disabled:opacity-50"
-                title="Envenenado — drena HP continuamente. Clique para usar Antídoto."
+                title="Envenenado — reduz regeneração de mana e causa dano gradual. Clique para usar Antídoto."
               >
-                <span className="text-[9px]">🍇</span>
+                <span className="text-[9px]">🧪</span>
                 <span className="text-[7px] font-pixel text-lime-300 uppercase font-bold">
                   VENENO ({stats.curatives?.antidotes || 0})
                 </span>
@@ -400,12 +400,12 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       </div>
 
       {/* ── TOP CENTER: Area Banner & Time SURVIVED (Discreet Line-Style for Mobile First) ── */}
-      <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-auto max-w-[280px] md:max-w-[420px] w-full text-center">
+      <div className="absolute top-2 left-1/2 -translate-x-1/2 safe-area-top z-20 pointer-events-auto max-w-[280px] md:max-w-[420px] w-full text-center">
         <GameStats stats={stats} />
       </div>
 
-      {/* ── TOP RIGHT PANEL: Adaptive Minimap & Actions ── */}
-      <div className="absolute top-2 right-2 flex flex-col items-end gap-2 z-30 pointer-events-auto">
+      {/* ── TOP RIGHT PANEL: Adaptive Minimap & Actions (Spec 16 Safe Area) ── */}
+      <div className="absolute top-2 right-2 safe-area-right safe-area-top flex flex-col items-end gap-2 z-30 pointer-events-auto">
 
         {/* Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md */}
         <Minimap />
@@ -669,9 +669,9 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
         </div>
       )}
 
-      {/* ── SKILLS PANEL — bottom-right corner ── */}
+      {/* ── SKILLS PANEL — bottom-right corner (Spec 16 Safe Area) ── */}
       <div
-        className="absolute bottom-5 right-4 md:bottom-6 md:right-6 pointer-events-auto"
+        className="absolute bottom-5 right-4 md:bottom-6 md:right-6 safe-area-right safe-area-bottom pointer-events-auto"
         style={{ zIndex: 25, opacity: settings.virtualControlsOpacity }}
       >
         <SkillsOverlay
@@ -681,10 +681,10 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
         />
       </div>
 
-      {/* ── Native Canvas Joystick hint label ── */}
+      {/* ── Native Canvas Joystick hint label (Spec 16 Safe Area) ── */}
       {showTouchControls && (
         <div
-          className="absolute left-6 bottom-6 pointer-events-none select-none"
+          className="absolute left-6 bottom-6 safe-area-left safe-area-bottom pointer-events-none select-none"
           style={{ opacity: settings.virtualControlsOpacity * 0.45, zIndex: 16 }}
         >
           <div className="w-14 h-14 rounded-full border border-dashed border-[#b8860b]/40 flex items-center justify-center animate-pulse">

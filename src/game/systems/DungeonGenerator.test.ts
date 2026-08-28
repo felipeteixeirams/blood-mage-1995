@@ -35,6 +35,7 @@ function makeMockScene() {
   const chainable = () => {
     const obj: any = {};
     obj.setTint = vi.fn(() => obj);
+    obj.setAlpha = vi.fn(() => obj);
     obj.setDepth = vi.fn(() => obj);
     obj.setStrokeStyle = vi.fn(() => obj);
     obj.setSize = vi.fn(() => obj);

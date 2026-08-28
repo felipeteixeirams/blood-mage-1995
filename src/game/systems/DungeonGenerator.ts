@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { BiomeType } from '../../types/game';
 import { SpikeTrap, ExplosiveBarrel } from '../objects/Traps';
+import { HeightmapGenerator } from './HeightmapGenerator';
 import type { GameScene } from '../scenes/GameScene';
 
 export interface RoomData {
@@ -57,15 +58,28 @@ export class DungeonGenerator {
     const isSafeHouse = biome === 'safe_house';
     const groundTexture = isSafeHouse ? 'tile_wood_floor' : 'tile_ground';
     const tints = BIOME_TINTS[biome] || BIOME_TINTS.fosso_chagas;
+    const heightGen = new HeightmapGenerator(biome === 'gloomy_woods' ? 2026 : 1995);
 
-    // Fill Isometric Floor Tiles with Biome Tinting
+    // Fill Isometric Floor Tiles with Biome Tinting & 2.5D Elevation (Spec 16)
     for (let x = 0; x < mapW; x += 48) {
       for (let y = 0; y < mapH; y += 24) {
-        const tile = this.scene.add.image(x + (y % 48 === 0 ? 0 : 24), y, groundTexture);
+        const gridX = Math.floor(x / 48);
+        const gridY = Math.floor(y / 24);
+        const zElevation = isSafeHouse ? 0 : heightGen.getHeightAt(gridX, gridY);
+        // Deslocamento sutil em Y conforme a elevação Z (Spec 16 - heightStep 2px nos tiles 2D)
+        const renderY = y - (zElevation * 2);
+
+        const tile = this.scene.add.image(x + (y % 48 === 0 ? 0 : 24), renderY, groundTexture);
         if (!isSafeHouse) {
           tile.setTint(tints.ground);
+          // Sombreamento sutil conforme elevação Z para profundidade visual
+          if (zElevation === 0) {
+            tile.setAlpha?.(0.85); // Vale/água mais escuro
+          } else if (zElevation >= 3) {
+            tile.setAlpha?.(1.0);
+          }
         }
-        tile.setDepth(1);
+        tile.setDepth?.(1 + zElevation * 0.1);
         if ((this.scene as any).lightingSystem) {
           (this.scene as any).lightingSystem.applyLightPipeline(tile);
         }
