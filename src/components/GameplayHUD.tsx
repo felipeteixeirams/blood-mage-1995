@@ -618,6 +618,43 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
               </div>
             </div>
 
+            {/* Toggle Modo Canhoto */}
+            <div className="flex items-center justify-between py-1 border-b border-gray-900">
+              <span className="text-[9px] text-gray-300 uppercase">MODO CANHOTO (INVERTER LADOS)</span>
+              <button
+                onClick={() => updateSettings({ ...settings, leftHandedMode: !settings.leftHandedMode })}
+                className="text-[#e8c76a]"
+              >
+                {settings.leftHandedMode ? <CheckSquare size={14} /> : <Square size={14} />}
+              </button>
+            </div>
+
+            {/* Toggle Joystick Flutuante */}
+            <div className="flex items-center justify-between py-1 border-b border-gray-900">
+              <span className="text-[9px] text-gray-300 uppercase">JOYSTICK FLUTUANTE</span>
+              <button
+                onClick={() => updateSettings({ ...settings, floatingStick: !settings.floatingStick })}
+                className="text-[#e8c76a]"
+              >
+                {settings.floatingStick ? <CheckSquare size={14} /> : <Square size={14} />}
+              </button>
+            </div>
+
+            {/* Seletor de Escala do Joystick */}
+            <div className="flex items-center justify-between py-1 border-b border-gray-900">
+              <span className="text-[9px] text-gray-300 uppercase">ESCALA DO JOYSTICK</span>
+              <button
+                onClick={() => {
+                  soundEngine.playButtonClick();
+                  const nextScale = settings.virtualStickScale === 'small' ? 'medium' : settings.virtualStickScale === 'large' ? 'small' : 'large';
+                  updateSettings({ ...settings, virtualStickScale: nextScale });
+                }}
+                className="px-2 py-0.5 bg-[#171309] border border-[#b8860b] text-[#e8c76a] text-[8px] uppercase tracking-wide cursor-pointer font-bold"
+              >
+                {settings.virtualStickScale === 'small' ? 'PEQUENO (0.8x)' : settings.virtualStickScale === 'large' ? 'GRANDE (1.25x)' : 'MÉDIO (1.0x)'}
+              </button>
+            </div>
+
             {/* Virtual Controls HUD Opacity Slider */}
             <div className="flex flex-col gap-1 py-1">
               <div className="flex justify-between text-[9px] text-gray-300">
@@ -669,9 +706,9 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
         </div>
       )}
 
-      {/* ── SKILLS PANEL — bottom-right corner (Spec 16 Safe Area) ── */}
+      {/* ── SKILLS PANEL — bottom corner based on leftHandedMode (Spec 16 Safe Area) ── */}
       <div
-        className="absolute bottom-5 right-4 md:bottom-6 md:right-6 safe-area-right safe-area-bottom pointer-events-auto"
+        className={`absolute bottom-5 ${settings.leftHandedMode ? 'left-4 safe-area-left' : 'right-4 safe-area-right'} md:bottom-6 ${settings.leftHandedMode ? 'md:left-6' : 'md:right-6'} safe-area-bottom pointer-events-auto`}
         style={{ zIndex: 25, opacity: settings.virtualControlsOpacity }}
       >
         <SkillsOverlay
@@ -684,7 +721,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       {/* ── Native Canvas Joystick hint label (Spec 16 Safe Area) ── */}
       {showTouchControls && (
         <div
-          className="absolute left-6 bottom-6 safe-area-left safe-area-bottom pointer-events-none select-none"
+          className={`absolute ${settings.leftHandedMode ? 'right-6 safe-area-right' : 'left-6 safe-area-left'} bottom-6 safe-area-bottom pointer-events-none select-none`}
           style={{ opacity: settings.virtualControlsOpacity * 0.45, zIndex: 16 }}
         >
           <div className="w-14 h-14 rounded-full border border-dashed border-[#b8860b]/40 flex items-center justify-center animate-pulse">

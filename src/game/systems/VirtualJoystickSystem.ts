@@ -12,6 +12,8 @@ export interface VirtualJoystickConfig {
   opacity?: number;
   enabled?: boolean;
   dragToFollow?: boolean;
+  scaleMultiplier?: number;
+  floatingStick?: boolean;
   zone?: 'left' | 'right' | 'all';
   colorTheme?: 'red' | 'purple';
 }
@@ -31,13 +33,17 @@ export class VirtualJoystickSystem {
   private glowGraphics: Phaser.GameObjects.Graphics | null = null;
 
   // Configuration
+  private defaultMaxRadius: number = 75;
+  private defaultBaseRadius: number = 66;
   private maxRadius: number = 75;
   private baseRadius: number = 66;
+  private scaleMultiplier: number = 1.0;
   private deadzone: number = 0.08;
   private curve: number = 1.0;
   private sensitivity: number = 1.0;
   private opacity: number = 0.85;
   private dragToFollow: boolean = false;
+  private floatingStick: boolean = false;
   private zone: 'left' | 'right' | 'all' = 'left';
   private colorTheme: 'red' | 'purple' = 'red';
   private enabled: boolean = true;
@@ -96,18 +102,29 @@ export class VirtualJoystickSystem {
   }
 
   public updateConfig(config: Partial<VirtualJoystickConfig>): void {
-    if (config.maxRadius !== undefined) this.maxRadius = config.maxRadius;
-    if (config.baseRadius !== undefined) this.baseRadius = config.baseRadius;
+    if (config.scaleMultiplier !== undefined) this.scaleMultiplier = config.scaleMultiplier;
+    if (config.baseRadius !== undefined) this.defaultBaseRadius = config.baseRadius;
+    if (config.maxRadius !== undefined) this.defaultMaxRadius = config.maxRadius;
+    this.baseRadius = this.defaultBaseRadius * this.scaleMultiplier;
+    this.maxRadius = this.defaultMaxRadius * this.scaleMultiplier;
+
     if (config.deadzone !== undefined) this.deadzone = config.deadzone;
     if (config.curve !== undefined) this.curve = config.curve;
     if (config.sensitivity !== undefined) this.sensitivity = config.sensitivity;
     if (config.opacity !== undefined) this.opacity = Math.max(0.1, Math.min(1.0, config.opacity));
     if (config.dragToFollow !== undefined) this.dragToFollow = config.dragToFollow;
+    if (config.floatingStick !== undefined) this.floatingStick = config.floatingStick;
+    if (config.zone !== undefined) this.zone = config.zone;
+    if (config.colorTheme !== undefined) this.colorTheme = config.colorTheme;
     if (config.enabled !== undefined) {
       this.enabled = config.enabled;
       if (!this.enabled && this.active) {
         this.reset();
       }
+    }
+
+    if (!this.active && this.scene && this.scene.scale) {
+      this.resetPosition();
     }
   }
 
@@ -243,7 +260,7 @@ export class VirtualJoystickSystem {
     // ==========================================
     // 4. KNOB (THUMB)
     // ==========================================
-    const knobRadius = 26;
+    const knobRadius = 26 * this.scaleMultiplier;
 
     // Dynamic Thumb Glow (expands and brightens based on movement force)
     glowG.fillStyle(cRedBase, alpha * (0.25 + (forceRatio * 0.35)));
@@ -301,8 +318,10 @@ export class VirtualJoystickSystem {
     if (inZone) {
       this.active = true;
       this.pointerId = pointer.id;
-      this.baseX = pointer.x;
-      this.baseY = pointer.y;
+      if (this.floatingStick) {
+        this.baseX = pointer.x;
+        this.baseY = pointer.y;
+      }
       this.knobX = pointer.x;
       this.knobY = pointer.y;
       this.vector = { x: 0, y: 0 };
@@ -364,8 +383,10 @@ export class VirtualJoystickSystem {
     this.pointerId = null;
     this.vector = { x: 0, y: 0 };
     this.rawVector = { x: 0, y: 0 };
+    this.resetPosition();
+  }
 
-    // Return to default position
+  private resetPosition(): void {
     const width = this.scene.scale.width;
     const height = this.scene.scale.height;
 

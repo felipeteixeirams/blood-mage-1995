@@ -72,6 +72,7 @@ describe('VirtualJoystickSystem', () => {
       curve: 1.0,
       sensitivity: 1.0,
       dragToFollow: true,
+      floatingStick: true,
     });
     joystick.init();
   });
@@ -145,6 +146,33 @@ describe('VirtualJoystickSystem', () => {
     joystick.updateConfig({ deadzone: 0.2, sensitivity: 1.5, enabled: false });
     scene._emitInput('pointerdown', { id: 1, x: 200, y: 300 });
     expect(joystick.isActive()).toBe(false); // Disabled
+  });
+
+  it('applies scale multiplier correctly to radii', () => {
+    joystick.updateConfig({ scaleMultiplier: 1.25 });
+    // Configured maxRadius 50 * 1.25 = 62.5
+    scene._emitInput('pointerdown', { id: 1, x: 200, y: 300 });
+
+    // Move 40px to the right (40/62.5 = 0.64 normalized)
+    scene._emitInput('pointermove', { id: 1, x: 240, y: 300 });
+    const vec = joystick.getMovementVector();
+    expect(vec.x).toBeGreaterThan(0.5);
+    expect(vec.x).toBeLessThan(0.9);
+  });
+
+  it('supports floatingStick dynamic origin placement on touch down', () => {
+    joystick.updateConfig({ floatingStick: true, zone: 'left' });
+    // Touch down at (150, 450)
+    scene._emitInput('pointerdown', { id: 1, x: 150, y: 450 });
+    expect(joystick.isActive()).toBe(true);
+
+    // Initial touch at origin has zero movement
+    expect(joystick.getMovementVector()).toEqual({ x: 0, y: 0 });
+
+    // Move relative to dynamic origin (150, 450) -> (200, 450)
+    scene._emitInput('pointermove', { id: 1, x: 200, y: 450 });
+    const vec = joystick.getMovementVector();
+    expect(vec.x).toBeGreaterThan(0.9);
   });
 
   it('destroys listeners and graphics cleanly', () => {

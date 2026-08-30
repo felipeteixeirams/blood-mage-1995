@@ -499,14 +499,20 @@ export class GameScene extends Phaser.Scene {
 
     // 4. Mobile / Touch Virtual Joystick (Canvas-Native, 60 FPS)
     const settings = useGameStore.getState().settings;
-this.virtualJoystick = new VirtualJoystickSystem(this, {
+    const stickScale = settings.virtualStickScale === 'small' ? 0.8 : settings.virtualStickScale === 'large' ? 1.25 : 1.0;
+    const moveZone = settings.leftHandedMode ? 'right' : 'left';
+    const aimZone = settings.leftHandedMode ? 'left' : 'right';
+
+    this.virtualJoystick = new VirtualJoystickSystem(this, {
       colorTheme: "red",
       deadzone: settings.joystickDeadzone,
       curve: settings.joystickCurve,
       sensitivity: settings.touchSensitivity,
       opacity: settings.virtualControlsOpacity,
+      scaleMultiplier: stickScale,
+      floatingStick: settings.floatingStick,
       enabled: settings.controlsMode !== 'keyboard',
-      zone: 'left'
+      zone: moveZone,
     });
     this.virtualJoystick.init();
 
@@ -515,9 +521,11 @@ this.virtualJoystick = new VirtualJoystickSystem(this, {
       curve: settings.joystickCurve,
       sensitivity: settings.touchSensitivity,
       opacity: settings.virtualControlsOpacity,
+      scaleMultiplier: stickScale,
+      floatingStick: settings.floatingStick,
       enabled: settings.controlsMode !== 'keyboard',
-      zone: 'right',
-      colorTheme: 'purple'
+      zone: aimZone,
+      colorTheme: 'purple',
     });
     this.aimJoystick.init();
 
@@ -1300,12 +1308,17 @@ this.virtualJoystick = new VirtualJoystickSystem(this, {
 
     if (this.virtualJoystick) {
       const currentSettings = store.settings;
+      const stickScale = currentSettings.virtualStickScale === 'small' ? 0.8 : currentSettings.virtualStickScale === 'large' ? 1.25 : 1.0;
+      const moveZone = currentSettings.leftHandedMode ? 'right' : 'left';
       this.virtualJoystick.updateConfig({
         deadzone: currentSettings.joystickDeadzone,
         curve: currentSettings.joystickCurve,
         sensitivity: currentSettings.touchSensitivity,
         opacity: currentSettings.virtualControlsOpacity,
+        scaleMultiplier: stickScale,
+        floatingStick: currentSettings.floatingStick,
         enabled: currentSettings.controlsMode !== 'keyboard',
+        zone: moveZone,
       });
       this.virtualJoystick.update(time, delta);
       if (this.virtualJoystick.isActive()) {
@@ -1313,6 +1326,23 @@ this.virtualJoystick = new VirtualJoystickSystem(this, {
         mx = joyVec.x;
         my = joyVec.y;
       }
+    }
+
+    if (this.aimJoystick) {
+      const currentSettings = store.settings;
+      const stickScale = currentSettings.virtualStickScale === 'small' ? 0.8 : currentSettings.virtualStickScale === 'large' ? 1.25 : 1.0;
+      const aimZone = currentSettings.leftHandedMode ? 'left' : 'right';
+      this.aimJoystick.updateConfig({
+        deadzone: currentSettings.joystickDeadzone,
+        curve: currentSettings.joystickCurve,
+        sensitivity: currentSettings.touchSensitivity,
+        opacity: currentSettings.virtualControlsOpacity,
+        scaleMultiplier: stickScale,
+        floatingStick: currentSettings.floatingStick,
+        enabled: currentSettings.controlsMode !== 'keyboard',
+        zone: aimZone,
+      });
+      this.aimJoystick.update(time, delta);
     }
 
     if (this.keys) {
