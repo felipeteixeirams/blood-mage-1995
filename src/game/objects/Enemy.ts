@@ -911,10 +911,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       const futureY = this.y + Math.sign(nextVy) * stepDist;
 
       if (!dungeonGen.isTraversable(this.x, this.y, futureX, futureY)) {
-        // Slide along X if X path is traversable
-        if (dungeonGen.isTraversable(this.x, this.y, futureX, this.y)) {
+        const canMoveX = futureX !== this.x && dungeonGen.isTraversable(this.x, this.y, futureX, this.y);
+        const canMoveY = futureY !== this.y && dungeonGen.isTraversable(this.x, this.y, this.x, futureY);
+
+        if (canMoveX && !canMoveY) {
           nextVy = 0;
-        } else if (dungeonGen.isTraversable(this.x, this.y, this.x, futureY)) {
+        } else if (canMoveY && !canMoveX) {
           nextVx = 0;
         } else {
           nextVx = 0;
