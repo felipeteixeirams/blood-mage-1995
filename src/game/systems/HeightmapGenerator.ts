@@ -16,6 +16,15 @@ export interface PoissonPoint {
   height: number;
 }
 
+export interface CliffEdgeInfo {
+  hasSouthCliff: boolean;
+  hasSouthEastCliff: boolean;
+  hasSouthWestCliff: boolean;
+  deltaZSouth: number;
+  deltaZSouthEast: number;
+  deltaZSouthWest: number;
+}
+
 /**
  * Projeta coordenadas do grid tridimensional (gridX, gridY, altura) para tela 2D
  * conforme especificado no Capítulo 3 da Spec 16.
@@ -133,6 +142,41 @@ export class HeightmapGenerator {
     const zTo = this.getHeightAt(gridToX, gridToY);
 
     return Math.abs(zTo - zFrom) <= 1;
+  }
+
+  /**
+   * Identifica bordas de desnível / falésia viradas para o jogador (direção isométrica)
+   * quando a altura do tile atual Z é maior que o vizinho adjacente (Delta Z >= 1).
+   */
+  public getCliffEdges(gridX: number, gridY: number): CliffEdgeInfo {
+    const zCurrent = this.getHeightAt(gridX, gridY);
+    if (zCurrent <= 0) {
+      return {
+        hasSouthCliff: false,
+        hasSouthEastCliff: false,
+        hasSouthWestCliff: false,
+        deltaZSouth: 0,
+        deltaZSouthEast: 0,
+        deltaZSouthWest: 0,
+      };
+    }
+
+    const zSouth = this.getHeightAt(gridX + 1, gridY + 1);
+    const zSouthEast = this.getHeightAt(gridX + 1, gridY);
+    const zSouthWest = this.getHeightAt(gridX, gridY + 1);
+
+    const deltaZSouth = zCurrent - zSouth;
+    const deltaZSouthEast = zCurrent - zSouthEast;
+    const deltaZSouthWest = zCurrent - zSouthWest;
+
+    return {
+      hasSouthCliff: deltaZSouth >= 1,
+      hasSouthEastCliff: deltaZSouthEast >= 1,
+      hasSouthWestCliff: deltaZSouthWest >= 1,
+      deltaZSouth: Math.max(0, deltaZSouth),
+      deltaZSouthEast: Math.max(0, deltaZSouthEast),
+      deltaZSouthWest: Math.max(0, deltaZSouthWest),
+    };
   }
 
   /**

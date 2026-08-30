@@ -67,6 +67,8 @@ export class DungeonGenerator {
     this.heightGenerator = new HeightmapGenerator(biome === 'gloomy_woods' ? 2026 : 1995);
     const heightGen = this.heightGenerator;
 
+    const wallTextureKey = this.scene.textures?.exists('spr_wall') ? 'spr_wall' : 'tile_wall_brick';
+
     // Fill Isometric Floor Tiles with Biome Tinting & 2.5D Elevation (Spec 16)
     for (let x = 0; x < mapW; x += 48) {
       for (let y = 0; y < mapH; y += 24) {
@@ -75,8 +77,9 @@ export class DungeonGenerator {
         const zElevation = isSafeHouse ? 0 : heightGen.getHeightAt(gridX, gridY);
         // Deslocamento sutil em Y conforme a elevação Z (Spec 16 - heightStep 2px nos tiles 2D)
         const renderY = y - (zElevation * 2);
+        const tileX = x + (y % 48 === 0 ? 0 : 24);
 
-        const tile = this.scene.add.image(x + (y % 48 === 0 ? 0 : 24), renderY, groundTexture);
+        const tile = this.scene.add.image(tileX, renderY, groundTexture);
         if (!isSafeHouse) {
           tile.setTint(tints.ground);
           // Sombreamento sutil conforme elevação Z para profundidade visual
@@ -90,6 +93,31 @@ export class DungeonGenerator {
         tile.setDepth?.(isoDepth);
         if ((this.scene as any).lightingSystem) {
           (this.scene as any).lightingSystem.applyLightPipeline(tile);
+        }
+
+        // Render Cliff Faces for elevation drops Z > 0 (Cliff Faces & Elevation Shading)
+        if (!isSafeHouse && zElevation > 0) {
+          const cliffEdges = heightGen.getCliffEdges(gridX, gridY);
+          if (cliffEdges.hasSouthCliff || cliffEdges.hasSouthEastCliff || cliffEdges.hasSouthWestCliff) {
+            const maxDelta = Math.max(
+              cliffEdges.deltaZSouth,
+              cliffEdges.deltaZSouthEast,
+              cliffEdges.deltaZSouthWest
+            );
+
+            for (let step = 1; step <= maxDelta; step++) {
+              const cliffY = renderY + step * 8;
+              const cliffSprite = this.scene.add.image(tileX, cliffY, wallTextureKey);
+              cliffSprite.setTint(tints.wall);
+
+              const cliffDepth = calculateIsometricDepth(gridX, gridY, zElevation, 2);
+              cliffSprite.setDepth?.(cliffDepth);
+
+              if ((this.scene as any).lightingSystem) {
+                (this.scene as any).lightingSystem.applyLightPipeline(cliffSprite);
+              }
+            }
+          }
         }
       }
     }

@@ -128,4 +128,40 @@ describe('HeightmapGenerator & 2.5D Isometric Math (Spec 16)', () => {
       }
     }
   });
+
+  it('identifica corretamente bordas de desnível / falésia viradas para o sul e sudeste (getCliffEdges)', () => {
+    const gen = new HeightmapGenerator(1995);
+
+    gen.getHeightAt = (gridX: number, gridY: number) => {
+      if (gridX === 5 && gridY === 5) return 3; // Elevação atual Z=3
+      if (gridX === 6 && gridY === 6) return 1; // Vizinho Sul Z=1 (Delta Z = 2)
+      if (gridX === 6 && gridY === 5) return 0; // Vizinho Sudeste Z=0 (Delta Z = 3)
+      if (gridX === 5 && gridY === 6) return 3; // Vizinho Sudoeste Z=3 (Delta Z = 0)
+      return 3;
+    };
+
+    const edges = gen.getCliffEdges(5, 5);
+    expect(edges.hasSouthCliff).toBe(true);
+    expect(edges.deltaZSouth).toBe(2);
+    expect(edges.hasSouthEastCliff).toBe(true);
+    expect(edges.deltaZSouthEast).toBe(3);
+    expect(edges.hasSouthWestCliff).toBe(false);
+    expect(edges.deltaZSouthWest).toBe(0);
+  });
+
+  it('retorna sem falésias se o tile atual estiver no nível Z=0 ou se não houver desnível', () => {
+    const gen = new HeightmapGenerator(1995);
+
+    gen.getHeightAt = () => 0; // Tudo Z=0
+    const edgesZero = gen.getCliffEdges(5, 5);
+    expect(edgesZero.hasSouthCliff).toBe(false);
+    expect(edgesZero.hasSouthEastCliff).toBe(false);
+    expect(edgesZero.hasSouthWestCliff).toBe(false);
+
+    gen.getHeightAt = () => 2; // Tudo plano Z=2
+    const edgesFlat = gen.getCliffEdges(5, 5);
+    expect(edgesFlat.hasSouthCliff).toBe(false);
+    expect(edgesFlat.hasSouthEastCliff).toBe(false);
+    expect(edgesFlat.hasSouthWestCliff).toBe(false);
+  });
 });

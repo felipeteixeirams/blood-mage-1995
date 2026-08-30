@@ -194,4 +194,29 @@ describe('DungeonGenerator (spec 11, Frente 1 — layout orgânico via BSP + Cel
     );
     expect(chestCallsNearTreasure.length).toBeGreaterThanOrEqual(2);
   });
+
+  it('instancia paredes de falésia (spr_wall ou tile_wall_brick) com tinting e profundidade ao detectar desnível Z > 0', () => {
+    const { scene, wallsGroup, chestsGroup, imagesCreated } = makeMockScene();
+    scene.lightingSystem = { applyLightPipeline: vi.fn() };
+    const generator = new DungeonGenerator(scene, wallsGroup as any, chestsGroup as any);
+
+    vi.spyOn(generator.heightGenerator, 'getHeightAt').mockImplementation((gx, gy) => {
+      if (gx === 2 && gy === 2) return 3;
+      return 0;
+    });
+
+    generator.generate(MAP_W, MAP_H, 'fosso_chagas');
+
+    const cliffSprites = imagesCreated.filter(
+      (img) => img.texture.key === 'spr_wall' || img.texture.key === 'tile_wall_brick'
+    );
+    expect(cliffSprites.length).toBeGreaterThan(0);
+
+    cliffSprites.forEach((sprite) => {
+      expect(sprite.setTint).toHaveBeenCalledWith(0x15803d);
+      expect(sprite.setDepth).toHaveBeenCalled();
+    });
+
+    expect(scene.lightingSystem.applyLightPipeline).toHaveBeenCalled();
+  });
 });
