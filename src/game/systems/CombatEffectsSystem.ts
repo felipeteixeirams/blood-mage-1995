@@ -117,6 +117,18 @@ export class CombatEffectsSystem {
     // Onboarding trigger
     useGameStore.getState().triggerOnboardingEvent('firstKillDone', 'DICA: Colete o loot no chão antes de continuar!');
 
+    // Spec 16 Onboarding: clear dodge hint if skeleton warrior was defeated
+    if (enemy.config?.id === 'skeleton_warrior' && !useGameStore.getState().onboarding.firstDashDone) {
+      useGameStore.getState().triggerOnboardingEvent('firstDashDone');
+      if (useGameStore.getState().activeTip?.includes('ESQUIVE')) {
+        useGameStore.getState().setActiveTip(null);
+      }
+    }
+
+    if (scene.currentFloorDepth === 1 && scene.floorMonstersKilled >= 4) {
+      useGameStore.getState().triggerOnboardingEvent('firstSiegeCleared');
+    }
+
     const isAbomination = enemy.config.id === 'gore_abomination';
     const isZombie = enemy.config.id === 'zombie_shambler';
 

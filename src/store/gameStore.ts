@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, BiomeType, DroppedCorpse, CodexState, AchievementState, RunStats, UnlockedAchievementNotification } from '../types/game';
+import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, BiomeType, DroppedCorpse, CodexState, AchievementState, RunStats, UnlockedAchievementNotification, OnboardingState } from '../types/game';
 import { GameMode, ZoneType, CampaignState, DialogueTree, QuestLogEntry, QuestDefinition, QuestObjective, CampaignEffect } from '../types/campaign';
 import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding, loadUnlockedRelics, saveUnlockedRelics, loadEquippedRelicIds, saveEquippedRelicIds, loadCodexState, saveCodexState, loadAchievements, saveAchievements, loadRunStats, saveRunStats, loadCampaignState, saveCampaignState } from '../utils/localStorage';
 import { soundEngine } from '../utils/soundEngine';
@@ -87,14 +87,8 @@ interface GameStore {
   activeModifiers: string[];
   toggleModifier: (id: string) => void;
   clearModifiers: () => void;
-  onboarding: {
-    firstKillDone: boolean;
-    firstLevelUpDone: boolean;
-    firstEquipDone: boolean;
-    firstBossSeen: boolean;
-    firstSkillCast: boolean;
-  };
-  triggerOnboardingEvent: (key: 'firstKillDone' | 'firstLevelUpDone' | 'firstEquipDone' | 'firstBossSeen' | 'firstSkillCast', tipText: string) => void;
+  onboarding: OnboardingState;
+  triggerOnboardingEvent: (key: keyof OnboardingState, tipText?: string) => void;
   activeTip: string | null;
   setActiveTip: (tip: string | null) => void;
   isRecordsOpen: boolean;
@@ -610,20 +604,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
   onboarding: loadOnboarding(),
   activeTip: null,
   setActiveTip: (tip) => set({ activeTip: tip }),
-  triggerOnboardingEvent: (key, tipText) => {
+  triggerOnboardingEvent: (key, tipText = '') => {
     const current = get().onboarding;
     if (current[key]) return; // Already triggered before
 
     const updated = { ...current, [key]: true };
     saveOnboarding(updated);
-    set({ onboarding: updated, activeTip: tipText });
+    set({ onboarding: updated, activeTip: tipText || get().activeTip });
 
-    // Auto-fade tip after 6 seconds
-    setTimeout(() => {
-      if (get().activeTip === tipText) {
-        set({ activeTip: null });
-      }
-    }, 6000);
+    if (tipText) {
+      // Auto-fade tip after 6 seconds
+      setTimeout(() => {
+        if (get().activeTip === tipText) {
+          set({ activeTip: null });
+        }
+      }, 6000);
+    }
   },
   activeContracts: [],
   setActiveContracts: (contracts) => set({ activeContracts: contracts }),
