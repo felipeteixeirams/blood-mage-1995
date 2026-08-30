@@ -1445,6 +1445,7 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     drawMossBlob(4, 25, 2.2);
   });
   addTexture('tile_wall_brick', wallCanvas);
+  addTexture('spr_wall', wallCanvas);
 
   // 17. Dungeon Door Archway (32x32)
   const doorCanvas = createPixelCanvas(32, 32, (ctx) => {
