@@ -83,8 +83,16 @@ describe('localStorage persistence', () => {
       expect(loadSettings()).toEqual(defaultSettings);
     });
 
-    it('round-trips settings', () => {
-      const custom = { ...defaultSettings, sfxVolume: 0.2, crtFilter: false, controlsMode: 'keyboard' as const };
+    it('round-trips settings including ergonomic options', () => {
+      const custom = {
+        ...defaultSettings,
+        sfxVolume: 0.2,
+        crtFilter: false,
+        controlsMode: 'keyboard' as const,
+        virtualStickScale: 'large' as const,
+        leftHandedMode: true,
+        floatingStick: true,
+      };
       saveSettings(custom);
       expect(loadSettings()).toEqual(custom);
     });

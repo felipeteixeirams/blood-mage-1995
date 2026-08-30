@@ -258,6 +258,9 @@ export interface GameSettings {
   controlsMode: 'auto' | 'touch' | 'keyboard';
   joystickDeadzone?: number; // 0 to 0.5 (normalized)
   joystickCurve?: number; // 0.5 to 3.0 (response curve exponent)
+  virtualStickScale?: 'small' | 'medium' | 'large';
+  leftHandedMode?: boolean;
+  floatingStick?: boolean;
   screenShakeEnabled?: boolean;
   flashesEnabled?: boolean;
   fearDistortionEnabled?: boolean; // toggle for panic wave screen distortion
