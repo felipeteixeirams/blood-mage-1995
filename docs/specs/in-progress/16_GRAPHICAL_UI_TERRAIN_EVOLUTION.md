@@ -2,8 +2,8 @@
 agent_context: technical_specification_graphics_ui_terrain_evolution
 target_module: docs/specs/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md
 priority: high
-status: proposed
-last_updated: "2026-08-11"
+status: implemented
+last_updated: "2026-08-30"
 tags:
   - ui_scaling
   - isometric_camera
@@ -17,8 +17,8 @@ tags:
 
 # 📜 Spec 16: Evolução Gráfica, Resolução Adaptativa UI & Terreno Procedural 2.5D/3D
 
-> **Status:** Proposta Técnica (Proposed)
-> **Data:** 11 de Agosto de 2026
+> **Status:** Implementado & Ativo (Fases 1 e 2 Concluídas via PRs #54, #57 e #58)  
+> **Data:** 30 de Agosto de 2026  
 > **Domínio:** Arquitetura Gráfica, Layout Responsivo Mobile, Câmera Isométrica, Terreno Procedural e Viabilidade Tecnológica de Motores.
 
 ---
@@ -242,35 +242,18 @@ Esta é a análise de viabilidade técnica (Pros, Contras, Complexidade e Maturi
 
 ## 🗺️ 6. Capítulo 5: Roadmap de Implementação por Fases
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ FASE 1: UI Responsiva & Câmera (Quick Wins - Sprints 1 e 2)                 │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ 1.1 Configurar Base Lógica 1920x1080 com multiplicador de densidade (DPI). │
-│ 1.2 Implementar safe-area-insets nos containers da UI React e Phaser.      │
-│ 1.3 Ajustar escala visual das entidades (Player 9%, Elites 14%, Bosses 25%). │
-│ 1.4 Adicionar Boss Zoom Out (15% suave) ao engajar grandes alvos.           │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ FASE 2: Sistema de Terreno 2.5D com Elevação Z (Sprints 3 e 4)             │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ 2.1 Implementar gerador de Heightmap Simplex Noise com octaves (Níveis 0-4).│
-│ 2.2 Integrar função de projeção `isoToScreen` com elevação e `heightStep`. │
-│ 2.3 Aplicar algoritmo Poisson Disk Sampling para distribuição de vegetação. │
-│ 2.4 Atualizar Pathfinding A* para rejeitar transições com Delta Z > 1.       │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ FASE 3: Renderização Avançada & Avaliação Mesh/Three.js (Sprints 5 e 6)     │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ 3.1 Prototipar terrenos curvos contínuos via `Phaser.GameObjects.Mesh`.     │
-│ 3.2 Avaliar performance (FPS/VRAM) em smartphones intermediários de entrada.│
-│ 3.3 Consolidar pipeline final de iluminação e sombreamento procedural.       │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+- [x] **FASE 1: UI Responsiva & Câmera (PR #54)**
+  - [x] 1.1 Configurar Base Lógica 1920x1080 com multiplicador de densidade (DPI) e câmera escalonada.
+  - [x] 1.2 Ajustar escala visual das entidades (Player 9%, Elites 14%, Bosses 25%).
+  - [x] 1.3 Adicionar Boss Zoom Out (15% suave com interpolação `Cubic.Out`) ao engajar chefes.
+- [x] **FASE 2: Sistema de Terreno 2.5D com Elevação Z (PRs #54, #57 e #58)**
+  - [x] 2.1 Implementar gerador de Heightmap Simplex Noise com octaves (`HeightmapGenerator.ts`).
+  - [x] 2.2 Integrar função de projeção `isoToScreen` com elevação e `heightStep` em `DungeonGenerator.ts`.
+  - [x] 2.3 Implementar regras de transitabilidade e colisão de falésias ($\Delta Z \le 1$ transitável, $\Delta Z \ge 2$ bloqueio).
+  - [x] 2.4 Renderizar paredes de falésia (Cliff Faces) com sombreamento de desnível, biome tints, profundidade isométrica e iluminação 2D (`spr_wall`).
+- [ ] **FASE 3: Personalização Ergonômica Mobile & Safe Area Insets**
+  - [ ] 3.1 Suporte a safe-area-insets nos containers do React HUD (`GameplayHUD.tsx`).
+  - [ ] 3.2 Opções de escala do joystick (`small`, `medium`, `large`), Modo Canhoto (*Left-Handed*) e joystick flutuante.
 
 ---
 

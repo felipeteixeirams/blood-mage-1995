@@ -21,22 +21,47 @@ Como o sistema funciona *hoje*. Leitura obrigatória antes de refatorar sistemas
 * `docs/architecture/04_STATE_MANAGEMENT.md` - Como React e Phaser compartilham estado.
 * `docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md` - **CRÍTICO:** Leia antes de debugar qualquer erro de renderização, áudio ou assets.
 
-### 2. 🧪 Experimentos (Laboratório / Fase 1)
-O que estamos testando agora. Estas não são specs rígidas, são hipóteses de *Game Feel*.
-* `docs/experiments/01_CAMERA_AND_CONTROLS.md` - Ajustes de Câmera, Touchpad e Deadzones.
+### 2. 🧪 Experimentos & Discovery (Laboratório Mobile)
+O que testamos e estamos validando. Hipóteses orientadas a *Game Feel* e retenção.
+* `docs/experiments/01_CAMERA_AND_CONTROLS.md` - Câmera Look-Ahead, 1080p e Mira Inteligente Híbrida (Concluído).
+* `docs/experiments/02_TOUCH_ERGONOMICS_AND_COMBAT_DEPTH.md` - Ergonomia Touch Avançada, Safe Area Insets, Escala de Joystick e Modo Canhoto.
 
-### 3. 📦 Produto, Estratégia e Bíblia de Sucesso
+### 3. 📜 Especificações Técnicas (Specs: in-progress, delivered, backlog, discovery)
+Index mestre: `docs/specs/README.md`
+
+#### 🟡 Em Andamento (`docs/specs/in-progress/`)
+* `docs/specs/in-progress/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md` - **Spec 16:** Resolução 1080p, Boss Zoom Out e Terreno 2.5D com Falésias (Fase 3 em andamento).
+
+#### 🟢 Entregues / Concluídas (`docs/specs/delivered/`)
+* `docs/specs/delivered/11_VISUAL_POLISH_FRONTS.md` - **Spec 11:** Polimento Visual, VFX de Sangue e Hit-Stop.
+* `docs/specs/delivered/12_EXPANSION_FRONTS.md` - **Spec 12:** Elites com Afixos, Armadilhas, Minimapa e Áudio FM.
+* `docs/specs/delivered/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md` - **Spec 13:** Safe House do Santuário e Transição de Campanha.
+* `docs/specs/delivered/14_IMMERSION_AND_GAME_FEEL.md` - **Spec 14:** Haptics, Screen Shake, Look-Ahead e Caixas 9-Slice.
+* `docs/specs/delivered/15_PWA_AND_OFFLINE_READY.md` - **Spec 15:** PWA Instalável, Cache Workbox e Modo Offline-First.
+* `docs/specs/delivered/17_IN_MEDIA_RES_ONBOARDING_AND_COMBAT_FLOW.md` - **Spec 17:** Onboarding In Media Res, Cerco Inicial e TTF <10s.
+
+#### 🔵 Propostas & Backlog (`docs/specs/backlog/`)
+* `docs/specs/backlog/` - Propostas formais de novas mecânicas (Prestígio, Eventos, HUD e Polimento).
+
+#### 💡 Discoveries & Spikes (`docs/specs/discovery/`)
+* `docs/specs/discovery/` - Pesquisas exploratórias, avaliações arquiteturais (Phaser 4.2.1, UI externa, P2P WebRTC, AI art pipeline e Store wrappers).
+
+#### ⛔ Arquivadas / Rejeitadas (`docs/specs/rejected/`)
+* `docs/specs/rejected/` - Propostas rejeitadas para proteção dos guardrails técnicos do projeto.
+
+### 4. 📦 Produto, Estratégia e Bíblia de Sucesso
 As regras de produto, onde estamos, diretrizes de retenção mobile e para onde vamos:
 * `docs/product/00_MOBILE_FIRST_SUCCESS_BIBLE.md` - **A Bíblia de Sucesso Mobile & Framework de Retenção** (Evidence-based KPIs, Time to Fun <10s, Carga Cognitiva, Filtro de Discovery & Specs).
 * `docs/product/ROADMAP.md` - Fases do projeto (0 a 5).
 * `docs/product/ACCOUNT_AND_DATA.md` - Estratégia de Salvamento e Autenticação (Local Only).
 * `docs/product/RELEASE_STRATEGY.md` - Requisitos para quando formos para a Play Store.
 
-### 4. 🔍 Auditorias e Qualidade de Código (Reviews & Quality)
+### 5. 🔍 Auditorias e Qualidade de Código (Reviews & Quality)
 Relatórios de auditoria técnica, cobertura de testes e análise de segurança.
+* `docs/reviews/02_SPECS_AND_DISCOVERY_RETENTION_AUDIT.md` - **Auditoria Geral de Specs, Roadmap & Discovery** (Filtro de Sucesso Mobile).
 * `docs/reviews/AUDIT_REPORT_QUALIDADE_CODIGO_2026.md` - **Relatório de Auditoria de Qualidade de Código 2026** (Testes, Tratamento de Erros, Padrões de Design, Segurança e Resiliência).
 
-### 5. 🗄️ Arquivo (Documentação Legada)
+### 6. 🗄️ Arquivo (Documentação Legada)
 Specs originais, planos passados e documentação desatualizada. **Não use como verdade absoluta.**
 * `docs/archive/` - Contém todo o histórico e planejamento obsoleto ou em pausa.
 

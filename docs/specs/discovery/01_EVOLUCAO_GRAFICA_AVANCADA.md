@@ -1,23 +1,27 @@
 ---
-agent_context: game-engine, frontend
-target_module: artifacts/bloodmage/src/game
+agent_context: game-engine, frontend, graphics-architect
+target_module: src/game, src/utils
 priority: medium
-status: draft
-last_updated: 2026-08-11
-tags: [specs, proposta, graficos, shaders, iluminacao, assets, performance]
+status: discovery
+doc_type: discovery
+last_updated: 2026-08-30
+tags: [specs, discovery, phaser4, graficos, shaders, iluminacao, procedural, performance]
 ---
 
-# Proposta — Evolução Gráfica Avançada (postFX, Iluminação e Pipeline de Assets)
+# 🎨 [DISCOVERY] Avaliação Arquitetural: Phaser 4.2.1 e Renderização Procedural Avançada
 
-> Documento de proposta (roadmap). Define o **porquê** e **o que**; implementação detalhada só após aprovação e mover para `andamento/`.
+> 💡 **TIPO: DISCOVERY & AVALIAÇÃO ARQUITETURAL (Backlog)**
+>
+> **Premissa & Hipótese de Avaliação:**
+> Avaliar se a stack atual **Phaser 4.2.1 + WebGL** nos permite implementar shaders de pós-processamento (PostFX GPU), iluminação dinâmica 2D nativa (`Light2D`) e modelos procedurais com fidelidade visual tão elevada que possam rivalizar ou superar a qualidade de sprites externos, eliminando a dependência externa de assets e acelerando o ciclo de desenvolvimento do jogo sem onerar a performance mobile.
 
-## Contexto
+---
 
-O jogo é 100% procedural (sprites gerados via Canvas em `textureGenerator.ts`, áudio sintetizado via Web Audio em `soundEngine.ts`), com stack **Phaser 4.2.1 + Vite 7 + WebGL** (`Phaser.AUTO`, `pixelArt: true`). Auditoria no código mostrou que **nenhum shader/filtro/pipeline WebGL é usado hoje** — os efeitos de atmosfera são overlays de alpha/radius (`WorldManager.updateLighting`, `ScreenEffects`), não iluminação real.
+## 1. Contexto & Estado Atual
 
-O discovery de mercado (Phaser 4.2, ago/2026) revelou que a versão 4 entrega, nativamente, um pipeline de filtros pós-processamento e iluminação 2D dinâmica com custo baixo de integração — sem precisar escrever GLSL. Isso permite elevar a qualidade visual **sem introduzir assets externos**, postergando decisões de orçamento de arte.
+O jogo possui uma stack moderna com **Phaser 4.2.1 + Vite 7 + WebGL** (`Phaser.AUTO`, `pixelArt: true`). Atualmente, os efeitos de atmosfera e iluminação operam via overlays 2D/Canvas (`ScreenEffects.ts` e `WorldManager.ts`).
 
-Esta proposta consolida 3 eixos como roadmap. **Eixo A** é o prioritário (maior impacto visual por esforço). **Eixos B e C** são gatilhos futuros para quando a produção de arte/áudio externa for decidida.
+Com o suporte nativo do Phaser 4.2.1 para pipelines de filtros pós-processamento via GPU e iluminação dinâmica 2D, surge uma oportunidade arquitetural estratégica: **elevar o padrão gráfico para o nível de jogos comerciais góticos (Diablo / Dungeon Siege) usando o poder de processamento da GPU**, avaliando se a renderização procedural pode substituir a necessidade de criação e manutenção de centenas de arquivos de sprites externos.
 
 ---
 

@@ -1,15 +1,23 @@
 ---
 agent_context: game-designer, frontend, game-engine
-target_module: docs/specs/propostas
-priority: medium
-status: draft
-last_updated: 2026-08-11
-tags: [specs, proposta, skinning, visual, layers, texture-generator]
+target_module: docs/specs/rejected
+priority: low
+status: rejected
+rejection_date: 2026-08-30
+rejection_reason: "Conflito direto com a Arquitetura Híbrida de Assets e a Regra 6b do AGENTS.md (Spritesheet PixelLab do Jogador). A geração procedural de camadas em runtime sobre 'spr_bloodmage' sobrescreveria a arte final física do PixelLab e causaria regressão silenciosa para placeholders de canvas. O sistema de customização visual agora é baseado em Palette Swaps físicos e troca modular de spritesheets."
+tags: [specs, rejected, skinning, visual, layers]
 ---
 
-# 🎭 GDD & Especificação: Sistema de Skinning e Composição Dinâmica de Camadas
+# ⛔ [REJEITADA] GDD & Especificação: Sistema de Skinning e Composição Dinâmica de Camadas
 
-> Especificação técnica e conceitual para o desenvolvimento de um sistema de Skinning e customização visual em tempo real no Bloodmage 1995. Em vez de depender de arquivos estáticos gigantescos, propomos uma arquitetura baseada em um Compositor de Camadas Dinâmico operando diretamente no gerador procedural de texturas da engine HTML5 Canvas.
+> ⚠️ **STATUS: PROPOSTA REJEITADA / OBSOLETA (Auditoria 2026-08-30)**
+>
+> **Motivo da Rejeição:**
+> Esta especificação propunha recompor o sprite do personagem desenhando camadas procedurais no HTML5 Canvas (`textureGenerator.ts`). 
+> **Por que isso é proibido:** O projeto evoluiu para a **Arquitetura Híbrida de Assets**. A arte do jogador é produzida via PixelLab (`public/assets/sprites/player/bloodmage.png`). Executar composição procedural de canvas sobre `'spr_bloodmage'` viola a **Regra 6b do `AGENTS.md`** e transformaria o personagem novamente em um placeholder procedural de canvas.
+>
+> **Diretriz Aprovada Substituta:**
+> Customização cosmética de skins e equipamentos deve ser implementada via **Palette Swaps em tempo de build/shader** ou **Spritesheets modulares físicos gerados no pipeline do PixelLab**, preservando a integridade da arte do jogo.
 
 ---
 

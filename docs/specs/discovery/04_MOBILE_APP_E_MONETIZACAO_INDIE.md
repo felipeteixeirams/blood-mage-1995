@@ -1,15 +1,20 @@
 ---
 agent_context: release-engineer, product-manager, game-designer, backend
-target_module: docs/specs/propostas
-priority: high
-status: draft
-last_updated: 2026-08-11
-tags: [specs, proposta, mobile, monetizacao, marketing, capacitor, cordova]
+target_module: docs/specs/backlog
+priority: medium
+status: discovery
+doc_type: discovery
+last_updated: 2026-08-30
+tags: [specs, discovery, mobile, monetizacao, marketing, capacitor, pwa, stores]
 ---
 
-# 📱 GDD & Especificação: Mobile App, Lançamento e Monetização Saudável
+# 📱 [DISCOVERY] Mobile App, Wrapper Nativo e Monetização Saudável
 
-> Proposta de engenharia e negócios para preparar Bloodmage 1995 para publicação em lojas oficiais de aplicativos (Google Play Store e Apple App Store) através de empacotadores nativos de alta performance, aliada a um plano de monetização não-intrusivo desenhado especialmente para um desenvolvedor solo obter sucesso financeiro respeitando a comunidade de jogadores.
+> 💡 **TIPO: DISCOVERY & EXPLORAÇÃO DE MERCADO (Backlog)**
+>
+> **Status Atual da Plataforma:** A plataforma mobile principal e ativa do projeto é o **PWA Offline-First** (concluído na Spec 15), que já provê suporte offline completo, baixo consumo de armazenamento e execução direta no navegador mobile.
+>
+> **Propósito deste Discovery:** Avaliar caminhos futuros para distribuição em lojas oficiais (Google Play Store e Apple App Store) via wrappers nativos modernos (ex: CapacitorJS ou TWA), além de modelos de monetização ética não-intrusiva adequados para um desenvolvedor indie.
 
 ---
 

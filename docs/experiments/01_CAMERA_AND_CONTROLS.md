@@ -19,12 +19,12 @@ A câmera original estava distante demais, prejudicando a leitura do combate e a
     - Fallback: Quando parado e sem input direcional, prioriza o alvo mais próximo radialmente (< 350px).
   - Feedback visual no toque.
 
-## Resultados Esperados
-- Uma sensação de controle ágil.
-- Câmera que permite antecipar inimigos (Line of Sight) sem perder a proximidade de ação.
+## Resultados e Conclusão
+- **Câmera:** Câmera com interpolação Lerp Look-Ahead, resolução lógica Full HD 1080p e Boss Zoom-Out de 15% proporcionaram visão ampla para telegrafias e excelente proximidade durante o combate comum.
+- **Controles Touch & Mira:** Sistema híbrido de Mira Inteligente (Cone Frontal + Proximidade) e Virtual Joystick twin-stick permitiram disparar e esquivar fluidamente em telas touch sem necessidade de mira cirúrgica.
 
 ## Status
 - [x] Hipótese definida.
-- [ ] Ajustes iniciais implementados.
-- [ ] Testado pelo usuário.
-- [ ] Decisão tomada (aceito/ajustar/rejeitado).
+- [x] Ajustes iniciais implementados.
+- [x] Testado e validado.
+- [x] Decisão tomada: **APROVADO & INTEGRADO** (Specs 14, 16 e 17).

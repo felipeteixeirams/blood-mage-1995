@@ -24,7 +24,7 @@ Todas as pastas em caixa baixa. Categorias definidas pela arquitetura do jogo (n
 | `critical/` | Anti-regressão, arquivos críticos, performance, testing gates |
 | `integration/` | Third-party e tools (Lovable, Vercel, MCP, agentes) |
 | `reference/` | Referência rápida, estrutura de arquivos, tipos, endpoints |
-| `specs/` | Specs por ciclo de vida: `propostas/`, `andamento/`, `finalizadas/` |
+| `specs/` | Specs por ciclo de vida: `in-progress/`, `delivered/`, `backlog/`, `discovery/`, `rejected/` |
 | `reviews/` | Auditorias e validações (qualidade, validação de features) |
 | `decisions/` | ADRs e decisões de arquitetura |
 | `templates/` | Modelos padronizados de documento (incl. frontmatter) |
@@ -51,7 +51,7 @@ Recupere metadados com grep no início do arquivo antes de ler o documento intei
 ## Fluxo de trabalho spec-driven
 
 1. Antes de implementar algo relevante, verifique se já existe spec em `docs/specs/` (veja `specs/README.md` para status).
-2. Se não existir, crie uma spec incremental em `specs/propostas/` ou `specs/andamento/`.
+2. Se não existir, crie uma spec incremental em `specs/backlog/` ou `specs/in-progress/`.
 3. Spec define o **o que e por quê**; `context/` e `architecture/` definem o **como e o estado atual**. Implemente seguindo ambos.
 
 ## Atualizar documentação é parte do trabalho

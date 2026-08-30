@@ -1,15 +1,20 @@
 ---
 agent_context: game-designer, backend, product-manager
-target_module: docs/specs/propostas
-priority: medium
-status: draft
-last_updated: 2026-08-11
-tags: [specs, proposta, multiplayer, cooperativo, webrtc, peer-to-peer]
+target_module: docs/specs/backlog
+priority: low
+status: discovery
+doc_type: discovery
+last_updated: 2026-08-30
+tags: [specs, discovery, multiplayer, cooperativo, webrtc, peer-to-peer, backlog]
 ---
 
-# ⚔️ GDD & Especificação: Multijogador Cooperativo e Interatividade
+# ⚔️ [DISCOVERY] Multijogador Cooperativo e Interatividade (P2P WebRTC)
 
-> Especificação conceitual e técnica para a introdução de interatividade cooperativa entre jogadores em Bloodmage 1995, priorizando um modelo de conexão de custo zero de servidor (P2P via WebRTC) e focado em exploração conjunta de masmorras e eventos globais, inspirado nas interações de Diablo Immortal.
+> 💡 **TIPO: DISCOVERY & EXPLORAÇÃO TÉCNICA (Backlog)**
+>
+> **Arquitetura Base Atual:** O projeto é estritamente **Offline-First**, com simulação local síncrona no Phaser e persistência validada via Zod no `localStorage`.
+>
+> **Propósito deste Discovery:** Mapear a viabilidade técnica e arquitetural de sessões cooperativas leves P2P (WebRTC Mesh de até 4 jogadores) sem servidores dedicados caros, como um spike exploratório de longo prazo pós-campanha singleplayer.
 
 ---
 
