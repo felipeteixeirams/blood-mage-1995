@@ -43,6 +43,7 @@ export class DungeonGenerator {
   private chestsGroup: Phaser.Physics.Arcade.StaticGroup;
   private cachedLine = new Phaser.Geom.Line();
   private cachedRect = new Phaser.Geom.Rectangle();
+  public heightGenerator: HeightmapGenerator;
 
   constructor(
     scene: Phaser.Scene,
@@ -52,13 +53,19 @@ export class DungeonGenerator {
     this.scene = scene;
     this.wallsGroup = wallsGroup;
     this.chestsGroup = chestsGroup;
+    this.heightGenerator = new HeightmapGenerator(1995);
+  }
+
+  public isTraversable(fromX: number, fromY: number, toX: number, toY: number, isWorldCoords: boolean = true): boolean {
+    return this.heightGenerator.isTraversable(fromX, fromY, toX, toY, isWorldCoords);
   }
 
   public generate(mapW: number, mapH: number, biome: BiomeType = 'fosso_chagas'): RoomData[] {
     const isSafeHouse = biome === 'safe_house';
     const groundTexture = isSafeHouse ? 'tile_wood_floor' : 'tile_ground';
     const tints = BIOME_TINTS[biome] || BIOME_TINTS.fosso_chagas;
-    const heightGen = new HeightmapGenerator(biome === 'gloomy_woods' ? 2026 : 1995);
+    this.heightGenerator = new HeightmapGenerator(biome === 'gloomy_woods' ? 2026 : 1995);
+    const heightGen = this.heightGenerator;
 
     // Fill Isometric Floor Tiles with Biome Tinting & 2.5D Elevation (Spec 16)
     for (let x = 0; x < mapW; x += 48) {

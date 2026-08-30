@@ -113,6 +113,29 @@ export class HeightmapGenerator {
   }
 
   /**
+   * Valida se a transição entre duas posições é transitável respeitando a regra de desnível/falésia.
+   * - Delta Z <= 1: Transitável (mesmo nível, degraus ou rampas suaves).
+   * - Delta Z > 1: Intransitável (falésias/paredes intransponíveis).
+   */
+  public isTraversable(
+    fromX: number,
+    fromY: number,
+    toX: number,
+    toY: number,
+    isWorldCoords: boolean = true
+  ): boolean {
+    const gridFromX = isWorldCoords ? Math.floor(fromX / 48) : Math.floor(fromX);
+    const gridFromY = isWorldCoords ? Math.floor(fromY / 24) : Math.floor(fromY);
+    const gridToX = isWorldCoords ? Math.floor(toX / 48) : Math.floor(toX);
+    const gridToY = isWorldCoords ? Math.floor(toY / 24) : Math.floor(toY);
+
+    const zFrom = this.getHeightAt(gridFromX, gridFromY);
+    const zTo = this.getHeightAt(gridToX, gridToY);
+
+    return Math.abs(zTo - zFrom) <= 1;
+  }
+
+  /**
    * Valida conectividade espacial para navegação e pathfinding 3D (Spec 16 - Cap. 3.4).
    * - |Delta H| <= 1: Transitável (mesmo nível ou rampa).
    * - |Delta H| >= 2: Intransitável (falésia/parede).
