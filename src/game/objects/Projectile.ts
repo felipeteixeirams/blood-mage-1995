@@ -98,6 +98,19 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     this.lifespanTimer -= delta;
     if (this.lifespanTimer <= 0) {
       this.releaseToPool();
+      return;
+    }
+
+    // Projétil terrestre colide e se dissipa ao atingir uma falésia de Delta Z >= 2
+    const dungeonGen = (this.scene as any)?.dungeonGenerator;
+    if (dungeonGen && this.body) {
+      const dtSec = delta / 1000;
+      const nextX = this.x + this.body.velocity.x * dtSec;
+      const nextY = this.y + this.body.velocity.y * dtSec;
+
+      if (!dungeonGen.isTraversable(this.x, this.y, nextX, nextY)) {
+        this.releaseToPool();
+      }
     }
   }
 

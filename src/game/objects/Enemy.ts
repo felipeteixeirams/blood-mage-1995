@@ -895,8 +895,36 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     const accel = this.getAccelRate();
     const rate = isMoving ? accel : accel * 0.55; // deceleration is gentler
 
-    this.moveVx = this._moveToward(this.moveVx, targetVx, rate * dt);
-    this.moveVy = this._moveToward(this.moveVy, targetVy, rate * dt);
+    let nextVx = this._moveToward(this.moveVx, targetVx, rate * dt);
+    let nextVy = this._moveToward(this.moveVy, targetVy, rate * dt);
+
+    const isEtherealOrFlying =
+      this.config.gaitType === 'ethereal' ||
+      this.eliteAffix === 'spectral' ||
+      this.config.spriteKey === 'spr_bat_swarm' ||
+      this.config.spriteKey === 'spr_specter';
+
+    const dungeonGen = (this.scene as any)?.dungeonGenerator;
+    if (dungeonGen && !isEtherealOrFlying && (nextVx !== 0 || nextVy !== 0)) {
+      const stepDist = 16;
+      const futureX = this.x + Math.sign(nextVx) * stepDist;
+      const futureY = this.y + Math.sign(nextVy) * stepDist;
+
+      if (!dungeonGen.isTraversable(this.x, this.y, futureX, futureY)) {
+        // Slide along X if X path is traversable
+        if (dungeonGen.isTraversable(this.x, this.y, futureX, this.y)) {
+          nextVy = 0;
+        } else if (dungeonGen.isTraversable(this.x, this.y, this.x, futureY)) {
+          nextVx = 0;
+        } else {
+          nextVx = 0;
+          nextVy = 0;
+        }
+      }
+    }
+
+    this.moveVx = nextVx;
+    this.moveVy = nextVy;
     this.setVelocity(this.moveVx, this.moveVy);
   }
 

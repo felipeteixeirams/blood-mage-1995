@@ -68,6 +68,27 @@ describe('HeightmapGenerator & 2.5D Isometric Math (Spec 16)', () => {
     expect(gen.isPathTraversable(1, 4)).toBe(false);
   });
 
+  it('valida a regra de transitabilidade de terreno e desnível de falésias (isTraversable)', () => {
+    const gen = new HeightmapGenerator(1995);
+
+    // Mock getHeightAt for controlled deterministic testing of Delta Z
+    const originalGetHeightAt = gen.getHeightAt.bind(gen);
+    gen.getHeightAt = (gridX: number, gridY: number) => {
+      if (gridX === 0 && gridY === 0) return 1;
+      if (gridX === 1 && gridY === 0) return 2; // Delta Z = 1 (Rampa/Degrau - Permitido)
+      if (gridX === 2 && gridY === 0) return 4; // Delta Z = 3 (Falésia - Bloqueado)
+      return originalGetHeightAt(gridX, gridY);
+    };
+
+    // Grid coordinates checks
+    expect(gen.isTraversable(0, 0, 1, 0, false)).toBe(true);  // Delta Z = 1 -> true
+    expect(gen.isTraversable(0, 0, 2, 0, false)).toBe(false); // Delta Z = 3 -> false
+
+    // World pixel coordinates checks (48x24 tile grid)
+    expect(gen.isTraversable(0, 0, 48, 0, true)).toBe(true);  // (0,0) to (1,0) grid
+    expect(gen.isTraversable(0, 0, 96, 0, true)).toBe(false); // (0,0) to (2,0) grid
+  });
+
   it('amostra pontos de Poisson Disk sem colisões de raio mínimo', () => {
     const gen = new HeightmapGenerator(1234);
     const minDistance = 3.0;
