@@ -147,6 +147,11 @@ export class DungeonFlowController {
     }
     scene.player.stats.floorDepth = floorDepth;
 
+    // Spec 16: Initial Siege ("O Cerco ao Altar de Sangue") on Floor 1 Spawn Room
+    if (floorDepth === 1 && biome !== 'safe_house') {
+      this.spawnInitialSiege(spawnRoom);
+    }
+
     // Eixo A: luz real seguindo o player (WebGL)
     if (scene.lightingSystem) {
       scene.lightingSystem.createPlayerLight();
@@ -348,6 +353,58 @@ export class DungeonFlowController {
 
     // Floor Announcement Banner
     this.showFloorBanner(floorDepth);
+  }
+
+  /**
+   * Spec 16: Spawns the Initial Siege ("O Cerco ao Altar de Sangue") on Floor 1
+   * Spawns 3 weak scout_beasts and 1 vanguard skeleton_warrior in windup phase
+   */
+  public spawnInitialSiege(spawnRoom: any) {
+    const scene = this.scene;
+
+    // 1. Spawn 3 scout_beast crawling beasts around spawn room (radius 120px to 180px)
+    const scoutAngles = [0.85, 2.9, 4.95];
+    scoutAngles.forEach((angle) => {
+      const dist = 120 + Math.random() * 50;
+      const sx = spawnRoom.centerX + Math.cos(angle) * dist;
+      const sy = spawnRoom.centerY + Math.sin(angle) * dist;
+      const scout = new Enemy(scene, sx, sy, 'scout_beast', { floorDepth: 1, eliteAffix: 'none' });
+      scout.patrolP1 = { x: spawnRoom.x + 20, y: spawnRoom.y + 20 };
+      scout.patrolP2 = { x: spawnRoom.x + spawnRoom.width - 20, y: spawnRoom.y + spawnRoom.height - 20 };
+      scout.alertToCombat();
+      scene.enemiesGroup.add(scout);
+      scene.depthGroup.add(scout);
+      scene.lightingPolish?.addMonsterGlow(scout, 'scout_beast');
+      this.registerEntityEffects(scout);
+      scene.totalFloorMonsters++;
+    });
+
+    // 2. Spawn 1 vanguard skeleton_warrior preparing a telegraphed ground strike
+    const skelDist = 140;
+    const skelX = spawnRoom.centerX;
+    const skelY = spawnRoom.centerY - skelDist;
+    const skel = new Enemy(scene, skelX, skelY, 'skeleton_warrior', { floorDepth: 1, eliteAffix: 'none' });
+    skel.patrolP1 = { x: spawnRoom.x + 20, y: spawnRoom.y + 20 };
+    skel.patrolP2 = { x: spawnRoom.x + spawnRoom.width - 20, y: spawnRoom.y + spawnRoom.height - 20 };
+    skel.alertToCombat();
+
+    // Prepare telegraphed strike area on ground
+    skel.attackPhase = 'windup';
+    skel.attackPhaseStartTime = scene.time.now;
+    skel.attackPhaseEndTime = scene.time.now + 1400;
+    skel.attackTargetPos = { x: spawnRoom.centerX, y: spawnRoom.centerY };
+    skel.attackType = 'melee';
+
+    scene.enemiesGroup.add(skel);
+    scene.depthGroup.add(skel);
+    scene.lightingPolish?.addMonsterGlow(skel, 'skeleton_warrior');
+    this.registerEntityEffects(skel);
+    scene.totalFloorMonsters++;
+
+    // Prompt dodge hint banner if firstDashDone is false
+    if (!useGameStore.getState().onboarding.firstDashDone) {
+      useGameStore.getState().setActiveTip('ESQUIVE! Toque em [DASH] ou duplo-toque para esquivar com invulnerabilidade.');
+    }
   }
 
   private showFloorBanner(floorDepth: number) {

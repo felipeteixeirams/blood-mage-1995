@@ -272,6 +272,22 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   /**
+   * Spec 16: Initiates attack windup and triggers dodge hint if firstDashDone is false
+   */
+  public startWindup(time: number, durationMs: number, attackType: 'melee' | 'ranged', targetPos: { x: number; y: number }) {
+    this.attackPhase = 'windup';
+    this.attackPhaseStartTime = time;
+    this.attackPhaseEndTime = time + durationMs;
+    this.attackTargetPos = targetPos;
+    this.attackType = attackType;
+    soundEngine.playTelegraph();
+
+    if (!useGameStore.getState().onboarding.firstDashDone && (this.config.id === 'skeleton_warrior' || this.floorDepth === 1)) {
+      useGameStore.getState().setActiveTip('ESQUIVE! Toque em [DASH] ou duplo-toque para esquivar com invulnerabilidade.');
+    }
+  }
+
+  /**
    * Show status indicator icon over head
    */
   private showEmote(key: string) {
@@ -665,12 +681,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
             if (distanceToPlayer <= this.config.attackRange) {
               if (time > this.lastAttackTime + 900) {
-                this.attackPhase = 'windup';
-                this.attackPhaseStartTime = time;
-                this.attackPhaseEndTime = time + 180;
-                this.attackTargetPos = { x: playerX, y: playerY };
-                this.attackType = 'melee';
-                soundEngine.playTelegraph();
+                this.startWindup(time, 180, 'melee', { x: playerX, y: playerY });
               }
             }
             break;
@@ -686,12 +697,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
             if (distanceToPlayer <= this.config.attackRange) {
               if (time > this.lastAttackTime + 1100) {
-                this.attackPhase = 'windup';
-                this.attackPhaseStartTime = time;
-                this.attackPhaseEndTime = time + 300;
-                this.attackTargetPos = { x: playerX, y: playerY };
-                this.attackType = 'melee';
-                soundEngine.playTelegraph();
+                this.startWindup(time, 300, 'melee', { x: playerX, y: playerY });
               }
             }
             break;
@@ -713,12 +719,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
             if (distanceToPlayer <= this.config.attackRange) {
               if (time > this.lastAttackTime + 900) {
                 this.isCharging = false;
-                this.attackPhase = 'windup';
-                this.attackPhaseStartTime = time;
-                this.attackPhaseEndTime = time + 420;
-                this.attackTargetPos = { x: playerX, y: playerY };
-                this.attackType = 'melee';
-                soundEngine.playTelegraph();
+                this.startWindup(time, 420, 'melee', { x: playerX, y: playerY });
               }
             }
             break;
@@ -751,12 +752,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
             // Only fire ranged attack if within attack range AND line of sight is clear
             if (distanceToPlayer <= optimalMaxRange && !hasWallBetweenPlayer) {
               if (time > this.lastAttackTime + (this.aiState === 'frenzy' ? 1400 : 2100)) {
-                this.attackPhase = 'windup';
-                this.attackPhaseStartTime = time;
-                this.attackPhaseEndTime = time + 400;
-                this.attackTargetPos = { x: playerX, y: playerY };
-                this.attackType = 'ranged';
-                soundEngine.playTelegraph();
+                this.startWindup(time, 400, 'ranged', { x: playerX, y: playerY });
               }
             }
             break;

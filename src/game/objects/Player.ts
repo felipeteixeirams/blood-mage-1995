@@ -877,6 +877,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.dashCooldownTimer = cd;
 
     soundEngine.playDash();
+
+    // Spec 16 Onboarding trigger: first dash executed
+    const store = useGameStore.getState();
+    store.triggerOnboardingEvent('firstDashDone');
+    if (store.activeTip?.includes('ESQUIVE')) {
+      store.setActiveTip(null);
+    }
+
     return true;
   }
 

@@ -323,6 +323,16 @@ export interface UnlockedAchievementNotification {
   category: string;
 }
 
+export interface OnboardingState {
+  firstKillDone: boolean;
+  firstLevelUpDone: boolean;
+  firstEquipDone: boolean;
+  firstBossSeen: boolean;
+  firstSkillCast: boolean;
+  firstDashDone: boolean;
+  firstSiegeCleared: boolean;
+}
+
 export interface RunStats {
   bloodless_floor: number;
   kills_total: number;

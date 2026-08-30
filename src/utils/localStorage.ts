@@ -267,15 +267,19 @@ export function saveHighScore(newRecord: Omit<HighScoreRecord, 'id' | 'date'>): 
 
 const ONBOARDING_KEY = 'bloodmage_1995_onboarding';
 
+import { OnboardingState } from '../types/game';
+
 const OnboardingSchema = z.object({
   firstKillDone: z.boolean().catch(false),
   firstLevelUpDone: z.boolean().catch(false),
   firstEquipDone: z.boolean().catch(false),
   firstBossSeen: z.boolean().catch(false),
   firstSkillCast: z.boolean().catch(false),
+  firstDashDone: z.boolean().catch(false),
+  firstSiegeCleared: z.boolean().catch(false),
 }).strict();
 
-export function loadOnboarding() {
+export function loadOnboarding(): OnboardingState {
   try {
     const raw = localStorage.getItem(ONBOARDING_KEY);
     if (raw) {
@@ -296,7 +300,9 @@ export function loadOnboarding() {
     firstLevelUpDone: false,
     firstEquipDone: false,
     firstBossSeen: false,
-    firstSkillCast: false
+    firstSkillCast: false,
+    firstDashDone: false,
+    firstSiegeCleared: false,
   };
 }
 
