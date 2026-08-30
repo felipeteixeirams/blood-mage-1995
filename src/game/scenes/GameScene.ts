@@ -483,14 +483,18 @@ export class GameScene extends Phaser.Scene {
       .setTint(0xff0000)
       .setVisible(false);
 
-    // Zoom adaptativo: encaixa o jogo perfeitamente em qualquer tela landscape.
-    // Usa o menor eixo (altura em landscape) como referência para não cortar verticalmente.
+    // Zoom adaptativo (Spec 16 - Cap. 1 & 2): Resolução Lógica 1920x1080 (16:9)
+    // Com expansão FOV horizontal para Ultrawide e compensação de distância para telas 4:3
     const screenH = this.cameras.main.height || window.innerHeight;
     const screenW = this.cameras.main.width || window.innerWidth;
+    const aspectRatio = screenW / Math.max(1, screenH);
     
-    // Referência de zoom muito mais próxima (estilo Action RPG / Diablo)
-    // Aumentamos agressivamente a base do zoom para trazer a câmera para perto do personagem.
-    const adaptiveZoom = Math.max(1.8, Math.min(3.0, screenH / 300));
+    let adaptiveZoom = Math.max(1.8, Math.min(3.0, screenH / 300));
+
+    // Compensação de distância para telas quadradas / 4:3 (Spec 16 - Cap. 1.2)
+    if (aspectRatio < 1.5) {
+      adaptiveZoom *= 0.87; // Recua a câmera em ~15% para enquadrar inimigos laterais
+    }
     this.cameras.main.setZoom(adaptiveZoom);
 
     // 4. Mobile / Touch Virtual Joystick (Canvas-Native, 60 FPS)
@@ -989,9 +993,15 @@ this.virtualJoystick = new VirtualJoystickSystem(this, {
       this.cameraTarget.y += (desiredY - this.cameraTarget.y) * lerpFactor;
 
       // Spec 16 (Cap. 2.3 - Dynamic Boss Zoom Out):
-      // Afasta a câmera em 15% (zoom 0.85) suavemente durante encontros com Boss para enquadrar AOE indicators
+      // Afasta a câmera em 15% (zoom 0.85x base) suavemente durante encontros com Boss para enquadrar AOE indicators
+      const screenH = this.cameras.main.height || window.innerHeight;
+      const screenW = this.cameras.main.width || window.innerWidth;
+      const aspectRatio = screenW / Math.max(1, screenH);
+      let baseZoom = Math.max(1.8, Math.min(3.0, screenH / 300));
+      if (aspectRatio < 1.5) baseZoom *= 0.87;
+
       const hasBossEngagement = this.isBossActive();
-      const targetZoom = hasBossEngagement ? 0.85 : 1.0;
+      const targetZoom = hasBossEngagement ? baseZoom * 0.85 : baseZoom;
       const currentZoom = this.cameras.main.zoom;
       if (Math.abs(currentZoom - targetZoom) > 0.002) {
         this.cameras.main.setZoom(currentZoom + (targetZoom - currentZoom) * 0.04);

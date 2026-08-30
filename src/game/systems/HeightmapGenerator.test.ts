@@ -83,4 +83,28 @@ describe('HeightmapGenerator & 2.5D Isometric Math (Spec 16)', () => {
       }
     }
   });
+
+  it('respeita custom tileWidth, tileHeight e heightStep em isoToScreen e screenToIso', () => {
+    const customWidth = 48;
+    const customHeight = 24;
+    const customStep = 10;
+    const screen = isoToScreen(5, 5, 3, customWidth, customHeight, customStep);
+    expect(screen.x).toBe(0);
+    expect(screen.y).toBe((5 + 5) * 12 - 3 * 10); // 120 - 30 = 90
+
+    const converted = screenToIso(screen.x, screen.y, 3, customWidth, customHeight, customStep);
+    expect(converted.gridX).toBe(5);
+    expect(converted.gridY).toBe(5);
+  });
+
+  it('garante determinismo para o mesmo seed de HeightmapGenerator', () => {
+    const gen1 = new HeightmapGenerator(1995);
+    const gen2 = new HeightmapGenerator(1995);
+
+    for (let x = 0; x < 10; x++) {
+      for (let y = 0; y < 10; y++) {
+        expect(gen1.getHeightAt(x, y)).toBe(gen2.getHeightAt(x, y));
+      }
+    }
+  });
 });
