@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { BiomeType } from '../../types/game';
 import { SpikeTrap, ExplosiveBarrel } from '../objects/Traps';
-import { HeightmapGenerator } from './HeightmapGenerator';
+import { HeightmapGenerator, calculateIsometricDepth } from './HeightmapGenerator';
 import type { GameScene } from '../scenes/GameScene';
 
 export interface RoomData {
@@ -79,11 +79,32 @@ export class DungeonGenerator {
             tile.setAlpha?.(1.0);
           }
         }
-        tile.setDepth?.(1 + zElevation * 0.1);
+        const isoDepth = calculateIsometricDepth(gridX, gridY, zElevation, 1);
+        tile.setDepth?.(isoDepth);
         if ((this.scene as any).lightingSystem) {
           (this.scene as any).lightingSystem.applyLightPipeline(tile);
         }
       }
+    }
+
+    // Poisson Disk Sampling para vegetação / props em relevo Z > 0 (Spec 16 - Cap. 3.3)
+    if (!isSafeHouse) {
+      const cols = Math.floor(mapW / 48);
+      const rows = Math.floor(mapH / 24);
+      const points = heightGen.samplePoissonDisk(cols, rows, 4.5);
+      points.forEach((pt) => {
+        if (pt.height > 0 && Math.random() < 0.35) {
+          const propX = pt.gridX * 48;
+          const propY = pt.gridY * 24 - pt.height * 2;
+          const prop = this.scene.add.image(propX, propY, 'spr_skeleton_remains');
+          prop.setTint(tints.ground);
+          const depth = calculateIsometricDepth(pt.gridX, pt.gridY, pt.height, 5);
+          prop.setDepth(depth);
+          if ((this.scene as any).lightingSystem) {
+            (this.scene as any).lightingSystem.applyLightPipeline(prop);
+          }
+        }
+      });
     }
 
     if (isSafeHouse) {
