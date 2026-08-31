@@ -2,66 +2,40 @@
 agent_context: frontend, game designer
 target_module: src/components/GameplayHUD.tsx, src/components/hud, src/game/scenes/GameScene.ts
 priority: media
-status: implementado (Tier A completo, falta validação em jogo)
-last_updated: 2026-08-25
-tags: [design, ui, hud, referencia-visual, diablo, dungeon-siege, mobile]
+status: implementado (Tier A completo, validado)
+last_updated: 2026-08-31
+tags: [design, ui, hud, referencia-visual, diablo2, dungeon-siege-1, mobile, combat-dynamics]
 ---
 
-# 🖥️ HUD de Gameplay: Análise de Referências Visuais e Plano de Evolução Sem Sprites Novos
+# 🖥️ HUD de Gameplay & Dinâmica de Combate: Diretrizes Diablo II & Dungeon Siege 1
 
-> Felipe trouxe 2 prints de jogos de referência (um no estilo *Dungeon Siege*, outro no
-> estilo *Diablo II*) para inspirar melhorias no HUD de gameplay do Bloodmage 1995. Este
-> documento analisa criticamente cada referência, cruza com o estado real do código e com
-> a identidade visual já definida (`docs/archive/design/`), e propõe uma spec incremental
-> **executável hoje, sem depender da criação de sprites novos** — só CSS/Tailwind, SVG e
-> `Phaser.Graphics`/`Phaser.Text` procedural, seguindo o mesmo espírito de "rede de
-> segurança sem asset físico" já usado em `textureGenerator.ts`.
+> **Diretrizes Definitivas de Referência (Alinhamento de Produto):**
+> 1. **Visual & Fidelidade Gráfica:** A referência primária de arte é **Diablo II** (tom gótico sombrio, atmosfera pesada noventista, paleta austera e fidelidade de pixel-art/2.5D visceral). *Diablo 1 não é a referência principal.*
+> 2. **Estrutura de HUD (Status Bars):** A referência de interface é **Dungeon Siege 1** (barras de vida e mana horizontais, estruturadas sob o retrato no topo-esquerdo). **É terminantemente proibido o uso de esferas/orbes circulares de vida/mana estilo Diablo.**
+> 3. **Dinâmica de Combate & Esquiva Ativa:** A movimentação e o combate seguem o dinamismo de **Dungeon Siege 1** com a estética de **Diablo II**:
+>    - Ao iniciar um ataque ou conjuração, o personagem e os inimigos comprometem-se com a animação (FSM `Windup` -> `Strike` -> `Recovery`).
+>    - **A esquiva é manual e espacial:** Cabe exclusivamente à habilidade motora do jogador movimentar o personagem para o lado, desviando ativamente da trajetória de flechas, orbes e feitiços inimigos (sem depender de rolagem estatística passiva/RNG de "Dodge %").
 
 ---
 
 ## 1. Análise crítica das referências
 
-### Imagem 1 — estilo *Dungeon Siege* (aldeia com moinho d'água, combate tático)
+### Imagem 1 — estilo *Dungeon Siege 1* (combate tático, barras estruturadas, esquiva espacial)
 
-Ambientação 3D em tempo real, aldeia rústica com moinho d'água e cachoeira, luz quente
-de tocha e forja cruzando com o azul frio da água — um bom exemplo de contraste de
-iluminação, mas a fidelidade 3D e a paleta viva (verdes de grama, azuis de água, marrons
-claros de madeira) contrariam diretamente o pilar "Opressão Visual" descrito em
-`00_DESIGN_PHILOSOPHY.md`. Essa imagem não deve ser lida como referência de paleta ou de
-iluminação — só de **mecânica de UI**. Dela, três ideias são transferíveis:
+Dungeon Siege 1 traz uma interface limpa com barras de status horizontais integradas ao retrato do personagem, além de uma dinâmica de combate onde o posicionamento espacial e a leitura dos disparos no cenário determinam o sucesso do jogador. Pontos adotados:
 
-- **Retratos de grupo empilhados** no canto superior esquerdo, cada um com barra de vida
-  compacta embaixo — já temos o equivalente (um só personagem, em `PlayerStatus.tsx`).
-- **Menu contextual de ação** junto ao cursor (`ENGAGE` / `ATTACK FREELY` / `TARGET
-  CLOSEST`) ao passar sobre um inimigo — não temos equivalente hoje. É a ideia mais nova
-  dessa imagem, mas só faz sentido para mouse/desktop.
-- **Minimap circular** (bússola/radar) no canto superior direito — não temos nenhum
-  minimap real hoje, apesar de já existir um *setting* morto para isso (ver seção 2).
-- A hotbar quadrada pequena no canto inferior direito é estruturalmente mais pobre do que
-  o que já temos (arco de skills estilo Diablo com drag-to-aim) — nada a copiar aqui.
+- **Retratos com barras de vida/mana horizontais** no canto superior esquerdo (`PlayerStatus.tsx`) — barras compactas, entalhadas em metal/pedra com moldura forjada gótica.
+- **Esquiva Cinética Ativa**: Projéteis e magias possuem caixas de colisão físicas precisas no mundo, exigindo que o jogador se mova ativamente para sair da linha de tiro.
+- **Minimap no topo-direito**: Representação geométrica e limpa das salas exploradas da masmorra.
 
-### Imagem 2 — estilo *Diablo II* (vilarejo, NPC de missão, orbes)
+### Imagem 2 — estilo *Diablo II* (fidelidade visual, atmosfera sombria, cinturão de atalhos)
 
-Orbes de vida (vermelho, com caveira) e mana (azul) nos cantos inferiores da tela, com
-preenchimento líquido animado; cinturão de poções numeradas ao lado do orbe de mana;
-barra de skills central com 6 slots numerados; ícone de exclamação roxo brilhante
-flutuando sobre o NPC de missão; paleta terrosa, pedra e tocha. Essa referência está
-**muito mais alinhada** com a nossa própria inspiração declarada (`01_VISUAL_IDENTITY.md`
-cita *Diablo I* explicitamente) do que a imagem 1. Pontos transferíveis:
+Diablo II define o padrão de opressão visual, paleta grimdark, iluminação rústica e fluidez de combate de ação. Pontos adotados:
 
-> **Nota (25/08):** Felipe pediu explicitamente para não adotar o orbe circular de vida/
-> mana no estilo Diablo — o item abaixo foi mantido só como registro da referência, mas
-> a recomendação de execução (seção 3, Tier A.3) foi ajustada para não usar essa forma.
-
-- ~~Orbes líquidos de vida/mana~~ — descartado por decisão de produto (ver nota acima).
-  Hoje usamos barras retangulares horizontais no canto superior esquerdo; a melhoria de
-  acabamento visual segue outro caminho (seção 3, Tier A.3).
-- **Cinturão de poções numerado** — conceito muito próximo do que já existe (curativos com
-  atalhos `Z`/`X`/`V` em `PlayerStatus.tsx`), só que posicionado no rodapé em vez de junto
-  ao HP/mana no topo.
-- **Marcador flutuante sobre NPC de missão** — não temos nenhum indicador visual no mundo
-  hoje, só um prompt textual quando o jogador se aproxima (`GameplayHUD.tsx`, bloco
-  `closestNPCType && !activeNPC`).
+- **Estética & Paleta Gótica**: Tons de cinza, ferro, pedra gótica, fogo de tochas e rubro infernal.
+- **Cinturão de curativos com atalhos**: Slots organizados (`Z`/`X`/`V` em `PlayerStatus.tsx`) com feedback claro de recarga.
+- **Marcador flutuante sobre NPCs**: Glifo procedural roxo/rúnico acima de Maelen e NPCs interagíveis para identificação rápida.
+- ❌ **Orbes Circulares de Vida/Mana**: **Descartados permanentemente por decisão de design.** O jogo mantém o padrão de barras retangulares do Dungeon Siege 1.
 
 ---
 
@@ -208,3 +182,5 @@ commit.
 | 2026-08-25 | Decidido: indicadores de vida/mana/curativos continuam no canto superior esquerdo (Tier B.5 descartado) — escopo fecha em melhoria de acabamento visual, sem mudança de posição | Claude |
 | 2026-08-25 | Fase 3 implementada: `PlayerStatus.tsx` ganhou moldura forjada (textura de metal batido + rebites de canto + highlight superior) nas barras de HP/MP e pulso vermelho quando HP ≤ 25%. Mesma posição, mesma forma retangular — falta validação em jogo | Claude |
 | 2026-08-25 | Fases 1, 2 e 4 implementadas: marcador "!" procedural sobre os 4 NPCs (bob + some em diálogo); minimap mínimo 3x3 sincronizado via Zustand (`minimapRooms`, throttle ~400ms, teste em `gameStore.test.ts`) substituindo os settings mortos; cinturão único de curativos com a mesma moldura forjada da Fase 3. Tier A da spec completo — falta validação em jogo | Claude |
+| 2026-08-31 | Registro das Diretrizes Definitivas de Design (Felipe): 1) Visual/atmosfera baseado estritamente em Diablo II (e não Diablo 1); 2) HUD com barras de status horizontais estruturadas no estilo Dungeon Siege 1 (proibido o uso de esferas/orbes); 3) Combate dinâmico e esquiva espacial ativa/manual (desvio motor de projéteis/feitiços) alinhado ao Dungeon Siege 1. | Antigravity |
+
