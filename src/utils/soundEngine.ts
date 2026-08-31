@@ -1085,6 +1085,100 @@ class SoundEngine {
     this.bgmOscillators = [];
     this.isBgmPlaying = false;
   }
+
+  /**
+   * Prestige / Menus — SFX de confirmação de seleção de menu.
+   * Tom curto e limpo no estilo "select" de ARPG clássico.
+   */
+  public playMenuSelect() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(880, now);
+    osc.frequency.exponentialRampToValueAtTime(1100, now + 0.06);
+
+    gain.gain.setValueAtTime(this.sfxVolume * 0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.1);
+  }
+
+  /**
+   * Prestige — SFX de prestígio / ativação de Blood Nova.
+   * Impacto grave profundo seguido de reverberação sombria.
+   */
+  public playBloodNova() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+
+    // Impacto sub-grave
+    const oscLow = this.ctx.createOscillator();
+    const gainLow = this.ctx.createGain();
+    oscLow.type = 'sawtooth';
+    oscLow.frequency.setValueAtTime(60, now);
+    oscLow.frequency.exponentialRampToValueAtTime(28, now + 0.6);
+    gainLow.gain.setValueAtTime(this.sfxVolume * 0.7, now);
+    gainLow.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+    oscLow.connect(gainLow);
+    gainLow.connect(this.ctx.destination);
+    oscLow.start(now);
+    oscLow.stop(now + 0.8);
+
+    // Harmônico sombrio
+    const oscHigh = this.ctx.createOscillator();
+    const gainHigh = this.ctx.createGain();
+    oscHigh.type = 'sine';
+    oscHigh.frequency.setValueAtTime(240, now + 0.05);
+    oscHigh.frequency.exponentialRampToValueAtTime(80, now + 0.5);
+    gainHigh.gain.setValueAtTime(this.sfxVolume * 0.35, now + 0.05);
+    gainHigh.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+    oscHigh.connect(gainHigh);
+    gainHigh.connect(this.ctx.destination);
+    oscHigh.start(now + 0.05);
+    oscHigh.stop(now + 0.6);
+
+    // Estalo de sangue final
+    this.playBloodSquish();
+  }
+
+  /**
+   * Prestige — SFX de empoderamento rúnico ao alocar um Blood Seal.
+   * Arpejo ascendente místico e breve reverb de selo.
+   */
+  public playRunicEmpowerment() {
+    if (this.isMuted || this.sfxVolume <= 0) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    // Arpejo rúnico ascendente em 3 notas (Dm: D4, F4, A4)
+    const notes = [293.66, 349.23, 440.00];
+    notes.forEach((freq, i) => {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + i * 0.07);
+      gain.gain.setValueAtTime(this.sfxVolume * 0.28, now + i * 0.07);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.22);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now + i * 0.07);
+      osc.stop(now + i * 0.07 + 0.22);
+    });
+  }
 }
 
 export const soundEngine = new SoundEngine();
