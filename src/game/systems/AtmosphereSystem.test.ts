@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AtmosphereSystem } from './AtmosphereSystem';
+import { useGameStore } from '../../store/gameStore';
 
 function makeMockScene() {
   const textures = {
@@ -28,6 +29,9 @@ function makeMockScene() {
 
   const tweens = {
     add: vi.fn(),
+    addCounter: vi.fn(() => ({
+      stop: vi.fn(),
+    })),
   };
 
   const cameras = {
@@ -125,3 +129,161 @@ describe('AtmosphereSystem (Frente 2)', () => {
     system.cleanup();
   });
 });
+
+describe('AtmosphereSystem - Weather Particles (Spec 4 D-2 Enhancement)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('deve usar particle_spore para weatherType: spores (fosso_chagas)', () => {
+    const { scene, add } = makeMockScene();
+    const system = new AtmosphereSystem(scene as any);
+
+    system.initialize(2400, 2400, 'fosso_chagas');
+
+    const calls = (add.particles as any).mock.calls as any[];
+    const particlesCall = calls.find((call) => call[2] === 'particle_spore');
+    expect(particlesCall).toBeDefined();
+    expect(particlesCall?.[2]).toBe('particle_spore');
+  });
+
+  it('deve usar particle_ash para weatherType: ash_embers (catacumbas_martires)', () => {
+    const { scene, add } = makeMockScene();
+    const system = new AtmosphereSystem(scene as any);
+
+    system.initialize(2400, 2400, 'catacumbas_martires');
+
+    const calls = (add.particles as any).mock.calls as any[];
+    const particlesCall = calls.find((call) => call[2] === 'particle_ash');
+    expect(particlesCall).toBeDefined();
+    expect(particlesCall?.[2]).toBe('particle_ash');
+  });
+
+  it('deve usar particle_blood_drop para weatherType: blood_rain (santuario_sangue)', () => {
+    const { scene, add } = makeMockScene();
+    const system = new AtmosphereSystem(scene as any);
+
+    system.initialize(2400, 2400, 'santuario_sangue');
+
+    const calls = (add.particles as any).mock.calls as any[];
+    const particlesCall = calls.find((call) => call[2] === 'particle_blood_drop');
+    expect(particlesCall).toBeDefined();
+    expect(particlesCall?.[2]).toBe('particle_blood_drop');
+  });
+
+  it('deve inicializar emitter na posição da câmera, não em (0,0)', () => {
+    const { scene, add, cameras } = makeMockScene();
+    const system = new AtmosphereSystem(scene as any);
+
+    system.initialize(2400, 2400, 'fosso_chagas');
+
+    const calls = (add.particles as any).mock.calls as any[];
+    const posX = calls[0]?.[0];
+    const posY = calls[0]?.[1];
+
+    // Posição esperada: centro do viewport da câmera
+    // camera.worldView.x + width/2 = 100 + 400 = 500
+    // camera.worldView.y + height/2 = 100 + 300 = 400
+    expect(posX).toBe(cameras.main.worldView.x + cameras.main.worldView.width * 0.5);
+    expect(posY).toBe(cameras.main.worldView.y + cameras.main.worldView.height * 0.5);
+  });
+
+  it('deve iniciar com frequency 3x maior (fade-in suave)', () => {
+    const { scene, add } = makeMockScene();
+    const system = new AtmosphereSystem(scene as any);
+
+    system.initialize(2400, 2400, 'fosso_chagas');
+
+    const calls = (add.particles as any).mock.calls as any[];
+    const particlesConfig = calls[0]?.[3];
+    // Base frequency para spores: 350
+    // Esperado: 350 * 3 = 1050
+    expect(particlesConfig?.frequency).toBe(1050);
+  });
+
+  it('deve destruir tween de fade-in ao trocar de bioma', () => {
+    const { scene, tweens } = makeMockScene();
+    vi.spyOn(useGameStore, 'getState').mockReturnValue({
+      settings: {
+        postProcessingEnabled: true,
+        lowPerformanceParticles: false,
+      },
+    } as any);
+
+    const mockTween = { stop: vi.fn() };
+    (tweens.addCounter as any) = vi.fn().mockReturnValue(mockTween);
+
+    const system = new AtmosphereSystem(scene as any);
+    system.initialize(2400, 2400, 'fosso_chagas');
+    system.setBiome('catacumbas_martires');
+
+    // O tween anterior deve ter sido parado
+    expect(mockTween.stop).toHaveBeenCalled();
+  });
+
+  it('deve respeitar lowPerformanceParticles aumentando frequency ~40%', () => {
+    const { scene, add } = makeMockScene();
+    vi.spyOn(useGameStore, 'getState').mockReturnValue({
+      settings: {
+        postProcessingEnabled: true,
+        lowPerformanceParticles: true,
+      },
+    } as any);
+
+    const system = new AtmosphereSystem(scene as any);
+    system.initialize(2400, 2400, 'fosso_chagas');
+
+    const calls = (add.particles as any).mock.calls as any[];
+    const particlesConfig = calls[0]?.[3];
+    // Base: 350 * 3 (fade-in) = 1050
+    // Low perf: 350 * 1.4 * 3 = 1470
+    expect(particlesConfig?.frequency).toBeCloseTo(1470, 0);
+  });
+
+  it('deve reduzir quantity quando lowPerformanceParticles: true (spores/ash)', () => {
+    const { scene, add } = makeMockScene();
+    vi.spyOn(useGameStore, 'getState').mockReturnValue({
+      settings: {
+        postProcessingEnabled: true,
+        lowPerformanceParticles: true,
+      },
+    } as any);
+
+    const system = new AtmosphereSystem(scene as any);
+    system.initialize(2400, 2400, 'fosso_chagas'); // spores
+
+    const calls = (add.particles as any).mock.calls as any[];
+    const particlesConfig = calls[0]?.[3];
+    expect(particlesConfig?.quantity).toBe(0); // Low perf: usa frequency, não quantity
+  });
+
+  it('deve manter quantity em 1 para blood_rain com lowPerformanceParticles: true', () => {
+    const { scene, add } = makeMockScene();
+    vi.spyOn(useGameStore, 'getState').mockReturnValue({
+      settings: {
+        postProcessingEnabled: true,
+        lowPerformanceParticles: true,
+      },
+    } as any);
+
+    const system = new AtmosphereSystem(scene as any);
+    system.initialize(2400, 2400, 'santuario_sangue'); // blood_rain
+
+    const calls = (add.particles as any).mock.calls as any[];
+    const particlesConfig = calls[0]?.[3];
+    // Normal: quantity 2, Low perf: quantity 1
+    expect(particlesConfig?.quantity).toBe(1);
+  });
+});
+
+// Mock useGameStore para testes
+vi.mock('../../store/gameStore', () => ({
+  useGameStore: {
+    getState: vi.fn(() => ({
+      settings: {
+        postProcessingEnabled: true,
+        lowPerformanceParticles: false,
+      },
+    })),
+  },
+}));

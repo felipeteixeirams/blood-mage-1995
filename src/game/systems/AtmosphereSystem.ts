@@ -30,11 +30,13 @@ export class AtmosphereSystem {
   private groundFog: Phaser.GameObjects.TileSprite | null = null;
   private upperHaze: Phaser.GameObjects.TileSprite | null = null;
   private weatherEmitter: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
+  private weatherFadeInTween: Phaser.Tweens.Tween | null = null;
 
   private currentBiome: BiomeType = 'fosso_chagas';
   private config: AtmosphereConfig;
   private enabled: boolean = true;
   private visibilityGuard: number = 1.0; // Reduz sutilmente névoa durante combates pesados/chefes
+  private initialFrequency: number = 250; // Base frequency before performance scaling
 
   private biomeAtmosphereConfigs: Record<BiomeType, AtmosphereConfig> = {
     fosso_chagas: {
@@ -130,55 +132,116 @@ export class AtmosphereSystem {
 
   /**
    * Inicializa o emissor de partículas de clima ambiente
+   * Agora com texturas distintas por tipo, posicionamento inicial da câmera,
+   * e fade-in de frequência para transição suave
    */
   private initWeatherEmitter(): void {
     if (this.weatherEmitter) {
       this.weatherEmitter.destroy();
       this.weatherEmitter = null;
     }
+    if (this.weatherFadeInTween) {
+      this.weatherFadeInTween.stop();
+      this.weatherFadeInTween = null;
+    }
 
     if (!this.enabled || this.config.weatherType === 'none') return;
 
+    // Respeita configuração de performance
+    const settings = useGameStore.getState().settings;
+    const isLowPerf = settings.lowPerformanceParticles === true;
+
+    // Posição inicial: câmera
+    const cam = this.scene.cameras.main;
+    const initX = cam?.worldView ? cam.worldView.x + cam.worldView.width * 0.5 : 0;
+    const initY = cam?.worldView ? cam.worldView.y + cam.worldView.height * 0.5 : 0;
+
     try {
       if (this.config.weatherType === 'spores') {
-        // Esporos bioluminescentes flutuando devagar
-        this.weatherEmitter = this.scene.add.particles(0, 0, 'particle_blood_red', {
-          scale: { start: 0.3, end: 0.1 },
-          alpha: { start: 0.35, end: 0 },
+        // Esporos bioluminescentes flutuando devagar — textura dedicada (hexágono suave)
+        const baseFreq = 350;
+        const frequency = isLowPerf ? Math.round(baseFreq * 1.4) : baseFreq;
+        const quantity = isLowPerf ? 0 : 1; // Low perf: usa frequency mais lenta
+
+        this.weatherEmitter = this.scene.add.particles(initX, initY, 'particle_spore', {
+          scale: { start: 0.8, end: 0.4 },
+          alpha: { start: 0.5, end: 0.1 },
           speedX: { min: -15, max: 20 },
           speedY: { min: -25, max: -5 },
           lifespan: { min: 2500, max: 4500 },
-          frequency: 350,
-          quantity: 1,
-          tint: 0xa3e635,
+          frequency: frequency * 3, // Começa 3x mais lento
+          quantity,
           emitting: true,
         }).setDepth(1996);
+
+        // Fade-in de frequência: reduz para valor normal em ~1500ms
+        this.initialFrequency = baseFreq;
+        this.weatherFadeInTween = this.scene.tweens.addCounter({
+          from: baseFreq * 3,
+          to: baseFreq,
+          duration: 1500,
+          onUpdate: (tween) => {
+            if (this.weatherEmitter) {
+              this.weatherEmitter.frequency = tween.getValue() as number;
+            }
+          },
+        });
       } else if (this.config.weatherType === 'ash_embers') {
-        // Fagulhas e cinzas ascendentes
-        this.weatherEmitter = this.scene.add.particles(0, 0, 'particle_blood_red', {
-          scale: { start: 0.35, end: 0.05 },
-          alpha: { start: 0.4, end: 0 },
+        // Fagulhas e cinzas ascendentes — textura dedicada (retângulo fino inclinado)
+        const baseFreq = 300;
+        const frequency = isLowPerf ? Math.round(baseFreq * 1.4) : baseFreq;
+        const quantity = isLowPerf ? 0 : 1;
+
+        this.weatherEmitter = this.scene.add.particles(initX, initY, 'particle_ash', {
+          scale: { start: 0.9, end: 0.2 },
+          alpha: { start: 0.5, end: 0 },
           speedX: { min: -20, max: 20 },
           speedY: { min: -40, max: -15 },
           lifespan: { min: 2000, max: 3500 },
-          frequency: 300,
-          quantity: 1,
-          tint: [0xdcd3c1, 0xf97316],
+          frequency: frequency * 3,
+          quantity,
           emitting: true,
         }).setDepth(1996);
+
+        this.initialFrequency = baseFreq;
+        this.weatherFadeInTween = this.scene.tweens.addCounter({
+          from: baseFreq * 3,
+          to: baseFreq,
+          duration: 1500,
+          onUpdate: (tween) => {
+            if (this.weatherEmitter) {
+              this.weatherEmitter.frequency = tween.getValue() as number;
+            }
+          },
+        });
       } else if (this.config.weatherType === 'blood_rain') {
-        // Chuvisco carmesim sutil
-        this.weatherEmitter = this.scene.add.particles(0, 0, 'particle_blood_red', {
-          scale: { start: 0.25, end: 0.05 },
-          alpha: { start: 0.3, end: 0 },
+        // Chuvisco carmesim sutil — textura dedicada (gota diagonal)
+        const baseFreq = 200;
+        const frequency = isLowPerf ? Math.round(baseFreq * 1.4) : baseFreq;
+        const quantity = isLowPerf ? 1 : 2;
+
+        this.weatherEmitter = this.scene.add.particles(initX, initY, 'particle_blood_drop', {
+          scale: { start: 0.8, end: 0.1 },
+          alpha: { start: 0.4, end: 0 },
           speedX: { min: 40, max: 70 },
           speedY: { min: 140, max: 220 },
           lifespan: { min: 400, max: 700 },
-          frequency: 200,
-          quantity: 2,
-          tint: 0xdc2626,
+          frequency: frequency * 3,
+          quantity,
           emitting: true,
         }).setDepth(1996);
+
+        this.initialFrequency = baseFreq;
+        this.weatherFadeInTween = this.scene.tweens.addCounter({
+          from: baseFreq * 3,
+          to: baseFreq,
+          duration: 1500,
+          onUpdate: (tween) => {
+            if (this.weatherEmitter) {
+              this.weatherEmitter.frequency = tween.getValue() as number;
+            }
+          },
+        });
       }
     } catch {
       // Safe fallback
@@ -262,6 +325,10 @@ export class AtmosphereSystem {
     this.enabled = enabled;
     if (this.groundFog) this.groundFog.setVisible(enabled);
     if (this.upperHaze) this.upperHaze.setVisible(enabled);
+    if (this.weatherFadeInTween) {
+      this.weatherFadeInTween.stop();
+      this.weatherFadeInTween = null;
+    }
     if (this.weatherEmitter) {
       if (enabled) {
         this.initWeatherEmitter();
@@ -283,6 +350,10 @@ export class AtmosphereSystem {
     if (this.upperHaze) {
       try { this.upperHaze.destroy(); } catch { /* ignore */ }
       this.upperHaze = null;
+    }
+    if (this.weatherFadeInTween) {
+      try { this.weatherFadeInTween.stop(); } catch { /* ignore */ }
+      this.weatherFadeInTween = null;
     }
     if (this.weatherEmitter) {
       try { this.weatherEmitter.destroy(); } catch { /* ignore */ }

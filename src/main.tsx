@@ -45,6 +45,42 @@ if (typeof window !== 'undefined') {
 
 import './index.css';
 
+// ─── PWA Service Worker Registration ───
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/',
+      });
+
+      console.log('[PWA] Service Worker registered:', registration);
+
+      // Verificar por atualizações a cada 6 horas
+      setInterval(() => {
+        registration.update().catch((err) => {
+          console.error('[PWA] Update check failed:', err);
+        });
+      }, 6 * 60 * 60 * 1000);
+
+      // Avisar quando uma nova versão está pronta
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // Nova versão disponível
+              console.log('[PWA] New version available - refresh to update');
+              // Aqui poderíamos mostrar um toast/notificação para o usuário
+            }
+          });
+        }
+      });
+    } catch (error) {
+      console.error('[PWA] Service Worker registration failed:', error);
+    }
+  });
+}
+
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN as string | undefined;
 
 if (SENTRY_DSN) {

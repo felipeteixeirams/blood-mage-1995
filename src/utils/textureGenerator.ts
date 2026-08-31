@@ -1130,6 +1130,73 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   });
   addTexture('particle_blood_red', bloodPartCanvas);
 
+  // 14a. Particle: Ash Fleck (4×10) — Thin elongated rect, fire ash
+  // Inclined ~15° para leitura dinâmica (não totalmente reta, não totalmente caótica)
+  const ashPartCanvas = createPixelCanvas(4, 10, (ctx) => {
+    // Cinza com gradiente sutil — mais claro no topo, mais escuro embaixo
+    const ashGrad = ctx.createLinearGradient(2, 0, 2, 10);
+    ashGrad.addColorStop(0, '#d1d5db');
+    ashGrad.addColorStop(1, '#6b7280');
+    ctx.fillStyle = ashGrad;
+    ctx.save();
+    ctx.translate(2, 5);
+    ctx.rotate(-0.26); // ~15°
+    ctx.fillRect(-2, -5, 4, 10);
+    ctx.restore();
+  });
+  addTexture('particle_ash', ashPartCanvas);
+
+  // 14a2. Particle: Spore (8×8) — Soft hexagon, bioluminescent green
+  // Forma de hexágono suave (arredondado) com borda escura, lê como microorganism
+  const sporePartCanvas = createPixelCanvas(8, 8, (ctx) => {
+    // Núcleo bioluminescente verde-lima com halo
+    const sporeGrad = ctx.createRadialGradient(4, 4, 1, 4, 4, 4);
+    sporeGrad.addColorStop(0, '#bfef45');
+    sporeGrad.addColorStop(0.6, '#84cc16');
+    sporeGrad.addColorStop(1, 'rgba(132, 204, 22, 0)');
+    ctx.fillStyle = sporeGrad;
+    ctx.beginPath();
+    ctx.arc(4, 4, 4, 0, Math.PI * 2);
+    ctx.fill();
+    // Borda escura para definir hexágono suave (6 pequenos triângulos)
+    ctx.fillStyle = 'rgba(59, 130, 20, 0.5)';
+    for (let i = 0; i < 6; i++) {
+      const angle = (i * Math.PI) / 3;
+      const x = 4 + 3.2 * Math.cos(angle);
+      const y = 4 + 3.2 * Math.sin(angle);
+      ctx.beginPath();
+      ctx.arc(x, y, 0.8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+  addTexture('particle_spore', sporePartCanvas);
+
+  // 14a3. Particle: Blood Drop Diagonal (5×9) — Teardrop shape, ~25° angle
+  // Gota alongada com afilamento embaixo + cauda acima, diagonal pra leitura de "chuva caindo"
+  const bloodDropPartCanvas = createPixelCanvas(5, 9, (ctx) => {
+    const dropGrad = ctx.createLinearGradient(2.5, 1, 2.5, 9);
+    dropGrad.addColorStop(0, '#dc2626');
+    dropGrad.addColorStop(0.6, '#991b1b');
+    dropGrad.addColorStop(1, 'rgba(127, 29, 29, 0.3)');
+    ctx.fillStyle = dropGrad;
+    ctx.save();
+    ctx.translate(2.5, 4.5);
+    ctx.rotate(0.436); // ~25°
+    // Corpo da gota (elipse alongada)
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 2, 3.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Ponta afunilada embaixo
+    ctx.beginPath();
+    ctx.moveTo(-1.2, 3);
+    ctx.lineTo(1.2, 3);
+    ctx.lineTo(0, 4.5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  });
+  addTexture('particle_blood_drop', bloodDropPartCanvas);
+
   // 14b. Status Effect Particles (Ember Spark, Frost Crystal, Dark Flame) —
   // mesma correção: degradê radial em vez de fillRect empilhado.
   const emberPartCanvas = createPixelCanvas(6, 6, (ctx) => {

@@ -11,9 +11,24 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'prompt',
-        includeAssets: ['favicon.svg', 'icon-512.png'],
+        strategies: 'generateSW',
+        includeAssets: [
+          'favicon.svg',
+          'icon-*.png',
+          'robots.txt',
+          'fonts/*.woff2',
+          'audio_samples/*.mp3',
+        ],
         workbox: {
-          maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+          globPatterns: [
+            '**/*.{js,css,html,woff2,png,svg}',
+          ],
+          // Aumentar tamanho máximo de cache para 5MB (Phaser é pesado)
+          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+          // Não fazer cache-bust para assets imutáveis
+          dontCacheBustURLsMatching: /\.(js|css|woff2)$/,
+          skipWaiting: true,
+          clientsClaim: true,
         },
       }),
     ],
