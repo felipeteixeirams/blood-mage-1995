@@ -170,6 +170,11 @@ export class CombatEffectsSystem {
     const isSacrificial = ['crimson_scythe', 'hellfire_nova', 'blood_ritual_circle', 'hemomancy_beam'].includes(killerSpellId || '');
     const isExecution = isSacrificial && wasLowHp;
 
+    // Trigger gore execution if conditions are met (sacrificial + low HP ≤ 15%)
+    if (isExecution) {
+      this.spawnProceduralGore(enemy);
+    }
+
     const dismemberResult = DismembermentSystem.calculateDismemberment({
       monsterConfig: enemy.config,
       damageAmount: enemy.maxHp * 0.9,
