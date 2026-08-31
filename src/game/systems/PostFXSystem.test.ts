@@ -95,4 +95,29 @@ describe('PostFXSystem', () => {
     system.effectCriticalDamage();
     expect(scene.time.delayedCall).toHaveBeenCalled();
   });
+
+  it('triggerShockwave ativa displacement em cascata com timers', () => {
+    const { scene } = makeScene({ isWebGL: true });
+    const system = new PostFXSystem(scene as any);
+    system.triggerShockwave(500, 0.6);
+    expect(scene.time.delayedCall).toHaveBeenCalled();
+  });
+
+  it('setLowHpTension ativa pulsação dinâmica de vinheta', () => {
+    const { scene } = makeScene({ isWebGL: true });
+    const system = new PostFXSystem(scene as any);
+    system.setLowHpTension(true, 1000);
+    system.update(250);
+    expect(system.isFilterActive()).toBe(true);
+    system.setLowHpTension(false);
+  });
+
+  it('triggerBossImpactFX e triggerLevelUpFX agendam efeitos', () => {
+    const { scene } = makeScene({ isWebGL: true });
+    const system = new PostFXSystem(scene as any);
+    system.triggerBossImpactFX();
+    system.triggerLevelUpFX();
+    expect(scene.time.delayedCall).toHaveBeenCalled();
+  });
 });
+

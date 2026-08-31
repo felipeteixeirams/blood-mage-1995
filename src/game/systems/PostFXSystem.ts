@@ -128,6 +128,49 @@ export class PostFXSystem {
     this.startEase(duration);
   }
 
+  private isLowHpTensionActive = false;
+  private tensionPulseTimer = 0;
+  private tensionPulsePeriod = 1200; // ms per pulse
+
+  public triggerShockwave(durationMs: number = 450, intensity: number = 0.5): void {
+    const postProcessing = useGameStore.getState().settings.postProcessingEnabled ?? true;
+    if (!postProcessing) return;
+
+    this.setDisplacement(Math.min(1.0, intensity * 0.9), durationMs * 0.3);
+    this.scene.time.delayedCall(durationMs * 0.3, () => {
+      this.setDisplacement(intensity * 0.3, durationMs * 0.35);
+    });
+    this.scene.time.delayedCall(durationMs * 0.65, () => {
+      this.setDisplacement(0, durationMs * 0.35);
+    });
+  }
+
+  public setLowHpTension(active: boolean, pulsePeriod: number = 1200): void {
+    this.isLowHpTensionActive = active;
+    this.tensionPulsePeriod = pulsePeriod;
+    if (!active && this.targetTint === 0x880000) {
+      this.setTint('transparent', 400);
+      this.setVignette(0, 400);
+    }
+  }
+
+  public triggerBossImpactFX(): void {
+    this.triggerShockwave(600, 0.7);
+    this.setVignette(0.7, 150);
+    this.scene.time.delayedCall(150, () => {
+      this.setVignette(0, 450);
+    });
+  }
+
+  public triggerLevelUpFX(): void {
+    this.setTint('#fef08a', 200);
+    this.setVignette(0.4, 200);
+    this.scene.time.delayedCall(200, () => {
+      this.setTint('transparent', 600);
+      this.setVignette(0, 600);
+    });
+  }
+
   public triggerFearDistortion(durationMs: number = 1200): void {
     const isFearEnabled = useGameStore.getState().settings.fearDistortionEnabled ?? true;
     if (!isFearEnabled) return;
@@ -189,6 +232,7 @@ export class PostFXSystem {
     this.currentVignette = 0;
     this.currentDisplacement = 0;
     this.currentTint = null;
+    this.isLowHpTensionActive = false;
 
     if (this.vignette) this.vignette.strength = 0;
     if (this.displacement) {
@@ -204,6 +248,16 @@ export class PostFXSystem {
 
   public update(delta: number): void {
     if (!this.enabled || !this.isWebGL) return;
+
+    // Pulso dinâmico de baixa vida (Low HP Tension Pulse)
+    if (this.isLowHpTensionActive) {
+      this.tensionPulseTimer += delta;
+      const wave = (Math.sin((this.tensionPulseTimer / this.tensionPulsePeriod) * Math.PI * 2) + 1) * 0.5;
+      const baseVignette = 0.45 + wave * 0.35; // pulsa entre 0.45 e 0.80
+      if (this.easeDuration === 0) {
+        this.currentVignette = baseVignette;
+      }
+    }
 
     if (this.easeDuration > 0) {
       this.easeProgress += delta;
@@ -225,11 +279,15 @@ export class PostFXSystem {
   }
 
   private apply(): void {
+    const isCrt = useGameStore.getState().settings.crtFilter ?? false;
+
     if (this.vignette) {
-      this.vignette.strength = this.currentVignette;
+      const crtExtra = isCrt ? 0.12 : 0;
+      this.vignette.strength = Math.min(1.0, this.currentVignette + crtExtra);
     }
     if (this.displacement) {
-      const amount = this.currentDisplacement * 0.05;
+      const crtDisplacement = isCrt ? 0.003 : 0;
+      const amount = this.currentDisplacement * 0.05 + crtDisplacement;
       this.displacement.x = amount;
       this.displacement.y = amount;
     }

@@ -89,20 +89,22 @@ export class CombatEffectsSystem {
     ContractSystem.onEnemyKilled(enemy, scene);
     useGameStore.getState().onEnemyKilled(enemy.config.id);
 
-    // Fase 5: Advanced Visual Effect on kill
+    // Spec 6 (Eixo C): Advanced Visual Gore Effect on kill mapped to enemy type
     if (scene.advancedParticles) {
-      scene.advancedParticles.emit({
-        type: 'spectral_burst',
-        x: enemy.x,
-        y: enemy.y,
-        intensity: 1.0, // Kill = intensidade máxima
-      });
+      const gore = enemy.config?.goreEffect;
+      const effectType = (gore === 'bone_dust' || gore === 'acid_splash' || gore === 'spectral_burst')
+        ? gore
+        : 'blood_splatter';
+      scene.advancedParticles.emitMonsterGore(effectType, enemy.x, enemy.y, 1.0);
     }
     if (scene.screenShake) {
       scene.screenShake.light(); // Leve shake na vitória
     }
     if (scene.lightingPolish) {
       scene.lightingPolish.addDeathGlow(enemy.x, enemy.y);
+    }
+    if (enemy.config?.behavior === 'boss' && scene.postFX) {
+      scene.postFX.triggerShockwave(600, 0.75);
     }
 
     // Conquistas unificadas: incrementa as métricas na store unificada (dispara

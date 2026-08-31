@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { useGameStore } from '../../store/gameStore';
 
 /**
  * Advanced Particles (Fase 5)
@@ -89,17 +90,56 @@ export class AdvancedParticles {
   }
 
   /**
-   * Emitir efeito de partículas
+   * Emitir efeito de partículas com escala de performance
    */
   public emit(effect: ParticleEffect): void {
     const emitter = this.emitters.get(effect.type);
     if (!emitter) return;
 
+    let isLowPerf = false;
+    try {
+      isLowPerf = useGameStore.getState().settings.lowPerformanceParticles ?? false;
+    } catch {
+      // safe fallback
+    }
+
     // Ajustar intensidade (qtd de partículas)
-    const particleCount = Math.floor(10 + effect.intensity * 20);
+    const baseCount = Math.floor(10 + effect.intensity * 20);
+    const particleCount = isLowPerf ? Math.max(3, Math.floor(baseCount * 0.45)) : baseCount;
 
     // Emitir no ponto especificado
     emitter.emitParticleAt(effect.x, effect.y, particleCount);
+  }
+
+  /**
+   * Helper para emitir gore específico de monstro
+   */
+  public emitMonsterGore(
+    type: 'blood_splatter' | 'bone_dust' | 'acid_splash' | 'spectral_burst' | 'critical_hit',
+    x: number,
+    y: number,
+    intensity: number = 1.0
+  ): void {
+    this.emit({
+      type,
+      x,
+      y,
+      intensity,
+    });
+  }
+
+  /**
+   * Emitir rastro de Dash com faíscas rubro-espectrais
+   */
+  public emitDashTrail(x: number, y: number, angle?: number): void {
+    this.emitSpellTrail(x, y, 4);
+    this.emit({
+      type: 'spectral_burst',
+      x,
+      y,
+      intensity: 0.35,
+      angle,
+    });
   }
 
   /**

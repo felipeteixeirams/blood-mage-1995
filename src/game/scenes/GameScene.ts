@@ -1026,6 +1026,9 @@ export class GameScene extends Phaser.Scene {
     if (this.postFX) {
       this.postFX.update(delta);
     }
+    if (this.lightingSystem) {
+      this.lightingSystem.update(time, delta);
+    }
     if (this.performanceMonitor) {
       this.performanceMonitor.update();
     }
@@ -1763,9 +1766,12 @@ export class GameScene extends Phaser.Scene {
     // 4.3 & 4.4 — Vinheta Pulsante & Iluminação Dinâmica (WorldManager)
     const playerHpRatio = this.player.stats.hp / this.player.stats.maxHp;
 
-    // Eixo A: luz real do player
+    // Spec 6 (Eixos A & B): luz real do player + pulso de tensão
     if (this.lightingSystem) {
       this.lightingSystem.updatePlayerLight(playerHpRatio);
+    }
+    if (this.postFX) {
+      this.postFX.setLowHpTension(playerHpRatio <= 0.25);
     }
 
     if (this.darknessOverlay) {

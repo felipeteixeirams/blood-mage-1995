@@ -57,13 +57,20 @@ const BIOME_LIGHTING: Record<BiomeType, BiomeLightingConfig> = {
   },
 };
 
+interface TorchLightEntry {
+  light: any;
+  baseRadius: number;
+  baseIntensity: number;
+  seed: number;
+}
+
 export class LightingSystem {
   private scene: Phaser.Scene & { player?: { x: number; y: number } };
   private isWebGL: boolean;
   private enabled: boolean;
 
   private playerLight: any = null;
-  private torchLights: any[] = [];
+  private torchLights: TorchLightEntry[] = [];
   private activeBiome: BiomeType = 'fosso_chagas';
 
   constructor(scene: Phaser.Scene) {
@@ -151,20 +158,42 @@ export class LightingSystem {
     this.playerLight.radius = baseRadius * hpMultiplier;
   }
 
-  /** Cria luzes estáticas nas posições de tocha/brasier. */
+  /** Cria luzes estáticas nas posições de tocha/brasier com micro-flicker dinâmico. */
   public addTorchLights(positions: { x: number; y: number; kind: 'torch' | 'brazier' }[]): void {
     if (!this.enabled) return;
     const lights = this.scene.lights as any;
     const config = BIOME_LIGHTING[this.activeBiome] || BIOME_LIGHTING.fosso_chagas;
     try {
-      positions.forEach((pos) => {
+      positions.forEach((pos, idx) => {
         const radius = pos.kind === 'brazier' ? config.torchRadius * 1.6 : config.torchRadius;
         const color = pos.kind === 'brazier' ? 0xff6622 : config.torchColor;
-        const light = lights.addLight(pos.x, pos.y, radius, color, 0.9);
-        this.torchLights.push(light);
+        const baseIntensity = pos.kind === 'brazier' ? 1.0 : 0.9;
+        const light = lights.addLight(pos.x, pos.y, radius, color, baseIntensity);
+        this.torchLights.push({
+          light,
+          baseRadius: radius,
+          baseIntensity,
+          seed: idx * 1.73 + pos.x * 0.05 + pos.y * 0.03,
+        });
       });
     } catch (e) {
       // Ignorar falhas pontuais
+    }
+  }
+
+  /**
+   * Atualização de ciclo de frame para simular micro-flicker orgânico das tochas.
+   */
+  public update(time: number, delta: number): void {
+    if (!this.enabled || this.torchLights.length === 0) return;
+
+    for (let i = 0; i < this.torchLights.length; i++) {
+      const entry = this.torchLights[i];
+      if (!entry.light) continue;
+
+      const flicker = Math.sin(time * 0.007 + entry.seed) * 0.08 + Math.cos(time * 0.015 + entry.seed * 2.1) * 0.05;
+      entry.light.intensity = Math.max(0.35, entry.baseIntensity + flicker);
+      entry.light.radius = Math.max(20, entry.baseRadius * (1 + flicker * 0.35));
     }
   }
 
@@ -172,7 +201,7 @@ export class LightingSystem {
   public clearTorchLights(): void {
     const lights = this.scene.lights as any;
     try {
-      this.torchLights.forEach((light) => lights.removeLight(light));
+      this.torchLights.forEach((entry) => lights.removeLight(entry.light));
     } catch (e) {
       // Ignorar
     }

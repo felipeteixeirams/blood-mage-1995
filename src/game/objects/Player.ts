@@ -371,6 +371,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             }
           });
         }
+        if ((this.scene as any).advancedParticles) {
+          (this.scene as any).advancedParticles.emitDashTrail(this.x, this.y);
+        }
       }
 
       if (this.dashTimer <= 0) {

@@ -194,8 +194,21 @@ export class CollisionHandlers {
     CombatFeel.handleHitImpact(scene, finalDamage, isCrit, false, enemy.hp / enemy.maxHp);
     scene.applyRelicOnHitEffects(enemy);
 
-    if (isCrit && scene.lightingPolish) {
-      scene.lightingPolish.addCriticalImpactGlow(enemy.x, enemy.y);
+    if (isCrit) {
+      if (scene.lightingPolish) {
+        scene.lightingPolish.addCriticalImpactGlow(enemy.x, enemy.y);
+      }
+      if (scene.advancedParticles) {
+        scene.advancedParticles.emit({
+          type: 'critical_hit',
+          x: enemy.x,
+          y: enemy.y,
+          intensity: 0.9,
+        });
+      }
+      if (scene.postFX) {
+        scene.postFX.triggerShockwave(200, 0.25);
+      }
     }
 
     // Floating damage numbers
@@ -245,8 +258,21 @@ export class CollisionHandlers {
     CombatFeel.handleHitImpact(scene, finalDamage, isCrit, false, enemy.hp / enemy.maxHp);
     scene.applyRelicOnHitEffects(enemy);
 
-    if (isCrit && scene.lightingPolish) {
-      scene.lightingPolish.addCriticalImpactGlow(enemy.x, enemy.y);
+    if (isCrit) {
+      if (scene.lightingPolish) {
+        scene.lightingPolish.addCriticalImpactGlow(enemy.x, enemy.y);
+      }
+      if (scene.advancedParticles) {
+        scene.advancedParticles.emit({
+          type: 'critical_hit',
+          x: enemy.x,
+          y: enemy.y,
+          intensity: 0.9,
+        });
+      }
+      if (scene.postFX) {
+        scene.postFX.triggerShockwave(200, 0.25);
+      }
     }
 
     const dmgText = Math.round(finalDamage).toString();

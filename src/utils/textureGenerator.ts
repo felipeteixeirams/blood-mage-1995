@@ -648,7 +648,7 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     ctx.fillRect(12, 12, 3, 4);
     ctx.fillRect(18, 12, 3, 4);
   });
-  addTexture('spr_specter', specterCanvas);
+  addTextureWithNormalMap('spr_specter', specterCanvas);
 
   // 8. Necro Lord Boss (64x72)
   // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
@@ -1004,7 +1004,7 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     ctx.fillRect(26, 8, 2, 2);
     ctx.fillRect(30, 5, 3, 3);
   });
-  addTexture('spr_gore_abomination', abomCanvas);
+  addTextureWithNormalMap('spr_gore_abomination', abomCanvas);
 
   // 9. Projectile: Blood Bolt (16x16)
   const boltCanvas = createPixelCanvas(16, 16, (ctx) => {
@@ -1511,8 +1511,8 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     drawMossBlob(13, 15, 2.4);
     drawMossBlob(4, 25, 2.2);
   });
-  addTexture('tile_wall_brick', wallCanvas);
-  addTexture('spr_wall', wallCanvas);
+  addTextureWithNormalMap('tile_wall_brick', wallCanvas);
+  addTextureWithNormalMap('spr_wall', wallCanvas);
 
   // 17. Dungeon Door Archway (32x32)
   const doorCanvas = createPixelCanvas(32, 32, (ctx) => {
@@ -1672,7 +1672,7 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   };
 
   const defaultChestCanvas = createDirectionalChestCanvas('default');
-  addTexture('spr_chest', defaultChestCanvas);
+  addTextureWithNormalMap('spr_chest', defaultChestCanvas);
 
   const chestDirs = ['south', 'south_west', 'west', 'north_west', 'north', 'north_east', 'east', 'south_east'];
   chestDirs.forEach((dir) => {
