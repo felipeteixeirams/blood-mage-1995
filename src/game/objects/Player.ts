@@ -251,12 +251,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public getEffectiveDamageMultiplier(): number {
     const relicMods = useGameStore.getState().getRelicModifiers();
-    return this.stats.damageMultiplier + (relicMods.damageMultiplier || 0);
+    const prestigeMods = useGameStore.getState().getPrestigeModifiers?.() || { damageMult: 1, bonusMaxHp: 0, cdrBonus: 0, vampBonus: 0, dropMult: 1 };
+    return (this.stats.damageMultiplier + (relicMods.damageMultiplier || 0)) * prestigeMods.damageMult;
   }
 
   public getEffectiveVampirism(): number {
     const relicMods = useGameStore.getState().getRelicModifiers();
-    return this.stats.vampirism + (relicMods.lifestealBonus || 0);
+    const prestigeMods = useGameStore.getState().getPrestigeModifiers?.() || { damageMult: 1, bonusMaxHp: 0, cdrBonus: 0, vampBonus: 0, dropMult: 1 };
+    return this.stats.vampirism + (relicMods.lifestealBonus || 0) + prestigeMods.vampBonus;
   }
 
   public getEffectiveMoveSpeed(): number {
@@ -267,12 +269,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public getEffectiveMaxHp(): number {
     const relicMods = useGameStore.getState().getRelicModifiers();
-    return Math.max(10, this.stats.maxHp + (relicMods.maxHpBonus || 0));
+    const prestigeMods = useGameStore.getState().getPrestigeModifiers?.() || { damageMult: 1, bonusMaxHp: 0, cdrBonus: 0, vampBonus: 0, dropMult: 1 };
+    return Math.max(10, this.stats.maxHp + (relicMods.maxHpBonus || 0) + prestigeMods.bonusMaxHp);
   }
 
   public getEffectiveCooldownReduction(): number {
     const relicMods = useGameStore.getState().getRelicModifiers();
-    return Math.min(0.75, Math.max(0, this.stats.cooldownReduction + (relicMods.cooldownReductionBonus || 0)));
+    const prestigeMods = useGameStore.getState().getPrestigeModifiers?.() || { damageMult: 1, bonusMaxHp: 0, cdrBonus: 0, vampBonus: 0, dropMult: 1 };
+    return Math.min(0.75, Math.max(0, this.stats.cooldownReduction + (relicMods.cooldownReductionBonus || 0) + prestigeMods.cdrBonus));
   }
 
   public updatePlayer(time: number, delta: number) {

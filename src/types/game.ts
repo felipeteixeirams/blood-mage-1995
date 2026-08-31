@@ -352,4 +352,23 @@ export interface RunStats {
   knockouts_total: number;
 }
 
+export type GameDifficulty = 'normal' | 'nightmare' | 'inferno';
+
+export type BloodSealType =
+  | 'carnage'
+  | 'dark_vitality'
+  | 'runic_flow'
+  | 'deep_vampirism'
+  | 'macabre_fortune';
+
+export interface PrestigeData {
+  level: number; // 0 to 10
+  unspentSealPoints: number;
+  seals: Record<BloodSealType, number>; // level (0 to 5) per seal
+  selectedDifficulty: GameDifficulty;
+  unlockedDifficulties: GameDifficulty[];
+  totalSacrifices: number;
+}
+
 export * from './campaign';
+

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, BiomeType, DroppedCorpse, CodexState, AchievementState, RunStats, UnlockedAchievementNotification, OnboardingState } from '../types/game';
+import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, BiomeType, DroppedCorpse, CodexState, AchievementState, RunStats, UnlockedAchievementNotification, OnboardingState, PrestigeData, BloodSealType, GameDifficulty } from '../types/game';
 import { GameMode, ZoneType, CampaignState, DialogueTree, QuestLogEntry, QuestDefinition, QuestObjective, CampaignEffect } from '../types/campaign';
-import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding, loadUnlockedRelics, saveUnlockedRelics, loadEquippedRelicIds, saveEquippedRelicIds, loadCodexState, saveCodexState, loadAchievements, saveAchievements, loadRunStats, saveRunStats, loadCampaignState, saveCampaignState } from '../utils/localStorage';
+import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding, loadUnlockedRelics, saveUnlockedRelics, loadEquippedRelicIds, saveEquippedRelicIds, loadCodexState, saveCodexState, loadAchievements, saveAchievements, loadRunStats, saveRunStats, loadCampaignState, saveCampaignState, loadPrestigeData, savePrestigeData, defaultPrestigeData } from '../utils/localStorage';
 import { soundEngine } from '../utils/soundEngine';
 import { CodexSystem } from '../game/systems/CodexSystem';
 import relicsData from '../data/relics.json';
@@ -93,6 +93,16 @@ interface GameStore {
   setActiveTip: (tip: string | null) => void;
   isRecordsOpen: boolean;
   setRecordsOpen: (isOpen: boolean) => void;
+
+  // Prestige & Meta-Progression
+  isPrestigeOpen: boolean;
+  setPrestigeOpen: (isOpen: boolean) => void;
+  prestige: PrestigeData;
+  canPrestige: () => boolean;
+  performPrestige: (sealToAllocate?: BloodSealType) => boolean;
+  allocateBloodSeal: (seal: BloodSealType) => boolean;
+  setDifficulty: (difficulty: GameDifficulty) => void;
+  getPrestigeModifiers: () => { damageMult: number; bonusMaxHp: number; cdrBonus: number; vampBonus: number; dropMult: number };
 
   // Metagame Currency & Talents
   bloodCrystals: number;
@@ -780,6 +790,115 @@ export const useGameStore = create<GameStore>((set, get) => ({
       talentLevels: nextTalents,
     });
     return true;
+  },
+
+  isPrestigeOpen: false,
+  setPrestigeOpen: (isOpen) => {
+    soundEngine.playMenuSelect();
+    set({ isPrestigeOpen: isOpen });
+  },
+
+  prestige: loadPrestigeData(),
+  canPrestige: () => {
+    const { playerStats, prestige } = get();
+    return playerStats.level >= 10 || playerStats.floorDepth >= 3 || playerStats.kills >= 30;
+  },
+  performPrestige: (sealToAllocate) => {
+    const { canPrestige, prestige, playerStats } = get();
+    if (!canPrestige()) return false;
+
+    const nextLevel = Math.min(10, prestige.level + 1);
+    const unspent = prestige.unspentSealPoints + 1;
+    const unlockedDifficulties = [...prestige.unlockedDifficulties];
+    if (nextLevel >= 1 && !unlockedDifficulties.includes('nightmare')) {
+      unlockedDifficulties.push('nightmare');
+    }
+    if (nextLevel >= 3 && !unlockedDifficulties.includes('inferno')) {
+      unlockedDifficulties.push('inferno');
+    }
+
+    const seals = { ...prestige.seals };
+    let finalUnspent = unspent;
+    if (sealToAllocate && (seals[sealToAllocate] || 0) < 5) {
+      seals[sealToAllocate] = (seals[sealToAllocate] || 0) + 1;
+      finalUnspent -= 1;
+    }
+
+    const updatedPrestige: PrestigeData = {
+      ...prestige,
+      level: nextLevel,
+      unspentSealPoints: finalUnspent,
+      seals,
+      unlockedDifficulties,
+      totalSacrifices: prestige.totalSacrifices + 1,
+    };
+
+    savePrestigeData(updatedPrestige);
+
+    const resetStats: PlayerStats = {
+      ...playerStats,
+      level: 1,
+      currentXp: 0,
+      nextLevelXp: 100,
+      hp: playerStats.maxHp,
+      mana: playerStats.maxMana,
+      wave: 1,
+      floorDepth: 1,
+      pendingStatPoints: 0,
+    };
+
+    soundEngine.playBloodNova();
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([100, 50, 150]);
+    }
+
+    set({
+      prestige: updatedPrestige,
+      playerStats: resetStats,
+    });
+    return true;
+  },
+  allocateBloodSeal: (seal) => {
+    const { prestige } = get();
+    if (prestige.unspentSealPoints <= 0) return false;
+    const current = prestige.seals[seal] || 0;
+    if (current >= 5) return false;
+
+    const updatedPrestige: PrestigeData = {
+      ...prestige,
+      unspentSealPoints: prestige.unspentSealPoints - 1,
+      seals: {
+        ...prestige.seals,
+        [seal]: current + 1,
+      },
+    };
+
+    savePrestigeData(updatedPrestige);
+    soundEngine.playRunicEmpowerment();
+    set({ prestige: updatedPrestige });
+    return true;
+  },
+  setDifficulty: (difficulty) => {
+    const { prestige } = get();
+    if (!prestige.unlockedDifficulties.includes(difficulty)) return;
+    const updatedPrestige: PrestigeData = {
+      ...prestige,
+      selectedDifficulty: difficulty,
+    };
+    savePrestigeData(updatedPrestige);
+    soundEngine.playMenuSelect();
+    set({ prestige: updatedPrestige });
+  },
+  getPrestigeModifiers: () => {
+    const { prestige } = get();
+    const seals = prestige.seals || defaultPrestigeData.seals;
+    return {
+      damageMult: 1.0 + (seals.carnage || 0) * 0.03,
+      bonusMaxHp: (seals.dark_vitality || 0) * 8,
+      cdrBonus: (seals.runic_flow || 0) * 0.025,
+      vampBonus: (seals.deep_vampirism || 0) * 0.005,
+      dropMult: 1.0 + (seals.macabre_fortune || 0) * 0.06,
+    };
   },
 
   equipment: {

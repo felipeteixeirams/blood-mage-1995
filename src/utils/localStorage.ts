@@ -1,11 +1,12 @@
 import { z } from 'zod';
-import { GameSettings, HighScoreRecord } from '../types/game';
+import { GameSettings, HighScoreRecord, PrestigeData, BloodSealType, GameDifficulty } from '../types/game';
 import { logger } from './logger';
 
 const SETTINGS_KEY = 'bloodmage_1995_settings';
 const HIGHSCORES_KEY = 'bloodmage_1995_highscores';
 const BLOOD_CRYSTALS_KEY = 'bloodmage_1995_blood_crystals';
 const TALENTS_KEY = 'bloodmage_1995_talents';
+const PRESTIGE_KEY = 'bloodmage_1995_prestige';
 
 // Schema for Blood Crystals validation
 const BloodCrystalsSchema = z.number().int().nonnegative().max(1_000_000_000);
@@ -105,6 +106,71 @@ export function saveTalentLevels(talents: Record<string, number>): void {
     logger.debug('PERSISTENCE', 'Talents saved successfully to localStorage');
   } catch (e) {
     logger.error('PERSISTENCE', 'Failed to save talents', e);
+  }
+}
+
+export const defaultPrestigeData: PrestigeData = {
+  level: 0,
+  unspentSealPoints: 0,
+  seals: {
+    carnage: 0,
+    dark_vitality: 0,
+    runic_flow: 0,
+    deep_vampirism: 0,
+    macabre_fortune: 0,
+  },
+  selectedDifficulty: 'normal',
+  unlockedDifficulties: ['normal'],
+  totalSacrifices: 0,
+};
+
+const PrestigeDataSchema = z.object({
+  level: z.number().int().min(0).max(10).catch(0),
+  unspentSealPoints: z.number().int().min(0).max(10).catch(0),
+  seals: z.object({
+    carnage: z.number().int().min(0).max(5).catch(0),
+    dark_vitality: z.number().int().min(0).max(5).catch(0),
+    runic_flow: z.number().int().min(0).max(5).catch(0),
+    deep_vampirism: z.number().int().min(0).max(5).catch(0),
+    macabre_fortune: z.number().int().min(0).max(5).catch(0),
+  }).catch(defaultPrestigeData.seals),
+  selectedDifficulty: z.enum(['normal', 'nightmare', 'inferno']).catch('normal'),
+  unlockedDifficulties: z.array(z.enum(['normal', 'nightmare', 'inferno'])).catch(['normal']),
+  totalSacrifices: z.number().int().min(0).catch(0),
+});
+
+export function loadPrestigeData(): PrestigeData {
+  try {
+    const raw = localStorage.getItem(PRESTIGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const validated = PrestigeDataSchema.safeParse(parsed);
+      if (validated.success) {
+        logger.debug('PERSISTENCE', 'Prestige data loaded successfully from localStorage');
+        return validated.data;
+      } else {
+        logger.warn('PERSISTENCE', 'Estrutura de prestígio inválida no localStorage. Restaurando padrões.', { raw });
+        savePrestigeData(defaultPrestigeData);
+      }
+    }
+  } catch (e) {
+    logger.warn('PERSISTENCE', 'Failed to load prestige data', e);
+    savePrestigeData(defaultPrestigeData);
+  }
+  return { ...defaultPrestigeData, seals: { ...defaultPrestigeData.seals }, unlockedDifficulties: [...defaultPrestigeData.unlockedDifficulties] };
+}
+
+export function savePrestigeData(prestige: PrestigeData): void {
+  try {
+    const validated = PrestigeDataSchema.safeParse(prestige);
+    const valueToSave = validated.success ? validated.data : defaultPrestigeData;
+    if (!validated.success) {
+      logger.warn('PERSISTENCE', 'Tentativa de salvar dados de prestígio inválidos. Usando padrões.');
+    }
+    localStorage.setItem(PRESTIGE_KEY, JSON.stringify(valueToSave));
+    logger.debug('PERSISTENCE', 'Prestige data saved successfully to localStorage');
+  } catch (e) {
+    logger.error('PERSISTENCE', 'Failed to save prestige data', e);
   }
 }
 
