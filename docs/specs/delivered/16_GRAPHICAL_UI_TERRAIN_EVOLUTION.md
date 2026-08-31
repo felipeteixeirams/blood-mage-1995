@@ -251,9 +251,9 @@ Esta é a análise de viabilidade técnica (Pros, Contras, Complexidade e Maturi
   - [x] 2.2 Integrar função de projeção `isoToScreen` com elevação e `heightStep` em `DungeonGenerator.ts`.
   - [x] 2.3 Implementar regras de transitabilidade e colisão de falésias ($\Delta Z \le 1$ transitável, $\Delta Z \ge 2$ bloqueio).
   - [x] 2.4 Renderizar paredes de falésia (Cliff Faces) com sombreamento de desnível, biome tints, profundidade isométrica e iluminação 2D (`spr_wall`).
-- [ ] **FASE 3: Personalização Ergonômica Mobile & Safe Area Insets**
-  - [ ] 3.1 Suporte a safe-area-insets nos containers do React HUD (`GameplayHUD.tsx`).
-  - [ ] 3.2 Opções de escala do joystick (`small`, `medium`, `large`), Modo Canhoto (*Left-Handed*) e joystick flutuante.
+- [x] **FASE 3: Personalização Ergonômica Mobile & Safe Area Insets (PR #60)**
+  - [x] 3.1 Suporte a safe-area-insets nos containers do React HUD (`GameplayHUD.tsx`).
+  - [x] 3.2 Opções de escala do joystick (`small`, `medium`, `large`), Modo Canhoto (*Left-Handed*) e joystick flutuante.
 
 ---
 

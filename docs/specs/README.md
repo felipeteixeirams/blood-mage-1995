@@ -36,7 +36,6 @@ docs/specs/
 
 | Spec / Documento | Fases / Escopo Concluído | Fases / Itens Pendentes |
 |---|---|---|
-| **[`in-progress/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md`](./in-progress/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md)** | • **Fase 1:** UI Responsiva 1080p, Escala & Boss Zoom Out<br>• **Fase 2:** Terreno 2.5D, Heightmap & Paredões de Falésia | • **Fase 3:** Ergonomia Touch Mobile (Safe Area Insets, Escala Joystick e Modo Canhoto) |
 | **[`in-progress/04_FASE4_MUNDO_CONTINUO.md`](./in-progress/04_FASE4_MUNDO_CONTINUO.md)** | • Safe Town (Room 0) com NPCs<br>• Iluminação adaptativa & reverberação por bioma<br>• `WorldManager.ts` e corpos persistentes | • Backlog de Discovery (Quests de NPCs locais, Clima e Viagem Rápida) |
 | **[`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md)** | • PWA Offline-First (Spec 15)<br>• Scripts de build Electron (`scripts/build-steam.sh`) | • Localização multilíngue (i18n) e publicação nas lojas |
 | **[`in-progress/06_EIXO_A_GRAFICOS_AVANCADOS.md`](./in-progress/06_EIXO_A_GRAFICOS_AVANCADOS.md)** | • Quick wins de partículas e paletas de equipamento | • Pipeline de pós-processamento e iluminação de segunda geração |
@@ -52,6 +51,7 @@ docs/specs/
 
 | Spec | Escopo Concluído | Verificação / Testes |
 |---|---|---|
+| **[`delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md`](./delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md)** | **Evolução Gráfica, Terreno 2.5D & UI Adaptativa:** Base 1080p, Boss Zoom Out, Heightmap em Octaves, Cliff Faces verticais, colisão de desnível $\Delta Z$, Safe Area Insets e personalização de Joystick/Modo Canhoto | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/11_VISUAL_POLISH_FRONTS.md`](./delivered/11_VISUAL_POLISH_FRONTS.md)** | **8 Frentes de Polimento Visual:** BSP Dungeon, Névoa, Pegadas de sangue, Hit-Stop (40-80ms), Iluminação 2D/Glow, Pitch shift/Drone, Equip Palette Swap e Pulso de Altar | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/12_EXPANSION_FRONTS.md`](./delivered/12_EXPANSION_FRONTS.md)** | **5 Frentes de Expansão:** Armadilhas/Barris explosivos, Inimigos Elites com afixos (Vampírico, Rápido, etc.), Árvore de Talentos, HUD/Minimapa dinâmico e Trilha FM Procedural | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md`](./delivered/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md)** | **Safe House & Campanha ARPG:** Santuário Seguro, Diálogos de Maelen, Desbloqueio progressivo de magias e Grimório de Runas | Vitest + E2E (`pnpm verify`) |
