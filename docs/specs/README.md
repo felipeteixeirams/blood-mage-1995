@@ -42,7 +42,7 @@ docs/specs/
 | **[`in-progress/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`](./in-progress/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md)** | • Arquitetura híbrida (Loader assíncrono + Fallback procedural unificado)<br>• UI 9-slice React<br>• 18.7% dos assets físicos integrados | • Geração e integração física dos sprites de monstros (Tier 1 a 3), projéteis e tilesets |
 | **[`in-progress/09_PIXEL_LAB_PROMPT_GUIDE.md`](./in-progress/09_PIXEL_LAB_PROMPT_GUIDE.md)** | • Prompt templates e parâmetros para geração PixelLab | • Utilizado continuamente durante a produção de novos sprites |
 | **[`in-progress/10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md`](./in-progress/10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md)** | • Quick wins auditados e integrados | • Acompanhamento contínuo dos marcos do roadmap |
-| **[`in-progress/11_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md`](./in-progress/11_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md)** | • Joystick virtual desacoplado e responsivo | • Calibrações ergonômicas mobile (Safe Area e escala) |
+
 | **[`in-progress/SPECS_EVOLUCAO.md`](./in-progress/SPECS_EVOLUCAO.md)** | • Consolidação e rastreamento das fases 1 a 5 | • Atualização incremental conforme avanços de versão |
 
 ---
@@ -51,6 +51,7 @@ docs/specs/
 
 | Spec | Escopo Concluído | Verificação / Testes |
 |---|---|---|
+| **[`delivered/11_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md`](./delivered/11_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md)** | **Joystick Virtual Nativo Phaser (Padrão Mobile Legends / Diablo Immortal):** Canvas nativo 60 FPS, drag-to-follow, floating stick, multi-touch isolado por `pointer.id`, curva de resposta, deadzone, escala S/M/L e modo canhoto | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md`](./delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md)** | **Evolução Gráfica, Terreno 2.5D & UI Adaptativa:** Base 1080p, Boss Zoom Out, Heightmap em Octaves, Cliff Faces verticais, colisão de desnível $\Delta Z$, Safe Area Insets e personalização de Joystick/Modo Canhoto | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/11_VISUAL_POLISH_FRONTS.md`](./delivered/11_VISUAL_POLISH_FRONTS.md)** | **8 Frentes de Polimento Visual:** BSP Dungeon, Névoa, Pegadas de sangue, Hit-Stop (40-80ms), Iluminação 2D/Glow, Pitch shift/Drone, Equip Palette Swap e Pulso de Altar | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/12_EXPANSION_FRONTS.md`](./delivered/12_EXPANSION_FRONTS.md)** | **5 Frentes de Expansão:** Armadilhas/Barris explosivos, Inimigos Elites com afixos (Vampírico, Rápido, etc.), Árvore de Talentos, HUD/Minimapa dinâmico e Trilha FM Procedural | Vitest + E2E (`pnpm verify`) |
