@@ -92,6 +92,23 @@ export interface QuestLogEntry {
   objectivesProgress: Record<string, number>;
 }
 
+// Cada capítulo da campanha (quest_chN_*) libera, ao ser concluído, a árvore
+// de diálogo de "retorno" do Maelen do capítulo seguinte — que por sua vez
+// entrega a próxima quest via choice com action 'give_quest'. Função pura
+// (sem dependência de Phaser/store) pra ficar testável isoladamente; usada
+// em GameScene.ts no lugar do antigo `startDialogue('safe_house_maelen_intro')`
+// hardcoded, que ignorava completamente o progresso da campanha.
+const MAELEN_CHAPTER_PROGRESSION: Array<{ completesQuestId: string; nextTreeId: string }> = [
+  { completesQuestId: 'quest_ch3_the_martyrs_rest', nextTreeId: 'safe_house_maelen_ch4_return' },
+  { completesQuestId: 'quest_ch2_the_pit', nextTreeId: 'safe_house_maelen_ch3_return' },
+  { completesQuestId: 'quest_ch1_first_steps', nextTreeId: 'safe_house_maelen_ch2_return' },
+];
+
+export function getMaelenDialogueTreeId(quests: Record<string, QuestLogEntry>): string {
+  const step = MAELEN_CHAPTER_PROGRESSION.find((s) => quests[s.completesQuestId]?.status === 'completed');
+  return step ? step.nextTreeId : 'safe_house_maelen_intro';
+}
+
 // Fila de efeitos que a store (React/dialogue) pede pro Phaser (`GameScene`)
 // executar de verdade — mesmo padrão de "sinal pendente lido no update()" já
 // usado por `pendingMeleeHitTarget`/`SPELL_UNLOCK_BY_DISCOVERABLE`: a store não

@@ -39,5 +39,167 @@
       "bloodCrystals": 25,
       "spellUnlockId": "blood_bolt"
     }
+  },
+  "quest_ch2_the_pit": {
+    "id": "quest_ch2_the_pit",
+    "title": "A Descida ao Fosso",
+    "chapter": 2,
+    "summary": "Siga os rastros da carroça até o Fosso das Chagas e confronte as abominações que o guardam.",
+    "loreDescription": "Os rastros de sua família apontam para as profundezas corrompidas do Fosso das Chagas, uma passagem pútrida entre o Bosque e as Catacumbas. A névoa de esporos e o ar pesado carregam a promessa de perigos inimagináveis, mas também a esperança de encontrar aqueles que você perdeu. Prepare-se para uma descida ao coração da podridão.",
+    "objectives": [
+      {
+        "id": "obj_ch2_kill_zombies",
+        "description": "Extermine os Zumbis Rastejantes que infestam o Fosso (0/10)",
+        "type": "kill_enemy",
+        "targetId": "zombie_shambler",
+        "targetCount": 10,
+        "currentCount": 0,
+        "isCompleted": false
+      },
+      {
+        "id": "obj_ch2_kill_bats",
+        "description": "Aniquile os Enxames de Morcegos que voam nas cavernas (0/8)",
+        "type": "kill_enemy",
+        "targetId": "bat_swarm",
+        "targetCount": 8,
+        "currentCount": 0,
+        "isCompleted": false
+      },
+      {
+        "id": "obj_ch2_kill_hellhounds",
+        "description": "Cace os Cães Infernais que patrulham o Fosso (0/5)",
+        "type": "kill_enemy",
+        "targetId": "hell_hound",
+        "targetCount": 5,
+        "currentCount": 0,
+        "isCompleted": false
+      },
+      {
+        "id": "obj_ch2_discover_pit",
+        "description": "Explore as profundezas do Fosso das Chagas",
+        "type": "discover_zone",
+        "targetId": "fosso_chagas",
+        "targetCount": 1,
+        "currentCount": 0,
+        "isCompleted": false
+      }
+    ],
+    "rewards": {
+      "xp": 350,
+      "bloodCrystals": 60,
+      "spellUnlockId": "corpse_burst"
+    },
+    "prerequisiteQuestId": "quest_ch1_first_steps"
+  },
+  "quest_ch3_the_martyrs_rest": {
+    "id": "quest_ch3_the_martyrs_rest",
+    "title": "O Descanso dos Mártires",
+    "chapter": 3,
+    "summary": "Maelen revelou que a 'Ordem do Sangue Escuro' está diretamente ligada ao sequestro de sua família. Siga os rastros até as Catacumbas dos Mártires para confrontar seus acólitos e descobrir a verdade por trás de seus rituais macabros, revelando o propósito da Ordem.",
+    "loreDescription": "As Catacumbas dos Mártires, um mausoléu esquecido sob a terra, agora serve de palco para os rituais profanos da Ordem do Sangue Escuro. Seu eco profundo e o zumbido grave parecem a própria voz da heresia, enquanto os restos dos falecidos são profanados para alimentar uma ambição sombria. Sua família não foi levada ao acaso; é um elo em uma corrente de sacrifícios para um poder maior que apenas agora começa a se revelar. Descubra os segredos que os acólitos guardam e sinta a urgência do tempo se esvaindo.",
+    "objectives": [
+      {
+        "id": "obj_ch3_discover_catacombs",
+        "description": "Descubra as Catacumbas dos Mártires",
+        "type": "discover_zone",
+        "targetId": "catacumbas_martires",
+        "targetCount": 1,
+        "currentCount": 0,
+        "isCompleted": false
+      },
+      {
+        "id": "obj_ch3_defeat_skeletons",
+        "description": "Derrote Guerreiros Esqueleto nas catacumbas",
+        "type": "kill_enemy",
+        "targetId": "skeleton_warrior",
+        "targetCount": 10,
+        "currentCount": 0,
+        "isCompleted": false
+      },
+      {
+        "id": "obj_ch3_defeat_acolytes",
+        "description": "Silencie os Acólitos Sombrios da Ordem",
+        "type": "kill_enemy",
+        "targetId": "cultist_acolyte",
+        "targetCount": 6,
+        "currentCount": 0,
+        "isCompleted": false
+      },
+      {
+        "id": "obj_ch3_banish_specters",
+        "description": "Bana os Espectros de Sangue que assombram as profundezas",
+        "type": "kill_enemy",
+        "targetId": "blood_specter",
+        "targetCount": 4,
+        "currentCount": 0,
+        "isCompleted": false
+      }
+    ],
+    "rewards": {
+      "xp": 500,
+      "bloodCrystals": 80,
+      "spellUnlockId": "bone_shield"
+    },
+    "prerequisiteQuestId": "quest_ch2_the_pit"
+  },
+  "quest_ch4_blood_sanctuary": {
+    "id": "quest_ch4_blood_sanctuary",
+    "title": "O Coração Escarlate do Santuário",
+    "chapter": 4,
+    "summary": "Confronte o Senhor das Sombras no Santuário de Sangue e desvende o destino de sua família, detendo o ritual final da Ordem do Sangue Escuro.",
+    "loreDescription": "O Santuário de Sangue (Catedral Aberta) aguarda, um espetáculo macabro de beleza e horror, onde uma chuva escarlate encharca as pedras profanadas. É aqui que a Ordem do Sangue Escuro, não satisfeita com a mera servidão dos mortos, busca um poder ainda mais antigo e profano. Seu líder, o terrível Senhor das Sombras, revelou-se o verdadeiro mestre por trás das manipulações, o arquiteto da maldição que aflige sua família e o verdadeiro manipulador que usou o Carrasco Carmesim como um hospedeiro. Sua família foi trazida a este lugar infernal, amarrada e preparada para um ritual que promete transcender a morte, ou talvez, distorcê-la em algo infinitamente pior. Enfrente os horrores que guardam este altar sangrento — os ágeis Vampiros Predadores, as grotescas Abominações de Sangue e os furiosos Lobisomens Ferais — para alcançar o Senhor das Sombras. Somente ele detém as chaves para desvendar o destino de seus entes queridos, e talvez, a própria maldição. Você está no limiar de um sacrifício final, um que exigirá mais do que apenas sua magia, mas sua própria essência. A Foice Sacrificial aguarda sua mão, caso você prove ser digno de empunhar tal poder, a um custo terrível.",
+    "objectives": [
+      {
+        "id": "obj_ch4_discover_sanctuary",
+        "description": "Descobrir o Santuário de Sangue (Catedral Aberta)",
+        "type": "discover_zone",
+        "targetId": "santuario_sangue",
+        "targetCount": 1,
+        "currentCount": 0,
+        "isCompleted": false
+      },
+      {
+        "id": "obj_ch4_kill_vampire_stalkers",
+        "description": "Derrotar 8 Vampiros Predadores no Santuário",
+        "type": "kill_enemy",
+        "targetId": "vampire_stalker",
+        "targetCount": 8,
+        "currentCount": 0,
+        "isCompleted": false
+      },
+      {
+        "id": "obj_ch4_kill_gore_abominations",
+        "description": "Derrotar 8 Abominações de Sangue no Santuário",
+        "type": "kill_enemy",
+        "targetId": "gore_abomination",
+        "targetCount": 8,
+        "currentCount": 0,
+        "isCompleted": false
+      },
+      {
+        "id": "obj_ch4_kill_werewolf_lycans",
+        "description": "Derrotar 8 Lobisomens Ferais no Santuário",
+        "type": "kill_enemy",
+        "targetId": "werewolf_lycan",
+        "targetCount": 8,
+        "currentCount": 0,
+        "isCompleted": false
+      },
+      {
+        "id": "obj_ch4_kill_necro_lord_boss",
+        "description": "Confrontar e derrotar o Senhor das Sombras",
+        "type": "kill_enemy",
+        "targetId": "necro_lord_boss",
+        "targetCount": 1,
+        "currentCount": 0,
+        "isCompleted": false
+      }
+    ],
+    "rewards": {
+      "xp": 1200,
+      "bloodCrystals": 200,
+      "spellUnlockId": "crimson_scythe"
+    },
+    "prerequisiteQuestId": "quest_ch3_the_martyrs_rest"
   }
 }

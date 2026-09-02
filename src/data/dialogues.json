@@ -110,5 +110,254 @@
         ]
       }
     }
+  },
+  "safe_house_maelen_ch2_return": {
+    "id": "safe_house_maelen_ch2_return",
+    "npcId": "npc_maelen",
+    "initialNodeId": "maelen_ch2_intro",
+    "nodes": {
+      "maelen_ch2_intro": {
+        "id": "maelen_ch2_intro",
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "text": "Vejo que retornou do Bosque, sombrio como sempre. Os rastros da carroça, encontrou-os? Para onde apontam agora?",
+        "choices": [
+          {
+            "id": "ch2_intro_choice1",
+            "text": "Sim. Eles descem para uma fenda... o Fosso das Chagas.",
+            "nextNodeId": "maelen_ch2_pit_reaction"
+          },
+          {
+            "id": "ch2_intro_choice2",
+            "text": "Ainda não há sinal da minha família, Maelen.",
+            "nextNodeId": "maelen_ch2_family_despair"
+          }
+        ],
+        "speakerPortrait": "portrait_maelen"
+      },
+      "maelen_ch2_pit_reaction": {
+        "id": "maelen_ch2_pit_reaction",
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "text": "O Fosso das Chagas... Um lugar imundo, onde a própria terra parece chorar pústulas. Aqueles que o atravessam raramente retornam. É um caminho perigoso, mas se a carroça foi para lá, sua família pode estar mais perto do que pensa... ou em maior perigo.",
+        "choices": [
+          {
+            "id": "ch2_pit_choice1",
+            "text": "O que posso esperar lá embaixo? Que criaturas habitam esse fosso?",
+            "nextNodeId": "maelen_ch2_pit_threats"
+          },
+          {
+            "id": "ch2_pit_choice2",
+            "text": "Como eu controlo esse sangue? Não posso entrar lá fraco.",
+            "nextNodeId": "maelen_ch2_blood_power"
+          }
+        ],
+        "speakerPortrait": "portrait_maelen"
+      },
+      "maelen_ch2_family_despair": {
+        "id": "maelen_ch2_family_despair",
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "text": "Não perca a esperança, jovem. A ausência de seus corpos é uma prece não atendida para os vivos. O rastro da carroça é sua única pista. Para onde ele leva?",
+        "choices": [
+          {
+            "id": "ch2_family_choice1",
+            "text": "Para uma fenda subterrânea, o Fosso das Chagas.",
+            "nextNodeId": "maelen_ch2_pit_reaction"
+          },
+          {
+            "id": "ch2_family_choice2",
+            "text": "Sinto o peso da maldição. Ela é um fardo, não uma benção.",
+            "nextNodeId": "maelen_ch2_blood_power"
+          }
+        ],
+        "speakerPortrait": "portrait_maelen"
+      },
+      "maelen_ch2_pit_threats": {
+        "id": "maelen_ch2_pit_threats",
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "text": "Espere os Zumbis Rastejantes, carcaças que a infecção do Fosso anima. Enxames de Morcegos, criaturas de asas negras que habitam a escuridão úmida. E o pior: Cães Infernais, bestas que farejam o sangue e atacam sem trégua. Mantenha seus sentidos aguçados.",
+        "choices": [
+          {
+            "id": "ch2_threats_choice1",
+            "text": "Devo ir. O caminho é claro.",
+            "nextNodeId": null,
+            "action": "give_quest",
+            "actionPayload": "quest_ch2_the_pit"
+          },
+          {
+            "id": "ch2_threats_choice2",
+            "text": "Preciso de mais poder antes de entrar nesse buraco.",
+            "nextNodeId": "maelen_ch2_blood_power"
+          }
+        ],
+        "speakerPortrait": "portrait_maelen"
+      },
+      "maelen_ch2_blood_power": {
+        "id": "maelen_ch2_blood_power",
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "text": "O poder de sangue responde à necessidade, jovem. Não é sobre abraçá-lo, mas sobre dobrá-lo à sua vontade. Sinta a corrupção em seus inimigos... e faça-a explodir. Lá no Fosso, você pode aprender a 'Detonação Cadavérica', um feitiço brutalmente eficaz contra a putrefação.",
+        "choices": [
+          {
+            "id": "ch2_blood_choice1",
+            "text": "Entendi. É hora de ir para o Fosso.",
+            "nextNodeId": null,
+            "action": "give_quest",
+            "actionPayload": "quest_ch2_the_pit"
+          },
+          {
+            "id": "ch2_blood_choice2",
+            "text": "Como posso ter certeza de que não me tornarei um monstro?",
+            "nextNodeId": "maelen_ch2_curse_worry"
+          }
+        ],
+        "speakerPortrait": "portrait_maelen"
+      },
+      "maelen_ch2_curse_worry": {
+        "id": "maelen_ch2_curse_worry",
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "text": "A linha é tênue, jovem. Mas enquanto sua busca for por amor e não por poder, você terá uma âncora. Vá, encontre sua família. É o único caminho para a redenção... ou a perdição.",
+        "choices": [
+          {
+            "id": "ch2_curse_choice1",
+            "text": "Eu irei.",
+            "nextNodeId": null,
+            "action": "give_quest",
+            "actionPayload": "quest_ch2_the_pit"
+          }
+        ],
+        "speakerPortrait": "portrait_maelen"
+      }
+    }
+  },
+  "safe_house_maelen_ch3_return": {
+    "id": "safe_house_maelen_ch3_return",
+    "npcId": "npc_maelen",
+    "initialNodeId": "ch3_maelen_start",
+    "nodes": {
+      "ch3_maelen_start": {
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "speakerPortrait": "portrait_maelen",
+        "text": "Então era isso... a 'Ordem do Sangue Escuro' não é apenas um boato sombrio. E o Carrasco Carmesim, um mero peão. Os rastros... eles não levaram sua família por acaso, não é? Há um propósito, um ritual macabro por trás de tudo isso. Sinto o cheiro pútrido de uma conspiração antiga.",
+        "choices": [
+          {
+            "id": "ch3_choice_anger",
+            "text": "Isto é insuportável! Por que minha família? O que eles querem?!",
+            "nextNodeId": "ch3_maelen_anger_response"
+          },
+          {
+            "id": "ch3_choice_cult_info",
+            "text": "Me diga mais sobre essa 'Ordem do Sangue Escuro'. O que são eles?",
+            "nextNodeId": "ch3_maelen_cult_details"
+          }
+        ],
+        "id": "ch3_maelen_start"
+      },
+      "ch3_maelen_anger_response": {
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "speakerPortrait": "portrait_maelen",
+        "text": "Sua fúria é um fogo que pode tanto aquecer quanto consumir, mago. Mantenha a mente clara. Eles se alimentam do desespero. O que quer que busquem com sua família, não podemos dar a eles a satisfação de vê-lo quebrado. Foco.",
+        "choices": [
+          {
+            "id": "ch3_choice_how_proceed_anger",
+            "text": "O que fazemos agora, Maelen? Onde eles estariam?",
+            "nextNodeId": "ch3_maelen_next_steps"
+          }
+        ],
+        "id": "ch3_maelen_anger_response"
+      },
+      "ch3_maelen_cult_details": {
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "speakerPortrait": "portrait_maelen",
+        "text": "São cultistas que se escondem nas sombras, sussurrando sobre o poder do sangue e rituais arcaicos. Buscam algo mais profundo do que mera dominação; anseiam por uma ascensão profana, à custa de vidas inocentes. Suas catacumbas, suas criptas... são seus templos mais sombrios.",
+        "choices": [
+          {
+            "id": "ch3_choice_how_proceed_cult",
+            "text": "Então, eles estariam nas catacumbas? É para lá que devemos ir?",
+            "nextNodeId": "ch3_maelen_next_steps"
+          }
+        ],
+        "id": "ch3_maelen_cult_details"
+      },
+      "ch3_maelen_next_steps": {
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "speakerPortrait": "portrait_maelen",
+        "text": "Exatamente. Há um lugar, conhecido como as 'Catacumbas dos Mártires', que se estende sob o Fosso das Chagas. Um labirinto de pedra fria e reverbs profundos. Lá, seus acólitos conduzem rituais e guardam segredos que podem nos levar à sua família. Prepare-se, pois o ar lá é denso com a presença da morte e da heresia. Você deve ir.",
+        "choices": [
+          {
+            "id": "ch3_choice_accept_quest",
+            "text": "Eu irei. Não há tempo a perder.",
+            "action": "give_quest",
+            "actionPayload": "quest_ch3_the_martyrs_rest",
+            "nextNodeId": null
+          },
+          {
+            "id": "ch3_choice_hesitate",
+            "text": "Preciso de um momento para processar tudo isso.",
+            "action": "close_dialogue",
+            "nextNodeId": null
+          }
+        ],
+        "id": "ch3_maelen_next_steps"
+      }
+    }
+  },
+  "safe_house_maelen_ch4_return": {
+    "id": "safe_house_maelen_ch4_return",
+    "npcId": "npc_maelen",
+    "initialNodeId": "maelen_ch4_intro",
+    "nodes": {
+      "maelen_ch4_intro": {
+        "id": "maelen_ch4_intro",
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "speakerPortrait": "portrait_maelen",
+        "text": "Você... você realmente os encontrou. A Ordem do Sangue Escuro... seu propósito... Meu coração gela ao ouvir suas palavras, mas elas confirmam os sussurros sombrios que me assombravam por anos. O ritual... é ainda pior do que eu ousaria imaginar.",
+        "choices": [
+          {
+            "id": "choice_maelen_ch4_1",
+            "text": "Você sabia de algo, Maelen? Por que não me contou?",
+            "nextNodeId": "maelen_ch4_reveal"
+          }
+        ]
+      },
+      "maelen_ch4_reveal": {
+        "id": "maelen_ch4_reveal",
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "speakerPortrait": "portrait_maelen",
+        "text": "Não com certeza, não com essa clareza aterrorizante. Houve incidentes menores, famílias desaparecendo, rituais incompletos encontrados nas sombras. Eu subestimei o alcance de sua blasfêmia. Pensava que eram meros cultistas menores, não os arquitetos de tal abominação, ou os manipuladores de sua família... de sua linhagem. Eu falhei em ver a verdade completa. E agora, há pouco tempo.",
+        "choices": [
+          {
+            "id": "choice_maelen_ch4_2",
+            "text": "O que é esse Santuário? Onde eles estão?",
+            "nextNodeId": "maelen_ch4_final_counsel"
+          }
+        ]
+      },
+      "maelen_ch4_final_counsel": {
+        "id": "maelen_ch4_final_counsel",
+        "speakerName": "Maelen",
+        "speakerTitle": "Ermitão das Cinzas",
+        "speakerPortrait": "portrait_maelen",
+        "text": "É o seu covil, o centro de sua profanação. Uma catedral profanada a céu aberto, banhada em uma chuva perpétua de sangue, onde a linha entre a vida e a morte é um borrão carmesim. Lá, o Senhor das Sombras aguarda. Ele é o coração podre desta Ordem, o verdadeiro carrasco por trás das cortinas, o mestre que usou o Carrasco Carmesim como um fantoche descartável. E a sua família... eles são os sacrifícios finais de seu grande ritual. Vá! Não há tempo. Sua força, sua raiva... serão suas armas. Resgate o que puder, mesmo que a custo de si mesmo.",
+        "choices": [
+          {
+            "id": "choice_maelen_ch4_3",
+            "text": "Estou pronto para enfrentá-lo. Pela minha família.",
+            "action": "give_quest",
+            "actionPayload": "quest_ch4_blood_sanctuary",
+            "nextNodeId": null
+          }
+        ]
+      }
+    }
   }
 }

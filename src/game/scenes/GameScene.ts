@@ -7,6 +7,7 @@ import { Collectible } from '../objects/Collectible';
 import { LootSprite } from '../objects/Loot';
 import { LootSystem } from '../systems/LootSystem';
 import { PlayerStats, WaveConfig, UpgradeOption, SpellConfig } from '../../types/game';
+import { getMaelenDialogueTreeId } from '../../types/campaign';
 import wavesData from '../../data/waves.json';
 import upgradesData from '../../data/upgrades.json';
 import spellsData from '../../data/spells.json';
@@ -1365,7 +1366,7 @@ export class GameScene extends Phaser.Scene {
           // árvore de diálogo de campanha (mesma rota do botão "FALAR COM NPC" no HUD);
           // os outros NPCs continuam no modal de loja via setActiveNPC.
           if (type === 'maelen') {
-            store.startDialogue('safe_house_maelen_intro');
+            store.startDialogue(getMaelenDialogueTreeId(store.campaignState.quests));
           } else {
             store.setActiveNPC(type);
           }
