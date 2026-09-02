@@ -3,7 +3,7 @@ agent_context: game-engine, frontend, game-designer, pixel-artist, developer
 target_module: src/assets, src/game, src/utils, src/game/scenes/BootScene.ts
 priority: alta
 status: andamento
-last_updated: 2026-08-14
+last_updated: 2026-08-31
 tags: [specs, sprites, pixel-art, assets, mapping, checklist, hybrid-system, maturity, architecture]
 ---
 
@@ -68,12 +68,12 @@ Conforme as tarefas forem executadas, marque com `[x]`:
 - [x] **0.3** Implementar helper central de registro de animações (`src/game/animations/animationManager.ts`)
 - [x] **0.4** Configurar tratador de erro `loaderror` no Phaser loader com telemetria silenciosa (`src/game/assets/assetManifest.ts`)
 
-### Fase 1: Piloto de Integração e Calibração (Player + Skeleton)
-- [ ] **1.1** Integrar spritesheet do **Bloodmage** (`spr_bloodmage`) com animações de Idle e Walk
-- [ ] **1.2** Calibrar hitbox (`setSize`/`setOffset`) e ponto de ancoragem dos pés (`setOrigin`) do Player
+### Fase 1: Piloto de Integração e Calibração (Player + Skeleton & Props)
+- [x] **1.1** Integrar spritesheet do **Bloodmage** (`spr_bloodmage`) com animações de Idle e Walk (`public/assets/sprites/player/bloodmage.png` — 68x68, 72 frames em 8 direções)
+- [x] **1.2** Calibrar hitbox (`setSize`/`setOffset`) e ponto de ancoragem dos pés (`setOrigin`) do Player
 - [ ] **1.3** Integrar spritesheet do **Skeleton Warrior** (`spr_skeleton_warrior`) com animações de Walk e Windup/Strike
-- [ ] **1.4** Validar compatibilidade de tinting de elites e efeitos de status com os sprites físicos
-- [ ] **1.5** Rodar testes automatizados e typecheck (`npm run verify`)
+- [x] **1.4** Validar compatibilidade de tinting de elites e efeitos de status com os sprites físicos
+- [x] **1.5** Rodar testes automatizados e typecheck (`npm run verify`)
 
 ### Fase 2: Expansão do Bestiário e Projéteis
 - [ ] **2.1** Integrar monstros de Tier 1: Cultist Acolyte (`spr_cultist_acolyte`) e Hound (`spr_hound`)
@@ -84,7 +84,7 @@ Conforme as tarefas forem executadas, marque com `[x]`:
 
 ### Fase 3: Cenário, Props e Iluminação
 - [ ] **3.1** Integrar tilesets de chão (`tile_ground`, `tile_altar_floor`, `tile_blood_pool`)
-- [ ] **3.2** Integrar props de masmorra (`prop_torch`, `prop_pillar`, `prop_skull_pile`)
+- [x] **3.2** Integrar props de masmorra (`spr_chest` 8-direcionais fechados e abertos em `public/assets/sprites/items/chest/`)
 - [ ] **3.3** Calibrar profundidade e layers de ordenação Z no `GameScene.ts`
 
 ---
@@ -93,15 +93,15 @@ Conforme as tarefas forem executadas, marque com `[x]`:
 
 | Categoria | Total de Itens | Procedural (Fallback) | Sprite Físico Integrado | Conclusão |
 |---|:---:|:---:|:---:|:---:|
-| **1. Personagem Principal & Camadas** | 6 variações / animações | 6 | 0 | 0% |
+| **1. Personagem Principal & Camadas** | 6 variações / animações | 5 | 1 (`spr_bloodmage`) | 16.6% |
 | **2. Bestiário (Inimigos e Chefes)** | 11 criaturas | 11 | 0 | 0% |
 | **3. NPCs & Retratos (Portraits)** | 8 itens | 8 | 0 | 0% |
 | **4. Feitiços, Projéteis e VFX** | 8 efeitos | 8 | 0 | 0% |
 | **5. Coletáveis, Loot & Recursos** | 5 itens | 5 | 0 | 0% |
-| **6. Cenário, Masmorra & Props** | 10 elementos | 10 | 0 | 0% |
+| **6. Cenário, Masmorra & Props** | 10 elementos | 9 | 1 (`spr_chest`) | 10.0% |
 | **7. Emotes & Indicadores de IA** | 4 ícones | 4 | 0 | 0% |
 | **8. UI, Menus e Molduras Góticas** | 12 elementos | 0 | 12 | **100%** ✅ |
-| **TOTAL GERAL DO JOGO** | **64 elementos** | **52** | **12** | **18.7%** |
+| **TOTAL GERAL DO JOGO** | **64 elementos** | **50** | **14** | **21.8%** |
 
 ---
 
@@ -130,7 +130,7 @@ Antes de desenhar ou exportar qualquer sprite, certifique-se de respeitar os gua
 
 | Status | Chave (`key`) | Descrição | Tamanho Alvo | Animações / Frames Necessários | Fallback Atual | Localização no Código |
 |:---:|---|---|:---:|---|---|---|
-| [ ] | `spr_bloodmage` | Mago de Sangue com capuz rubro e cajado com gema | 32x48 (ou 64x64 com padding) | • Idle (4 frames)<br>• Walk 8 direções (4 frames cada)<br>• Cast Spell (4 frames)<br>• Scythe Swing (6 frames)<br>• Hurt (2 frames)<br>• Death (6 frames) | `textureGenerator.ts` (L74-106) | `Player.ts:38`, `GameScene.ts` |
+| [x] | `spr_bloodmage` | Mago de Sangue com capuz rubro e cajado com gema | 68x68 (grid 8x9, 72 frames) | • Idle 8 direções (8 frames)<br>• Walk 8 direções (32 frames)<br>• Cast 8 direções (32 frames) | `public/assets/sprites/player/bloodmage.png` | `Player.ts`, `animationManager.ts`, `assetManifest.json` |
 | [ ] | `spr_bloodmage_hoodless` | Skin/Variação: Mago sem capuz (cabelos brancos) | 32x48 | Idle, Walk, Cast, Hurt, Death | Tinting procedural | `Player.ts` |
 | [ ] | `spr_bloodmage_robe_tier2` | Camada de Armadura: Manto Carmesim Encantado | 32x48 | Sincronizado com frames do player | N/A (procedural) | `gameStore.ts` |
 | [ ] | `spr_bloodmage_robe_tier3` | Camada de Armadura: Túnica de Sangue Ancestral | 32x48 | Sincronizado com frames do player | N/A (procedural) | `gameStore.ts` |
@@ -207,7 +207,7 @@ Antes de desenhar ou exportar qualquer sprite, certifique-se de respeitar os gua
 | [ ] | `tile_wall_brick` | **Bloco de Parede de Pedra Gótica** | 32x32 / 64x64 | Textura de tijolos escuros com relevo e fendas | `textureGenerator.ts` (L413-433) | `DungeonGenerator.ts:138` |
 | [ ] | `tile_door` | **Arco / Portão de Passagem** | 32x32 / 64x64 | • Fechado (Grade de ferro)<br>• Aberto (Vão escuro) | `textureGenerator.ts` (L436-454) | `DungeonGenerator.ts:94` |
 | [ ] | `spr_portal` | **Portal de Transição de Andar** | 40x40 / 64x64 | Vórtice espiral com runas girando (6-8 frames) | `textureGenerator.ts` (L457-473) | `GameScene.ts:2517` |
-| [ ] | `spr_chest` | **Baú de Tesouro Gótico** | 24x20 / 32x32 | • Fechado com fechadura de ouro<br>• Abrindo (3 frames)<br>• Aberto e Vazio | `textureGenerator.ts` (L476-488) | `DungeonGenerator.ts:112`, `Scavengeable.ts` |
+| [x] | `spr_chest` | **Baú de Tesouro Gótico** | 48x48 | • Fechado/Aberto 8 direções (`spr_chest_<dir>`, `spr_chest_open_<dir>`) | `public/assets/sprites/items/chest/` | `DungeonGenerator.ts`, `CollisionHandlers.ts`, `assetManifest.json` |
 | [ ] | `spr_skeleton_remains` | **Ossada de Aventureiro Vasculhável** | 24x18 / 32x32 | • Intacto com crânio e ossos cruzados<br>• Revirado/Vazio | `textureGenerator.ts` (L491-504) | `Scavengeable.ts:16` |
 | [ ] | `spr_dead_soldier` | **Cadáver de Soldado com Armadura** | 28x16 / 32x32 | • Com armadura de aço e elmo<br>• Pilhado/Vazio | `textureGenerator.ts` (L507-517) | `Scavengeable.ts:19` |
 | [ ] | `light_torch` | **Tocha de Parede com Fogo Animado** | 32x64 (ou 128x128) | Suporte de metal/madeira com chama animada (4 frames) | `textureGenerator.ts` (L558-593) | `GameScene.ts:353` |
