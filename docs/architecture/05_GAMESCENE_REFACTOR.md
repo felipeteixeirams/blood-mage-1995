@@ -3,7 +3,7 @@ agent_context: frontend
 target_module: src/game/scenes/GameScene.ts
 priority: medium
 status: complete
-last_updated: 2026-08-24
+last_updated: 2026-09-02
 tags: [architecture, phaser, refactor, tracker]
 ---
 # 🧩 Refactor do GameScene.ts — Histórico e Estado Atual
@@ -19,8 +19,7 @@ GameScene") em `03_PHASER_PATTERNS.md`.
 
 ## Estado atual: refactor concluído
 
-`GameScene.ts` caiu de **~2900 → 1486 linhas**. Todos os blocos de
-responsabilidade única identificados foram extraídos.
+Após a extração dos subsistemas, `GameScene.ts` caiu inicialmente de **~2900 → 1486 linhas**. Com a adição de novas mecânicas de gameplay e efeitos áudio/visuais pós-refactor, o arquivo atualmente conta com **1946 linhas** (~85KB). Todos os blocos de responsabilidade única mapeados originalmente permanecem devidamente extraídos.
 
 | Sistema extraído | Arquivo | Responsabilidade |
 |---|---|---|
