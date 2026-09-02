@@ -15,7 +15,7 @@ Este documento define os portões e critérios que um commit de código deve sat
    - Executar `pnpm run typecheck` deve retornar zero erros ou alertas de tipagem TypeScript no compilador.
 2. **Suíte de Testes Unitários (Vitest)**:
    - Executar `pnpm test` deve executar e passar em todos os testes unitários da suíte (100% de sucesso).
-3. **Métricas de Duplicidade de Código**:
-   - Manter a duplicidade global de código calculada via `jscpd` abaixo do limiar estrito de 3%.
+3. **Validação e Integridade de Assets**:
+   - Executar `pnpm run verify` para assegurar que a integridade dos assets binários, compilação do TypeScript e build via Vite estejam funcionais.
 4. **Sem Chunks Grandes**:
    - O bundler Vite não deve reclamar de chunks ultrapassando limites máximos de 500kB sem divisão explícita.

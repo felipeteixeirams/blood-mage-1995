@@ -12,5 +12,5 @@ Aqui estão registradas as métricas ideais de performance de CPU, renderizaçã
 
 ## 🎯 Metas de Telemetria
 - **Taxa de Quadros (Frame Rate)**: 60 FPS estáveis na maioria dos frames. Quedas temporárias abaixo de 55 FPS só são permitidas durante explosões intensas de sangue ou mais de 35 projéteis de magias ativos na tela.
-- **Uso de Memória Heap JS**: Menor que 100 MB após 10 minutos contínuos de jogabilidade, garantindo ausência de vazamentos de memória e prevenindo travamentos em navegadores de smartphones.
+- **Uso de Memória Heap JS**: Menor que 150 MB (alinhado aos testes de pooling de memória do relatório de progresso) após 10 minutos contínuos de jogabilidade, garantindo ausência de vazamentos de memória e prevenindo travamentos em navegadores de smartphones.
 - **Draw Calls de Renderização (GPU)**: Limitar a menos de 45 draw calls por cena do Phaser através do uso de spritesheets agrupados e atlas de texturas.

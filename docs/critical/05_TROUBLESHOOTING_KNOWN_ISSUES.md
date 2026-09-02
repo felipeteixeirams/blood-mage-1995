@@ -512,7 +512,7 @@ Existência de dois sistemas independentes e concorrentes de conquistas (`Achiev
 Durante fases anteriores do desenvolvimento, um sistema de conquistas procedural foi instanciado dentro de `GameScene.ts` enquanto a UI do HUD React e o catálogo de dados (`src/data/achievements.json`) evoluíam na camada React/Zustand. Isso causava discrepâncias de pontuação/recompensas, duplicação de persistência e renderização de elementos de UI diretamente sobre a camada WebGL/Canvas em vez do DOM.
 
 ### 🛠️ Procedimento de Resolução
-1. **Remoção de Classes Legadas de UI/Sistema do Phaser**: `AchievementNotification.ts` e `AchievementSystem.ts` foram removidos do motor Phaser.
+1. **Desacoplamento do Motor Phaser e Transição para Zustand**: As classes de visualização e rastreamento legadas (`AchievementNotification.ts` e `AchievementSystem.ts`) deixaram de ser invocadas no render loop de `GameScene.ts`.
 2. **Avaliação Centralizada no Zustand (`src/store/gameStore.ts`)**: Adição de `runStats` e do método unificado `evaluateAchievements(stats, state)`. Qualquer evento de combate (morte de monstro, avanço de andar, dano tomado, knockout, desmembramento, feitiço desbloqueado) notifica a store via `incrementRunStat` ou `setRunStat`.
 3. **UI Exclusiva no React DOM (`src/components/hud/AchievementToast.tsx`)**: O componente React subscrito a `lastUnlockedAchievement` renderiza o toast animado com badge de raridade e recompensas no topo da tela e executa auto-dismiss após 4.5 segundos.
 4. **Persistência Segura**: Conquistas salvas em `localStorage` validadas estritamente via Zod schemas em `src/utils/localStorage.ts`.
