@@ -30,18 +30,29 @@ O que testamos e estamos validando. Hipóteses orientadas a *Game Feel* e reten�
 Index mestre: `docs/specs/README.md`
 
 #### 🟡 Em Andamento (`docs/specs/in-progress/`)
-* `docs/specs/in-progress/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md` - **Spec 16:** Resolução 1080p, Boss Zoom Out e Terreno 2.5D com Falésias (Fase 3 em andamento).
+* `docs/specs/in-progress/04_FASE4_MUNDO_CONTINUO.md` - **Fase 4:** Mundo Contínuo, Safe Town (Room 0) e Iluminação Adaptativa.
+* `docs/specs/in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md` - **Fase 5:** Polimento de Produção, PWA e Builds Electron/Steam.
+* `docs/specs/in-progress/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md` - Mapeamento completo de Sprites e Checklist de integração.
+* `docs/specs/in-progress/09_PIXEL_LAB_PROMPT_GUIDE.md` - Guia de Prompts e parâmetros PixelLab para Sprites.
 
 #### 🟢 Entregues / Concluídas (`docs/specs/delivered/`)
-* `docs/specs/delivered/11_VISUAL_POLISH_FRONTS.md` - **Spec 11:** Polimento Visual, VFX de Sangue e Hit-Stop.
-* `docs/specs/delivered/12_EXPANSION_FRONTS.md` - **Spec 12:** Elites com Afixos, Armadilhas, Minimapa e Áudio FM.
-* `docs/specs/delivered/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md` - **Spec 13:** Safe House do Santuário e Transição de Campanha.
+* `docs/specs/delivered/11_VISUAL_POLISH_FRONTS.md` - **Spec 11:** Índice Mestre de Polimento Visual (Satélites 11.01 a 11.08: Masmorra, Neblina, Sangue, Hit-Stop, Bloom, Áudio, Paletas, NPCs).
+* `docs/specs/delivered/12_EXPANSION_FRONTS.md` - **Spec 12:** Índice Mestre de Expansão (Satélites 12.01 a 12.05: Armadilhas, Elites, Meta-Progressão, UX/Minimapa, Áudio FM).
+* `docs/specs/delivered/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md` - **Spec 13:** Safe House do Santuário, Maelen e Transição de Campanha.
 * `docs/specs/delivered/14_IMMERSION_AND_GAME_FEEL.md` - **Spec 14:** Haptics, Screen Shake, Look-Ahead e Caixas 9-Slice.
 * `docs/specs/delivered/15_PWA_AND_OFFLINE_READY.md` - **Spec 15:** PWA Instalável, Cache Workbox e Modo Offline-First.
+* `docs/specs/delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md` - **Spec 16:** Resolução 1080p, Boss Zoom Out, Terreno 2.5D Heightmap, Falésias e Ergonomia Touch.
 * `docs/specs/delivered/17_IN_MEDIA_RES_ONBOARDING_AND_COMBAT_FLOW.md` - **Spec 17:** Onboarding In Media Res, Cerco Inicial e TTF <10s.
+* `docs/specs/delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md` - **Spec 18:** Sistema de Prestígio 'Blood Seal' e New Game+.
+* `docs/specs/delivered/19_RELICS_AND_ARTIFACTS_SYSTEM.md` - **Spec 19:** Sistema de Relíquias e Artefatos Passivos.
+* `docs/specs/delivered/20_ADVANCED_PARTICLES_SYSTEM.md` - **Spec 20:** Sistema de Partículas Avançadas (Sangue, Poeira, Magia, Almas).
+* `docs/specs/delivered/21_ACHIEVEMENTS_SYSTEM.md` - **Spec 21:** Sistema de Conquistas Góticas e Modais React.
+* `docs/specs/delivered/22_DASH_EVASION_MECHANIC.md` - **Spec 22:** Mecânica de Dash/Esquiva com I-Frames e Cooldown.
+* `docs/specs/delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md` - **Spec 23:** Índice Mestre de Gráficos Avançados (Satélites 23.01 a 23.03: GPU Shaders, Normal Maps e Light2D).
+* `docs/specs/delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md` - **Spec 24:** Índice Mestre de Evolução Gráfica e Áudio (Satélites 24.01 a 24.03: QuickWins, Ragdolls, Fear Distortion e Threat Tinnitus).
 
 #### 🔵 Propostas & Backlog (`docs/specs/backlog/`)
-* `docs/specs/backlog/` - Propostas formais de novas mecânicas (Prestígio, Eventos, HUD e Polimento).
+* `docs/specs/backlog/` - Propostas formais de novas mecânicas e expansões (Eventos Mundiais, Guia Comercial, Referências HUD Diablo/Dungeon Siege, Polimento Procedural, Atmosfera & Tensão, Contratos & Quests, UI Framework e Sprites Tiers).
 
 #### 💡 Discoveries & Spikes (`docs/specs/discovery/`)
 * `docs/specs/discovery/` - Pesquisas exploratórias, avaliações arquiteturais (Phaser 4.2.1, UI externa, P2P WebRTC, AI art pipeline e Store wrappers).

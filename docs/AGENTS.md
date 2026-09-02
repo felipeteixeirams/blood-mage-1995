@@ -16,20 +16,13 @@ Todas as pastas em caixa baixa. Categorias definidas pela arquitetura do jogo (n
 
 | Pasta | Conteúdo |
 |-------|----------|
-| `context/` | Contextos por role/agente (Frontend, Backend, Game Design, QA, Product) |
-| `architecture/` | Decisões técnicas, stack, padrões Phaser, estado |
-| `design/` | Filosofia visual, identidade, UI patterns, acessibilidade |
-| `gameplay/` | Mecânicas do jogo (inconsciência, combate, skills, loot, records) |
-| `features/` | Features em desenvolvimento (roadmap Dungeon Siege) |
-| `critical/` | Anti-regressão, arquivos críticos, performance, testing gates |
-| `integration/` | Third-party e tools (Lovable, Vercel, MCP, agentes) |
-| `reference/` | Referência rápida, estrutura de arquivos, tipos, endpoints |
+| `architecture/` | Decisões técnicas, stack, padrões Phaser, estado e refatoração de cenas |
+| `critical/` | Anti-regressão, arquivos críticos, performance, troubleshooting e testing gates |
+| `experiments/` | Experimentos de laboratório mobile (câmera, ergonomia touch, combate) |
+| `product/` | Bíblia de sucesso mobile, roadmap, estratégia de release e salvamento |
+| `reviews/` | Auditorias e relatórios de qualidade de código e documentação |
 | `specs/` | Specs por ciclo de vida: `in-progress/`, `delivered/`, `backlog/`, `discovery/`, `rejected/` |
-| `reviews/` | Auditorias e validações (qualidade, validação de features) |
-| `decisions/` | ADRs e decisões de arquitetura |
-| `templates/` | Modelos padronizados de documento (incl. frontmatter) |
-| `wip/` | Trabalho em progresso (não consolidado) |
-| `legacy/` | Histórico e conteúdo descontinuado |
+| `archive/` | Histórico arquivado e documentação legada (`context/`, `design/`, `gameplay/`, `features/`, `integration/`, `reference/`, `templates/`, `reviews/`, `deployment/`, `legacy/`) |
 
 ## Metadados padrão (frontmatter)
 
@@ -60,13 +53,15 @@ Toda mudança relevante deve atualizar os documentos impactados. Ao fechar uma t
 
 ## Modelo de decisão (onde colocar conteúdo)
 
-- Entendimento fundamental do projeto → `context/` ou `architecture/`
-- Decisão formal → `decisions/`
-- Tarefa/requisito em andamento → `specs/`
-- Temporário → `wip/`
-- Histórico → `legacy/`
+- Entendimento fundamental do projeto / arquitetura → `architecture/`
+- Guardrails e troubleshooting críticos → `critical/`
+- Regras de produto e visão mobile → `product/`
+- Tarefa/requisito em andamento ou especificado → `specs/`
+- Experimentos e hipóteses de game feel → `experiments/`
+- Auditorias e revisões → `reviews/`
+- Histórico obsoleto → `archive/`
 
 ## Ferramentas de qualidade
 
-- Rodar typecheck do jogo: via WSL (`wsl -e bash -lc "node node_modules/typescript/bin/tsc -p artifacts/bloodmage/tsconfig.json --noEmit"`).
+- Rodar typecheck do jogo: `pnpm run typecheck` ou `pnpm run verify`.
 - Validar mudanças contra `critical/03_TESTING_GATES.md` e anti-regressão (`critical/00_ANTI_REGRESSION_GUIDE.md`).
