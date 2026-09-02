@@ -180,4 +180,58 @@ describe('VirtualJoystickSystem', () => {
     expect(scene.input.off).toHaveBeenCalledWith('pointerdown', expect.any(Function), joystick);
     expect(scene._mockGraphics.destroy).toHaveBeenCalled();
   });
+
+  describe('regression: fixed-base stick made left movement unreachable (reported 2026-09-02)', () => {
+    // Sintoma real reportado: tocar na região esquerda da tela fazia o
+    // personagem andar pra DIREITA, e mover o dedo mais pra esquerda só o
+    // fazia parar — nunca de fato mover pra esquerda.
+    //
+    // Causa-raiz: com `floatingStick: false` (era o default em produção via
+    // localStorage.ts e SettingsScene.ts), a base do stick fica ancorada num
+    // ponto FIXO minúsculo perto da borda esquerda (init(): baseX = min(width
+    // * 0.12, 100)), mas a zona de toque que ativa o stick aceita qualquer
+    // toque em até 48% da largura da tela (handlePointerDown: pointer.x <
+    // width * 0.48). Qualquer toque nessa zona ampla que não seja bem
+    // próximo da base fixa calcula um dx positivo (direita) a partir dela —
+    // então "tocar na esquerda da tela" na prática empurrava o personagem
+    // pra direita, e só um toque colado na borda (dentro de ~100px) geraria
+    // um vetor pra esquerda de verdade.
+    //
+    // Correção: `floatingStick: true` virou o novo default (localStorage.ts,
+    // SettingsScene.ts) — a base passa a nascer exatamente onde o dedo toca
+    // (handlePointerDown: if (floatingStick) baseX = pointer.x), igual
+    // Mobile Legends/Diablo Immortal, eliminando esse ponto cego.
+
+    it('[bug antigo] floatingStick=false: tocar longe da base fixa gera vetor pra DIREITA mesmo em toque "na esquerda"', () => {
+      joystick.updateConfig({ floatingStick: false, zone: 'left' });
+
+      // Base fixa fica em min(1000*0.12, 100) = 100px da borda esquerda.
+      // Um toque em x=300 está dentro da zona de movimento (< 48% de 1000 =
+      // 480), mas bem à DIREITA da base fixa (100) — reproduz o bug relatado.
+      scene._emitInput('pointerdown', { id: 1, x: 300, y: 450 });
+      expect(joystick.isActive()).toBe(true);
+      // pointerdown sozinho nunca calcula vetor (fica {0,0}); no toque real
+      // o dedo sempre gera algum micro-movimento em seguida — simulamos isso
+      // com um pointermove na mesma posição em que o dedo pousou.
+      scene._emitInput('pointermove', { id: 1, x: 300, y: 450 });
+
+      const vec = joystick.getMovementVector();
+      expect(vec.x).toBeGreaterThan(0); // bug: vetor pra direita num toque "à esquerda"
+    });
+
+    it('[corrigido] floatingStick=true: tocar em qualquer ponto da zona esquerda começa neutro, arrastar pra esquerda move pra esquerda', () => {
+      joystick.updateConfig({ floatingStick: true, zone: 'left' });
+
+      // Mesmo ponto de toque do teste anterior (x=300) — agora a base nasce
+      // ali, então o toque inicial é neutro, não "pra direita".
+      scene._emitInput('pointerdown', { id: 1, x: 300, y: 450 });
+      expect(joystick.getMovementVector()).toEqual({ x: 0, y: 0 });
+
+      // Arrastar o dedo pra esquerda a partir do ponto de toque agora produz
+      // um vetor negativo (esquerda) de forma confiável.
+      scene._emitInput('pointermove', { id: 1, x: 250, y: 450 });
+      const vec = joystick.getMovementVector();
+      expect(vec.x).toBeLessThan(0);
+    });
+  });
 });

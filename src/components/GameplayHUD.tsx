@@ -15,6 +15,7 @@ import palettesData from '../data/palettes.json';
 import { useFloatingJoystick } from '../hooks/useFloatingJoystick';
 import { soundEngine } from '../utils/soundEngine';
 import { useGameStore } from '../store/gameStore';
+import { getMaelenDialogueTreeId } from '../types/campaign';
 import type { FloatingJoystickState } from '../hooks/useFloatingJoystick';
 import {
   Eye, EyeOff, Settings, X, Shield, RefreshCw,
@@ -780,7 +781,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
               // Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: Maelen abre a
               // árvore de diálogo de campanha; os outros NPCs continuam no modal de loja.
               if (closestNPCType === 'maelen') {
-                startDialogue('safe_house_maelen_intro');
+                startDialogue(getMaelenDialogueTreeId(campaignState.quests));
               } else {
                 setActiveNPC(closestNPCType);
               }

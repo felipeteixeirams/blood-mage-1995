@@ -188,7 +188,13 @@ export const defaultSettings: GameSettings = {
   joystickCurve: 1.8,
   virtualStickScale: 'medium',
   leftHandedMode: false,
-  floatingStick: false,
+  // Padrão FLUTUANTE (spawna a base do stick onde o dedo toca, estilo Mobile
+  // Legends/Diablo Immortal) — antes era `false`, o que ancorava a base do
+  // stick num ponto fixo minúsculo perto da borda (~100px). Como a zona de
+  // toque aceita até 48% da largura da tela, qualquer toque fora desse ponto
+  // fixo calculava um vetor positivo (direita) mesmo tocando "na esquerda da
+  // tela" — só dava pra mover pra esquerda tocando bem colado na borda.
+  floatingStick: true,
   screenShakeEnabled: true,
   flashesEnabled: true,
   fearDistortionEnabled: true,

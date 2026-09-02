@@ -519,7 +519,33 @@ Durante fases anteriores do desenvolvimento, um sistema de conquistas procedural
 
 ---
 
-## 17. Tabela de Diagnóstico Rápido
+## 17. Joystick Virtual com Base Fixa Impedia Movimento Confiável para a Esquerda (Ancoragem vs. Zona de Toque)
+
+### 🔴 Sintoma
+Reportado pelo usuário (2026-09-02): tocar com o dedo na região esquerda da tela fazia o personagem **andar para a direita**; mover o dedo mais para a esquerda apenas fazia o personagem **parar**; nunca era possível mover para a esquerda de forma confiável. Comportamento diferente do esperado em referências como Diablo Immortal e Mobile Legends.
+
+### 🔍 Causa-Raiz
+`VirtualJoystickSystem.ts` suporta dois modos de posicionamento da base do stick, controlados pela config `floatingStick`:
+- `false` (era o default em `localStorage.ts` e `SettingsScene.ts`): a base fica **ancorada num ponto fixo** perto da borda, calculado em `init()` como `baseX = min(width * 0.12, 100)` — ou seja, ~100px da borda esquerda numa tela típica.
+- `true`: a base **nasce onde o dedo toca** (`handlePointerDown`: `if (floatingStick) { baseX = pointer.x; baseY = pointer.y; }`), estilo Mobile Legends/Diablo Immortal.
+
+O problema: a **zona de toque** que ativa o stick (`handlePointerDown`) aceita qualquer toque em até 48% da largura da tela (`pointer.x < width * 0.48`) — uma área bem maior que o pequeno ponto de ancoragem fixo. Com `floatingStick: false`, qualquer toque dentro dessa zona ampla que não fosse bem próximo dos ~100px da borda calculava `dx = pointer.x - baseX` **positivo** (direita) em relação à base fixa — fazendo o personagem andar para a direita mesmo com o toque "na região esquerda da tela". Arrastar o dedo de volta em direção à base fixa reduzia esse `dx` até quase zero (personagem "parava"), mas cruzar para um vetor negativo (esquerda) de verdade exigia tocar bem colado na borda esquerda, praticamente inalcançável com o polegar em uso normal.
+
+O mesmo padrão de bug (config existente mas com default errado) afetava `dragToFollow` — nunca era passado por `GameScene.ts` em nenhuma chamada de `updateConfig`, então o default de classe (`false`) sempre prevalecia, desativando silenciosamente o "glide" ao arrastar além do raio máximo, mesmo com o comentário no código já descrevendo esse comportamento como "Mobile Legends / Diablo Immortal Drag-to-Follow Mechanic".
+
+### 🔧 Como Diagnosticar
+1. Reproduzir: tocar em qualquer ponto da metade esquerda da tela que não seja bem próximo da borda (~100px) e observar a direção inicial do movimento.
+2. Inspecionar `settings.floatingStick` no `gameStore` — se `false`, a base está ancorada num ponto fixo.
+3. Escrever um teste como os dois novos casos em `VirtualJoystickSystem.test.ts` (describe `regression: fixed-base stick...`): com `floatingStick: false`, um toque longe da base fixa produz `vec.x > 0` mesmo em um ponto "à esquerda" da tela.
+
+### 🛠️ Procedimento de Resolução
+1. `floatingStick: true` como novo default em `src/utils/localStorage.ts` (settings persistidos) e em `src/game/scenes/SettingsScene.ts` (`toggleDefs` e bloco de reset) — o jogador ainda pode desativar manualmente nas Configurações se preferir o modo fixo.
+2. `dragToFollow` alterado para `true` como default de classe em `VirtualJoystickSystem.ts`, já que nunca é passado via `updateConfig` — sem isso o "glide" documentado no código nunca ativava de fato.
+3. Testes de regressão adicionados em `VirtualJoystickSystem.test.ts` fixando os dois comportamentos (bug antigo reproduzido com `floatingStick: false` explícito + comportamento corrigido com `floatingStick: true`).
+
+---
+
+## 18. Tabela de Diagnóstico Rápido
 
 | Sintoma | Causa Mais Provável | Ferramenta / Comando de Diagnóstico | Ação Imediata |
 |---|---|---|---|
@@ -544,6 +570,7 @@ Durante fases anteriores do desenvolvimento, um sistema de conquistas procedural
 | Personagem "pula" alguns pixels ao parar de andar | Frames idle (48x48) e walk (68x68) alinhados pela borda do arquivo | Comparar dimensões dos PNGs de origem | Alinhar pela caixa do conteúdo, não pela tela (item 15) |
 | Personagem anda virado para a direção errada | Ordem das direções do montador difere da de `animationManager.ts` | Conferir o array `DIRS` nos dois arquivos | Manter `south, south-east, east, north-east, north, north-west, west, south-west` |
 | Conquistas e notificações desenhadas no canvas do jogo | Sistema legado de conquistas no Phaser (`AchievementSystem`/`AchievementNotification`) | Inspecionar instâncias em `GameScene.ts` | Migrar para `runStats` no Zustand + overlay React `AchievementToast.tsx` |
+| Toque na esquerda da tela move o personagem pra DIREITA / nunca move pra esquerda | `floatingStick: false` (base fixa) + zona de toque bem mais larga que a base ancorada em `VirtualJoystickSystem.ts` | Testes de regressão em `VirtualJoystickSystem.test.ts` (`describe('regression: fixed-base stick...')`) | Definir `floatingStick: true` como default (`localStorage.ts`, `SettingsScene.ts`) |
 
 
 ---

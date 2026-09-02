@@ -297,7 +297,7 @@ export class SettingsScene extends Phaser.Scene {
     { key: "fearDistortionEnabled", label: "MEDO", defaultVal: true },
     { key: "tinnitusEnabled", label: "TINNITUS", defaultVal: true },
     { key: "leftHandedMode", label: "CANHOTO", defaultVal: false },
-    { key: "floatingStick", label: "FLUTUANTE", defaultVal: false },
+    { key: "floatingStick", label: "FLUTUANTE", defaultVal: true },
   ];
 
   private scaleBox!: Phaser.GameObjects.Graphics;
@@ -434,7 +434,7 @@ export class SettingsScene extends Phaser.Scene {
             tinnitusEnabled: true,
             virtualStickScale: 'medium',
             leftHandedMode: false,
-            floatingStick: false,
+            floatingStick: true,
             controlsMode: 'auto',
           };
           this.settingsState = { ...defaults };

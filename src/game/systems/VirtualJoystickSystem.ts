@@ -42,7 +42,12 @@ export class VirtualJoystickSystem {
   private curve: number = 1.0;
   private sensitivity: number = 1.0;
   private opacity: number = 0.85;
-  private dragToFollow: boolean = false;
+  // GameScene nunca passa `dragToFollow` via updateConfig (não é uma settings
+  // key hoje), então este default de classe é o valor efetivo em produção.
+  // `true` por padrão pra completar o comportamento "Mobile Legends/Diablo
+  // Immortal" já documentado no handlePointerMove abaixo — sem isso, arrastar
+  // o dedo além do raio máximo simplesmente clampava sem a base "deslizar" atrás.
+  private dragToFollow: boolean = true;
   private floatingStick: boolean = false;
   private zone: 'left' | 'right' | 'all' = 'left';
   private colorTheme: 'red' | 'purple' = 'red';
