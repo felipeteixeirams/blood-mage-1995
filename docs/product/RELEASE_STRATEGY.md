@@ -1,13 +1,13 @@
 # RELEASE & STORE STRATEGY
 *Bloodmage 1995*
 
-> **Nota:** Este documento registra os requisitos futuros para quando o projeto estiver saindo do Beta (Fase 5). Não investir esforço de engenharia nestes itens agora.
+> **Nota:** Este documento registra a estratégia de distribuição e os requisitos futuros para submissão em lojas na Fase 5.
 
-## PWA (Fase 3)
-A primeira superfície de liberação é o PWA (Progressive Web App).
-- Deve suportar instalação local (Adicionar à Tela Inicial).
-- Rodar em tela cheia via Manifest.
-- *Cache First* para assets críticos (offline fallback).
+## PWA (Concluído)
+A primeira superfície de liberação é o PWA (Progressive Web App), **100% implementado e funcional** (ver `docs/specs/delivered/15_PWA_AND_OFFLINE_READY.md`).
+- Suporta instalação local ("Adicionar à Tela Inicial" com prompt 1-touch).
+- Executa em tela cheia via Manifest (`display: standalone`).
+- *Cache First / Offline-First* para assets críticos e Service Worker Workbox.
 
 ## Play Store / Android (Fase 5)
 Para publicar na Google Play Store, usaremos **TWA (Trusted Web Activity) / Bubblewrap** para envelopar o PWA.
