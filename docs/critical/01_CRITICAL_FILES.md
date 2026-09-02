@@ -35,14 +35,13 @@ tags: [critical, protected-files]
 **O que NÃO alterar:**
 ```typescript
 // ❌ NÃO MUDE ESTAS LINHAS
-const ACCELERATION = 0.004;        // Motor de aceleração
-const DECELERATION = 0.006;        // Desaceleração
-const FRICTION = 0.95;              // Fricção de movimento
-const MAX_SPEED = 200;              // Velocidade máxima
+private readonly ACCELERATION = 1400;  // Motor de aceleração
+private readonly DECELERATION = 1000;  // Desaceleração
+private baseMaxSpeed = 200;           // Velocidade máxima base
 
 // ❌ NÃO MUDE
-const calculateMovement = (delta) => {
-  // Equações precisas de physics
+updateMovementAndPhysics(dt: number) {
+  // Equações precisas de physics e interpolação via _moveToward
 }
 
 // ❌ NÃO MUDE
@@ -82,7 +81,7 @@ playKnockedOutAnimation(): void { ... }
 **O que NÃO alterar:**
 ```typescript
 // ❌ NÃO MUDE A FSM
-updateEnemyAI(player: Player) {
+updateEnemy(time: number, delta: number, player: Player) {
   switch (this.state) {
     case 'idle': // ...
     case 'patrol': // ...
