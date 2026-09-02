@@ -5,6 +5,9 @@ version: 1.0
 status: COMPLETO
 ---
 
+> [!NOTE]
+> **Changelog Histórico:** Este documento registra as alterações realizadas na sessão de **10 e 11 de Agosto de 2026**. Todo o texto original foi preservado. Note que arquivos de documentação citados no relatório (como `docs/deployment/FASE5_EMPACOTAMENTO_COMPLETO.md`) foram posteriormente reorganizados durante a refatoração de specs de 02 de Setembro de 2026 (PRs #61-#66) e agora residem em locais como `docs/archive/deployment/FASE5_EMPACOTAMENTO_COMPLETO.md` ou foram consolidados em `docs/specs/delivered/`. Para consultar o índice e a estrutura de documentação viva atualizada, acesse **[`docs/specs/README.md`](docs/specs/README.md)** e **[`docs/README.md`](docs/README.md)**.
+
 # 📋 Relatório Completo de Mudanças — Bloodmage 1995
 
 > **Sessão:** 2026-08-10 a 2026-08-11  

@@ -1,6 +1,6 @@
 # 🚀 Deployment Guide - Bloodmage 1995
 
-Guia rápido para fazer deploy em Web (PWA), Google Play (TWA) e Steam.
+Guia operacional para fazer deploy em Web (PWA), Google Play (TWA) e Steam (Electron wrapper).
 
 ---
 
@@ -8,19 +8,21 @@ Guia rápido para fazer deploy em Web (PWA), Google Play (TWA) e Steam.
 
 ### Requisitos
 - Conta Vercel
-- Git repo sincronizado
+- Monorepo sincronizado via Git e gerenciado via `pnpm`
 
 ### Build Local
 ```bash
 ./scripts/build-pwa.sh
+# Ou diretamente via pnpm:
+pnpm run build
 ```
 
 ### Deploy
 ```bash
-# Opção 1: Auto-deploy via Git
-git push  # Vercel detecta e deploya automaticamente
+# Opção 1: Auto-deploy via Git (Vercel executa `pnpm install` e `pnpm run build` conforme vercel.json)
+git push
 
-# Opção 2: Deploy manual
+# Opção 2: Deploy manual via Vercel CLI
 vercel deploy --prod
 ```
 
@@ -37,10 +39,10 @@ vercel deploy --prod
 
 ### Pré-requisitos
 - Android SDK instalado
-- Bubblewrap CLI: `npm install -g @bubblewrap/cli`
+- Bubblewrap CLI: `pnpm add -g @bubblewrap/cli` (ou `npm install -g @bubblewrap/cli`)
 - Google Play Developer account ($25 one-time)
 
-### Build APK
+### Build APK / AAB
 ```bash
 ./scripts/build-twa.sh
 ```
@@ -91,7 +93,7 @@ adb install app-release.apk
 
 ### Teste Local
 ```bash
-npm run electron  # Rodar em desenvolvimento
+npx electron .
 ```
 
 ### Upload para Steamworks
@@ -140,7 +142,7 @@ Build Vite → Gera/valida electron-builder → Build por plataforma
 | LCP | < 2.5s | Lighthouse |
 | CLS | < 0.1 | Lighthouse |
 | FPS | 60+ | Chrome DevTools |
-| Bundle | < 2.5 MB | `npm run build` size |
+| Bundle | < 2.5 MB | `pnpm run build` size |
 
 ---
 
@@ -164,7 +166,7 @@ Build Vite → Gera/valida electron-builder → Build por plataforma
 ### Analytics
 ```bash
 # Integrar Mixpanel ou Firebase
-npm install --save @mixpanel/browser  # ou firebase
+pnpm add @mixpanel/browser
 ```
 
 ### Feedback
@@ -192,24 +194,27 @@ rm -rf .gradle build app-release.*
 ### Steam build crash
 ```bash
 # Rodar em dev mode com console
-npm run electron -- --inspect
+npx electron . --inspect
 ```
 
 ---
 
 ## ✅ Checklist Pré-Launch
 
-- [ ] TypeScript: `npm run typecheck` ✅
-- [ ] Build: `npm run build` ✅ (< 30s)
-- [ ] Tests: `npm run test` ✅
+- [ ] TypeScript: `pnpm run typecheck` ✅
+- [ ] Verification Suite: `pnpm run verify` ✅
+- [ ] Unit Tests: `pnpm test` ✅
+- [ ] E2E Tests: `pnpm run e2e` ✅
+- [ ] Build Assets: `pnpm run build` ✅ (< 30s)
 - [ ] Lighthouse: 90+ PWA score
 - [ ] FPS: 60+ em device real
-- [ ] Funcionalidades principais testadas:
-  - [ ] Fase 1 (inconsciência)
-  - [ ] Fase 2 (morte)
-  - [ ] Fase 3 (status effects)
-  - [ ] Fase 4 (mundo contínuo)
-  - [ ] Fase 5 (polimento)
+- [ ] Funcionalidades e sistemas integrados verificados:
+  - [ ] Fase 1 (Inconsciência)
+  - [ ] Fase 2 (Tela de Morte e Gore)
+  - [ ] Fase 3 (Status de Sobrevivência)
+  - [ ] Fase 4 (Mundo Contínuo)
+  - [ ] Fase 5 (Polimento de Produção / PWA)
+  - [ ] Prestígio Blood Seal, Relíquias & Artefatos, Partículas Avançadas, Conquistas e Dash
 
 ---
 

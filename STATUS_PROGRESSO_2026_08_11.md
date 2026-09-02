@@ -5,6 +5,9 @@ status: 90% COMPLETO (Relics & Artifacts System Integrado)
 last_updated: Atualização Pós-Merge Jules (Sistema de Relíquias Passivas + Proteção de Assets Binários)
 ---
 
+> [!NOTE]
+> **Snapshot Histórico:** Este documento é um registro histórico do status do projeto em **11 a 16 de Agosto de 2026**. O estado atual do projeto, consolidado após a refatoração hierárquica de specs em 02 de Setembro de 2026 (PRs #61-#66), deve ser consultado em **[`docs/specs/README.md`](docs/specs/README.md)**. Todo o conteúdo abaixo foi mantido intacto como registro auditável.
+
 # 📊 Status Geral do Projeto - Bloodmage 1995
 
 **Data:** 2026-08-16  
