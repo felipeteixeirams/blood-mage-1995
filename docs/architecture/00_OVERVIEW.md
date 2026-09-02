@@ -3,7 +3,7 @@ agent_context: all agents
 target_module: root
 priority: high
 status: active
-last_updated: 2026-08-09
+last_updated: 2026-09-02
 tags: [architecture, overview]
 ---
 # 🏛️ Arquitetura Geral - Visão Geral
@@ -19,7 +19,7 @@ O projeto utiliza um design de **UI Híbrido**:
        ┌────────────────────────────────────────┐
        │               React HUD                │
        └───────────────────▲────────────────────┘
-                           │ (Event Broker / Zustand)
+                           │ (Zustand State Bridge)
        ┌───────────────────▼────────────────────┐
        │             Phaser Canvas              │
        └────────────────────────────────────────┘

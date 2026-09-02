@@ -3,7 +3,7 @@ agent_context: backend, frontend
 target_module: root
 priority: medium
 status: active
-last_updated: 2026-08-09
+last_updated: 2026-09-02
 tags: [architecture, tech-stack]
 ---
 # 💻 Tech Stack
@@ -15,6 +15,6 @@ A pilha tecnológica de Bloodmage 1995 foi cuidadosamente selecionada para emula
 - **Framework de Frontend**: React 19 + TypeScript.
 - **Gerenciamento de Estado**: Zustand 5 + Zod.
 - **Estilização**: Tailwind CSS v4 + Radix UI Primitives.
-- **Sintetizador de Áudio**: Web Audio API (geração procedural de som, sem arquivos .mp3/.wav externos).
+- **Sintetizador & Pipeline de Áudio**: Web Audio API (geração procedural de som via Web Audio com suporte híbrido a amostras físicas em `public/audio_samples/`).
 - **Estilo de Layout**: Shadcn UI + Framer Motion.
 - **Gerenciador de Workspace**: PNPM.
