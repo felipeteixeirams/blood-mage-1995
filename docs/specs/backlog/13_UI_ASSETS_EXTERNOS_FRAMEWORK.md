@@ -2,14 +2,18 @@
 agent_context: game-engine, frontend, game-designer, product-manager
 target_module: artifacts/bloodmage/src/game
 priority: alta
-status: proposta
-last_updated: 2026-08-11
+status: parcialmente_implementado
+last_updated: 2026-09-02
 tags: [specs, proposta, ui, assets-externos, pixel-art, hybrid-system, performance, audio]
 ---
 
 # Proposta de Discovery — Evolução de UI e Assets Externos Góticos (Pixel Art)
 
 > Este documento detalha a viabilidade técnica, o design de arte, o plano de transição e o gerenciamento de recursos para evoluir o visual e a sonoplastia do **Bloodmage 1995** a partir de assets externos gratuitos ou licenciados. O objetivo é atingir a estética gótica sombria de meados dos anos 90 (estilo *Diablo I*, *Diablo II* e *Dungeon Siege 1*), no formato de **Pixel Art de Alta Resolução/Fidelidade** e sonorização imersiva, sem comprometer a robustez técnica do jogo.
+
+> **Nota de Implementação Real (Setembro 2026):** Partes do pipeline híbrido já se encontram ativas no código-fonte:
+> - **Sintetizador BGM & Procedural Audio Fallback:** Implementado em `src/utils/bgmSynthesizer.ts` e `src/utils/soundEngine.ts`.
+> - **Telemetria de Erros & Ingestão de Logs:** Implementado em `src/utils/telemetry.ts` e `src/utils/logger.ts`.
 
 ---
 
