@@ -468,3 +468,44 @@ Transformar a estrutura de sessão do *Blood Mage 1995* de um arcade isolado par
     - TypeScript Typecheck (`npm run typecheck`): 0 erros.
     - Suíte de Testes Unitários (`npm test`): **32 arquivos de teste, 330 testes com 100% de sucesso**.
 
+- **[2026-09-02] Capítulos 2-4 (Fosso, Catacumbas, Santuário) & Correção de 2 Bugs de Diálogo Hardcoded:**
+  - Status: **CONCLUÍDO** — resolve a lacuna que a leva de 2026-08-27 já havia
+    documentado como "infraestrutura pronta pro próximo capítulo" (`give_weapon`/
+    `give_spell`/`heal_player`/`open_shop` sem nenhum diálogo real usando).
+  - **Implementado:**
+    - `campaignQuests.json`: 3 novas quests encadeadas por `prerequisiteQuestId`
+      (`quest_ch2_the_pit` → `quest_ch3_the_martyrs_rest` →
+      `quest_ch4_blood_sanctuary`), cobrindo as zonas `fosso_chagas`,
+      `catacumbas_martires` e o clímax em `santuario_sangue` (kill objective no
+      `necro_lord_boss`). Recompensas escalam de forma consistente com o
+      Capítulo 1 (XP/Cristais de Sangue) e desbloqueiam progressivamente
+      `corpse_burst`, `bone_shield` e `crimson_scythe`.
+    - `dialogues.json`: 3 novas árvores de diálogo do Maelen
+      (`safe_house_maelen_ch2_return`, `_ch3_return`, `_ch4_return`),
+      avançando o arco narrativo (Ordem do Sangue Escuro, Carrasco Carmesim,
+      confronto final no Santuário de Sangue).
+    - `types/campaign.ts`: nova função pura `getMaelenDialogueTreeId(quests)`
+      que resolve qual árvore carregar conforme o progresso real de quests
+      completadas (em vez de sempre a árvore fixa de introdução).
+    - **Correção de bug (2 ocorrências):** `GameScene.ts` e, separadamente,
+      o botão "FALAR COM NPC" em `GameplayHUD.tsx` chamavam
+      `startDialogue('safe_house_maelen_intro')` hardcoded — sem essa
+      correção, todo o conteúdo novo dos Capítulos 2-4 ficaria como dado
+      morto, inacessível em jogo por qualquer um dos dois pontos de entrada
+      de diálogo com o NPC.
+    - Conteúdo gerado com apoio do Gemini (Google AI Studio) a partir do lore
+      canônico já existente neste documento e nos specs de discovery, revisado
+      e corrigido manualmente contra o schema real (tipos TS, inimigos/feitiços/
+      zonas reais do jogo, consistência de recompensas entre capítulos) antes
+      de integrar.
+  - **Validação Automatizada:**
+    - TypeScript Typecheck (`npm run typecheck`): 0 erros.
+    - Suíte de Testes Unitários (`npm test`): 378/378 testes passando.
+    - Build de produção (`npm run verify`): limpo, sem erros.
+  - **Pendências conhecidas:** `give_weapon`/`give_spell`/`heal_player`/
+    `open_shop` (infraestrutura de `CampaignEffect`) ainda não são usados
+    pelas árvores de diálogo dos Capítulos 2-4 — o padrão adotado até aqui
+    segue sendo avançar quest + conceder XP/Cristais/magia via
+    `advanceQuestObjective`, não via ação direta de diálogo.
+  - **Referência:** commit `10120ee`.
+

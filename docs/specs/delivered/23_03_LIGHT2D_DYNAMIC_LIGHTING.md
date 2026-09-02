@@ -1,7 +1,7 @@
 # Spec 23.03: Iluminação Dinâmica 2D (Light2D Pipeline)
 
 ## Objetivo
-Substituir as falsas luzes de canvas por iluminação dinâmica de WebGL via `Light2D` do Phaser 3, integrando a cor ambiente de biomas, ponto de luz dinâmico do jogador e fontes de iluminação de props/magias.
+Substituir as falsas luzes de canvas por iluminação dinâmica de WebGL via `Light2D` do Phaser 4.2.1, integrando a cor ambiente de biomas, ponto de luz dinâmico do jogador e fontes de iluminação de props/magias.
 
 ## Status
 🟢 COMPLETO

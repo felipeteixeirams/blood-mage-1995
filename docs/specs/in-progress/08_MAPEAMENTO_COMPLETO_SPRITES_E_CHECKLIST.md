@@ -16,7 +16,7 @@ tags: [specs, sprites, pixel-art, assets, mapping, checklist, hybrid-system, mat
 
 ## 🔍 Diagnóstico de Maturidade Arquitetural
 
-Nossa base arquitetural possui alto nível de maturidade e desacoplamento para receber sprites externos, mantendo a estabilidade já consolidada no Phaser 3 + React:
+Nossa base arquitetural possui alto nível de maturidade e desacoplamento para receber sprites externos, mantendo a estabilidade já consolidada no Phaser 4.2.1 + React:
 
 ### 🟢 Pontos Fortes Prontos (Ready for Sprites)
 1. **Chaves Únicas e Desacopladas (`Texture Keys`):**

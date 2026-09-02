@@ -11,7 +11,7 @@ tags: [architecture, tech-stack]
 A pilha tecnológica de Bloodmage 1995 foi cuidadosamente selecionada para emular o visual clássico dos anos 90, mantendo máxima performance e robustez em navegadores modernos.
 
 ## 🛠️ Tecnologias Principais
-- **Motor de Jogo**: Phaser (Arcade Physics).
+- **Motor de Jogo**: Phaser 4.2.1 (Arcade Physics).
 - **Framework de Frontend**: React 19 + TypeScript.
 - **Gerenciamento de Estado**: Zustand 5 + Zod.
 - **Estilização**: Tailwind CSS v4 + Radix UI Primitives.
