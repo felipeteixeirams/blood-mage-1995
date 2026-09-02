@@ -103,7 +103,7 @@ Aplicando o **Checklist do Filtro de Sucesso (5 Gates)** sobre todas as ideias:
 | **1. PWA & Offline Engine Completo (Spec 15)** | 🟢 Alto (D1/Crash) | 🟢 Alta (Instalar 1 toque) | 🟢 Nativo Landscape | 🟢 100% Offline | ✅ **CONCLUÍDO** |
 | **2. Resolução 1080p & Terreno 2.5D (Spec 16)** | 🟢 Alto (Legibilidade) | 🟢 Fricção Zero | 🟢 FOV Dinâmico | 🟢 60 FPS | ✅ **CONCLUÍDO** |
 | **3. Onboarding In Media Res & Dash (Spec 17)** | 🟢 Altíssimo (D1 Retenção) | 🟢 TTF < 10s | 🟢 Dica reativa touch | 🟢 Instantâneo | ✅ **CONCLUÍDO** |
-| **4. Ergonomia Touch: Safe Area, Escala & Canhoto** | 🟢 Alto (D1 & D7) | 🟢 Config instantânea | 🟢 Thumb Zone total | 🟢 Sem custo | 🚀 **EM ANDAMENTO** |
+| **4. Ergonomia Touch: Safe Area, Escala & Canhoto** | 🟢 Alto (D1 & D7) | 🟢 Config instantânea | 🟢 Thumb Zone total | 🟢 Sem custo | ✅ **CONCLUÍDO** |
 | **5. Chefes Multiestágio com Telegrafias Vibrantes** | 🟢 Alto (D7 & D30) | 🟢 Leitura visual | 🟢 Arenas compactas | 🟢 60 FPS com pooling | ✅ **APROVAR (Próxima Fase)** |
 | **6. Autenticação Cloud (Firebase / Supabase / Google)** | 🔴 Neutro/Negativo | 🔴 Fricção Alta (Login) | 🔴 Teclado cobre tela | 🔴 Requer internet | ❌ **REJEITADO / CONGELADO** |
 | **7. Inventário com 50 slots de itens e durabilidade** | 🔴 Negativo (D1) | 🔴 Carga Cognitiva Alta | 🔴 Touch confuso | 🔴 Fricção em combate | ❌ **REJEITADO** |
@@ -115,9 +115,14 @@ Aplicando o **Checklist do Filtro de Sucesso (5 Gates)** sobre todas as ideias:
 
 Com base nos dados e na disciplina de valor:
 
-1. **Frente 1: Personalização Ergonômica Mobile & Safe Area Insets**  
+1. **Frente 1: Personalização Ergonômica Mobile & Safe Area Insets** *(Concluída em Specs 11 & 16 Delivered)*
    *Suporte a recortes de tela (Notches/Dynamic Island), Modo Canhoto e opções de escala do joystick virtual (`small/medium/large`).*
 2. **Frente 2: Chefes Multiestágio & Indicadores Telegrafados**  
    *Combates épicos com ciclos claros de telegrafia de dano, fases com transições visuais e mecânicas ricas de esquiva.*
 3. **Frente 3: Balanceamento do Ritual de Bênçãos & Progressão da Run**  
    *Refino das cartas de sangue e sinergias elementais (fogo, gelo, sangue, raio) para aumentar a rejogabilidade (D7/D30).*
+
+---
+
+> **Nota de Resolução Histórica (2026-09-02):**
+> Os pontos de auditoria e pendências estruturais identificados neste relatório foram integralmente resolvidos pela refatoração hierárquica de `docs/specs/` (PRs #61-#66). A reestruturação separou as especificações oversized em 13 satélites modulares (`delivered/11_01..08` e `delivered/12_01..05`), formalizou 5 especificações para sistemas de metajogo e combate previamente sem spec (`delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md` a `22_DASH_EVASION_MECHANIC.md`), promoveu 2 specs avançadas (`delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md` e `24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md`), e consolidou o índice geral em `docs/specs/README.md`.
