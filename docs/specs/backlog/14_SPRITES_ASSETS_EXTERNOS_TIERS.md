@@ -1,5 +1,5 @@
 ---
-status: DISCOVERY - ROADMAP FUTURO
+status: PARCIALMENTE IMPLEMENTADO
 phase: Pós-Fase 5
 priority: MÉDIA
 target_date: Q4 2026 (após decisão de arte externa)
@@ -11,7 +11,12 @@ tags: [specs, discovery, assets, pipeline, performance, procedural-replacement]
 
 # 🎨 Discovery: Eixo B — Pipeline de Integração de Assets Externos
 
-> **Documento de Discovery** — Define como integrar arte externa (sprites, texturas, animações) sem quebrar o pipeline procedural já estabelecido.
+> **Documento de Discovery / Estado Real (Setembro 2026)** — Define como integrar arte externa sem quebrar o pipeline procedural.
+>
+> **Nota de Implementação Real:** O manifesto de assets, pipeline de fallback e animações 8-direcionais do jogador já estão ativos no código:
+> - **Manifesto de Assets (`assetManifest.ts`):** Mapeamento e registro unificado em `src/game/assets/assetManifest.ts`.
+> - **Fallback Procedural (`textureGenerator.ts`):** Fallback automático no gerador canvas caso a textura externa não esteja disponível.
+> - **Animações 8-Direcionais (`Player.ts`):** Mapeamento de spritesheet (`public/assets/sprites/player/bloodmage.png`) de 68x68 com 72 frames para idle e walk 8-direcionais (`bloodmage_idle_<dir>`, `bloodmage_walk_<dir>`).
 
 ---
 

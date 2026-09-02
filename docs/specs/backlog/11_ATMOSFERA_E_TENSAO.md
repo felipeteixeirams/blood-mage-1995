@@ -15,7 +15,7 @@ tags:
 
 # 📜 Spec 11: Atmosfera, Tensão e Indicadores de Ameaça
 
-> **Status:** 🔵 BACKLOG (0% implementado)
+> **Status:** 🟡 PARCIALMENTE IMPLEMENTADO (Quick Wins de Tensão & Efeitos de Pânico Ativos no Código)
 > **Data:** Setembro de 2026
 > **Domínio:** Atmosfera Gótica, Indicadores Telegrafados, Áudio Espacial e Efeitos Visuais de Tensão.
 
@@ -24,13 +24,17 @@ Elevar a imersão, o suspense e a tensão tática de *Bloodmage 1995*, inspirand
 
 ---
 
-## 2. 🔍 Contexto & Reaproveitamento
-O codebase do jogo já possui uma base sólida de sistemas que podem ser aproveitados sem a necessidade de reescrever motores do zero:
-- **`Enemy.ts`:** Máquina de estados de IA totalmente funcional (`idle`, `patrol`, `investigating`, `combat`, `frenzy`, `flee`) e o método de percepção auditiva `onHearNoise()`.
-- **`GameScene.ts`:** Sobreposição de vinheta sombria e efeito CRT/Scanlines já renderizados.
-- **`soundEngine.ts`:** Sintetizador Web Audio API capaz de manipular nós de áudio dinâmicos em tempo real.
+## 2. 🔍 Contexto & Estado Real de Implementação
+Embora o indicador de ameaça no mapa de borda direcional seja um item de backlog futuro, os principais efeitos visuais e sonoros de tensão da especificação **já foram implementados no código-fonte**:
 
-Atualmente, porém, o jogador não recebe sinalização tátil ou espacial quando um inimigo fora da tela entra em estado de alerta ou caça, tornando o combate puramente reativo à entrada física no FOV.
+- **Threat Tinnitus (Zumbido de Ameaça):**
+  - Implementado em `src/utils/soundEngine.ts` (`startTinnitus()`, `stopTinnitus()`, `updateTinnitus()`) e acionado em `src/game/scenes/GameScene.ts` quando o HP do jogador cai abaixo de 30% ou diante de ameaças elites/bosses.
+  - Sintetiza um tom agudo de ~3500 Hz na Web Audio API e aplica filtro Low-Pass no BGM.
+- **Fear Distortion (Distorção de Pânico):**
+  - Implementado em `src/game/scenes/GameScene.ts` (`triggerFearDistortion()`) acionado em uivos de Lycan / urros de chefes. Aplica vinheta roxa pulsante e distorção ondulatória na tela.
+- **Configurações de Acessibilidade:**
+  - Toggles `fearDistortionEnabled` e `tinnitusEnabled` em `src/types/game.ts`, `src/store/gameStore.ts`, `src/utils/localStorage.ts` e `SettingsScene.ts` permitindo desativar esses efeitos para acessibilidade.
+- **`Enemy.ts`:** Máquina de estados de IA totalmente funcional (`idle`, `patrol`, `investigating`, `combat`, `frenzy`, `flee`) e o método de percepção auditiva `onHearNoise()`.
 
 ---
 
