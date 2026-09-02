@@ -12,5 +12,5 @@ Neste momento (Fases 0 a 3), o jogo opera **100% Offline / Local Only**.
 
 ## Armazenamento (Save Strategy)
 - **Fase Atual:** `localStorage` através de uma interface isolada.
-- **Regra de Ouro:** O gameplay (`Phaser`) **NUNCA** acessa o `localStorage` diretamente. Todo acesso ocorre via camada de serviço (ex: `gameStorage.ts`) no React/Zustand, que intercepta e aplica fallback/Zod.
+- **Regra de Ouro:** O gameplay (`Phaser`) **NUNCA** acessa o `localStorage` diretamente. Todo acesso ocorre via camada de serviço (ex: `src/utils/localStorage.ts`) no React/Zustand, que intercepta e aplica fallback/Zod.
 - **Futuro (Fase 5):** Cloud Save acoplado ao Player ID (se aplicável).
