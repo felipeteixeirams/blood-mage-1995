@@ -1,11 +1,16 @@
 ---
 agent_context: all agents
 target_module: root
-priority: high
-status: active
-last_updated: 2026-08-11
-tags: [specs, evolution]
+priority: low
+status: archived
+last_updated: 2026-09-01
+tags: [specs, archived]
 ---
+
+> ⛔ **ARCHIVED — 2026-09**. Documento desmembrado em specs satélites conforme refatoração hierárquica da base de documentação. Contextos 1,2,3,6,7 já estavam cobertos por specs em delivered/ (ver README.md do diretório specs). Contextos 4 e 5 migraram para backlog/11_ATMOSFERA_E_TENSAO.md e backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md respectivamente. Mantido para referência histórica; não usar para novos trabalhos.
+
+---
+
 # Bloodmage 1995 — Specs de Evolução por Contexto
 
 > Baseado no Discovery de Produto (Agosto/2026) e análise direta do código-fonte.
