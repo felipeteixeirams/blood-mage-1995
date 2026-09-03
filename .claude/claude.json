@@ -1,0 +1,86 @@
+{
+  "project": {
+    "name": "Bloodmage 1995",
+    "description": "ARPG retro 2D com Phaser 4.2.1 + React 19",
+    "type": "game-dev-ts-react",
+    "language": "TypeScript",
+    "frameworks": ["Phaser 4.2.1", "React 19", "Zustand", "Tailwind CSS"]
+  },
+  "ai": {
+    "tokenOptimization": {
+      "enabled": true,
+      "description": "Estratégia de otimização de tokens para Claude Code"
+    },
+    "contextPriority": [
+      "CLAUDE.md",
+      "docs/critical/",
+      "docs/architecture/",
+      "src/",
+      "docs/specs/"
+    ],
+    "ignorePatterns": [
+      "node_modules/**",
+      "dist/**",
+      ".git/**",
+      "coverage/**",
+      "*.log",
+      ".vscode/**",
+      ".idea/**"
+    ]
+  },
+  "development": {
+    "branch": "claude/frentes-atuacao-projeto-qypbg3",
+    "defaultVerifyCommand": "pnpm verify",
+    "testCommand": "pnpm test",
+    "buildCommand": "pnpm build",
+    "mainBranch": "main",
+    "rules": {
+      "requireVerifyBeforeCommit": true,
+      "requireTestsForCriticalFiles": [
+        "src/game/objects/Player.ts",
+        "src/game/objects/Enemy.ts",
+        "src/game/systems/"
+      ],
+      "noDirectMainBranchPush": true,
+      "protectedFiles": [
+        "src/game/objects/Player.ts",
+        "src/game/objects/Enemy.ts",
+        "src/game/scenes/GameScene.ts"
+      ]
+    }
+  },
+  "documentation": {
+    "criticalDocs": [
+      "docs/critical/01_CRITICAL_FILES.md",
+      "docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md",
+      "docs/architecture/03_PHASER_PATTERNS.md"
+    ],
+    "specDirectory": "docs/specs/",
+    "architectureDirectory": "docs/architecture/"
+  },
+  "security": {
+    "preventTokenWaste": {
+      "enabled": true,
+      "skipNodeModules": true,
+      "skipDistBuild": true,
+      "skipGitHistory": true,
+      "skipEditorConfig": true,
+      "skipLargeAssets": true,
+      "maxAssetSizeKB": 1024
+    },
+    "denyAccessToSensitive": [
+      ".env",
+      ".env.production",
+      ".env.local",
+      ".secrets",
+      "credentials.json"
+    ]
+  },
+  "agents": {
+    "claudeCodeDefault": {
+      "skipGitIgnoredFiles": true,
+      "respectClaudeIgnore": true,
+      "prioritizeDocumentation": true
+    }
+  }
+}

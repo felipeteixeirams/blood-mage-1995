@@ -1,0 +1,93 @@
+# .claudeignore — Exclui arquivos desnecessários para economizar tokens
+# Pattern: similar a .gitignore, mas para ferramentas Claude Code
+
+# 🚫 DEPENDÊNCIAS & BUILD
+node_modules/
+dist/
+build/
+.vite/
+.cache/
+*.tsbuildinfo
+coverage/
+*.lcov
+
+# 🚫 SISTEMA DE CONTROLE DE VERSÃO
+.git/
+.gitignore
+.gitattributes
+
+# 🚫 ARQUIVOS DE SISTEMA & TEMPORÁRIOS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.env.local
+.env.*.local
+*.log
+logs/
+tmp/
+temp/
+
+# 🚫 IDE & EDITOR (CACHES)
+.vscode/
+.idea/
+*.iml
+.gradle/
+.project
+.settings/
+.classpath
+*.sublime-workspace
+.sublime-project
+.cursor/
+.cursor-ai/
+
+# 🚫 DEPENDÊNCIAS INSTALADAS LOCALMENTE
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+.pnpm-store/
+.pnpm/
+
+# 🚫 ARTEFATOS DE COMPILAÇÃO
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+*.exe
+
+# 🚫 ARQUIVOS DE WORKSPACE & CONFIGURAÇÃO PESSOAL
+.vscode-settings.json
+workspace.json
+.env
+.env.production
+.env.development
+
+# 🚫 HISTÓRICO DE SESSÕES CLAUDE & TOKENS
+.claude/sessions/
+.claude/*.log
+.claude/cache/
+
+# 🚫 ARQUIVOS DE TESTE PESADOS (se >10MB)
+**/*.spec.snapshots/
+test-results/
+jest-coverage/
+
+# 🚫 ASSETS MUITO GRANDES (binários, imagens >5MB)
+**/*.mp4
+**/*.mov
+**/*.avi
+**/*.psd
+**/*.ai
+**/*.xd
+**/*.sketch
+public/audio_samples/*.wav
+public/audio_samples/*.mp3
+
+# ✅ EXCEÇÕES (sempre incluir)
+!CLAUDE.md
+!.claude/
+!.claude/**/*.md
+!.claude/**/*.json
+!
