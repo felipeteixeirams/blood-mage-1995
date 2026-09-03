@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { GameScene } from '../scenes/GameScene';
 import type { RoomData } from './DungeonGenerator';
+import { logger } from '../../utils/logger';
 
 /**
  * ProceduralForestGenerator — Gera uma floresta procedural isométrica
@@ -19,6 +20,7 @@ export class ProceduralForestGenerator {
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
+    logger.info('ProceduralForestGenerator', 'Constructor called', { sceneKey: scene.sys.settings.key });
   }
 
   /**
@@ -26,30 +28,43 @@ export class ProceduralForestGenerator {
    * o portal system (apenas uma "sala" que é toda a floresta).
    */
   public generate(mapW: number, mapH: number): RoomData[] {
-    // Gerar texturas procedurais
-    this.generateProceduralTextures();
+    logger.info('ProceduralForestGenerator.generate', 'Starting forest generation', { mapW, mapH });
+    try {
+      // Gerar texturas procedurais
+      logger.info('ProceduralForestGenerator.generate', 'Generating procedural textures');
+      this.generateProceduralTextures();
+      logger.info('ProceduralForestGenerator.generate', 'Textures generated successfully');
 
-    // Renderizar piso de grama
-    this.renderForestFloor(mapW, mapH);
+      // Renderizar piso de grama
+      logger.info('ProceduralForestGenerator.generate', 'Rendering forest floor');
+      this.renderForestFloor(mapW, mapH);
+      logger.info('ProceduralForestGenerator.generate', 'Forest floor rendered successfully');
 
-    // Gerar e renderizar árvores
-    this.generateAndRenderTrees(mapW, mapH);
+      // Gerar e renderizar árvores
+      logger.info('ProceduralForestGenerator.generate', 'Rendering trees');
+      this.generateAndRenderTrees(mapW, mapH);
+      logger.info('ProceduralForestGenerator.generate', 'Trees rendered successfully');
 
-    // Gerar apenas uma "sala" compatível com o sistema (a floresta inteira)
-    // O portal aparecerá no centro após wave clara
-    const rooms: RoomData[] = [
-      {
-        x: mapW / 2 - 200,
-        y: mapH / 2 - 200,
-        width: 400,
-        height: 400,
-        centerX: mapW / 2,
-        centerY: mapH / 2,
-        type: 'spawn'
-      }
-    ];
+      // Gerar apenas uma "sala" compatível com o sistema (a floresta inteira)
+      // O portal aparecerá no centro após wave clara
+      const rooms: RoomData[] = [
+        {
+          x: mapW / 2 - 200,
+          y: mapH / 2 - 200,
+          width: 400,
+          height: 400,
+          centerX: mapW / 2,
+          centerY: mapH / 2,
+          type: 'spawn'
+        }
+      ];
 
-    return rooms;
+      logger.info('ProceduralForestGenerator.generate', 'Forest generation complete', { rooms: rooms.length });
+      return rooms;
+    } catch (error) {
+      logger.error('ProceduralForestGenerator.generate', 'Forest generation failed', { error: String(error) });
+      throw error;
+    }
   }
 
   /**
@@ -57,8 +72,11 @@ export class ProceduralForestGenerator {
    * (evita dependências externas, integra com Light2D pipeline)
    */
   private generateProceduralTextures(): void {
+    logger.info('ProceduralForestGenerator.generateProceduralTextures', 'Starting texture generation');
+
     // Grama com Dithering
     if (!this.scene.textures.exists('forest_grass')) {
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'Creating forest_grass texture');
       let grassCanvas = this.scene.textures.createCanvas('forest_grass', 64, 32)!;
       let ctx = grassCanvas.context;
 
@@ -81,10 +99,14 @@ export class ProceduralForestGenerator {
       }
       ctx.globalAlpha = 1;
       grassCanvas.refresh();
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_grass texture created');
+    } else {
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_grass texture already exists, skipping');
     }
 
     // Tronco de Árvore com Textura
     if (!this.scene.textures.exists('forest_trunk')) {
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'Creating forest_trunk texture');
       let trunkCanvas = this.scene.textures.createCanvas('forest_trunk', 48, 120)!;
       let ctx = trunkCanvas.context;
 
@@ -103,10 +125,14 @@ export class ProceduralForestGenerator {
       }
       ctx.globalAlpha = 1;
       trunkCanvas.refresh();
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_trunk texture created');
+    } else {
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_trunk texture already exists, skipping');
     }
 
     // Folhagem - Camada 1 (Principal)
     if (!this.scene.textures.exists('forest_foliage_1')) {
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'Creating forest_foliage_1 texture');
       let foliage1Canvas = this.scene.textures.createCanvas('forest_foliage_1', 140, 160)!;
       let ctx = foliage1Canvas.context;
 
@@ -129,10 +155,14 @@ export class ProceduralForestGenerator {
       }
       ctx.globalAlpha = 1;
       foliage1Canvas.refresh();
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_foliage_1 texture created');
+    } else {
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_foliage_1 texture already exists, skipping');
     }
 
     // Folhagem - Camada 2 (Overlay para profundidade)
     if (!this.scene.textures.exists('forest_foliage_2')) {
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'Creating forest_foliage_2 texture');
       let foliage2Canvas = this.scene.textures.createCanvas('forest_foliage_2', 100, 120)!;
       let ctx = foliage2Canvas.context;
 
@@ -154,10 +184,14 @@ export class ProceduralForestGenerator {
       }
       ctx.globalAlpha = 1;
       foliage2Canvas.refresh();
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_foliage_2 texture created');
+    } else {
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_foliage_2 texture already exists, skipping');
     }
 
     // Sombra (elipse)
     if (!this.scene.textures.exists('forest_shadow')) {
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'Creating forest_shadow texture');
       let shadowCanvas = this.scene.textures.createCanvas('forest_shadow', 80, 24)!;
       let ctx = shadowCanvas.context;
       ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
@@ -165,7 +199,12 @@ export class ProceduralForestGenerator {
       ctx.ellipse(40, 12, 40, 8, 0, 0, Math.PI * 2);
       ctx.fill();
       shadowCanvas.refresh();
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_shadow texture created');
+    } else {
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_shadow texture already exists, skipping');
     }
+
+    logger.info('ProceduralForestGenerator.generateProceduralTextures', 'All procedural textures generated');
   }
 
   /**
@@ -173,20 +212,35 @@ export class ProceduralForestGenerator {
    */
   private renderForestFloor(mapW: number, mapH: number): void {
     const gameScene = this.scene as GameScene;
+    logger.info('ProceduralForestGenerator.renderForestFloor', 'Starting floor rendering', { mapW, mapH });
 
+    if (!gameScene.depthGroup) {
+      logger.error('ProceduralForestGenerator.renderForestFloor', 'depthGroup is not available', {});
+      throw new Error('GameScene.depthGroup is required for forest rendering');
+    }
+
+    let tilesAdded = 0;
     for (let y = 0; y < mapH; y++) {
       for (let x = 0; x < mapW; x++) {
-        const isoX = this.CAMERA_OFFSET_X + (x - y) * (this.TILE_WIDTH / 2);
-        const isoY = this.CAMERA_OFFSET_Y + (x + y) * (this.TILE_HEIGHT / 2);
+        try {
+          const isoX = this.CAMERA_OFFSET_X + (x - y) * (this.TILE_WIDTH / 2);
+          const isoY = this.CAMERA_OFFSET_Y + (x + y) * (this.TILE_HEIGHT / 2);
 
-        let grass = gameScene.add.image(isoX, isoY, 'forest_grass');
-        if ((grass as any).setPipeline) {
-          (grass as any).setPipeline('Light2D');
+          let grass = gameScene.add.image(isoX, isoY, 'forest_grass');
+          if ((grass as any).setPipeline) {
+            (grass as any).setPipeline('Light2D');
+          }
+          grass.setDepth(isoY);
+          gameScene.depthGroup.add(grass);
+          tilesAdded++;
+        } catch (e) {
+          logger.error('ProceduralForestGenerator.renderForestFloor', 'Failed to add grass tile', { x, y, error: String(e) });
+          throw e;
         }
-        grass.setDepth(isoY);
-        gameScene.depthGroup.add(grass);
       }
     }
+
+    logger.info('ProceduralForestGenerator.renderForestFloor', 'Floor rendering complete', { tilesAdded });
   }
 
   /**
@@ -195,6 +249,13 @@ export class ProceduralForestGenerator {
    */
   private generateAndRenderTrees(mapW: number, mapH: number): void {
     const gameScene = this.scene as GameScene;
+    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'Starting tree generation');
+
+    if (!gameScene.depthGroup) {
+      logger.error('ProceduralForestGenerator.generateAndRenderTrees', 'depthGroup is not available', {});
+      throw new Error('GameScene.depthGroup is required for tree rendering');
+    }
+
     const trees: Array<{ x: number; y: number; variant: number }> = [];
 
     // Distribuição procedural de árvores (pseudo-aleatória mas determinística)
@@ -206,8 +267,13 @@ export class ProceduralForestGenerator {
       });
     }
 
+    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'Tree positions generated', { treeCount: trees.length });
+
     // Renderizar cada árvore
+    let treeIndex = 0;
     trees.forEach(tree => {
+      try {
+        treeIndex++;
       const isoX = this.CAMERA_OFFSET_X + (tree.x - tree.y) * (this.TILE_WIDTH / 2);
       const isoY = this.CAMERA_OFFSET_Y + (tree.x + tree.y) * (this.TILE_HEIGHT / 2);
 
@@ -251,6 +317,14 @@ export class ProceduralForestGenerator {
       }
       foliage2.setDepth(isoY - 30);
       gameScene.depthGroup.add(foliage2);
+
+        logger.info('ProceduralForestGenerator.generateAndRenderTrees', `Tree ${treeIndex} rendered`, { x: tree.x, y: tree.y, variant: tree.variant });
+      } catch (e) {
+        logger.error('ProceduralForestGenerator.generateAndRenderTrees', `Failed to render tree ${treeIndex}`, { tree, error: String(e) });
+        throw e;
+      }
     });
+
+    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'All trees rendered successfully', { totalTrees: treeIndex });
   }
 }
