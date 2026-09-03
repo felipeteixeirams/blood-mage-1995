@@ -46,7 +46,7 @@ export class PostFXSystem {
     catacumbas_martires: { saturate: -0.3, hue: 190, brightness: -0.05 },
     santuario_sangue: { saturate: 0.1, hue: -15, brightness: 0.03 },
     safe_house: { saturate: 0.15, hue: 15, brightness: 0.02 },
-    gloomy_woods: { saturate: -0.2, hue: 200, brightness: -0.04 },
+    gloomy_woods: { saturate: 0, hue: 0, brightness: -0.08 },
   };
 
   constructor(scene: Phaser.Scene) {
