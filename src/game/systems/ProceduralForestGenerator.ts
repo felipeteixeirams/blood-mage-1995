@@ -180,7 +180,9 @@ export class ProceduralForestGenerator {
         const isoY = this.CAMERA_OFFSET_Y + (x + y) * (this.TILE_HEIGHT / 2);
 
         let grass = gameScene.add.image(isoX, isoY, 'forest_grass');
-        (grass as any).setPipeline('Light2D');
+        if ((grass as any).setPipeline) {
+          (grass as any).setPipeline('Light2D');
+        }
         grass.setDepth(isoY);
         gameScene.depthGroup.add(grass);
       }
@@ -213,7 +215,9 @@ export class ProceduralForestGenerator {
       let shadow = gameScene.add.image(isoX + 10, isoY + 45, 'forest_shadow');
       shadow.setOrigin(0.5, 0.5);
       shadow.setScale(0.8 + tree.variant * 0.2);
-      (shadow as any).setPipeline('Light2D');
+      if ((shadow as any).setPipeline) {
+        (shadow as any).setPipeline('Light2D');
+      }
       shadow.setDepth(isoY + 40);
       gameScene.depthGroup.add(shadow);
 
@@ -221,7 +225,9 @@ export class ProceduralForestGenerator {
       let trunk = gameScene.add.image(isoX, isoY + 35, 'forest_trunk');
       trunk.setOrigin(0.5, 1);
       trunk.setScale(0.7 + tree.variant * 0.15);
-      (trunk as any).setPipeline('Light2D');
+      if ((trunk as any).setPipeline) {
+        (trunk as any).setPipeline('Light2D');
+      }
       trunk.setDepth(isoY + 35);
       gameScene.depthGroup.add(trunk);
 
@@ -229,7 +235,9 @@ export class ProceduralForestGenerator {
       let foliage1 = gameScene.add.image(isoX, isoY - 25, 'forest_foliage_1');
       foliage1.setOrigin(0.5, 0.6);
       foliage1.setScale(0.8 + tree.variant * 0.2);
-      (foliage1 as any).setPipeline('Light2D');
+      if ((foliage1 as any).setPipeline) {
+        (foliage1 as any).setPipeline('Light2D');
+      }
       foliage1.setDepth(isoY - 20);
       gameScene.depthGroup.add(foliage1);
 
@@ -238,7 +246,9 @@ export class ProceduralForestGenerator {
       foliage2.setOrigin(0.5, 0.6);
       foliage2.setScale(0.7 + tree.variant * 0.15);
       foliage2.setAlpha(0.85);
-      (foliage2 as any).setPipeline('Light2D');
+      if ((foliage2 as any).setPipeline) {
+        (foliage2 as any).setPipeline('Light2D');
+      }
       foliage2.setDepth(isoY - 30);
       gameScene.depthGroup.add(foliage2);
     });
