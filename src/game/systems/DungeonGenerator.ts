@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { BiomeType } from '../../types/game';
 import { SpikeTrap, ExplosiveBarrel } from '../objects/Traps';
 import { HeightmapGenerator, calculateIsometricDepth } from './HeightmapGenerator';
+import { ProceduralForestGenerator } from './ProceduralForestGenerator';
 import type { GameScene } from '../scenes/GameScene';
 
 export interface RoomData {
@@ -61,10 +62,16 @@ export class DungeonGenerator {
   }
 
   public generate(mapW: number, mapH: number, biome: BiomeType = 'fosso_chagas'): RoomData[] {
+    // Spec 10 (27/09/2026): gloomy_woods usa geração procedural de floresta em vez de salas
+    if (biome === 'gloomy_woods') {
+      const forestGen = new ProceduralForestGenerator(this.scene);
+      return forestGen.generate(mapW, mapH);
+    }
+
     const isSafeHouse = biome === 'safe_house';
     const groundTexture = isSafeHouse ? 'tile_wood_floor' : 'tile_ground';
     const tints = BIOME_TINTS[biome] || BIOME_TINTS.fosso_chagas;
-    this.heightGenerator = new HeightmapGenerator(biome === 'gloomy_woods' ? 2026 : 1995);
+    this.heightGenerator = new HeightmapGenerator(1995);
     const heightGen = this.heightGenerator;
 
     const wallTextureKey = this.scene.textures?.exists('spr_wall') ? 'spr_wall' : 'tile_wall_brick';
@@ -279,7 +286,7 @@ export class DungeonGenerator {
       // corpo a corpo contra os scout_beast — armadilhas de área/barril
       // explosivo empilhadas em cima disso é punitivo demais pra quem ainda tá
       // aprendendo o combate corpo a corpo, sem nenhuma magia de escape.
-      if (room.type === 'chamber' && biome !== 'gloomy_woods') {
+      if (room.type === 'chamber') {
         const gameScene = this.scene as GameScene;
 
         // 40% chance of traps
