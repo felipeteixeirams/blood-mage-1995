@@ -179,9 +179,10 @@ export class ProceduralForestGenerator {
         const isoX = this.CAMERA_OFFSET_X + (x - y) * (this.TILE_WIDTH / 2);
         const isoY = this.CAMERA_OFFSET_Y + (x + y) * (this.TILE_HEIGHT / 2);
 
-        let grass = gameScene.depthGroup.create(isoX, isoY, 'forest_grass');
-        grass.setPipeline('Light2D');
-        grass.depth = isoY;
+        let grass = gameScene.add.image(isoX, isoY, 'forest_grass');
+        (grass as any).setPipeline('Light2D');
+        grass.setDepth(isoY);
+        gameScene.depthGroup.add(grass);
       }
     }
   }
@@ -209,33 +210,37 @@ export class ProceduralForestGenerator {
       const isoY = this.CAMERA_OFFSET_Y + (tree.x + tree.y) * (this.TILE_HEIGHT / 2);
 
       // Sombra dinâmica
-      let shadow = gameScene.depthGroup.create(isoX + 10, isoY + 45, 'forest_shadow');
+      let shadow = gameScene.add.image(isoX + 10, isoY + 45, 'forest_shadow');
       shadow.setOrigin(0.5, 0.5);
       shadow.setScale(0.8 + tree.variant * 0.2);
-      shadow.setPipeline('Light2D');
-      shadow.depth = isoY + 40;
+      (shadow as any).setPipeline('Light2D');
+      shadow.setDepth(isoY + 40);
+      gameScene.depthGroup.add(shadow);
 
       // Tronco
-      let trunk = gameScene.depthGroup.create(isoX, isoY + 35, 'forest_trunk');
+      let trunk = gameScene.add.image(isoX, isoY + 35, 'forest_trunk');
       trunk.setOrigin(0.5, 1);
       trunk.setScale(0.7 + tree.variant * 0.15);
-      trunk.setPipeline('Light2D');
-      trunk.depth = isoY + 35;
+      (trunk as any).setPipeline('Light2D');
+      trunk.setDepth(isoY + 35);
+      gameScene.depthGroup.add(trunk);
 
       // Folhagem principal (camada 1)
-      let foliage1 = gameScene.depthGroup.create(isoX, isoY - 25, 'forest_foliage_1');
+      let foliage1 = gameScene.add.image(isoX, isoY - 25, 'forest_foliage_1');
       foliage1.setOrigin(0.5, 0.6);
       foliage1.setScale(0.8 + tree.variant * 0.2);
-      foliage1.setPipeline('Light2D');
-      foliage1.depth = isoY - 20;
+      (foliage1 as any).setPipeline('Light2D');
+      foliage1.setDepth(isoY - 20);
+      gameScene.depthGroup.add(foliage1);
 
       // Folhagem overlay (camada 2, adiciona profundidade)
-      let foliage2 = gameScene.depthGroup.create(isoX - 8, isoY - 35, 'forest_foliage_2');
+      let foliage2 = gameScene.add.image(isoX - 8, isoY - 35, 'forest_foliage_2');
       foliage2.setOrigin(0.5, 0.6);
       foliage2.setScale(0.7 + tree.variant * 0.15);
       foliage2.setAlpha(0.85);
-      foliage2.setPipeline('Light2D');
-      foliage2.depth = isoY - 30;
+      (foliage2 as any).setPipeline('Light2D');
+      foliage2.setDepth(isoY - 30);
+      gameScene.depthGroup.add(foliage2);
     });
   }
 }
