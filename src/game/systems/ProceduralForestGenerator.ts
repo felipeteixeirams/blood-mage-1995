@@ -26,9 +26,23 @@ export class ProceduralForestGenerator {
   /**
    * Gera a floresta procedural. Retorna RoomData[] compatível com
    * o portal system (apenas uma "sala" que é toda a floresta).
+   *
+   * IMPORTANTE: `mapW`/`mapH` chegam aqui em PIXELS de mundo (ex.: 1920x1440,
+   * ver GameScene.ts:228-229) — o mesmo contrato usado por
+   * `DungeonGenerator.generate()`. Um bug anterior tratava esses valores
+   * diretamente como contagem de células de grid isométrico, fazendo
+   * `renderForestFloor` rodar ~2.76 MILHÕES de iterações (1920 * 1440),
+   * cada uma criando um GameObject — o que travava a aba do navegador ao
+   * entrar no portal (sem exceção, sem log — só um loop síncrono gigante
+   * bloqueando a main thread). Convertendo pixels → células de grid aqui
+   * (dividindo pelo tamanho do tile, mesmo padrão de
+   * `DungeonGenerator.generate()` linhas 80-84) resolve isso.
    */
   public generate(mapW: number, mapH: number): RoomData[] {
-    logger.info('ProceduralForestGenerator.generate', 'Starting forest generation', { mapW, mapH });
+    const gridW = Math.max(1, Math.floor(mapW / this.TILE_WIDTH));
+    const gridH = Math.max(1, Math.floor(mapH / this.TILE_HEIGHT));
+
+    logger.info('ProceduralForestGenerator.generate', 'Starting forest generation', { mapW, mapH, gridW, gridH });
     try {
       // Gerar texturas procedurais
       logger.info('ProceduralForestGenerator.generate', 'Generating procedural textures');
@@ -37,29 +51,36 @@ export class ProceduralForestGenerator {
 
       // Renderizar piso de grama
       logger.info('ProceduralForestGenerator.generate', 'Rendering forest floor');
-      this.renderForestFloor(mapW, mapH);
+      this.renderForestFloor(gridW, gridH);
       logger.info('ProceduralForestGenerator.generate', 'Forest floor rendered successfully');
 
       // Gerar e renderizar árvores
       logger.info('ProceduralForestGenerator.generate', 'Rendering trees');
-      this.generateAndRenderTrees(mapW, mapH);
+      this.generateAndRenderTrees(gridW, gridH);
       logger.info('ProceduralForestGenerator.generate', 'Trees rendered successfully');
 
-      // Gerar apenas uma "sala" compatível com o sistema (a floresta inteira)
-      // O portal aparecerá no centro após wave clara
+      // Sala de spawn no CENTRO do grid isométrico renderizado (não no centro
+      // do retângulo mapW x mapH em pixels — são espaços de coordenadas
+      // diferentes; usar mapW/2,mapH/2 diretamente faria o jogador nascer
+      // fora da área onde o piso/árvores foram desenhados).
+      const centerGridX = gridW / 2;
+      const centerGridY = gridH / 2;
+      const centerIsoX = this.CAMERA_OFFSET_X + (centerGridX - centerGridY) * (this.TILE_WIDTH / 2);
+      const centerIsoY = this.CAMERA_OFFSET_Y + (centerGridX + centerGridY) * (this.TILE_HEIGHT / 2);
+
       const rooms: RoomData[] = [
         {
-          x: mapW / 2 - 200,
-          y: mapH / 2 - 200,
+          x: centerIsoX - 200,
+          y: centerIsoY - 200,
           width: 400,
           height: 400,
-          centerX: mapW / 2,
-          centerY: mapH / 2,
+          centerX: centerIsoX,
+          centerY: centerIsoY,
           type: 'spawn'
         }
       ];
 
-      logger.info('ProceduralForestGenerator.generate', 'Forest generation complete', { rooms: rooms.length });
+      logger.info('ProceduralForestGenerator.generate', 'Forest generation complete', { rooms: rooms.length, centerIsoX, centerIsoY });
       return rooms;
     } catch (error) {
       logger.error('ProceduralForestGenerator.generate', 'Forest generation failed', { error: String(error) });
@@ -208,11 +229,13 @@ export class ProceduralForestGenerator {
   }
 
   /**
-   * Renderiza o piso de grama em projeção isométrica
+   * Renderiza o piso de grama em projeção isométrica.
+   * `gridW`/`gridH` são células de grid (já convertidas de pixels em
+   * `generate()`), NÃO dimensões de mundo em pixels.
    */
-  private renderForestFloor(mapW: number, mapH: number): void {
+  private renderForestFloor(gridW: number, gridH: number): void {
     const gameScene = this.scene as GameScene;
-    logger.info('ProceduralForestGenerator.renderForestFloor', 'Starting floor rendering', { mapW, mapH });
+    logger.info('ProceduralForestGenerator.renderForestFloor', 'Starting floor rendering', { gridW, gridH, totalTiles: gridW * gridH });
 
     if (!gameScene.depthGroup) {
       logger.error('ProceduralForestGenerator.renderForestFloor', 'depthGroup is not available', {});
@@ -220,8 +243,8 @@ export class ProceduralForestGenerator {
     }
 
     let tilesAdded = 0;
-    for (let y = 0; y < mapH; y++) {
-      for (let x = 0; x < mapW; x++) {
+    for (let y = 0; y < gridH; y++) {
+      for (let x = 0; x < gridW; x++) {
         try {
           const isoX = this.CAMERA_OFFSET_X + (x - y) * (this.TILE_WIDTH / 2);
           const isoY = this.CAMERA_OFFSET_Y + (x + y) * (this.TILE_HEIGHT / 2);
@@ -244,8 +267,10 @@ export class ProceduralForestGenerator {
   /**
    * Gera árvores proceduralmente e as renderiza com multi-layer foliage
    * e sombras dinâmicas.
+   * `gridW`/`gridH` são células de grid (já convertidas de pixels em
+   * `generate()`), NÃO dimensões de mundo em pixels.
    */
-  private generateAndRenderTrees(mapW: number, mapH: number): void {
+  private generateAndRenderTrees(gridW: number, gridH: number): void {
     const gameScene = this.scene as GameScene;
     logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'Starting tree generation');
 
@@ -257,10 +282,14 @@ export class ProceduralForestGenerator {
     const trees: Array<{ x: number; y: number; variant: number }> = [];
 
     // Distribuição procedural de árvores (pseudo-aleatória mas determinística)
+    // Clamp defensivo: com grids muito pequenos (gridW<=4 ou gridH<=2) o
+    // módulo abaixo ficaria <=0 e travaria em erro de "Division by zero"/NaN.
+    const xSpan = Math.max(1, gridW - 4);
+    const ySpan = Math.max(1, gridH - 2);
     for (let i = 0; i < 24; i++) {
       trees.push({
-        x: 2 + Math.floor(i * 1.3) % (mapW - 4),
-        y: 1 + Math.floor(i / 2.8) % (mapH - 2),
+        x: 2 + Math.floor(i * 1.3) % xSpan,
+        y: 1 + Math.floor(i / 2.8) % ySpan,
         variant: Math.floor(Math.random() * 3)
       });
     }
