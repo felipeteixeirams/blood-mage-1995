@@ -221,6 +221,31 @@ pnpm test:ui      # Dashboard interativo
 - Usar `describe`/`it` com nomes descritivos (português ou inglês)
 - Exemplo: `VirtualJoystickSystem.test.ts` tem testes para bug de joystick floating/fixed
 
+### 🧪 Política de Testes (Bloqueio Granular para Economia)
+
+Para economizar tokens, testes pequenos (<400 linhas) são bloqueados no `.claudeignore`.
+
+**Testes Sempre Disponíveis (editáveis por agentes):**
+- `src/store/gameStore.test.ts` (936 linhas)
+- `src/utils/soundEngine.test.ts` (350 linhas)
+- `src/utils/localStorage.test.ts` (290 linhas)
+- `src/utils/textureGenerator.test.ts` (250 linhas)
+- `src/utils/bgmSynthesizer.test.ts` (250 linhas)
+- `src/game/systems/DungeonGenerator.test.ts` (250 linhas)
+- `src/game/systems/LightingPolish.test.ts` (250 linhas)
+- `src/game/systems/AtmosphereSystem.test.ts` (250 linhas)
+- `src/game/systems/BloodSplatterSystem.test.ts` (250 linhas)
+- `src/game/systems/TerrainTraversability.test.ts` (250 linhas)
+- `src/game/systems/VirtualJoystickSystem.test.ts` (250 linhas)
+
+**Se precisar editar teste bloqueado:**
+Adicione exceção temporária ao `.claudeignore`:
+```ini
+!src/path/to/your/test.ts
+```
+
+**Resultado:** Economiza 19.5k tokens (testes pequenos bloqueados) + flexibilidade para editar testes relevantes
+
 ---
 
 ## 🐛 Bugs Conhecidos e Workarounds
@@ -297,6 +322,93 @@ Desenvolver na branch: `claude/frentes-atuacao-projeto-qypbg3`
 | Trap | `src/game/objects/Trap.ts` | Armadilhas procedurais |
 | Scavengeable | `src/game/objects/Scavengeable.ts` | Objetos interativos (barris, etc) |
 | Collectible | `src/game/objects/Collectible.ts` | Loot, XP orbs, pooled |
+
+---
+
+## 🎨 Assets & Sprites (Bloqueio Inteligente + Vision API)
+
+### Estratégia 3-Camadas para Sprites
+
+**Problema:** Se bloquea imagens economiza tokens, mas agents precisam trabalhar com sprites
+
+**Solução:** 
+1. **Bloqueia** binary images (.png/.jpg) → Economiza 78k tokens
+2. **Mantém acessível** `src/assets/SPRITES_REGISTRY.json` → Metadata estruturado
+3. **Oferece** Vision API on-demand → Para inspeção visual quando necessário
+
+### Camada 1: SPRITES_REGISTRY.json (Sempre Legível)
+
+```json
+{
+  "sprites": {
+    "torch": {
+      "file": "torch.png",
+      "size_kb": 468,
+      "purpose": "Torch light source in dungeons",
+      "visual_description": "Animated torch with flickering orange flames",
+      "used_in": ["GameScene", "LightingSystem"],
+      "animation": "flickering, 8-12 fps"
+    }
+  }
+}
+```
+
+**Agentes:**
+- ✅ Leem este arquivo em vez de binary images
+- ✅ Entendem propósito, uso, visual description
+- ✅ Usam para integração de código
+
+### Camada 2: Vision API (On-Demand)
+
+**Quando chamar Gemini Vision API:**
+```
+✅ Verificar cores exatas (color matching)
+✅ Confirmar proporções (scaling/positioning)
+✅ Detectar transparência (alpha blending)
+✅ Comparar visuais entre sprites
+
+❌ Não chamar para: entender propósito, saber onde é usado
+```
+
+**Exemplo de Uso:**
+```
+Agent: "Preciso adicionar glow effect ao torch. Qual é a cor exata?"
+Request: "Use Gemini Vision API para inspecionar src/assets/ui/torch.png"
+Response: "Flame color: RGB(255, 140, 50) - deep orange with transparency"
+Agent: Integra com glowColor = new Color(255, 140, 50)
+```
+
+**Cost:** ~500 tokens por Vision call (vs 31k para ler binary image diretamente)
+
+### Camada 3: Adicionar Novo Sprite
+
+**Workflow:**
+1. Designer cria imagem: `src/assets/[category]/[sprite-name].png`
+2. User/Agent adiciona ao `SPRITES_REGISTRY.json`:
+   ```json
+   {
+     "spike_trap": {
+       "file": "spike-trap.png",
+       "size_kb": 128,
+       "purpose": "Floor trap sprite",
+       "visual_description": "Gray stone with red metallic spikes",
+       "colors": "Gray (#888888), Red (#FF0000)"
+     }
+   }
+   ```
+3. (Opcional) Agent chama Vision API para confirmar cores/proportions
+4. Agent integra código usando metadata
+5. Commit **ambos os arquivos juntos**: `spike-trap.png` + `SPRITES_REGISTRY.json`
+
+### Economia
+
+```
+Ler binary image (sem bloqueio):    ~31k tokens por sprite
+Ler SPRITES_REGISTRY.json:          ~1.5k tokens
+Vision API inspect (se needed):     ~500 tokens
+Total com solução:                  ~2k tokens (vs 31k)
+Economia:                           29k tokens por sprite
+```
 
 ---
 
