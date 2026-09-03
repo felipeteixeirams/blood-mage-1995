@@ -75,7 +75,16 @@ workspace.json
 test-results/
 jest-coverage/
 
-# 🚫 ASSETS MUITO GRANDES (binários, imagens >5MB)
+# 🚫 ASSETS BINÁRIOS (imagens 78k tokens economizados, leia SPRITES_REGISTRY.json em vez disso)
+src/assets/**/*.png
+src/assets/**/*.jpg
+src/assets/**/*.jpeg
+src/assets/**/*.gif
+
+# ✅ EXCEÇÃO: SPRITES_REGISTRY.json (metadata essencial para agent context)
+!src/assets/SPRITES_REGISTRY.json
+
+# 🚫 OUTROS ASSETS MUITO GRANDES
 **/*.mp4
 **/*.mov
 **/*.avi
