@@ -93,6 +93,47 @@ docs/experiments/**               # Experimentos obsoletos (12K)
 docs/product/**                   # Roadmap/business (32K, desbloquear se necessário)
 docs/specs/discovery/**           # Specs especulativas futuras (2K linhas, não ativas)
 
+# 🚫 TEST FILES PEQUENOS (bloqueio granular: <400 linhas = raramente editados = -19.5k tokens)
+# Testes GRANDES (editados frequentemente) são mantidos via exceções abaixo
+src/game/objects/**/*.test.ts
+src/game/animations/**/*.test.ts
+src/game/assets/**/*.test.ts
+src/hooks/**/*.test.ts
+src/utils/equipmentPalette.test.ts
+src/utils/joystickResponse.test.ts
+src/utils/logger.test.ts
+
+# 🟡 TESTES MÉDIOS (ocasionalmente editados: 200-300 linhas = -12k tokens)
+src/game/systems/CombatFeel.test.ts
+src/game/systems/CodexSystem.test.ts
+src/game/systems/ContractSystem.test.ts
+src/game/systems/DismembermentSystem.test.ts
+src/game/systems/EnemyTelegraphSystem.test.ts
+src/game/systems/HeightmapGenerator.test.ts
+src/game/systems/InputManager.test.ts
+src/game/systems/ObjectPool.test.ts
+src/game/systems/OnboardingFlow.test.ts
+src/game/systems/PerformanceMonitor.test.ts
+src/game/systems/PostFXSystem.test.ts
+src/game/systems/ReflectionSystem.test.ts
+src/game/systems/RelicSystem.test.ts
+src/game/systems/ShadowSystem.test.ts
+src/game/systems/StatusEffectSystem.test.ts
+src/game/systems/ViewportCuller.test.ts
+
+# ✅ EXCEÇÕES: TESTES GRANDES (editados frequentemente, mantém flexibilidade)
+!src/store/gameStore.test.ts                          # 936 linhas (frequente)
+!src/utils/soundEngine.test.ts                        # 350 linhas (ocasional)
+!src/utils/localStorage.test.ts                       # 290 linhas (ocasional)
+!src/utils/textureGenerator.test.ts                   # 250 linhas (ocasional)
+!src/utils/bgmSynthesizer.test.ts                     # 250 linhas (ocasional)
+!src/game/systems/DungeonGenerator.test.ts            # 250 linhas (ocasional)
+!src/game/systems/LightingPolish.test.ts              # 250 linhas (ocasional)
+!src/game/systems/AtmosphereSystem.test.ts            # 250 linhas (ocasional)
+!src/game/systems/BloodSplatterSystem.test.ts         # 250 linhas (ocasional)
+!src/game/systems/TerrainTraversability.test.ts       # 250 linhas (ocasional)
+!src/game/systems/VirtualJoystickSystem.test.ts       # 250 linhas (ocasional)
+
 # ✅ EXCEÇÕES (sempre incluir — essencial para agentes)
 !CLAUDE.md
 !.claude/

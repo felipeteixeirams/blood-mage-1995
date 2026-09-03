@@ -221,6 +221,31 @@ pnpm test:ui      # Dashboard interativo
 - Usar `describe`/`it` com nomes descritivos (português ou inglês)
 - Exemplo: `VirtualJoystickSystem.test.ts` tem testes para bug de joystick floating/fixed
 
+### 🧪 Política de Testes (Bloqueio Granular para Economia)
+
+Para economizar tokens, testes pequenos (<400 linhas) são bloqueados no `.claudeignore`.
+
+**Testes Sempre Disponíveis (editáveis por agentes):**
+- `src/store/gameStore.test.ts` (936 linhas)
+- `src/utils/soundEngine.test.ts` (350 linhas)
+- `src/utils/localStorage.test.ts` (290 linhas)
+- `src/utils/textureGenerator.test.ts` (250 linhas)
+- `src/utils/bgmSynthesizer.test.ts` (250 linhas)
+- `src/game/systems/DungeonGenerator.test.ts` (250 linhas)
+- `src/game/systems/LightingPolish.test.ts` (250 linhas)
+- `src/game/systems/AtmosphereSystem.test.ts` (250 linhas)
+- `src/game/systems/BloodSplatterSystem.test.ts` (250 linhas)
+- `src/game/systems/TerrainTraversability.test.ts` (250 linhas)
+- `src/game/systems/VirtualJoystickSystem.test.ts` (250 linhas)
+
+**Se precisar editar teste bloqueado:**
+Adicione exceção temporária ao `.claudeignore`:
+```ini
+!src/path/to/your/test.ts
+```
+
+**Resultado:** Economiza 19.5k tokens (testes pequenos bloqueados) + flexibilidade para editar testes relevantes
+
 ---
 
 ## 🐛 Bugs Conhecidos e Workarounds
