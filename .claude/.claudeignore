@@ -1,5 +1,6 @@
 # .claudeignore — Exclui arquivos desnecessários para economizar tokens
 # Pattern: similar a .gitignore, mas para ferramentas Claude Code
+# Auditoria: 77% de economia possível bloqueando docs/ obsoleto
 
 # 🚫 DEPENDÊNCIAS & BUILD
 node_modules/
@@ -85,9 +86,21 @@ jest-coverage/
 public/audio_samples/*.wav
 public/audio_samples/*.mp3
 
-# ✅ EXCEÇÕES (sempre incluir)
+# 🚫 DOCUMENTAÇÃO ARQUIVADA & OBSOLETA (-150k tokens, 77% redução de docs)
+docs/archive/**                   # Histórico, decisões antigas (1.2M, 43 files)
+docs/reviews/**                   # Revisões passadas (28K, não aplicável)
+docs/experiments/**               # Experimentos obsoletos (12K)
+docs/product/**                   # Roadmap/business (32K, desbloquear se necessário)
+docs/specs/discovery/**           # Specs especulativas futuras (2K linhas, não ativas)
+
+# ✅ EXCEÇÕES (sempre incluir — essencial para agentes)
 !CLAUDE.md
 !.claude/
 !.claude/**/*.md
 !.claude/**/*.json
+!docs/critical/**                 # Anti-regressão (LEIA SEMPRE)
+!docs/architecture/**             # Padrões obrigatórios (LEIA SEMPRE)
+!docs/specs/in-progress/**        # Specs ativas (LEIA)
+!docs/specs/delivered/**          # Specs completadas (LEIA)
+!docs/specs/backlog/**            # Próximas tarefas (LEIA)
 !
