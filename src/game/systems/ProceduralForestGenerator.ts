@@ -144,30 +144,30 @@ export class ProceduralForestGenerator {
     // ========== TRONCO com Silhueta Forte e Textura Sutil ==========
     if (!this.scene.textures.exists('forest_trunk')) {
       logger.info('ProceduralForestGenerator.generateProceduralTextures', 'Creating forest_trunk texture');
-      let trunkCanvas = this.scene.textures.createCanvas('forest_trunk', 48, 120)!;
+      let trunkCanvas = this.scene.textures.createCanvas('forest_trunk', 32, 80)!;
       let ctx = trunkCanvas.context;
 
-      // Base: cor principal de tronco (marrom médio)
+      // Base: cor principal de tronco (marrom médio) - REDUZIDO
       ctx.fillStyle = '#6d4c41';
-      ctx.fillRect(0, 0, 48, 120);
+      ctx.fillRect(0, 0, 32, 80);
 
       // Sombreamento lateral (mais escuro nos lados para profundidade)
-      const leftGrad = ctx.createLinearGradient(0, 0, 24, 0);
+      const leftGrad = ctx.createLinearGradient(0, 0, 16, 0);
       leftGrad.addColorStop(0, 'rgba(78, 52, 46, 0.3)'); // Mais escuro na esquerda
       leftGrad.addColorStop(1, 'transparent');
       ctx.fillStyle = leftGrad;
-      ctx.fillRect(0, 0, 24, 120);
+      ctx.fillRect(0, 0, 16, 80);
 
-      const rightGrad = ctx.createLinearGradient(24, 0, 48, 0);
+      const rightGrad = ctx.createLinearGradient(16, 0, 32, 0);
       rightGrad.addColorStop(0, 'transparent');
       rightGrad.addColorStop(1, 'rgba(93, 64, 55, 0.2)'); // Levemente escuro na direita
       ctx.fillStyle = rightGrad;
-      ctx.fillRect(24, 0, 24, 120);
+      ctx.fillRect(16, 0, 16, 80);
 
       // Textura de casca com Bayer dithering (não aleatório)
       const barkBayer = [[0, 2], [3, 1]];
-      for (let y = 0; y < 120; y++) {
-        for (let x = 0; x < 48; x++) {
+      for (let y = 0; y < 80; y++) {
+        for (let x = 0; x < 32; x++) {
           const bayerVal = barkBayer[y % 2][x % 2];
           if (bayerVal === 3) {
             ctx.fillStyle = 'rgba(93, 64, 55, 0.5)'; // Mais escuro
@@ -183,7 +183,7 @@ export class ProceduralForestGenerator {
       // Contorno escuro nas bordas (silhueta forte)
       ctx.strokeStyle = 'rgba(62, 39, 35, 0.6)';
       ctx.lineWidth = 1;
-      ctx.strokeRect(0, 0, 48, 120);
+      ctx.strokeRect(0, 0, 32, 80);
 
       trunkCanvas.refresh();
       logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_trunk texture created with strong silhouette');
@@ -194,7 +194,7 @@ export class ProceduralForestGenerator {
     // ========== FOLHAGEM - Camada 1 (Principal) com Profundidade ==========
     if (!this.scene.textures.exists('forest_foliage_1')) {
       logger.info('ProceduralForestGenerator.generateProceduralTextures', 'Creating forest_foliage_1 texture');
-      let foliage1Canvas = this.scene.textures.createCanvas('forest_foliage_1', 140, 160)!;
+      let foliage1Canvas = this.scene.textures.createCanvas('forest_foliage_1', 70, 80)!;
       let ctx = foliage1Canvas.context;
 
       // Cores de folhagem profissional (4 tons)
@@ -203,30 +203,30 @@ export class ProceduralForestGenerator {
       const foliageDark = '#7cb342';    // Escuro
       const foliageShadow = '#558b2f';  // Sombra (base)
 
-      // Elipse radial: centro claro, borda escura (mais realista)
-      let foliageGrad = ctx.createRadialGradient(70, 60, 15, 70, 80, 85);
+      // Elipse radial: centro claro, borda escura (mais realista) - REDUZIDO pela metade
+      let foliageGrad = ctx.createRadialGradient(35, 30, 8, 35, 40, 42);
       foliageGrad.addColorStop(0, foliageLight);   // Centro iluminado
       foliageGrad.addColorStop(0.4, foliageMid);
       foliageGrad.addColorStop(0.8, foliageDark);
       foliageGrad.addColorStop(1, foliageShadow);  // Borda na sombra
       ctx.fillStyle = foliageGrad;
       ctx.beginPath();
-      ctx.ellipse(70, 70, 65, 80, -0.2, 0, Math.PI * 2); // Ângulo leve
+      ctx.ellipse(35, 35, 32, 40, -0.2, 0, Math.PI * 2); // Ângulo leve
       ctx.fill();
 
       // Contorno escuro (silhueta forte)
       ctx.strokeStyle = 'rgba(85, 139, 47, 0.6)';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.ellipse(70, 70, 65, 80, -0.2, 0, Math.PI * 2);
+      ctx.ellipse(35, 35, 32, 40, -0.2, 0, Math.PI * 2);
       ctx.stroke();
 
       // Detalhe de folhas com Bayer dithering (não aleatório)
       const leafBayer = [[0, 2], [3, 1]];
-      for (let y = 10; y < 150; y++) {
-        for (let x = 30; x < 110; x++) {
+      for (let y = 5; y < 75; y++) {
+        for (let x = 15; x < 55; x++) {
           const bayerVal = leafBayer[y % 2][x % 2];
-          const inEllipse = this.isInEllipse(x, y, 70, 70, 65, 80, -0.2);
+          const inEllipse = this.isInEllipse(x, y, 35, 35, 32, 40, -0.2);
 
           if (inEllipse) {
             if (bayerVal === 3) {
@@ -241,7 +241,7 @@ export class ProceduralForestGenerator {
       }
 
       foliage1Canvas.refresh();
-      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_foliage_1 texture created with professional dithering');
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_foliage_1 texture created (70x80 - reduzido)');
     } else {
       logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_foliage_1 texture already exists, skipping');
     }
@@ -249,38 +249,38 @@ export class ProceduralForestGenerator {
     // ========== FOLHAGEM - Camada 2 (Overlay para profundidade) ==========
     if (!this.scene.textures.exists('forest_foliage_2')) {
       logger.info('ProceduralForestGenerator.generateProceduralTextures', 'Creating forest_foliage_2 texture');
-      let foliage2Canvas = this.scene.textures.createCanvas('forest_foliage_2', 100, 120)!;
+      let foliage2Canvas = this.scene.textures.createCanvas('forest_foliage_2', 50, 60)!;
       let ctx = foliage2Canvas.context;
 
       const foliageLight2 = '#a8d954';
       const foliageMid2 = '#8bc34a';
       const foliageDark2 = '#7cb342';
 
-      // Gradiente radial mais compacto (camada frontal)
-      let foliageGrad2 = ctx.createRadialGradient(50, 45, 8, 50, 50, 58);
+      // Gradiente radial mais compacto (camada frontal) - REDUZIDO pela metade
+      let foliageGrad2 = ctx.createRadialGradient(25, 22, 4, 25, 25, 29);
       foliageGrad2.addColorStop(0, foliageLight2);
       foliageGrad2.addColorStop(0.5, foliageMid2);
       foliageGrad2.addColorStop(1, foliageDark2);
       ctx.fillStyle = foliageGrad2;
       ctx.beginPath();
-      ctx.ellipse(50, 45, 50, 60, -0.3, 0, Math.PI * 2);
+      ctx.ellipse(25, 22, 25, 30, -0.3, 0, Math.PI * 2);
       ctx.fill();
 
       // Contorno (silhueta)
       ctx.strokeStyle = 'rgba(122, 179, 66, 0.5)';
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.ellipse(50, 45, 50, 60, -0.3, 0, Math.PI * 2);
+      ctx.ellipse(25, 22, 25, 30, -0.3, 0, Math.PI * 2);
       ctx.stroke();
 
       // Pontos de luz sugestivos (highlight para volume)
       ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
       ctx.beginPath();
-      ctx.arc(35, 30, 8, 0, Math.PI * 2); // Topo esquerdo
+      ctx.arc(18, 15, 4, 0, Math.PI * 2); // Topo esquerdo
       ctx.fill();
 
       foliage2Canvas.refresh();
-      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_foliage_2 texture created with highlights');
+      logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_foliage_2 texture created (50x60 - reduzido)');
     } else {
       logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_foliage_2 texture already exists, skipping');
     }
@@ -416,40 +416,40 @@ export class ProceduralForestGenerator {
       const isoY = this.CAMERA_OFFSET_Y + (tree.x + tree.y) * (this.TILE_HEIGHT / 2);
 
       // Proporções realistas: escala controlada para coesão visual
-      // 0.7 - 1.0 em vez de 0.6 - 1.2 (Grounded pattern)
-      const scaleBase = 0.75 + tree.variant * 0.15; // 0.75, 0.90, 1.05 max
+      // Reduzido: texturas são metade do tamanho, então usamos 0.5-0.7 (não 0.75-1.05)
+      const scaleBase = 0.50 + tree.variant * 0.1; // 0.50, 0.60, 0.70 max
 
       // Sombra dinâmica (consistente com tamanho da árvore)
-      let shadow = gameScene.add.image(isoX + 10, isoY + 45, 'forest_shadow');
+      let shadow = gameScene.add.image(isoX + 10, isoY + 25, 'forest_shadow');
       shadow.setOrigin(0.5, 0.5);
-      shadow.setScale(scaleBase * 0.95); // Sombra levemente menor
+      shadow.setScale(scaleBase * 0.9); // Sombra levemente menor
       gameScene.lightingSystem?.applyLightPipeline(shadow);
-      shadow.setDepth(isoY + 40);
+      shadow.setDepth(isoY - 5); // Depth menor que tronco
       gameScene.depthGroup.add(shadow);
 
       // Tronco (silhueta deve ser reconhecível)
-      let trunk = gameScene.add.image(isoX, isoY + 35, 'forest_trunk');
+      let trunk = gameScene.add.image(isoX, isoY + 20, 'forest_trunk');
       trunk.setOrigin(0.5, 1);
-      trunk.setScale(scaleBase);
+      trunk.setScale(scaleBase * 1.2); // Tronco um pouco maior
       gameScene.lightingSystem?.applyLightPipeline(trunk);
-      trunk.setDepth(isoY + 35);
+      trunk.setDepth(isoY); // Depth ajustado
       gameScene.depthGroup.add(trunk);
 
       // Folhagem principal (camada 1) - o mais importante visualmente
-      let foliage1 = gameScene.add.image(isoX, isoY - 25, 'forest_foliage_1');
+      let foliage1 = gameScene.add.image(isoX, isoY - 15, 'forest_foliage_1');
       foliage1.setOrigin(0.5, 0.6);
-      foliage1.setScale(scaleBase * 1.1); // Folhagem um pouco maior que tronco
+      foliage1.setScale(scaleBase * 1.3); // Folhagem um pouco maior que tronco
       gameScene.lightingSystem?.applyLightPipeline(foliage1);
-      foliage1.setDepth(isoY - 20);
+      foliage1.setDepth(isoY + 5); // Depth maior que tronco (na frente)
       gameScene.depthGroup.add(foliage1);
 
       // Folhagem overlay (camada 2, adiciona profundidade profissional)
-      let foliage2 = gameScene.add.image(isoX - 8, isoY - 35, 'forest_foliage_2');
+      let foliage2 = gameScene.add.image(isoX - 5, isoY - 25, 'forest_foliage_2');
       foliage2.setOrigin(0.5, 0.6);
-      foliage2.setScale(scaleBase * 0.85); // Levemente menor (cria profundidade)
-      foliage2.setAlpha(0.9); // Mais opaco que antes (0.85 → 0.9)
+      foliage2.setScale(scaleBase * 1.1); // Overlay com escala boa
+      foliage2.setAlpha(0.85); // Levemente transparente
       gameScene.lightingSystem?.applyLightPipeline(foliage2);
-      foliage2.setDepth(isoY - 30);
+      foliage2.setDepth(isoY + 10); // Depth máximo (muito na frente)
       gameScene.depthGroup.add(foliage2);
 
         logger.info('ProceduralForestGenerator.generateAndRenderTrees', `Tree ${treeIndex} rendered`, { x: tree.x, y: tree.y, variant: tree.variant });
