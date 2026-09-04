@@ -133,7 +133,7 @@ export function queueAssetLoading(
         });
       } else {
         metrics.failedPlannedKeys.push(fileObj.key);
-        logger.warn('ASSET_LOADER', `Asset físico ainda não produzido: [${fileObj.key}] em '${fileObj.url}'. Fallback procedural ativado (esperado nesta fase).`, {
+        logger.debug('ASSET_LOADER', `Asset físico ainda não produzido: [${fileObj.key}] em '${fileObj.url}'. Fallback procedural ativado (esperado nesta fase).`, {
           key: fileObj.key,
           url: fileObj.url,
         });
