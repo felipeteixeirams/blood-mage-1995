@@ -85,9 +85,10 @@ export class ProceduralForestGenerator {
       logger.info('ProceduralForestGenerator.generate', 'Textures generated successfully');
 
       // Renderizar piso de grama
-      logger.info('ProceduralForestGenerator.generate', 'Rendering forest floor');
-      this.renderForestFloor(gridW, gridH);
-      logger.info('ProceduralForestGenerator.generate', 'Forest floor rendered successfully');
+      // DEBUG: Comentado para debugar renderização de árvores
+      // logger.info('ProceduralForestGenerator.generate', 'Rendering forest floor');
+      // this.renderForestFloor(gridW, gridH);
+      // logger.info('ProceduralForestGenerator.generate', 'Forest floor rendered successfully');
 
       // Gerar e renderizar árvores
       logger.info('ProceduralForestGenerator.generate', 'Rendering trees');
