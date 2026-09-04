@@ -546,14 +546,129 @@ export class ProceduralForestGenerator {
   }
 
   /**
-   * Gera árvores proceduralmente e as renderiza com multi-layer foliage
-   * e sombras dinâmicas.
+   * Desenha uma árvore procedural avançada usando a API de Graphics do Phaser,
+   * aplicando ramificação fractal (L-system simplificado) com ângulos variados,
+   * paleta de cores degradê escura estilo pixel-art gótico (Diablo 2)
+   * e aglomerados densos de folhas texturizadas com ruído matemático (pontilhados).
+   */
+  private drawProceduralFractalTree(scene: Phaser.Scene, isoX: number, isoY: number, seed: number): Phaser.GameObjects.Graphics {
+    const graphics = scene.add.graphics();
+    graphics.setDepth(isoY + 5);
+
+    // 1. Sombra da árvore no chão (elipse escura gótica)
+    graphics.fillStyle(0x0a0c08, 0.65);
+    graphics.fillEllipse(isoX, isoY + 12, 48, 20);
+
+    // 2. Cores da paleta gótica (Diablo 2 gloomy woods)
+    const trunkColors = [
+      0x2c1d11, // Carvão/marrom escuro
+      0x3d2817, // Marrom carcomido
+      0x4e3522  // Madeira envelhecida
+    ];
+    
+    const foliageColors = [
+      0x1b3b2b, // Musgo profundo gótico
+      0x234e3b, // Verde sombrio
+      0x2d5a3f, // Pinheiro escuro
+      0x1f3630, // Sombra profunda de folhagem
+      0x362432  // Tom murcho gótico
+    ];
+
+    let rngState = seed;
+    const pseudoRandom = (): number => {
+      rngState = (rngState * 9301 + 49297) % 233280;
+      return rngState / 233280;
+    };
+
+    const drawBranch = (
+      startX: number,
+      startY: number,
+      length: number,
+      angle: number,
+      depth: number,
+      thickness: number
+    ): void => {
+      if (depth <= 0 || length < 4) {
+        const clusterSize = 14 + pseudoRandom() * 12;
+        const dotCount = 18 + Math.floor(pseudoRandom() * 12);
+
+        for (let i = 0; i < dotCount; i++) {
+          const offsetX = (pseudoRandom() - 0.5) * clusterSize * 1.5;
+          const offsetY = (pseudoRandom() - 0.5) * clusterSize * 1.2;
+          const distFromCenter = Math.hypot(offsetX, offsetY);
+
+          if (distFromCenter <= clusterSize * 0.8) {
+            const noiseVal = this.noise(startX + offsetX, startY + offsetY);
+            const colorIdx = Math.floor((noiseVal * 0.99) * foliageColors.length);
+            const dotColor = foliageColors[Math.min(foliageColors.length - 1, Math.max(0, colorIdx))];
+            
+            graphics.fillStyle(dotColor, 0.85 + noiseVal * 0.15);
+            const dotSize = 2 + (i % 3);
+            graphics.fillRect(startX + offsetX, startY + offsetY, dotSize, dotSize);
+          }
+        }
+        return;
+      }
+
+      const endX = startX + Math.cos(angle) * length;
+      const endY = startY + Math.sin(angle) * length;
+
+      const colorIndex = Math.min(trunkColors.length - 1, depth - 1);
+      graphics.lineStyle(Math.max(1, thickness), trunkColors[colorIndex], 1);
+      graphics.beginPath();
+      graphics.moveTo(startX, startY);
+      graphics.lineTo(endX, endY);
+      graphics.strokePath();
+
+      const branchCount = (depth > 2 && pseudoRandom() > 0.4) ? 3 : 2;
+      const angleSpread = 0.45 + pseudoRandom() * 0.25;
+
+      for (let b = 0; b < branchCount; b++) {
+        const offsetAngle = (b - (branchCount - 1) / 2) * angleSpread + (pseudoRandom() - 0.5) * 0.2;
+        const nextAngle = angle + offsetAngle;
+        const nextLength = length * (0.68 + pseudoRandom() * 0.15);
+        const nextThickness = Math.max(1, thickness * 0.65);
+
+        drawBranch(endX, endY, nextLength, nextAngle, depth - 1, nextThickness);
+      }
+    };
+
+    const trunkBaseX = isoX;
+    const trunkBaseY = isoY + 25;
+    const initialLength = 42 + (seed % 12);
+    const initialThickness = 6;
+
+    graphics.lineStyle(initialThickness, trunkColors[0], 1);
+    graphics.beginPath();
+    graphics.moveTo(trunkBaseX, trunkBaseY);
+    graphics.lineTo(trunkBaseX, trunkBaseY - initialLength * 0.5);
+    graphics.strokePath();
+
+    drawBranch(
+      trunkBaseX,
+      trunkBaseY - initialLength * 0.5,
+      initialLength * 0.6,
+      -Math.PI / 2 + (pseudoRandom() - 0.5) * 0.15,
+      4,
+      initialThickness * 0.75
+    );
+
+    const gameScene = scene as GameScene;
+    if (gameScene.lightingSystem) {
+      gameScene.lightingSystem.applyLightPipeline(graphics);
+    }
+
+    return graphics;
+  }
+
+  /**
+   * Gera árvores proceduralmente e as renderiza usando a nova função fractal avançada com Graphics API.
    * `gridW`/`gridH` são células de grid (já convertidas de pixels em
    * `generate()`), NÃO dimensões de mundo em pixels.
    */
   private generateAndRenderTrees(gridW: number, gridH: number): void {
     const gameScene = this.scene as GameScene;
-    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'Starting tree generation');
+    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'Starting procedural fractal tree generation');
 
     if (!gameScene.depthGroup) {
       logger.error('ProceduralForestGenerator.generateAndRenderTrees', 'depthGroup is not available', {});
@@ -562,9 +677,6 @@ export class ProceduralForestGenerator {
 
     const trees: Array<{ x: number; y: number; variant: number }> = [];
 
-    // Distribuição procedural de árvores (pseudo-aleatória mas determinística)
-    // Clamp defensivo: com grids muito pequenos (gridW<=4 ou gridH<=2) o
-    // módulo abaixo ficaria <=0 e travaria em erro de "Division by zero"/NaN.
     const xSpan = Math.max(1, gridW - 4);
     const ySpan = Math.max(1, gridH - 2);
     for (let i = 0; i < 24; i++) {
@@ -577,58 +689,24 @@ export class ProceduralForestGenerator {
 
     logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'Tree positions generated', { treeCount: trees.length });
 
-    // Renderizar cada árvore
     let treeIndex = 0;
     trees.forEach(tree => {
       try {
         treeIndex++;
-      const isoX = this.CAMERA_OFFSET_X + (tree.x - tree.y) * (this.TILE_WIDTH / 2);
-      const isoY = this.CAMERA_OFFSET_Y + (tree.x + tree.y) * (this.TILE_HEIGHT / 2);
+        const isoX = this.CAMERA_OFFSET_X + (tree.x - tree.y) * (this.TILE_WIDTH / 2);
+        const isoY = this.CAMERA_OFFSET_Y + (tree.x + tree.y) * (this.TILE_HEIGHT / 2);
 
-      // Proporções realistas: escala controlada para coesão visual
-      // Reduzido: texturas são metade do tamanho, então usamos 0.5-0.7 (não 0.75-1.05)
-      const scaleBase = 0.50 + tree.variant * 0.1; // 0.50, 0.60, 0.70 max
+        const seed = tree.x * 73 + tree.y * 31 + tree.variant * 101;
+        const treeGraphics = this.drawProceduralFractalTree(gameScene, isoX, isoY, seed);
+        gameScene.depthGroup.add(treeGraphics);
 
-      // Sombra dinâmica (consistente com tamanho da árvore)
-      let shadow = gameScene.add.image(isoX + 10, isoY + 25, 'forest_shadow');
-      shadow.setOrigin(0.5, 0.5);
-      shadow.setScale(scaleBase * 0.9); // Sombra levemente menor
-      gameScene.lightingSystem?.applyLightPipeline(shadow);
-      shadow.setDepth(isoY - 5); // Depth menor que tronco
-      gameScene.depthGroup.add(shadow);
-
-      // Tronco (silhueta deve ser reconhecível)
-      let trunk = gameScene.add.image(isoX, isoY + 20, 'forest_trunk');
-      trunk.setOrigin(0.5, 1);
-      trunk.setScale(scaleBase * 1.2); // Tronco um pouco maior
-      gameScene.lightingSystem?.applyLightPipeline(trunk);
-      trunk.setDepth(isoY); // Depth ajustado
-      gameScene.depthGroup.add(trunk);
-
-      // Folhagem principal (camada 1) - o mais importante visualmente
-      let foliage1 = gameScene.add.image(isoX, isoY - 15, 'forest_foliage_1');
-      foliage1.setOrigin(0.5, 0.6);
-      foliage1.setScale(scaleBase * 1.3); // Folhagem um pouco maior que tronco
-      gameScene.lightingSystem?.applyLightPipeline(foliage1);
-      foliage1.setDepth(isoY + 5); // Depth maior que tronco (na frente)
-      gameScene.depthGroup.add(foliage1);
-
-      // Folhagem overlay (camada 2, adiciona profundidade profissional)
-      let foliage2 = gameScene.add.image(isoX - 5, isoY - 25, 'forest_foliage_2');
-      foliage2.setOrigin(0.5, 0.6);
-      foliage2.setScale(scaleBase * 1.1); // Overlay com escala boa
-      foliage2.setAlpha(0.85); // Levemente transparente
-      gameScene.lightingSystem?.applyLightPipeline(foliage2);
-      foliage2.setDepth(isoY + 10); // Depth máximo (muito na frente)
-      gameScene.depthGroup.add(foliage2);
-
-        logger.info('ProceduralForestGenerator.generateAndRenderTrees', `Tree ${treeIndex} rendered`, { x: tree.x, y: tree.y, variant: tree.variant });
+        logger.info('ProceduralForestGenerator.generateAndRenderTrees', `Fractal Tree ${treeIndex} rendered`, { x: tree.x, y: tree.y, variant: tree.variant });
       } catch (e) {
         logger.error('ProceduralForestGenerator.generateAndRenderTrees', `Failed to render tree ${treeIndex}`, { tree, error: String(e) });
         throw e;
       }
     });
 
-    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'All trees rendered successfully', { totalTrees: treeIndex });
+    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'All procedural fractal trees rendered successfully', { totalTrees: treeIndex });
   }
 }
