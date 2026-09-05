@@ -120,14 +120,21 @@ describe('ProceduralForestGenerator', () => {
     expect(grassImages).toHaveLength(30 * 45);
   });
 
-  it('cria todas as texturas procedurais esperadas (piso, tronco, folhagem, sombra, luz e árvores)', () => {
+  it('cria todas as texturas procedurais esperadas (piso, tronco-fallback, luz e árvores)', () => {
     const gen = new ProceduralForestGenerator(mock.scene);
     gen.generate(1920, 1440);
 
-    ['forest_grass', 'forest_trunk', 'forest_foliage_1', 'forest_foliage_2', 'forest_shadow', 'forest_light_patch',
+    // forest_trunk é mantida só como fallback defensivo (ver
+    // generateAndRenderTrees) — forest_foliage_1/2 e forest_shadow foram
+    // removidas por serem assadas sem nunca ser instanciadas como
+    // Sprite/Image (desperdício puro de CPU/GPU, sem efeito visual).
+    ['forest_grass', 'forest_trunk', 'forest_light_patch',
      'procedural_tree_0', 'procedural_tree_1', 'procedural_tree_2'].forEach(key => {
       expect(mock.textureKeys.has(key)).toBe(true);
     });
+    expect(mock.textureKeys.has('forest_foliage_1')).toBe(false);
+    expect(mock.textureKeys.has('forest_foliage_2')).toBe(false);
+    expect(mock.textureKeys.has('forest_shadow')).toBe(false);
   });
 
   it('renderiza manchas de luz solar filtrada (dappled light) com blend aditivo', () => {
@@ -194,5 +201,34 @@ describe('ProceduralForestGenerator', () => {
       expect(t.setOrigin).toHaveBeenCalledWith(0.5, 1);
       expect(mock.depthGroupChildren).toContain(t); // participa do Y-sort de verdade
     });
+  });
+
+  it('aplica respiração de alpha (tween yoyo, loop infinito) nas manchas de luz solar quando scene.tweens existe', () => {
+    mock.scene.tweens = { add: vi.fn() };
+    const gen = new ProceduralForestGenerator(mock.scene);
+    gen.generate(1920, 1440);
+
+    const lightPatches = mock.imagesCreated.filter(i => i.textureKey === 'forest_light_patch');
+    expect(lightPatches.length).toBeGreaterThan(0);
+
+    // scene.tweens.add é compartilhado com o balanço de vento dos tufos
+    // (TerrainDetailFactory usa a mesma scene) — filtra só as chamadas
+    // cujo target é uma mancha de luz.
+    const patchCalls = mock.scene.tweens.add.mock.calls
+      .map((args: any[]) => args[0])
+      .filter((cfg: any) => lightPatches.includes(cfg.targets));
+
+    expect(patchCalls.length).toBe(lightPatches.length);
+    patchCalls.forEach((call: any) => {
+      expect(call.yoyo).toBe(true);
+      expect(call.repeat).toBe(-1);
+      expect(call.alpha.from).toBeGreaterThan(call.alpha.to);
+    });
+  });
+
+  it('NÃO lança sem scene.tweens (no-op headless): geração completa funciona sem animação de luz/vento', () => {
+    expect(mock.scene.tweens).toBeUndefined();
+    const gen = new ProceduralForestGenerator(mock.scene);
+    expect(() => gen.generate(1920, 1440)).not.toThrow();
   });
 });

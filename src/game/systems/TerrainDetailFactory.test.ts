@@ -40,7 +40,7 @@ function makeMockScene() {
     }),
     graphics: vi.fn(() => {
       const g: any = {};
-      ['lineStyle', 'beginPath', 'moveTo', 'lineTo', 'strokePath'].forEach(m => { g[m] = vi.fn(() => g); });
+      ['fillStyle', 'fillEllipse', 'lineStyle', 'beginPath', 'moveTo', 'lineTo', 'strokePath'].forEach(m => { g[m] = vi.fn(() => g); });
       g.destroy = vi.fn();
       return g;
     }),
@@ -64,14 +64,13 @@ describe('TerrainDetailFactory', () => {
     mock = makeMockScene();
   });
 
-  it('assa 3 variantes de textura de tufo via DynamicTexture (baking pattern)', () => {
+  it('assa 5 variantes de textura de tufo via DynamicTexture (baking pattern)', () => {
     const factory = new TerrainDetailFactory(mock.scene);
     factory.bakeTuftTextures();
 
-    expect(mock.textureKeys.has('terrain_grass_tuft_0')).toBe(true);
-    expect(mock.textureKeys.has('terrain_grass_tuft_1')).toBe(true);
-    expect(mock.textureKeys.has('terrain_grass_tuft_2')).toBe(true);
-    expect(mock.scene.textures.addDynamicTexture).toHaveBeenCalledTimes(3);
+    ['terrain_grass_tuft_0', 'terrain_grass_tuft_1', 'terrain_grass_tuft_2', 'terrain_grass_tuft_3', 'terrain_grass_tuft_4']
+      .forEach(key => expect(mock.textureKeys.has(key)).toBe(true));
+    expect(mock.scene.textures.addDynamicTexture).toHaveBeenCalledTimes(5);
   });
 
   it('espalha a quantidade pedida de tufos, todos com origem na base e no depthGroup', () => {
@@ -107,5 +106,29 @@ describe('TerrainDetailFactory', () => {
     mock.scene.depthGroup = undefined;
     const factory = new TerrainDetailFactory(mock.scene);
     expect(() => factory.scatterTufts({ areaWidth: 100, areaHeight: 100 })).toThrow();
+  });
+
+  it('aplica balanço de vento (tween de rotação yoyo, loop infinito) a cada tufo quando scene.tweens existe', () => {
+    mock.scene.tweens = { add: vi.fn() };
+    const factory = new TerrainDetailFactory(mock.scene);
+    factory.bakeTuftTextures();
+    const tufts = factory.scatterTufts({ count: 5, areaWidth: 400, areaHeight: 300 });
+
+    expect(mock.scene.tweens.add).toHaveBeenCalledTimes(5);
+    const call = mock.scene.tweens.add.mock.calls[0][0];
+    expect(call.targets).toBe(tufts[0]);
+    expect(call.yoyo).toBe(true);
+    expect(call.repeat).toBe(-1);
+    expect(call.rotation.from).toBeLessThan(0);
+    expect(call.rotation.to).toBeGreaterThan(0);
+  });
+
+  it('NÃO lança e não exige scene.tweens (no-op headless): scatterTufts funciona sem balanço de vento', () => {
+    // mock.scene padrão (makeMockScene) já não define `tweens` — regressão
+    // implícita em toda outra suite acima, esta é a asserção explícita.
+    expect(mock.scene.tweens).toBeUndefined();
+    const factory = new TerrainDetailFactory(mock.scene);
+    factory.bakeTuftTextures();
+    expect(() => factory.scatterTufts({ count: 5, areaWidth: 400, areaHeight: 300 })).not.toThrow();
   });
 });

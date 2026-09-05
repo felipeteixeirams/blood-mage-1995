@@ -36,7 +36,9 @@ export class TerrainDetailFactory {
   private noiseTable: number[] = [];
 
   private static readonly TUFT_TEX_KEY = 'terrain_grass_tuft';
-  private static readonly TUFT_VARIANTS = 3;
+  // 5 variantes (antes 3) — mais variedade visual ao espalhar em massa,
+  // reduz o "padrão de repetição" perceptível com poucos props únicos.
+  private static readonly TUFT_VARIANTS = 5;
   private static readonly TILE_SIZE = 16;
 
   constructor(scene: Phaser.Scene) {
@@ -110,6 +112,12 @@ export class TerrainDetailFactory {
     const oliveColors = [0x3d4a1f, 0x4a5a26, 0x2e3817, 0x556b2f];
     const baseX = size / 2;
     const baseY = size - 2;
+
+    // Sombra de contato: ancora visualmente o tufo ao solo (mesmo princípio
+    // da sombra elíptica assada na base do tronco em drawFractalTreeGraphics)
+    // — sem ela, lâminas finas "flutuam" sem parecer nascer da terra.
+    graphics.fillStyle(0x0a0f05, 0.4);
+    graphics.fillEllipse(baseX, baseY, size * 0.32, size * 0.12);
 
     const bladeCount = 4 + Math.floor(pseudoRandom() * 3); // 4-6 lâminas isoladas
     for (let b = 0; b < bladeCount; b++) {
@@ -198,11 +206,44 @@ export class TerrainDetailFactory {
 
       tuft.setDepth(y); // recalculado por frame pelo ISO Y-SORTING DEPTH SYSTEM
       gameScene.depthGroup.add(tuft);
+      this.applyWindSway(tuft, seed + i * 13);
 
       tufts.push(tuft);
     }
 
     logger.info('TerrainDetailFactory.scatterTufts', 'Tufos de grama espalhados', { count: tufts.length });
     return tufts;
+  }
+
+  /**
+   * Balanço de vento sutil (skill `phaser-4-animation-tweens`): sem isso,
+   * tufos são geometria 100% estática — um campo inteiro de grama parada
+   * lê como "sem vida" mesmo com boa silhueta. Tween de rotação yoyo em
+   * loop infinito, ângulo pequeno (2-4°), com duração e delay derivados do
+   * ruído determinístico por instância — cada tufo balança fora de fase
+   * dos vizinhos, evitando o efeito "todos balançando em uníssono" que
+   * denunciaria a repetição do prop.
+   *
+   * Defensivo (mesmo padrão de `Enemy.applyEliteGlow`): `scene.tweens` não
+   * existe nos mocks headless de teste — no-op silencioso nesse caso, sem
+   * lançar nem exigir mock adicional.
+   */
+  private applyWindSway(tuft: Phaser.GameObjects.Image, phaseSeed: number): void {
+    const gameScene = this.scene as any;
+    if (typeof gameScene.tweens?.add !== 'function') return;
+
+    const swayAngle = 0.035 + this.noise(phaseSeed, 900) * 0.035; // ~2-4 graus em radianos
+    const duration = 1400 + this.noise(phaseSeed, 901) * 900;
+    const delay = this.noise(phaseSeed, 902) * duration;
+
+    gameScene.tweens.add({
+      targets: tuft,
+      rotation: { from: -swayAngle, to: swayAngle },
+      duration,
+      delay,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
   }
 }
