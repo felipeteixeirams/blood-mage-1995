@@ -3,6 +3,7 @@ import { AnimatePresence } from 'motion/react';
 import { registerSW } from 'virtual:pwa-register';
 import { SplashScreen } from './components/SplashScreen';
 import { MainMenu } from './components/MainMenu';
+import { ModalBase } from './components/ui/ModalBase';
 import type { GameScene } from './game/scenes/GameScene';
 import { PlayerStats, UpgradeOption } from './types/game';
 import { tryLockLandscape, initOrientationGestureHandler } from './utils/orientation';
@@ -31,6 +32,7 @@ import { logger } from './utils/logger';
 
 export default function App() {
   const [isBooting, setIsBooting] = useState(true);
+  const [showCampaignConfirm, setShowCampaignConfirm] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -169,32 +171,30 @@ export default function App() {
     return cleanup;
   }, []);
 
-  const handleStartCampaign = () => {
+  const executeStartCampaign = () => {
     tryLockLandscape();
     setGameOverStats(null);
     setLevelUpData(null);
     const store = useGameStore.getState();
-    // docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md — "Nova Campanha" hoje só
-    // forçava a zona pra Safe House, mas o `campaignState` persistido
-    // (quests/magias desbloqueadas/zona) continuava intacto por baixo — ou
-    // seja, na prática sempre "continuava" o save antigo. Se já existe
-    // progresso salvo, confirma antes de apagar; senão (primeira vez, ou já
-    // está tudo zerado) começa direto.
+    store.resetCampaignProgress();
+    store.setGameMode('campaign');
+    store.setCampaignZone('safe_house');
+    setGameState('playing');
+    setShowCampaignConfirm(false);
+    telemetry.trackEvent('campaign_start');
+  };
+
+  const handleStartCampaign = () => {
+    const store = useGameStore.getState();
     const hasExistingProgress =
       store.campaignState.currentZone !== 'safe_house' ||
       Object.keys(store.campaignState.quests).length > 0 ||
       store.campaignState.unlockedSpellIds.length > 0;
     if (hasExistingProgress) {
-      const confirmed = window.confirm(
-        'Isso vai apagar seu progresso salvo na Campanha (missões, magias desbloqueadas e zona atual) e recomeçar do zero na Safe House. Continuar?'
-      );
-      if (!confirmed) return;
-      store.resetCampaignProgress();
+      setShowCampaignConfirm(true);
+    } else {
+      executeStartCampaign();
     }
-    store.setGameMode('campaign');
-    store.setCampaignZone('safe_house'); // Sempre começa na safe house
-    setGameState('playing');
-    telemetry.trackEvent('campaign_start');
   };
 
   const handleStartArcade = () => {
@@ -425,6 +425,33 @@ export default function App() {
           <Suspense fallback={null}>
             <SoundTestModal isOpen={isSoundTestOpen} onClose={() => setSoundTestOpen(false)} />
           </Suspense>
+        )}
+        {showCampaignConfirm && (
+          <ModalBase
+            title="Recomeçar Campanha"
+            subtitle="Atenção, Viajante"
+            onClose={() => setShowCampaignConfirm(false)}
+          >
+            <div className="space-y-4 text-sm text-[#d4c5a9]">
+              <p>
+                Isso vai apagar seu progresso salvo na Campanha (missões, magias desbloqueadas e zona atual) e recomeçar do zero na Safe House. Deseja continuar?
+              </p>
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#b8860b]/30">
+                <button
+                  onClick={() => setShowCampaignConfirm(false)}
+                  className="px-4 py-2 bg-black/80 hover:bg-[#201a12] border border-[#6b5a3a] text-gray-300 font-pixel text-xs tracking-wider uppercase transition-colors cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={executeStartCampaign}
+                  className="px-4 py-2 bg-[#8c1f22] hover:bg-[#a82529] border border-[#d4af37] text-amber-100 font-pixel text-xs tracking-wider uppercase shadow-md transition-colors cursor-pointer"
+                >
+                  Apagar e Recomeçar
+                </button>
+              </div>
+            </div>
+          </ModalBase>
         )}
       </AnimatePresence>
     </div>
