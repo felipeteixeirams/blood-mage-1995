@@ -516,14 +516,24 @@ export class ProceduralForestGenerator {
         this.scene.textures.remove(texKey);
       }
 
-      const treeWidth = 160;
-      const treeHeight = 220;
+      // Proporção referência Dungeon Siege: tronco nu longo (~60% da altura)
+      // + copa concentrada no terço superior. IMPORTANTE: dimensionado em
+      // px de MUNDO, não de tela — a câmera roda com zoom adaptativo
+      // 1.8x-3.0x (GameScene.ts ~L493), então a altura de mundo VISÍVEL é
+      // só ~180-300px mesmo num canvas de 540px. Uma árvore de 520px de
+      // mundo nunca cabe na tela (testado: copa sempre cortada fora do
+      // topo, virando "só tronco flutuante"). 260px é alto o bastante pra
+      // dominar a tela mantendo a copa geralmente visível.
+      const treeWidth = 180;
+      const treeHeight = 260;
+      const treeOriginX = treeWidth / 2;
+      const treeOriginY = treeHeight * 0.85; // alinhado com origin (0.5, 0.85) do sprite/shader
       const textureManager = this.scene.textures as any;
 
       if (typeof textureManager.addDynamicTexture === 'function') {
         const treeTexture = textureManager.addDynamicTexture(texKey, treeWidth, treeHeight);
         const g = this.scene.add.graphics();
-        this.drawFractalTreeGraphics(g, 80, 175, 1000 + variant * 333);
+        this.drawFractalTreeGraphics(g, treeOriginX, treeOriginY, 1000 + variant * 333);
         if (treeTexture.draw && treeTexture.render) {
           treeTexture.draw(g);
           treeTexture.render();
@@ -532,7 +542,7 @@ export class ProceduralForestGenerator {
       } else {
         let canvasTex = this.scene.textures.createCanvas(texKey, treeWidth, treeHeight)!;
         const g = this.scene.add.graphics();
-        this.drawFractalTreeGraphics(g, 80, 175, 1000 + variant * 333);
+        this.drawFractalTreeGraphics(g, treeOriginX, treeOriginY, 1000 + variant * 333);
         g.destroy();
         canvasTex.refresh();
       }
@@ -662,10 +672,11 @@ export class ProceduralForestGenerator {
   }
 
   /**
-   * Desenha uma conífera em camadas (tiers triangulares sobrepostos) no Graphics
-   * para assar na textura dinâmica (WebGL2). Substitui a antiga árvore fractal
-   * de copa única por uma silhueta de pinheiro clássica — referência visual:
-   * floresta densa e ensolarada de Dungeon Siege (2002), não um blob gótico.
+   * Desenha uma conífera de tronco alto e nu com ramos pendentes concentrados
+   * no terço superior — silhueta baseada na referência real de Dungeon Siege
+   * (2002): tronco liso longo (~62% da altura) sem folhagem, copa só na parte
+   * de cima com galhos que se curvam para baixo sob o próprio peso (não tiers
+   * simétricos tipo "árvore de Natal", que não é como pinheiros altos crescem).
    */
   private drawFractalTreeGraphics(graphics: Phaser.GameObjects.Graphics, originX: number, originY: number, seed: number): void {
     let rngState = seed;
@@ -676,31 +687,37 @@ export class ProceduralForestGenerator {
 
     // 1. Sombra da árvore no chão
     graphics.fillStyle(0x0a0c08, 0.5);
-    graphics.fillEllipse(originX, originY + 6, 40, 14);
+    graphics.fillEllipse(originX, originY + 6, 46, 16);
 
     // 2. Paleta de pinheiro (verdes vibrantes com sombra fria — luz filtrando
-    // pela copa, como no cenário de referência, mantendo o clima sombrio nas
-    // sombras profundas)
-    const trunkColors = [0x2c1d11, 0x3d2817, 0x4e3522];
-    const foliageShadow = [0x18321f, 0x1c3a24]; // sombra fria e profunda
+    // pela copa, como no cenário de referência)
+    const trunkColors = [0x3d2c1c, 0x4e3826, 0x5c4530]; // casca mais clara/realista que antes
+    const foliageShadow = [0x18321f, 0x1c3a24]; // sombra fria e profunda (parte de baixo dos galhos)
     const foliageBase = [0x2d5a3f, 0x347049];   // verde-pinheiro médio
-    const foliageLit = [0x5a9c5e, 0x6bb066];    // verde iluminado pelo sol
+    const foliageLit = [0x5a9c5e, 0x6bb066];    // verde iluminado pelo sol (topo dos galhos)
 
     const paletteIdx = Math.floor(seed) % 2;
-    const heightScale = 0.85 + pseudoRandom() * 0.35;
-    const trunkHeight = 95 * heightScale;
-    const trunkBaseY = originY;
-    const trunkTopY = originY - trunkHeight;
-    const trunkBaseWidth = 8 + pseudoRandom() * 3;
-    const trunkTopWidth = 3;
 
-    // 3. Tronco afunilado, segmentado para textura de casca
-    const trunkSegments = 14;
+    // Proporção real de conífera adulta: tronco nu domina a silhueta,
+    // copa é só o terço superior — bem diferente do "blob" de antes.
+    const heightScale = 0.9 + pseudoRandom() * 0.3;
+    const totalHeight = (originY - 20) * heightScale; // margem de 20px no topo do canvas
+    const trunkBaseY = originY;
+    const trunkFrac = 0.6 + pseudoRandom() * 0.06; // 60-66% da altura é tronco nu
+    const trunkTopY = trunkBaseY - totalHeight * trunkFrac;
+    const treeTopY = trunkBaseY - totalHeight;
+
+    const trunkBaseWidth = 16 + pseudoRandom() * 5;
+    const trunkTopWidth = 6 + pseudoRandom() * 2;
+
+    // 3. Tronco afunilado, segmentado para textura de casca (mais alto e
+    // grosso que a versão anterior — é o elemento visual dominante agora)
+    const trunkSegments = 24;
     for (let i = 0; i < trunkSegments; i++) {
       const t0 = i / trunkSegments;
       const t1 = (i + 1) / trunkSegments;
-      const y0 = trunkBaseY - trunkHeight * t0;
-      const y1 = trunkBaseY - trunkHeight * t1;
+      const y0 = trunkBaseY - (trunkBaseY - trunkTopY) * t0;
+      const y1 = trunkBaseY - (trunkBaseY - trunkTopY) * t1;
       const w0 = trunkBaseWidth + (trunkTopWidth - trunkBaseWidth) * t0;
       const w1 = trunkBaseWidth + (trunkTopWidth - trunkBaseWidth) * t1;
       const noiseVal = this.noise(i * 3, seed % 50);
@@ -715,54 +732,122 @@ export class ProceduralForestGenerator {
       graphics.closePath();
       graphics.fillPath();
     }
+    // Contorno sutil para reforçar a silhueta do tronco à distância
+    graphics.lineStyle(1, 0x201509, 0.5);
+    graphics.beginPath();
+    graphics.moveTo(originX - trunkBaseWidth / 2, trunkBaseY);
+    graphics.lineTo(originX - trunkTopWidth / 2, trunkTopY);
+    graphics.strokePath();
+    graphics.beginPath();
+    graphics.moveTo(originX + trunkBaseWidth / 2, trunkBaseY);
+    graphics.lineTo(originX + trunkTopWidth / 2, trunkTopY);
+    graphics.strokePath();
 
-    // 4. Copa em camadas: tiers triangulares sobrepostos, mais largos embaixo
-    // e afunilando no topo — silhueta de conífera reconhecível à primeira vista
-    const tierCount = 6 + Math.floor(pseudoRandom() * 2); // 6-7 andares
-    const canopyBottom = trunkBaseY - 18; // andar inferior próximo ao solo
-    const canopyTop = trunkTopY - 6;      // ponta da árvore
-    const canopySpan = canopyBottom - canopyTop;
+    /**
+     * Desenha um único galho pendente: nasce quase horizontal perto do
+     * tronco e curva para baixo sob o próprio peso (queda quadrática, não
+     * linear) — é essa curva que dá o efeito "chorão"/conífera-de-verdade
+     * em vez do triângulo simétrico anterior.
+     */
+    const drawBough = (
+      branchX: number,
+      branchY: number,
+      direction: 1 | -1,
+      reach: number,
+      droop: number,
+      baseThickness: number
+    ): void => {
+      const segments = 7;
+      let prevX = branchX;
+      let prevY = branchY;
 
-    for (let tier = 0; tier < tierCount; tier++) {
-      const tFrac = tier / (tierCount - 1);
-      const tierWidth = (76 - tFrac * 54) * (0.88 + pseudoRandom() * 0.24);
-      const tierY = canopyBottom - tFrac * canopySpan * 0.9;
-      const tierRise = (canopySpan / tierCount) * 1.9; // altura do triângulo (overlap entre andares)
-      const tipY = tierY - tierRise;
-      const leftX = originX - tierWidth / 2;
-      const rightX = originX + tierWidth / 2;
+      for (let s = 0; s < segments; s++) {
+        const t0 = s / segments;
+        const t1 = (s + 1) / segments;
+        const x1 = branchX + direction * reach * Math.sin((t1 * Math.PI) / 2);
+        const y1 = branchY + droop * (t1 * t1); // aceleração de queda (peso do galho)
+        const thickness0 = Math.max(0.6, baseThickness * (1 - t0) + 0.5);
+        const thickness1 = Math.max(0.5, baseThickness * (1 - t1) + 0.5);
 
-      // Metade esquerda: sombra fria (lado oposto à luz)
-      graphics.fillStyle(foliageShadow[paletteIdx], 0.92);
-      graphics.fillTriangle(originX, tipY, leftX, tierY, originX, tierY);
+        // Perpendicular ao segmento, pra desenhar uma "lâmina" com espessura
+        // em vez de uma linha fina — silhueta de galho carregado de agulhas
+        const segAngle = Math.atan2(y1 - prevY, x1 - prevX);
+        const perpX = Math.cos(segAngle + Math.PI / 2);
+        const perpY = Math.sin(segAngle + Math.PI / 2);
 
-      // Metade direita: base iluminada
-      graphics.fillStyle(foliageBase[paletteIdx], 0.95);
-      graphics.fillTriangle(originX, tipY, originX, tierY, rightX, tierY);
+        const noiseVal = this.noise(prevX + s, branchY + seed);
+        const litSide = direction > 0 ? foliageLit : foliageBase; // lado direito mais iluminado
+        const shadeSide = foliageShadow;
+        const topColor = noiseVal > 0.5 ? litSide[paletteIdx] : foliageBase[paletteIdx];
 
-      // Faixa de luz solar filtrando pela copa (canto superior direito)
-      graphics.fillStyle(foliageLit[paletteIdx], 0.55);
-      graphics.fillTriangle(
-        originX + tierWidth * 0.08, tipY + tierRise * 0.15,
-        originX + tierWidth * 0.1, tierY,
-        originX + tierWidth * 0.35, tierY
-      );
+        // Metade de cima (iluminada) e de baixo (sombra) do galho
+        graphics.fillStyle(topColor, 0.92);
+        graphics.fillTriangle(
+          prevX + perpX * thickness0, prevY + perpY * thickness0,
+          x1 + perpX * thickness1, y1 + perpY * thickness1,
+          x1, y1
+        );
+        graphics.fillStyle(shadeSide[paletteIdx], 0.9);
+        graphics.fillTriangle(
+          prevX - perpX * thickness0, prevY - perpY * thickness0,
+          x1 - perpX * thickness1, y1 - perpY * thickness1,
+          x1, y1
+        );
 
-      // Textura orgânica: agulhas/pontos nas bordas do tier
-      const dabCount = 8 + Math.floor(pseudoRandom() * 8);
+        prevX = x1;
+        prevY = y1;
+      }
+
+      // Agulhas/textura orgânica ao longo do galho
+      const dabCount = 5 + Math.floor(pseudoRandom() * 5);
       for (let d = 0; d < dabCount; d++) {
-        const along = pseudoRandom();
-        const edgeX = leftX + (rightX - leftX) * along;
-        const edgeDepth = 1 - Math.abs(along - 0.5) * 2; // 1 no centro, 0 nas bordas
-        const edgeY = tipY + (tierY - tipY) * (0.35 + edgeDepth * 0.5);
-        const noiseVal = this.noise(edgeX, edgeY + seed);
-        const dotSet = noiseVal > 0.65 ? foliageLit : (noiseVal > 0.35 ? foliageBase : foliageShadow);
+        const t = pseudoRandom();
+        const dabX = branchX + direction * reach * Math.sin((t * Math.PI) / 2) + (pseudoRandom() - 0.5) * 5;
+        const dabY = branchY + droop * (t * t) + (pseudoRandom() - 0.5) * 5;
+        const noiseVal = this.noise(dabX, dabY + seed);
+        const dotSet = noiseVal > 0.6 ? foliageLit : (noiseVal > 0.3 ? foliageBase : foliageShadow);
 
-        graphics.fillStyle(dotSet[paletteIdx], 0.5 + noiseVal * 0.35);
-        const size = 2 + noiseVal * 3;
-        graphics.fillRect(edgeX - size / 2, edgeY - size / 2, size, size);
+        graphics.fillStyle(dotSet[paletteIdx], 0.55 + noiseVal * 0.3);
+        const size = 2 + noiseVal * 3.5;
+        graphics.fillRect(dabX - size / 2, dabY - size / 2, size, size);
+      }
+    };
+
+    // 4. Copa: galhos pendentes concentrados no terço superior do tronco,
+    // mais longos/largos embaixo (mais peso, mais anos de crescimento) e
+    // curtos perto da ponta — como nas árvores da referência.
+    const canopyBottom = trunkTopY + (trunkBaseY - trunkTopY) * 0.12; // galhos começam um pouco abaixo do topo nu
+    const canopyHeight = canopyBottom - treeTopY;
+    const layerCount = 5 + Math.floor(pseudoRandom() * 2); // 5-6 andares de galhos
+
+    for (let layer = 0; layer < layerCount; layer++) {
+      const layerFrac = layer / (layerCount - 1); // 0 = mais baixo/largo, 1 = ponta
+      const layerY = canopyBottom - layerFrac * canopyHeight * 0.95;
+      const layerTrunkWidth = trunkTopWidth + (trunkBaseWidth - trunkTopWidth) * (1 - layerFrac) * 0.3;
+
+      const reach = (58 - layerFrac * 40) * (0.85 + pseudoRandom() * 0.3); // alcance horizontal do galho
+      const droop = (34 - layerFrac * 20) * (0.8 + pseudoRandom() * 0.35); // quanto cai por peso
+      const boughsPerSide = layerFrac < 0.7 ? 2 : 1; // menos galhos perto da ponta
+
+      for (let b = 0; b < boughsPerSide; b++) {
+        const branchYOffset = b * (canopyHeight / layerCount) * 0.35;
+        // Espessura GROSSA o bastante pra ler como massa sólida de folhagem
+        // à distância normal de câmera — fina demais (valor anterior: ~1-2px)
+        // virava só pontos espalhados, sem silhueta reconhecível.
+        const thicknessVariety = 15 - layerFrac * 9;
+
+        drawBough(originX - layerTrunkWidth / 2, layerY - branchYOffset, -1, reach, droop, thicknessVariety);
+        drawBough(originX + layerTrunkWidth / 2, layerY - branchYOffset, 1, reach, droop, thicknessVariety);
       }
     }
+
+    // Ponta da árvore: pequeno tufo de agulhas fechando a silhueta no topo
+    graphics.fillStyle(foliageBase[paletteIdx], 0.9);
+    graphics.fillTriangle(
+      originX, treeTopY,
+      originX - 10, canopyBottom - canopyHeight * 0.85,
+      originX + 10, canopyBottom - canopyHeight * 0.85
+    );
   }
 
   /**
