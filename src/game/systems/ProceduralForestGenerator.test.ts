@@ -36,7 +36,7 @@ function makeMockCtx() {
 
 function makeChainable(extra: Record<string, unknown> = {}) {
   const obj: any = { ...extra };
-  const methods = ['setOrigin', 'setScale', 'setDepth', 'setAlpha', 'setBlendMode', 'setPixelArt', 'setTint'];
+  const methods = ['setOrigin', 'setScale', 'setDepth', 'setAlpha', 'setBlendMode', 'setPixelArt', 'setTint', 'setScrollFactor'];
   methods.forEach(m => { obj[m] = vi.fn(() => obj); });
   return obj;
 }
@@ -148,13 +148,39 @@ describe('ProceduralForestGenerator', () => {
     });
   });
 
-  it('instancia uma floresta densa (44 árvores: 2 próximas ao spawn + 42 de fundo)', () => {
+  it('instancia uma floresta densa (44 árvores de primeiro plano: 2 próximas ao spawn + 42 de fundo, mais 14 de paralaxe)', () => {
     const gen = new ProceduralForestGenerator(mock.scene);
     gen.generate(1920, 1440);
 
-    expect(mock.spritesCreated.length).toBe(44);
-    // Todas as árvores foram adicionadas ao depthGroup para z-sorting isométrico
+    // 44 árvores de primeiro plano (Y-sorted) + 14 de paralaxe no plano de
+    // fundo (camada separada, scrollFactor reduzido — ver teste de paralaxe
+    // abaixo) = 58 sprites de árvore no total.
+    expect(mock.spritesCreated.length).toBe(58);
+    // Só as 44 de primeiro plano entram no depthGroup para z-sorting isométrico
     expect(mock.depthGroupChildren.length).toBeGreaterThanOrEqual(44);
+  });
+
+  // As 14 árvores de paralaxe (Jules, spec 10-continuação) são uma camada de
+  // fundo separada: menores, mais escuras/dessaturadas, com scrollFactor
+  // reduzido — para dar profundidade real entre fundo e primeiro plano.
+  it('instancia árvores de paralaxe no plano de fundo com scrollFactor/escala/tint reduzidos', () => {
+    const gen = new ProceduralForestGenerator(mock.scene);
+    gen.generate(1920, 1440);
+
+    // As 14 primeiras árvores instanciadas são as de paralaxe (ver
+    // generateAndRenderTrees: o loop de fundo roda antes do de primeiro plano).
+    const bgTrees = mock.spritesCreated.slice(0, 14);
+    expect(bgTrees.length).toBe(14);
+    bgTrees.forEach(bgTree => {
+      expect(bgTree.setScrollFactor).toHaveBeenCalledWith(0.65, 0.65);
+      expect(bgTree.setScale).toHaveBeenCalledWith(0.65);
+      expect(bgTree.setTint).toHaveBeenCalledWith(0x556655);
+      expect(bgTree.setAlpha).toHaveBeenCalledWith(0.75);
+    });
+
+    // Árvores de paralaxe ficam FORA do depthGroup (depth fixo, atrás do
+    // primeiro plano) — não competem por Y-sort com o personagem/inimigos.
+    bgTrees.forEach(bgTree => expect(mock.depthGroupChildren).not.toContain(bgTree));
   });
 
   it('propaga erro se depthGroup não estiver disponível (fail-fast, sem silenciar)', () => {
@@ -230,5 +256,26 @@ describe('ProceduralForestGenerator', () => {
     expect(mock.scene.tweens).toBeUndefined();
     const gen = new ProceduralForestGenerator(mock.scene);
     expect(() => gen.generate(1920, 1440)).not.toThrow();
+  });
+
+  // Regressão: `paletteIdx = Math.floor(seed) % 2` só produzia 2 paletas de
+  // folhagem para as 3 variantes de árvore (seeds 1000/1333/1666 → 0/1/0) —
+  // variantes 0 e 2 acabavam com o mesmo esquema de cor. Agora a paleta é
+  // indexada por `variantIndex` real, uma das 3 dedicadas por árvore.
+  it('desenha árvores fractais com paletas de folhagem distintas por variantIndex (não por seed % 2)', () => {
+    const gen = new ProceduralForestGenerator(mock.scene);
+    const g = mock.scene.add.graphics();
+
+    gen.drawFractalTreeGraphics(g, 80, 175, 1000, 0);
+    const fillStyleCallsVariant0 = [...g.fillStyle.mock.calls];
+
+    g.fillStyle.mockClear();
+
+    gen.drawFractalTreeGraphics(g, 80, 175, 1000, 2);
+    const fillStyleCallsVariant2 = [...g.fillStyle.mock.calls];
+
+    // Mesmo seed (1000%2 == 1000%... == 0 para ambas as variantes 0 e 2 sob
+    // a lógica antiga) — só variantIndex muda. Paletas devem divergir.
+    expect(fillStyleCallsVariant0).not.toEqual(fillStyleCallsVariant2);
   });
 });

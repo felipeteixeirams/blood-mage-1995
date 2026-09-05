@@ -225,6 +225,41 @@ export class AdvancedParticles {
     if (fog) { fog.stop(); }
     const embers = this.emitters.get('torch_embers');
     if (embers) { embers.stop(); }
+    this.stopForestAmbient();
+  }
+
+  /**
+   * Inicializa partículas ambientes de poeira/pólen flutuante da floresta gloomy_woods.
+   * Baixa velocidade, vida longa, emissão contínua e sutil, casando com frestas de luz solar.
+   */
+  public startForestAmbient(worldWidth: number, worldHeight: number): void {
+    if (!this.emitters.has('forest_pollen')) {
+      try {
+        const textureKey = this.scene.textures.exists('particle_blood_red') ? 'particle_blood_red' : 'particle_torch_ember';
+        const pollenEmitter = this.scene.add.particles(worldWidth / 2, worldHeight / 2, textureKey, {
+          x: { min: -(worldWidth / 2), max: worldWidth / 2 },
+          y: { min: -(worldHeight / 2), max: worldHeight / 2 },
+          speedX: { min: -12, max: 12 },
+          speedY: { min: -8, max: 8 },
+          alpha: { start: 0, end: 0.65, ease: 'Sine.easeInOut' },
+          scale: { start: 0.25, end: 0.55 },
+          lifespan: { min: 4500, max: 8500 },
+          frequency: 320,
+          tint: [0xd4e157, 0xc0ca33, 0xaed581, 0xffeb3b],
+          emitting: true,
+        });
+        pollenEmitter.setDepth(15);
+        this.emitters.set('forest_pollen', pollenEmitter);
+      } catch (_) { /* Partículas indisponíveis */ }
+    }
+  }
+
+  /**
+   * Para o emissor de poeira/pólen flutuante da floresta.
+   */
+  public stopForestAmbient(): void {
+    const pollen = this.emitters.get('forest_pollen');
+    if (pollen) { pollen.stop(); }
   }
 
   /**

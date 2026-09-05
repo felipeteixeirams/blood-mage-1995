@@ -92,6 +92,10 @@ export class PostFXSystem {
     if (this.colorMatrix) {
       this.applyBiomeMatrix(floorDepth);
     }
+    // Vinheta atmosférica na floresta gloomy_woods
+    if (biome === 'gloomy_woods') {
+      this.setVignette(0.40, 500);
+    }
   }
 
   private applyBiomeMatrix(floorDepth: number = 1): void {

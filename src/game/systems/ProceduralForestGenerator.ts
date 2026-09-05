@@ -103,6 +103,12 @@ export class ProceduralForestGenerator {
       this.generateAndRenderTrees(gridW, gridH);
       logger.info('ProceduralForestGenerator.generate', 'Trees rendered successfully');
 
+      // Iniciar partículas ambientes de poeira/pólen flutuante da floresta
+      const gameScene = this.scene as GameScene;
+      if (gameScene.advancedParticles) {
+        gameScene.advancedParticles.startForestAmbient(mapW, mapH);
+      }
+
       // Sala de spawn no CENTRO do grid isométrico renderizado (não no centro
       // do retângulo mapW x mapH em pixels — são espaços de coordenadas
       // diferentes; usar mapW/2,mapH/2 diretamente faria o jogador nascer
@@ -184,16 +190,28 @@ export class ProceduralForestGenerator {
     grassCtx.fillStyle = grassGrad;
     grassCtx.fillRect(0, 0, 64, 32);
 
-    // PADRÃO 1: Bayer dithering com variação via noise
+    // Terreno Multi-Escala: Segunda camada de ruído de baixa frequência (escala macro)
+    // para quebrar o padrão rítmico visível ao espalhar tiles por grandes áreas.
+    for (let y = 0; y < 32; y++) {
+      for (let x = 0; x < 64; x++) {
+        const macroNoise = this.noise(x * 0.05, y * 0.05); // Baixa frequência
+        if (macroNoise > 0.5) {
+          grassCtx.fillStyle = `rgba(50, 85, 30, ${(macroNoise - 0.5) * 0.35})`;
+          grassCtx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+
+    // PADRÃO 1: Bayer dithering com variação via micro noise
     const grassBayer = [[0, 2], [3, 1]];
     for (let y = 0; y < 32; y++) {
       for (let x = 0; x < 64; x++) {
         const bayerVal = grassBayer[y % 2][x % 2];
-        const noiseVal = this.noise(x * 0.3, y * 0.2);
+        const microNoise = this.noise(x * 0.3, y * 0.2);
         const threshold = (bayerVal / 4) * 255;
 
-        if ((threshold < 85 || (threshold < 170 && noiseVal > 0.6)) && noiseVal > 0.3) {
-          grassCtx.fillStyle = `rgba(${100 + Math.floor(noiseVal * 30)}, ${130 + Math.floor(noiseVal * 20)}, ${40}, ${0.3 + noiseVal * 0.2})`;
+        if ((threshold < 85 || (threshold < 170 && microNoise > 0.6)) && microNoise > 0.3) {
+          grassCtx.fillStyle = `rgba(${100 + Math.floor(microNoise * 30)}, ${130 + Math.floor(microNoise * 20)}, ${40}, ${0.3 + microNoise * 0.2})`;
           grassCtx.fillRect(x, y, 1, 1);
         }
       }
@@ -342,7 +360,7 @@ export class ProceduralForestGenerator {
       if (typeof textureManager.addDynamicTexture === 'function') {
         const treeTexture = textureManager.addDynamicTexture(texKey, treeWidth, treeHeight);
         const g = this.scene.add.graphics();
-        this.drawFractalTreeGraphics(g, treeOriginX, treeOriginY, 1000 + variant * 333);
+        this.drawFractalTreeGraphics(g, treeOriginX, treeOriginY, 1000 + variant * 333, variant);
         if (treeTexture.draw && treeTexture.render) {
           treeTexture.draw(g);
           treeTexture.render();
@@ -351,7 +369,7 @@ export class ProceduralForestGenerator {
       } else {
         let canvasTex = this.scene.textures.createCanvas(texKey, treeWidth, treeHeight)!;
         const g = this.scene.add.graphics();
-        this.drawFractalTreeGraphics(g, treeOriginX, treeOriginY, 1000 + variant * 333);
+        this.drawFractalTreeGraphics(g, treeOriginX, treeOriginY, 1000 + variant * 333, variant);
         g.destroy();
         canvasTex.refresh();
       }
@@ -453,6 +471,15 @@ export class ProceduralForestGenerator {
           const isoY = this.CAMERA_OFFSET_Y + (x + y) * (this.TILE_HEIGHT / 2);
 
           let grass = gameScene.add.image(isoX, isoY, 'forest_grass');
+
+          // Aplica variação de tonalidade multi-escala baseada em coordenadas de grid de grande escala
+          const macroNoise = this.noise(x * 0.12, y * 0.12);
+          if (macroNoise < 0.35) {
+            grass.setTint(0x88aa77); // Tom mais úmido e sombrio
+          } else if (macroNoise > 0.70) {
+            grass.setTint(0xbbdd88); // Tom mais amarelado e iluminado
+          }
+
           gameScene.lightingSystem?.applyLightPipeline(grass);
           grass.setDepth(ProceduralForestGenerator.GROUND_DEPTH); // fixo, fora do depthGroup
           tilesAdded++;
@@ -518,8 +545,13 @@ export class ProceduralForestGenerator {
    * (2002): tronco liso longo (~62% da altura) sem folhagem, copa só na parte
    * de cima com galhos que se curvam para baixo sob o próprio peso (não tiers
    * simétricos tipo "árvore de Natal", que não é como pinheiros altos crescem).
+   *
+   * Paleta indexada por `variantIndex` real (0, 1, 2) — não por `seed % 2` —
+   * para que as 3 árvores base sejam realmente distinguíveis visualmente em
+   * vez de duas delas compartilharem o mesmo esquema de cor por coincidência
+   * aritmética do seed.
    */
-  private drawFractalTreeGraphics(graphics: Phaser.GameObjects.Graphics, originX: number, originY: number, seed: number): void {
+  public drawFractalTreeGraphics(graphics: Phaser.GameObjects.Graphics, originX: number, originY: number, seed: number, variantIndex: number = 0): void {
     let rngState = seed;
     const pseudoRandom = (): number => {
       rngState = (rngState * 9301 + 49297) % 233280;
@@ -530,14 +562,35 @@ export class ProceduralForestGenerator {
     graphics.fillStyle(0x0a0c08, 0.5);
     graphics.fillEllipse(originX, originY + 6, 46, 16);
 
-    // 2. Paleta de pinheiro (verdes vibrantes com sombra fria — luz filtrando
-    // pela copa, como no cenário de referência)
-    const trunkColors = [0x3d2c1c, 0x4e3826, 0x5c4530]; // casca mais clara/realista que antes
-    const foliageShadow = [0x18321f, 0x1c3a24]; // sombra fria e profunda (parte de baixo dos galhos)
-    const foliageBase = [0x2d5a3f, 0x347049];   // verde-pinheiro médio
-    const foliageLit = [0x5a9c5e, 0x6bb066];    // verde iluminado pelo sol (topo dos galhos)
+    // 2. Cores da paleta gótica por variante real (Diablo 2 gloomy woods) —
+    // 3 esquemas distintos, um por árvore base (0, 1, 2).
+    const palettes = [
+      // Variante 0: Pinheiro Sombrio (Verde Esmeralda Gótico)
+      {
+        trunk: [0x2c1d11, 0x3d2817, 0x4e3522],
+        foliage: [0x3a6b4c, 0x234e3b, 0x12291e, 0x2d5a3f, 0x1b3b2b]
+      },
+      // Variante 1: Outono Murcho (Âmbar / Ocre Sombrio)
+      {
+        trunk: [0x361f12, 0x482b19, 0x5a3821],
+        foliage: [0x8c6227, 0x6e4318, 0x42240b, 0x593615, 0x381b08]
+      },
+      // Variante 2: Cipreste Noturno (Azul-petróleo / Teal Sombrio)
+      {
+        trunk: [0x1f2421, 0x2c332e, 0x3d4741],
+        foliage: [0x2a5a5b, 0x1d3f40, 0x0f2425, 0x254c4d, 0x0a191a]
+      }
+    ];
 
-    const paletteIdx = Math.floor(seed) % 2;
+    const currentPalette = palettes[Math.abs(variantIndex) % palettes.length];
+    const trunkColors = currentPalette.trunk;
+    // Mapeia os 5 tons de folhagem da paleta para os 3 papéis que o desenho
+    // dos galhos usa: iluminado (topo, voltado pro sol), médio (base do
+    // galho) e sombra fria (parte de baixo). foliage[2] fica de reserva
+    // (tom mais escuro ainda, não usado diretamente aqui).
+    const foliageLit = currentPalette.foliage[0];
+    const foliageBase = currentPalette.foliage[3];
+    const foliageShadow = currentPalette.foliage[4];
 
     // Proporção real de conífera adulta: tronco nu domina a silhueta,
     // copa é só o terço superior — bem diferente do "blob" de antes.
@@ -619,7 +672,7 @@ export class ProceduralForestGenerator {
         const noiseVal = this.noise(prevX + s, branchY + seed);
         const litSide = direction > 0 ? foliageLit : foliageBase; // lado direito mais iluminado
         const shadeSide = foliageShadow;
-        const topColor = noiseVal > 0.5 ? litSide[paletteIdx] : foliageBase[paletteIdx];
+        const topColor = noiseVal > 0.5 ? litSide : foliageBase;
 
         // Metade de cima (iluminada) e de baixo (sombra) do galho
         graphics.fillStyle(topColor, 0.92);
@@ -628,7 +681,7 @@ export class ProceduralForestGenerator {
           x1 + perpX * thickness1, y1 + perpY * thickness1,
           x1, y1
         );
-        graphics.fillStyle(shadeSide[paletteIdx], 0.9);
+        graphics.fillStyle(shadeSide, 0.9);
         graphics.fillTriangle(
           prevX - perpX * thickness0, prevY - perpY * thickness0,
           x1 - perpX * thickness1, y1 - perpY * thickness1,
@@ -648,7 +701,7 @@ export class ProceduralForestGenerator {
         const noiseVal = this.noise(dabX, dabY + seed);
         const dotSet = noiseVal > 0.6 ? foliageLit : (noiseVal > 0.3 ? foliageBase : foliageShadow);
 
-        graphics.fillStyle(dotSet[paletteIdx], 0.55 + noiseVal * 0.3);
+        graphics.fillStyle(dotSet, 0.55 + noiseVal * 0.3);
         const size = 2 + noiseVal * 3.5;
         graphics.fillRect(dabX - size / 2, dabY - size / 2, size, size);
       }
@@ -683,7 +736,7 @@ export class ProceduralForestGenerator {
     }
 
     // Ponta da árvore: pequeno tufo de agulhas fechando a silhueta no topo
-    graphics.fillStyle(foliageBase[paletteIdx], 0.9);
+    graphics.fillStyle(foliageBase, 0.9);
     graphics.fillTriangle(
       originX, treeTopY,
       originX - 10, canopyBottom - canopyHeight * 0.85,
@@ -693,6 +746,7 @@ export class ProceduralForestGenerator {
 
   /**
    * Instancia árvores procedurais como Sprites de alta performance usando as texturas dinâmicas assadas (Phaser 4 WebGL2).
+   * Inclui camada de paralaxe no plano de fundo (silhuetas menores, mais escuras/dessaturadas com scrollFactor diferenciado).
    */
   private generateAndRenderTrees(gridW: number, gridH: number): void {
     const gameScene = this.scene as GameScene;
@@ -703,6 +757,64 @@ export class ProceduralForestGenerator {
       throw new Error('GameScene.depthGroup is required for tree rendering');
     }
 
+    // 1. Árvores de Paralaxe no Plano de Fundo (Background Parallax Layer)
+    const bgTrees: Array<{ x: number; y: number; variant: number }> = [];
+    const xSpanBg = Math.max(1, gridW - 2);
+    const ySpanBg = Math.max(1, gridH - 2);
+    for (let i = 0; i < 14; i++) {
+      bgTrees.push({
+        x: 1 + Math.floor(i * 2.1) % xSpanBg,
+        y: 1 + Math.floor(i / 1.8) % ySpanBg,
+        variant: i % 3
+      });
+    }
+
+    let bgTreeIndex = 0;
+    bgTrees.forEach(bgTree => {
+      try {
+        bgTreeIndex++;
+        const isoX = this.CAMERA_OFFSET_X + (bgTree.x - bgTree.y) * (this.TILE_WIDTH / 2);
+        const isoY = this.CAMERA_OFFSET_Y + (bgTree.x + bgTree.y) * (this.TILE_HEIGHT / 2) - 30;
+
+        const variant = bgTree.variant % 3;
+        const texKey = `procedural_tree_${variant}`;
+        const finalTexKey = gameScene.textures.exists(texKey) ? texKey : 'forest_trunk';
+
+        const treeObject = createAtmosphericTree(gameScene, isoX, isoY, finalTexKey, {
+          windSpeed: 1.0 + (variant * 0.2),
+          windStrength: 2.5 + (variant * 0.5),
+          lightDirection: [0.6, -0.8],
+          ambientOcclusion: 0.7,
+          lightIntensity: 0.5,
+          atmosphereColor: [0.03, 0.05, 0.07],
+          atmosphereFogDensity: 0.4,
+        });
+
+        if ('setScrollFactor' in treeObject && typeof (treeObject as any).setScrollFactor === 'function') {
+          (treeObject as any).setScrollFactor(0.65, 0.65);
+        }
+        if ('setScale' in treeObject && typeof (treeObject as any).setScale === 'function') {
+          (treeObject as any).setScale(0.65);
+        }
+        if ('setTint' in treeObject && typeof (treeObject as any).setTint === 'function') {
+          (treeObject as any).setTint(0x556655);
+        }
+        if ('setAlpha' in treeObject && typeof (treeObject as any).setAlpha === 'function') {
+          (treeObject as any).setAlpha(0.75);
+        }
+
+        // Profundidade menor que o solo/objetos do primeiro plano
+        if ('setDepth' in treeObject && typeof (treeObject as any).setDepth === 'function') {
+          (treeObject as any).setDepth(-10);
+        }
+
+        logger.info('ProceduralForestGenerator.generateAndRenderTrees', `Background Parallax Tree ${bgTreeIndex} rendered`, { x: bgTree.x, y: bgTree.y, variant });
+      } catch (e) {
+        logger.error('ProceduralForestGenerator.generateAndRenderTrees', `Failed to render background tree ${bgTreeIndex}`, { bgTree, error: String(e) });
+      }
+    });
+
+    // 2. Árvores do Primeiro Plano (Foreground Layer)
     const trees: Array<{ x: number; y: number; variant: number }> = [];
 
     const centerGridX = Math.floor(gridW / 2);
@@ -731,7 +843,7 @@ export class ProceduralForestGenerator {
       });
     }
 
-    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'Tree positions generated', { treeCount: trees.length });
+    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'Tree positions generated', { treeCount: trees.length, bgTreeCount: bgTrees.length });
 
     let treeIndex = 0;
     trees.forEach(tree => {
@@ -768,6 +880,6 @@ export class ProceduralForestGenerator {
       }
     });
 
-    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'All procedural fractal tree sprites rendered successfully', { totalTrees: treeIndex });
+    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'All procedural fractal tree sprites rendered successfully', { totalTrees: treeIndex, bgTrees: bgTreeIndex });
   }
 }
