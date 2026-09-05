@@ -102,6 +102,16 @@ export class DungeonFlowController {
       }
     }
 
+    // DEV-only: permite forçar um bioma via `?biome=gloomy_woods` para QA visual
+    // rápida (ex.: comparação com referências de arte) sem depender do fluxo
+    // normal de progressão da campanha. Nunca ativo em build de produção.
+    if (import.meta.env.DEV) {
+      const forcedBiome = new URLSearchParams(window.location.search).get('biome') as BiomeType | null;
+      if (forcedBiome) {
+        biome = forcedBiome;
+      }
+    }
+
     useGameStore.getState().setCurrentBiome(biome);
 
     // Apply WorldManager environmental biome changes (Lighting & Audio transitions)

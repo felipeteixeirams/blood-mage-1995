@@ -85,11 +85,10 @@ export class ProceduralForestGenerator {
       this.generateProceduralTextures();
       logger.info('ProceduralForestGenerator.generate', 'Textures generated successfully');
 
-      // Renderizar piso de grama
-      // DEBUG: Comentado para debugar renderização de árvores
-      // logger.info('ProceduralForestGenerator.generate', 'Rendering forest floor');
-      // this.renderForestFloor(gridW, gridH);
-      // logger.info('ProceduralForestGenerator.generate', 'Forest floor rendered successfully');
+      // Renderizar piso de grama (com luz solar filtrada pela copa)
+      logger.info('ProceduralForestGenerator.generate', 'Rendering forest floor');
+      this.renderForestFloor(gridW, gridH);
+      logger.info('ProceduralForestGenerator.generate', 'Forest floor rendered successfully');
 
       // Gerar e renderizar árvores
       logger.info('ProceduralForestGenerator.generate', 'Rendering trees');
@@ -479,6 +478,27 @@ export class ProceduralForestGenerator {
     shadowCanvas.refresh();
     logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_shadow texture created (100x32 - profissional com gradientes múltiplos)');
 
+    // ========== LUZ SOLAR FILTRADA PELA COPA (Dungeon Siege reference) ==========
+    // Manchas quentes de luz (amarelo-esverdeado) espalhadas no chão, simulando
+    // raios de sol atravessando as folhas — assinatura visual do cenário de
+    // referência (floresta densa e ensolarada, não puramente gótica/escura).
+    logger.info('ProceduralForestGenerator.generateProceduralTextures', 'Creating forest_light_patch texture (dappled sunlight)');
+    if (this.scene.textures.exists('forest_light_patch')) {
+      this.scene.textures.remove('forest_light_patch');
+    }
+    let lightCanvas = this.scene.textures.createCanvas('forest_light_patch', 96, 64)!;
+    let lightCtx = lightCanvas.context;
+    const lightGrad = lightCtx.createRadialGradient(48, 32, 4, 48, 32, 46);
+    lightGrad.addColorStop(0, 'rgba(255, 246, 190, 0.55)');
+    lightGrad.addColorStop(0.45, 'rgba(224, 232, 150, 0.3)');
+    lightGrad.addColorStop(1, 'rgba(224, 232, 150, 0)');
+    lightCtx.fillStyle = lightGrad;
+    lightCtx.beginPath();
+    lightCtx.ellipse(48, 32, 46, 28, 0, 0, Math.PI * 2);
+    lightCtx.fill();
+    lightCanvas.refresh();
+    logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_light_patch texture created (96x64 - manchas de luz solar)');
+
     // ========== ÁRVORES FRACTAIS ASSADAS (WebGL2 Dynamic Texture - Phaser 4 Best Practice) ==========
     logger.info('ProceduralForestGenerator.generateProceduralTextures', 'Baking procedural fractal tree textures (WebGL2 Dynamic Texture)');
     const treeVariants = [0, 1, 2];
@@ -576,109 +596,137 @@ export class ProceduralForestGenerator {
     }
 
     logger.info('ProceduralForestGenerator.renderForestFloor', 'Floor rendering complete', { tilesAdded });
+
+    // Manchas de luz solar filtrada pela copa (dappled light) — espalhadas
+    // com blend aditivo por cima da grama, simulando raios de sol vazando
+    // entre as folhas (referência visual: Dungeon Siege).
+    let patchesAdded = 0;
+    const patchCount = Math.max(6, Math.floor((gridW * gridH) / 35));
+    for (let i = 0; i < patchCount; i++) {
+      try {
+        const px = this.noise(i * 7, 500) * gridW;
+        const py = this.noise(i * 7, 501) * gridH;
+        const isoX = this.CAMERA_OFFSET_X + (px - py) * (this.TILE_WIDTH / 2);
+        const isoY = this.CAMERA_OFFSET_Y + (px + py) * (this.TILE_HEIGHT / 2);
+
+        const patch = gameScene.add.image(isoX, isoY, 'forest_light_patch');
+        patch.setBlendMode(Phaser.BlendModes.ADD);
+        patch.setAlpha(0.35 + this.noise(i, 502) * 0.3);
+        patch.setScale(0.8 + this.noise(i, 503) * 0.9);
+        patch.setDepth(isoY + 1); // levemente acima da grama, sem ultrapassar árvores próximas
+        gameScene.depthGroup.add(patch);
+        patchesAdded++;
+      } catch (e) {
+        logger.error('ProceduralForestGenerator.renderForestFloor', 'Failed to add light patch', { i, error: String(e) });
+        throw e;
+      }
+    }
+
+    logger.info('ProceduralForestGenerator.renderForestFloor', 'Dappled light patches rendered', { patchesAdded });
   }
 
   /**
-   * Desenha árvore fractal no Graphics para assar na textura dinâmica (WebGL2).
+   * Desenha uma conífera em camadas (tiers triangulares sobrepostos) no Graphics
+   * para assar na textura dinâmica (WebGL2). Substitui a antiga árvore fractal
+   * de copa única por uma silhueta de pinheiro clássica — referência visual:
+   * floresta densa e ensolarada de Dungeon Siege (2002), não um blob gótico.
    */
   private drawFractalTreeGraphics(graphics: Phaser.GameObjects.Graphics, originX: number, originY: number, seed: number): void {
-    // 1. Sombra da árvore no chão (elipse escura gótica)
-    graphics.fillStyle(0x0a0c08, 0.65);
-    graphics.fillEllipse(originX, originY + 12, 48, 20);
-
-    // 2. Cores da paleta gótica (Diablo 2 gloomy woods)
-    const trunkColors = [
-      0x2c1d11, // Carvão/marrom escuro
-      0x3d2817, // Marrom carcomido
-      0x4e3522  // Madeira envelhecida
-    ];
-    
-    const foliageColors = [
-      0x1b3b2b, // Musgo profundo gótico
-      0x234e3b, // Verde sombrio
-      0x2d5a3f, // Pinheiro escuro
-      0x1f3630, // Sombra profunda de folhagem
-      0x362432  // Tom murcho gótico
-    ];
-
     let rngState = seed;
     const pseudoRandom = (): number => {
       rngState = (rngState * 9301 + 49297) % 233280;
       return rngState / 233280;
     };
 
-    const drawBranch = (
-      startX: number,
-      startY: number,
-      length: number,
-      angle: number,
-      depth: number,
-      thickness: number
-    ): void => {
-      if (depth <= 0 || length < 4) {
-        const clusterSize = 14 + pseudoRandom() * 12;
-        const dotCount = 18 + Math.floor(pseudoRandom() * 12);
+    // 1. Sombra da árvore no chão
+    graphics.fillStyle(0x0a0c08, 0.5);
+    graphics.fillEllipse(originX, originY + 6, 40, 14);
 
-        for (let i = 0; i < dotCount; i++) {
-          const offsetX = (pseudoRandom() - 0.5) * clusterSize * 1.5;
-          const offsetY = (pseudoRandom() - 0.5) * clusterSize * 1.2;
-          const distFromCenter = Math.hypot(offsetX, offsetY);
+    // 2. Paleta de pinheiro (verdes vibrantes com sombra fria — luz filtrando
+    // pela copa, como no cenário de referência, mantendo o clima sombrio nas
+    // sombras profundas)
+    const trunkColors = [0x2c1d11, 0x3d2817, 0x4e3522];
+    const foliageShadow = [0x18321f, 0x1c3a24]; // sombra fria e profunda
+    const foliageBase = [0x2d5a3f, 0x347049];   // verde-pinheiro médio
+    const foliageLit = [0x5a9c5e, 0x6bb066];    // verde iluminado pelo sol
 
-          if (distFromCenter <= clusterSize * 0.8) {
-            const noiseVal = this.noise(startX + offsetX, startY + offsetY);
-            const colorIdx = Math.floor((noiseVal * 0.99) * foliageColors.length);
-            const dotColor = foliageColors[Math.min(foliageColors.length - 1, Math.max(0, colorIdx))];
-            
-            graphics.fillStyle(dotColor, 0.85 + noiseVal * 0.15);
-            const dotSize = 2 + (i % 3);
-            graphics.fillRect(startX + offsetX, startY + offsetY, dotSize, dotSize);
-          }
-        }
-        return;
-      }
+    const paletteIdx = Math.floor(seed) % 2;
+    const heightScale = 0.85 + pseudoRandom() * 0.35;
+    const trunkHeight = 95 * heightScale;
+    const trunkBaseY = originY;
+    const trunkTopY = originY - trunkHeight;
+    const trunkBaseWidth = 8 + pseudoRandom() * 3;
+    const trunkTopWidth = 3;
 
-      const endX = startX + Math.cos(angle) * length;
-      const endY = startY + Math.sin(angle) * length;
+    // 3. Tronco afunilado, segmentado para textura de casca
+    const trunkSegments = 14;
+    for (let i = 0; i < trunkSegments; i++) {
+      const t0 = i / trunkSegments;
+      const t1 = (i + 1) / trunkSegments;
+      const y0 = trunkBaseY - trunkHeight * t0;
+      const y1 = trunkBaseY - trunkHeight * t1;
+      const w0 = trunkBaseWidth + (trunkTopWidth - trunkBaseWidth) * t0;
+      const w1 = trunkBaseWidth + (trunkTopWidth - trunkBaseWidth) * t1;
+      const noiseVal = this.noise(i * 3, seed % 50);
+      const colorIdx = Math.floor(noiseVal * trunkColors.length);
 
-      const colorIndex = Math.min(trunkColors.length - 1, depth - 1);
-      graphics.lineStyle(Math.max(1, thickness), trunkColors[colorIndex], 1);
+      graphics.fillStyle(trunkColors[Math.min(trunkColors.length - 1, colorIdx)], 1);
       graphics.beginPath();
-      graphics.moveTo(startX, startY);
-      graphics.lineTo(endX, endY);
-      graphics.strokePath();
+      graphics.moveTo(originX - w0 / 2, y0);
+      graphics.lineTo(originX + w0 / 2, y0);
+      graphics.lineTo(originX + w1 / 2, y1);
+      graphics.lineTo(originX - w1 / 2, y1);
+      graphics.closePath();
+      graphics.fillPath();
+    }
 
-      const branchCount = (depth > 2 && pseudoRandom() > 0.4) ? 3 : 2;
-      const angleSpread = 0.45 + pseudoRandom() * 0.25;
+    // 4. Copa em camadas: tiers triangulares sobrepostos, mais largos embaixo
+    // e afunilando no topo — silhueta de conífera reconhecível à primeira vista
+    const tierCount = 6 + Math.floor(pseudoRandom() * 2); // 6-7 andares
+    const canopyBottom = trunkBaseY - 18; // andar inferior próximo ao solo
+    const canopyTop = trunkTopY - 6;      // ponta da árvore
+    const canopySpan = canopyBottom - canopyTop;
 
-      for (let b = 0; b < branchCount; b++) {
-        const offsetAngle = (b - (branchCount - 1) / 2) * angleSpread + (pseudoRandom() - 0.5) * 0.2;
-        const nextAngle = angle + offsetAngle;
-        const nextLength = length * (0.68 + pseudoRandom() * 0.15);
-        const nextThickness = Math.max(1, thickness * 0.65);
+    for (let tier = 0; tier < tierCount; tier++) {
+      const tFrac = tier / (tierCount - 1);
+      const tierWidth = (76 - tFrac * 54) * (0.88 + pseudoRandom() * 0.24);
+      const tierY = canopyBottom - tFrac * canopySpan * 0.9;
+      const tierRise = (canopySpan / tierCount) * 1.9; // altura do triângulo (overlap entre andares)
+      const tipY = tierY - tierRise;
+      const leftX = originX - tierWidth / 2;
+      const rightX = originX + tierWidth / 2;
 
-        drawBranch(endX, endY, nextLength, nextAngle, depth - 1, nextThickness);
+      // Metade esquerda: sombra fria (lado oposto à luz)
+      graphics.fillStyle(foliageShadow[paletteIdx], 0.92);
+      graphics.fillTriangle(originX, tipY, leftX, tierY, originX, tierY);
+
+      // Metade direita: base iluminada
+      graphics.fillStyle(foliageBase[paletteIdx], 0.95);
+      graphics.fillTriangle(originX, tipY, originX, tierY, rightX, tierY);
+
+      // Faixa de luz solar filtrando pela copa (canto superior direito)
+      graphics.fillStyle(foliageLit[paletteIdx], 0.55);
+      graphics.fillTriangle(
+        originX + tierWidth * 0.08, tipY + tierRise * 0.15,
+        originX + tierWidth * 0.1, tierY,
+        originX + tierWidth * 0.35, tierY
+      );
+
+      // Textura orgânica: agulhas/pontos nas bordas do tier
+      const dabCount = 8 + Math.floor(pseudoRandom() * 8);
+      for (let d = 0; d < dabCount; d++) {
+        const along = pseudoRandom();
+        const edgeX = leftX + (rightX - leftX) * along;
+        const edgeDepth = 1 - Math.abs(along - 0.5) * 2; // 1 no centro, 0 nas bordas
+        const edgeY = tipY + (tierY - tipY) * (0.35 + edgeDepth * 0.5);
+        const noiseVal = this.noise(edgeX, edgeY + seed);
+        const dotSet = noiseVal > 0.65 ? foliageLit : (noiseVal > 0.35 ? foliageBase : foliageShadow);
+
+        graphics.fillStyle(dotSet[paletteIdx], 0.5 + noiseVal * 0.35);
+        const size = 2 + noiseVal * 3;
+        graphics.fillRect(edgeX - size / 2, edgeY - size / 2, size, size);
       }
-    };
-
-    const trunkBaseX = originX;
-    const trunkBaseY = originY + 25;
-    const initialLength = 42 + (seed % 12);
-    const initialThickness = 6;
-
-    graphics.lineStyle(initialThickness, trunkColors[0], 1);
-    graphics.beginPath();
-    graphics.moveTo(trunkBaseX, trunkBaseY);
-    graphics.lineTo(trunkBaseX, trunkBaseY - initialLength * 0.5);
-    graphics.strokePath();
-
-    drawBranch(
-      trunkBaseX,
-      trunkBaseY - initialLength * 0.5,
-      initialLength * 0.6,
-      -Math.PI / 2 + (pseudoRandom() - 0.5) * 0.15,
-      4,
-      initialThickness * 0.75
-    );
+    }
   }
 
   /**
@@ -708,13 +756,16 @@ export class ProceduralForestGenerator {
       variant: 1
     });
 
+    // Densidade alta o suficiente para criar copa fechada acima do jogador
+    // (referência: floresta densa de Dungeon Siege, não árvores esparsas)
     const xSpan = Math.max(1, gridW - 4);
     const ySpan = Math.max(1, gridH - 2);
-    for (let i = 0; i < 22; i++) {
+    const backgroundTreeCount = 42;
+    for (let i = 0; i < backgroundTreeCount; i++) {
       trees.push({
         x: 2 + Math.floor(i * 1.3) % xSpan,
         y: 1 + Math.floor(i / 2.8) % ySpan,
-        variant: Math.floor(Math.random() * 3)
+        variant: Math.floor(this.noise(i * 5, 600) * 3) % 3
       });
     }
 
@@ -735,11 +786,16 @@ export class ProceduralForestGenerator {
           windSpeed: 1.6 + (variant * 0.3),
           windStrength: 4.5 + (variant * 0.8),
           lightDirection: [0.6, -0.8],
-          ambientOcclusion: 0.52,
-          lightIntensity: 0.88,
-          atmosphereColor: [0.06, 0.10, 0.12],
-          atmosphereFogDensity: 0.18,
+          ambientOcclusion: 0.45,
+          lightIntensity: 0.95,
+          atmosphereColor: [0.08, 0.12, 0.11],
+          atmosphereFogDensity: 0.1,
         });
+
+        // Variação de escala por árvore (0.75–1.35) para dar profundidade e
+        // quebrar a repetição visual das mesmas 3 texturas base
+        const scaleVariety = 0.75 + this.noise(tree.x, tree.y) * 0.6;
+        (treeObject as unknown as { setScale?: (s: number) => void }).setScale?.(scaleVariety);
 
         gameScene.depthGroup.add(treeObject);
 

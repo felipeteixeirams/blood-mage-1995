@@ -1,0 +1,158 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ProceduralForestGenerator } from './ProceduralForestGenerator';
+
+// Mesmo motivo do DungeonGenerator.test.ts: acessar o namespace Phaser em
+// runtime (não só como tipo) cascateia dependências reais de canvas/WebGL
+// que quebram em jsdom. ProceduralForestGenerator só usa `Phaser.BlendModes.ADD`
+// em runtime (para as manchas de luz solar aditivas) — mockamos só isso.
+vi.mock('phaser', () => ({
+  default: {
+    BlendModes: { ADD: 1 },
+  },
+}));
+
+function makeMockCtx() {
+  const ctx: any = {
+    fillStyle: '',
+    strokeStyle: '',
+    lineWidth: 0,
+    globalAlpha: 1,
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    fillRect: vi.fn(),
+    clearRect: vi.fn(),
+    beginPath: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    closePath: vi.fn(),
+    stroke: vi.fn(),
+    fill: vi.fn(),
+    ellipse: vi.fn(),
+    arc: vi.fn(),
+    strokeRect: vi.fn(),
+  };
+  return ctx;
+}
+
+function makeChainable(extra: Record<string, unknown> = {}) {
+  const obj: any = { ...extra };
+  const methods = ['setOrigin', 'setScale', 'setDepth', 'setAlpha', 'setBlendMode', 'setPixelArt', 'setTint'];
+  methods.forEach(m => { obj[m] = vi.fn(() => obj); });
+  return obj;
+}
+
+function makeMockScene() {
+  const textureKeys = new Set<string>();
+  const imagesCreated: any[] = [];
+  const spritesCreated: any[] = [];
+  const graphicsCreated: any[] = [];
+
+  const textures = {
+    exists: vi.fn((key: string) => textureKeys.has(key)),
+    remove: vi.fn((key: string) => textureKeys.delete(key)),
+    createCanvas: vi.fn((key: string) => {
+      textureKeys.add(key);
+      return { context: makeMockCtx(), refresh: vi.fn() };
+    }),
+    addDynamicTexture: vi.fn((key: string) => {
+      textureKeys.add(key);
+      return { draw: vi.fn(), render: vi.fn() };
+    }),
+  };
+
+  const depthGroupChildren: any[] = [];
+  const depthGroup = { add: vi.fn((obj: any) => depthGroupChildren.push(obj)) };
+
+  const add = {
+    image: vi.fn((x: number, y: number, key: string) => {
+      const img = makeChainable({ x, y, textureKey: key });
+      imagesCreated.push(img);
+      return img;
+    }),
+    sprite: vi.fn((x: number, y: number, key: string) => {
+      const spr = makeChainable({ x, y, textureKey: key });
+      spritesCreated.push(spr);
+      return spr;
+    }),
+    graphics: vi.fn(() => {
+      const g: any = {};
+      ['fillStyle', 'fillEllipse', 'fillTriangle', 'fillRect', 'lineStyle', 'beginPath', 'moveTo', 'lineTo', 'closePath', 'fillPath', 'strokePath']
+        .forEach(m => { g[m] = vi.fn(() => g); });
+      g.destroy = vi.fn();
+      graphicsCreated.push(g);
+      return g;
+    }),
+  };
+
+  const scene: any = {
+    sys: { settings: { key: 'GameScene' } },
+    game: { renderer: { isWebGL: false } }, // força fallback de Sprite (sem WebGL real em jsdom)
+    textures,
+    add,
+    depthGroup,
+    lightingSystem: undefined,
+  };
+
+  return { scene, textureKeys, imagesCreated, spritesCreated, depthGroupChildren };
+}
+
+describe('ProceduralForestGenerator', () => {
+  let mock: ReturnType<typeof makeMockScene>;
+
+  beforeEach(() => {
+    mock = makeMockScene();
+  });
+
+  it('gera a floresta sem lançar exceção e retorna uma única sala de spawn', () => {
+    const gen = new ProceduralForestGenerator(mock.scene);
+    const rooms = gen.generate(1920, 1440);
+
+    expect(rooms).toHaveLength(1);
+    expect(rooms[0].type).toBe('spawn');
+  });
+
+  it('converte pixels em células de grid (regressão do bug de ~2.76M iterações)', () => {
+    // gridW = floor(1920/64) = 30, gridH = floor(1440/32) = 45
+    const gen = new ProceduralForestGenerator(mock.scene);
+    gen.generate(1920, 1440);
+
+    const grassImages = mock.imagesCreated.filter(i => i.textureKey === 'forest_grass');
+    expect(grassImages).toHaveLength(30 * 45);
+  });
+
+  it('cria todas as texturas procedurais esperadas (piso, tronco, folhagem, sombra, luz e árvores)', () => {
+    const gen = new ProceduralForestGenerator(mock.scene);
+    gen.generate(1920, 1440);
+
+    ['forest_grass', 'forest_trunk', 'forest_foliage_1', 'forest_foliage_2', 'forest_shadow', 'forest_light_patch',
+     'procedural_tree_0', 'procedural_tree_1', 'procedural_tree_2'].forEach(key => {
+      expect(mock.textureKeys.has(key)).toBe(true);
+    });
+  });
+
+  it('renderiza manchas de luz solar filtrada (dappled light) com blend aditivo', () => {
+    const gen = new ProceduralForestGenerator(mock.scene);
+    gen.generate(1920, 1440);
+
+    const lightPatches = mock.imagesCreated.filter(i => i.textureKey === 'forest_light_patch');
+    expect(lightPatches.length).toBeGreaterThan(0);
+    lightPatches.forEach(patch => {
+      expect(patch.setBlendMode).toHaveBeenCalledWith(1); // Phaser.BlendModes.ADD (mockado)
+    });
+  });
+
+  it('instancia uma floresta densa (44 árvores: 2 próximas ao spawn + 42 de fundo)', () => {
+    const gen = new ProceduralForestGenerator(mock.scene);
+    gen.generate(1920, 1440);
+
+    expect(mock.spritesCreated.length).toBe(44);
+    // Todas as árvores foram adicionadas ao depthGroup para z-sorting isométrico
+    expect(mock.depthGroupChildren.length).toBeGreaterThanOrEqual(44);
+  });
+
+  it('propaga erro se depthGroup não estiver disponível (fail-fast, sem silenciar)', () => {
+    mock.scene.depthGroup = undefined;
+    const gen = new ProceduralForestGenerator(mock.scene);
+    expect(() => gen.generate(1920, 1440)).toThrow();
+  });
+});
