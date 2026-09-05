@@ -155,4 +155,44 @@ describe('ProceduralForestGenerator', () => {
     const gen = new ProceduralForestGenerator(mock.scene);
     expect(() => gen.generate(1920, 1440)).toThrow();
   });
+
+  // Regressão: "grama cobrindo até a cabeça do personagem" — forest_grass é
+  // um retângulo opaco sem recorte de silhueta isométrica; colocá-lo no
+  // depthGroup (Y-sort, depth = y recalculado por frame) fazia sua metade
+  // superior invadir visualmente o espaço do personagem. O piso deve ficar
+  // FORA do Y-sort, com depth fixo e baixo.
+  it('NÃO adiciona piso (grama/manchas de luz) ao depthGroup — piso é plano, fora do Y-sort', () => {
+    const gen = new ProceduralForestGenerator(mock.scene);
+    gen.generate(1920, 1440);
+
+    const grassImages = mock.imagesCreated.filter(i => i.textureKey === 'forest_grass');
+    const lightPatches = mock.imagesCreated.filter(i => i.textureKey === 'forest_light_patch');
+
+    grassImages.forEach(g => expect(mock.depthGroupChildren).not.toContain(g));
+    lightPatches.forEach(p => expect(mock.depthGroupChildren).not.toContain(p));
+  });
+
+  it('usa depth fixo e baixo para o piso, sempre atrás de qualquer objeto Y-sorted', () => {
+    const gen = new ProceduralForestGenerator(mock.scene);
+    gen.generate(1920, 1440);
+
+    const grassImages = mock.imagesCreated.filter(i => i.textureKey === 'forest_grass');
+    const lightPatches = mock.imagesCreated.filter(i => i.textureKey === 'forest_light_patch');
+
+    expect(grassImages.length).toBeGreaterThan(0);
+    grassImages.forEach(g => expect(g.setDepth).toHaveBeenCalledWith(-1000));
+    lightPatches.forEach(p => expect(p.setDepth).toHaveBeenCalledWith(-999));
+  });
+
+  it('espalha tufos de grama Y-sorted (TerrainDetailFactory) como detalhe vertical do piso', () => {
+    const gen = new ProceduralForestGenerator(mock.scene);
+    gen.generate(1920, 1440);
+
+    const tuftImages = mock.imagesCreated.filter(i => String(i.textureKey).startsWith('terrain_grass_tuft_'));
+    expect(tuftImages.length).toBeGreaterThan(0);
+    tuftImages.forEach(t => {
+      expect(t.setOrigin).toHaveBeenCalledWith(0.5, 1);
+      expect(mock.depthGroupChildren).toContain(t); // participa do Y-sort de verdade
+    });
+  });
 });

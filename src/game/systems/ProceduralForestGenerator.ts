@@ -3,6 +3,7 @@ import type { GameScene } from '../scenes/GameScene';
 import type { RoomData } from './DungeonGenerator';
 import { logger } from '../../utils/logger';
 import { createAtmosphericTree } from '../shaders/AtmosphericTreeShader';
+import { TerrainDetailFactory } from './TerrainDetailFactory';
 
 /**
  * ProceduralForestGenerator — Gera uma floresta procedural isométrica
@@ -18,6 +19,13 @@ export class ProceduralForestGenerator {
   private TILE_HEIGHT = 32;
   private CAMERA_OFFSET_X = 1600;
   private CAMERA_OFFSET_Y = 400;
+
+  // Depth fixo para o piso (grama + manchas de luz) — deliberadamente FORA
+  // do `depthGroup`/Y-sort: são planos, sem altura real, então nunca devem
+  // competir de profundidade com objetos verticais (personagem, árvores,
+  // tufos). Bem abaixo de qualquer depth Y-sorted (que começa em
+  // CAMERA_OFFSET_Y = 400+), garante que o piso fica sempre atrás.
+  private static readonly GROUND_DEPTH = -1000;
 
   // Perlin noise (simplified)
   private noiseTable: number[] = [];
@@ -576,6 +584,18 @@ export class ProceduralForestGenerator {
       throw new Error('GameScene.depthGroup is required for forest rendering');
     }
 
+    // IMPORTANTE: o piso (grama + manchas de luz) NÃO entra no `depthGroup`.
+    // `depthGroup` alimenta o ISO Y-SORTING DEPTH SYSTEM (GameScene.update(),
+    // `gameObject.setDepth(gameObject.y)` a cada frame) — correto para
+    // objetos VERTICAIS (personagem, inimigos, árvores) que devem se
+    // ocluir mutuamente conforme a posição. `forest_grass` é um retângulo
+    // 64x32 OPACO sem recorte de silhueta isométrica (losango); colocá-lo
+    // no Y-sort fazia sua metade superior invadir visualmente o espaço do
+    // personagem (reportado: "grama cobrindo até a cabeça do personagem").
+    // O piso é plano — deve ficar sempre atrás de tudo, com depth FIXO,
+    // fora do Y-sort. Detalhe vertical real (tufos de grama) é
+    // responsabilidade do TerrainDetailFactory, que sim participa do
+    // Y-sort corretamente (silhueta fina, origem na base).
     let tilesAdded = 0;
     for (let y = 0; y < gridH; y++) {
       for (let x = 0; x < gridW; x++) {
@@ -585,8 +605,7 @@ export class ProceduralForestGenerator {
 
           let grass = gameScene.add.image(isoX, isoY, 'forest_grass');
           gameScene.lightingSystem?.applyLightPipeline(grass);
-          grass.setDepth(isoY);
-          gameScene.depthGroup.add(grass);
+          grass.setDepth(ProceduralForestGenerator.GROUND_DEPTH); // fixo, fora do depthGroup
           tilesAdded++;
         } catch (e) {
           logger.error('ProceduralForestGenerator.renderForestFloor', 'Failed to add grass tile', { x, y, error: String(e) });
@@ -597,9 +616,8 @@ export class ProceduralForestGenerator {
 
     logger.info('ProceduralForestGenerator.renderForestFloor', 'Floor rendering complete', { tilesAdded });
 
-    // Manchas de luz solar filtrada pela copa (dappled light) — espalhadas
-    // com blend aditivo por cima da grama, simulando raios de sol vazando
-    // entre as folhas (referência visual: Dungeon Siege).
+    // Manchas de luz solar filtrada pela copa (dappled light) — também piso
+    // plano, mesmo raciocínio acima: depth fixo, fora do depthGroup.
     let patchesAdded = 0;
     const patchCount = Math.max(6, Math.floor((gridW * gridH) / 35));
     for (let i = 0; i < patchCount; i++) {
@@ -613,8 +631,7 @@ export class ProceduralForestGenerator {
         patch.setBlendMode(Phaser.BlendModes.ADD);
         patch.setAlpha(0.35 + this.noise(i, 502) * 0.3);
         patch.setScale(0.8 + this.noise(i, 503) * 0.9);
-        patch.setDepth(isoY + 1); // levemente acima da grama, sem ultrapassar árvores próximas
-        gameScene.depthGroup.add(patch);
+        patch.setDepth(ProceduralForestGenerator.GROUND_DEPTH + 1); // acima da grama, ainda fixo/fora do Y-sort
         patchesAdded++;
       } catch (e) {
         logger.error('ProceduralForestGenerator.renderForestFloor', 'Failed to add light patch', { i, error: String(e) });
@@ -623,6 +640,25 @@ export class ProceduralForestGenerator {
     }
 
     logger.info('ProceduralForestGenerator.renderForestFloor', 'Dappled light patches rendered', { patchesAdded });
+
+    // Tufos de grama selvagem (detalhe vertical real, Y-sorted de verdade)
+    const terrainDetailFactory = new TerrainDetailFactory(this.scene);
+    terrainDetailFactory.bakeTuftTextures();
+
+    const minIsoX = this.CAMERA_OFFSET_X - gridH * (this.TILE_WIDTH / 2);
+    const maxIsoX = this.CAMERA_OFFSET_X + gridW * (this.TILE_WIDTH / 2);
+    const maxIsoY = this.CAMERA_OFFSET_Y + (gridW + gridH) * (this.TILE_HEIGHT / 2);
+
+    const tufts = terrainDetailFactory.scatterTufts({
+      count: Math.min(220, Math.max(20, Math.floor((gridW * gridH) / 6))),
+      originX: minIsoX,
+      originY: this.CAMERA_OFFSET_Y,
+      areaWidth: maxIsoX - minIsoX,
+      areaHeight: maxIsoY - this.CAMERA_OFFSET_Y,
+      seed: 4242,
+    });
+
+    logger.info('ProceduralForestGenerator.renderForestFloor', 'Tufos de grama (Y-sorted) espalhados', { tufts: tufts.length });
   }
 
   /**
