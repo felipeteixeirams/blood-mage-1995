@@ -478,6 +478,38 @@ export class ProceduralForestGenerator {
     shadowCanvas.refresh();
     logger.info('ProceduralForestGenerator.generateProceduralTextures', 'forest_shadow texture created (100x32 - profissional com gradientes múltiplos)');
 
+    // ========== ÁRVORES FRACTAIS ASSADAS (WebGL2 Dynamic Texture - Phaser 4 Best Practice) ==========
+    logger.info('ProceduralForestGenerator.generateProceduralTextures', 'Baking procedural fractal tree textures (WebGL2 Dynamic Texture)');
+    const treeVariants = [0, 1, 2];
+    treeVariants.forEach(variant => {
+      const texKey = `procedural_tree_${variant}`;
+      if (this.scene.textures.exists(texKey)) {
+        this.scene.textures.remove(texKey);
+      }
+
+      const treeWidth = 160;
+      const treeHeight = 220;
+      const textureManager = this.scene.textures as any;
+
+      if (typeof textureManager.addDynamicTexture === 'function') {
+        const treeTexture = textureManager.addDynamicTexture(texKey, treeWidth, treeHeight);
+        const g = this.scene.add.graphics();
+        this.drawFractalTreeGraphics(g, 80, 175, 1000 + variant * 333);
+        if (treeTexture.draw && treeTexture.render) {
+          treeTexture.draw(g);
+          treeTexture.render();
+        }
+        g.destroy();
+      } else {
+        let canvasTex = this.scene.textures.createCanvas(texKey, treeWidth, treeHeight)!;
+        const g = this.scene.add.graphics();
+        this.drawFractalTreeGraphics(g, 80, 175, 1000 + variant * 333);
+        g.destroy();
+        canvasTex.refresh();
+      }
+    });
+    logger.info('ProceduralForestGenerator.generateProceduralTextures', 'All procedural tree textures baked successfully');
+
     logger.info('ProceduralForestGenerator.generateProceduralTextures', 'All procedural textures generated (professional quality)');
   }
 
@@ -546,18 +578,12 @@ export class ProceduralForestGenerator {
   }
 
   /**
-   * Desenha uma árvore procedural avançada usando a API de Graphics do Phaser,
-   * aplicando ramificação fractal (L-system simplificado) com ângulos variados,
-   * paleta de cores degradê escura estilo pixel-art gótico (Diablo 2)
-   * e aglomerados densos de folhas texturizadas com ruído matemático (pontilhados).
+   * Desenha árvore fractal no Graphics para assar na textura dinâmica (WebGL2).
    */
-  private drawProceduralFractalTree(scene: Phaser.Scene, isoX: number, isoY: number, seed: number): Phaser.GameObjects.Graphics {
-    const graphics = scene.add.graphics();
-    graphics.setDepth(isoY + 5);
-
+  private drawFractalTreeGraphics(graphics: Phaser.GameObjects.Graphics, originX: number, originY: number, seed: number): void {
     // 1. Sombra da árvore no chão (elipse escura gótica)
     graphics.fillStyle(0x0a0c08, 0.65);
-    graphics.fillEllipse(isoX, isoY + 12, 48, 20);
+    graphics.fillEllipse(originX, originY + 12, 48, 20);
 
     // 2. Cores da paleta gótica (Diablo 2 gloomy woods)
     const trunkColors = [
@@ -633,8 +659,8 @@ export class ProceduralForestGenerator {
       }
     };
 
-    const trunkBaseX = isoX;
-    const trunkBaseY = isoY + 25;
+    const trunkBaseX = originX;
+    const trunkBaseY = originY + 25;
     const initialLength = 42 + (seed % 12);
     const initialThickness = 6;
 
@@ -652,23 +678,14 @@ export class ProceduralForestGenerator {
       4,
       initialThickness * 0.75
     );
-
-    const gameScene = scene as GameScene;
-    if (gameScene.lightingSystem) {
-      gameScene.lightingSystem.applyLightPipeline(graphics);
-    }
-
-    return graphics;
   }
 
   /**
-   * Gera árvores proceduralmente e as renderiza usando a nova função fractal avançada com Graphics API.
-   * `gridW`/`gridH` são células de grid (já convertidas de pixels em
-   * `generate()`), NÃO dimensões de mundo em pixels.
+   * Instancia árvores procedurais como Sprites de alta performance usando as texturas dinâmicas assadas (Phaser 4 WebGL2).
    */
   private generateAndRenderTrees(gridW: number, gridH: number): void {
     const gameScene = this.scene as GameScene;
-    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'Starting procedural fractal tree generation');
+    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'Starting procedural fractal tree sprite instantiation');
 
     if (!gameScene.depthGroup) {
       logger.error('ProceduralForestGenerator.generateAndRenderTrees', 'depthGroup is not available', {});
@@ -677,7 +694,6 @@ export class ProceduralForestGenerator {
 
     const trees: Array<{ x: number; y: number; variant: number }> = [];
 
-    // Garantir uma árvore linda bem próxima de onde o personagem aparece (centro do grid / spawn)
     const centerGridX = Math.floor(gridW / 2);
     const centerGridY = Math.floor(gridH / 2);
     trees.push({
@@ -710,17 +726,27 @@ export class ProceduralForestGenerator {
         const isoX = this.CAMERA_OFFSET_X + (tree.x - tree.y) * (this.TILE_WIDTH / 2);
         const isoY = this.CAMERA_OFFSET_Y + (tree.x + tree.y) * (this.TILE_HEIGHT / 2);
 
-        const seed = tree.x * 73 + tree.y * 31 + tree.variant * 101;
-        const treeGraphics = this.drawProceduralFractalTree(gameScene, isoX, isoY, seed);
-        gameScene.depthGroup.add(treeGraphics);
+        const variant = tree.variant % 3;
+        const texKey = `procedural_tree_${variant}`;
+        const finalTexKey = gameScene.textures.exists(texKey) ? texKey : 'forest_trunk';
 
-        logger.info('ProceduralForestGenerator.generateAndRenderTrees', `Fractal Tree ${treeIndex} rendered`, { x: tree.x, y: tree.y, variant: tree.variant });
+        const treeSprite = gameScene.add.sprite(isoX, isoY - 15, finalTexKey);
+        treeSprite.setOrigin(0.5, 0.85);
+        treeSprite.setPixelArt(true);
+        treeSprite.setDepth(isoY + 5);
+        
+        if (gameScene.lightingSystem) {
+          gameScene.lightingSystem.applyLightPipeline(treeSprite);
+        }
+        gameScene.depthGroup.add(treeSprite);
+
+        logger.info('ProceduralForestGenerator.generateAndRenderTrees', `Fractal Tree Sprite ${treeIndex} rendered`, { x: tree.x, y: tree.y, variant });
       } catch (e) {
         logger.error('ProceduralForestGenerator.generateAndRenderTrees', `Failed to render tree ${treeIndex}`, { tree, error: String(e) });
         throw e;
       }
     });
 
-    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'All procedural fractal trees rendered successfully', { totalTrees: treeIndex });
+    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'All procedural fractal tree sprites rendered successfully', { totalTrees: treeIndex });
   }
 }
