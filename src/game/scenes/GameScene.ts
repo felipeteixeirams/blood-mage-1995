@@ -224,6 +224,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
+    (window as any).gameScene = this;
+
     // 1. Set World Bounds for Dungeon (1920 x 1440)
     const mapW = 1920;
     const mapH = 1440;
@@ -632,6 +634,9 @@ export class GameScene extends Phaser.Scene {
     // public applyCosmeticTint() abaixo e docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
 
     this.events.once('shutdown', () => {
+      if ((window as any).gameScene === this) {
+        (window as any).gameScene = null;
+      }
       if (this.virtualJoystick) {
         this.virtualJoystick.destroy();
         this.virtualJoystick = null;
@@ -651,6 +656,9 @@ export class GameScene extends Phaser.Scene {
       if (this.flickerTimer) this.flickerTimer.destroy();
     });
     this.events.once('destroy', () => {
+      if ((window as any).gameScene === this) {
+        (window as any).gameScene = null;
+      }
       if (this.virtualJoystick) {
         this.virtualJoystick.destroy();
         this.virtualJoystick = null;

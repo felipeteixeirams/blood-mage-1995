@@ -140,6 +140,40 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.aiState = Math.random() < 0.6 ? 'patrol' : 'idle';
       this.applyBaseTint();
     }
+
+    if (this.eliteAffix !== 'none') {
+      this.applyEliteGlow();
+    }
+  }
+
+  /**
+   * Aura de brilho (Beam Renderer / postFX Glow) pra elites — reforça o
+   * halo-ring + tint já existentes (2.3 Variant: Elite Aura / Halo Ring)
+   * com um glow real no próprio sprite, sem substituí-los. Mesma cor do
+   * halo, aplicado uma única vez (glow é estático; não precisa reaplicar
+   * por frame). Padrão defensivo da skill phaser-4-fx-filters: filtros só
+   * existem em WebGL real — no-op silencioso em Canvas/headless/testes.
+   */
+  private applyEliteGlow(): void {
+    try {
+      const renderer = this.scene?.game?.renderer as any;
+      const isWebGL = renderer?.isWebGL === true;
+      if (!isWebGL || typeof (this as any).enableFilters !== 'function') return;
+
+      let glowColor = 0xb8860b;
+      if (this.eliteAffix === 'frenzied') glowColor = 0xef4444;
+      else if (this.eliteAffix === 'vampiric') glowColor = 0xd97706;
+      else if (this.eliteAffix === 'cursed') glowColor = 0xa855f7;
+      else if (this.eliteAffix === 'spectral') glowColor = 0x38bdf8;
+      else if (this.eliteAffix === 'teleporter') glowColor = 0x9333ea;
+      else if (this.eliteAffix === 'reflective') glowColor = 0x0284c7;
+
+      (this as any).enableFilters();
+      (this as any).filters?.internal?.addGlow(glowColor, 3, 0, 1);
+    } catch (e) {
+      // Ambiente sem suporte a filtros (headless/Canvas) — halo-ring + tint
+      // já cobrem a distinção visual de elite, glow é só um reforço.
+    }
   }
 
   public applyBaseTint() {
@@ -821,8 +855,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         const tiltAngle = (currentVel.x * 0.001) + Math.sin(time * 0.01 + this.personalPhase) * (currentHpRatio < 0.40 ? 0.12 : 0.06);
         this.setRotation(tiltAngle);
       } else {
-        this.setScale(this.baseScale * isoScaleX, this.baseScale * isoScaleY);
-        this.setRotation(0);
+        // Respiração idle: sem isso o inimigo lê como sprite morto/congelado
+        // sempre que parado (patrol/idle passam a maior parte do tempo aqui).
+        // Mesmo padrão procedural já usado no walk cycle acima (sin(time)
+        // com personalPhase por instância, pra não respirarem em uníssono),
+        // só com amplitude bem mais sutil e frequência mais lenta.
+        const idlePulse = Math.sin(time * 0.0025 + this.personalPhase) * 0.02;
+        this.setScale(this.baseScale * isoScaleX * (1 - idlePulse), this.baseScale * isoScaleY * (1 + idlePulse));
+        this.setRotation(Math.sin(time * 0.0018 + this.personalPhase * 1.3) * 0.012);
       }
     }
 

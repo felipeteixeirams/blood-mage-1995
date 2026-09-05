@@ -168,7 +168,8 @@ void main ()
  */
 export function createAtmosphericTreeShaderConfig(
   scene: Phaser.Scene,
-  options?: TreeShaderUniforms
+  options?: TreeShaderUniforms,
+  textureSize?: [number, number]
 ): Phaser.Types.GameObjects.Shader.ShaderQuadConfig {
   const windSpeed = options?.windSpeed ?? 1.8;
   const windStrength = options?.windStrength ?? 4.5;
@@ -177,6 +178,12 @@ export function createAtmosphericTreeShaderConfig(
   const ambientOcclusion = options?.ambientOcclusion ?? 0.5;
   const atmosphereColor = options?.atmosphereColor ?? [0.06, 0.1, 0.12];
   const atmosphereFogDensity = options?.atmosphereFogDensity ?? 0.18;
+  // uResolution precisa refletir o tamanho REAL da textura assada — usado
+  // no fragment shader pra calcular o texel size da amostragem de AO/normal
+  // (uResolution errado = amostras vizinhas na proporção errada = artefato
+  // sutil de blur/distorção na iluminação direcional). Default 160x220
+  // mantido só por compatibilidade com chamadas antigas sem esse argumento.
+  const resolution = textureSize ?? [160, 220];
 
   return {
     name: ATMOSPHERIC_TREE_SHADER_NAME,
@@ -185,7 +192,7 @@ export function createAtmosphericTreeShaderConfig(
     fragmentSource: TREE_FRAGMENT_SHADER,
     initialUniforms: {
       uTime: 0,
-      uResolution: [160, 220],
+      uResolution: resolution,
       uWindSpeed: windSpeed,
       uWindStrength: windStrength,
       uLightDirection: lightDirection,
@@ -199,7 +206,7 @@ export function createAtmosphericTreeShaderConfig(
       // O Phaser 4 invoca setupUniforms antes do drawElements em cada frame
       const timeSec = (scene.time?.now || performance.now()) * 0.001;
       setUniform('uTime', timeSec);
-      setUniform('uResolution', [160, 220]);
+      setUniform('uResolution', resolution);
       setUniform('uWindSpeed', windSpeed);
       setUniform('uWindStrength', windStrength);
       setUniform('uLightDirection', lightDirection);
@@ -234,7 +241,7 @@ export function createAtmosphericTree(
       const width = (tex as any)?.source?.[0]?.width || 160;
       const height = (tex as any)?.source?.[0]?.height || 220;
 
-      const shaderConfig = createAtmosphericTreeShaderConfig(scene, options);
+      const shaderConfig = createAtmosphericTreeShaderConfig(scene, options, [width, height]);
       const treeShader = scene.add.shader(
         shaderConfig,
         x,
