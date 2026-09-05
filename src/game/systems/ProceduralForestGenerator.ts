@@ -96,6 +96,12 @@ export class ProceduralForestGenerator {
       this.generateAndRenderTrees(gridW, gridH);
       logger.info('ProceduralForestGenerator.generate', 'Trees rendered successfully');
 
+      // Iniciar partículas ambientes de poeira/pólen flutuante da floresta
+      const gameScene = this.scene as GameScene;
+      if (gameScene.advancedParticles) {
+        gameScene.advancedParticles.startForestAmbient(mapW, mapH);
+      }
+
       // Sala de spawn no CENTRO do grid isométrico renderizado (não no centro
       // do retângulo mapW x mapH em pixels — são espaços de coordenadas
       // diferentes; usar mapW/2,mapH/2 diretamente faria o jogador nascer
@@ -168,16 +174,28 @@ export class ProceduralForestGenerator {
     grassCtx.fillStyle = grassGrad;
     grassCtx.fillRect(0, 0, 64, 32);
 
-    // PADRÃO 1: Bayer dithering com variação via noise
+    // Terreno Multi-Escala: Segunda camada de ruído de baixa frequência (escala macro)
+    // para quebrar o padrão rítmico visível ao espalhar tiles por grandes áreas.
+    for (let y = 0; y < 32; y++) {
+      for (let x = 0; x < 64; x++) {
+        const macroNoise = this.noise(x * 0.05, y * 0.05); // Baixa frequência
+        if (macroNoise > 0.5) {
+          grassCtx.fillStyle = `rgba(50, 85, 30, ${(macroNoise - 0.5) * 0.35})`;
+          grassCtx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+
+    // PADRÃO 1: Bayer dithering com variação via micro noise
     const grassBayer = [[0, 2], [3, 1]];
     for (let y = 0; y < 32; y++) {
       for (let x = 0; x < 64; x++) {
         const bayerVal = grassBayer[y % 2][x % 2];
-        const noiseVal = this.noise(x * 0.3, y * 0.2);
+        const microNoise = this.noise(x * 0.3, y * 0.2);
         const threshold = (bayerVal / 4) * 255;
 
-        if ((threshold < 85 || (threshold < 170 && noiseVal > 0.6)) && noiseVal > 0.3) {
-          grassCtx.fillStyle = `rgba(${100 + Math.floor(noiseVal * 30)}, ${130 + Math.floor(noiseVal * 20)}, ${40}, ${0.3 + noiseVal * 0.2})`;
+        if ((threshold < 85 || (threshold < 170 && microNoise > 0.6)) && microNoise > 0.3) {
+          grassCtx.fillStyle = `rgba(${100 + Math.floor(microNoise * 30)}, ${130 + Math.floor(microNoise * 20)}, ${40}, ${0.3 + microNoise * 0.2})`;
           grassCtx.fillRect(x, y, 1, 1);
         }
       }
@@ -495,7 +513,7 @@ export class ProceduralForestGenerator {
       if (typeof textureManager.addDynamicTexture === 'function') {
         const treeTexture = textureManager.addDynamicTexture(texKey, treeWidth, treeHeight);
         const g = this.scene.add.graphics();
-        this.drawFractalTreeGraphics(g, 80, 175, 1000 + variant * 333);
+        this.drawFractalTreeGraphics(g, 80, 175, 1000 + variant * 333, variant);
         if (treeTexture.draw && treeTexture.render) {
           treeTexture.draw(g);
           treeTexture.render();
@@ -504,7 +522,7 @@ export class ProceduralForestGenerator {
       } else {
         let canvasTex = this.scene.textures.createCanvas(texKey, treeWidth, treeHeight)!;
         const g = this.scene.add.graphics();
-        this.drawFractalTreeGraphics(g, 80, 175, 1000 + variant * 333);
+        this.drawFractalTreeGraphics(g, 80, 175, 1000 + variant * 333, variant);
         g.destroy();
         canvasTex.refresh();
       }
@@ -564,6 +582,15 @@ export class ProceduralForestGenerator {
           const isoY = this.CAMERA_OFFSET_Y + (x + y) * (this.TILE_HEIGHT / 2);
 
           let grass = gameScene.add.image(isoX, isoY, 'forest_grass');
+
+          // Aplica variação de tonalidade multi-escala baseada em coordenadas de grid de grande escala
+          const macroNoise = this.noise(x * 0.12, y * 0.12);
+          if (macroNoise < 0.35) {
+            grass.setTint(0x88aa77); // Tom mais úmido e sombrio
+          } else if (macroNoise > 0.70) {
+            grass.setTint(0xbbdd88); // Tom mais amarelado e iluminado
+          }
+
           gameScene.lightingSystem?.applyLightPipeline(grass);
           grass.setDepth(isoY);
           gameScene.depthGroup.add(grass);
@@ -580,26 +607,35 @@ export class ProceduralForestGenerator {
 
   /**
    * Desenha árvore fractal no Graphics para assar na textura dinâmica (WebGL2).
+   * Indexa as paletas por variante real (0, 1, 2) para distinguir visualmente as 3 árvores.
    */
-  private drawFractalTreeGraphics(graphics: Phaser.GameObjects.Graphics, originX: number, originY: number, seed: number): void {
+  public drawFractalTreeGraphics(graphics: Phaser.GameObjects.Graphics, originX: number, originY: number, seed: number, variantIndex: number = 0): void {
     // 1. Sombra da árvore no chão (elipse escura gótica)
     graphics.fillStyle(0x0a0c08, 0.65);
     graphics.fillEllipse(originX, originY + 12, 48, 20);
 
-    // 2. Cores da paleta gótica (Diablo 2 gloomy woods)
-    const trunkColors = [
-      0x2c1d11, // Carvão/marrom escuro
-      0x3d2817, // Marrom carcomido
-      0x4e3522  // Madeira envelhecida
+    // 2. Cores da paleta gótica por variante real (Diablo 2 gloomy woods)
+    const palettes = [
+      // Variante 0: Pinheiro Sombrio (Verde Esmeralda Gótico)
+      {
+        trunk: [0x2c1d11, 0x3d2817, 0x4e3522],
+        foliage: [0x3a6b4c, 0x234e3b, 0x12291e, 0x2d5a3f, 0x1b3b2b]
+      },
+      // Variante 1: Outono Murcho (Âmbar / Ocre Sombrio)
+      {
+        trunk: [0x361f12, 0x482b19, 0x5a3821],
+        foliage: [0x8c6227, 0x6e4318, 0x42240b, 0x593615, 0x381b08]
+      },
+      // Variante 2: Cipreste Noturno (Azul-petróleo / Teal Sombrio)
+      {
+        trunk: [0x1f2421, 0x2c332e, 0x3d4741],
+        foliage: [0x2a5a5b, 0x1d3f40, 0x0f2425, 0x254c4d, 0x0a191a]
+      }
     ];
-    
-    const foliageColors = [
-      0x1b3b2b, // Musgo profundo gótico
-      0x234e3b, // Verde sombrio
-      0x2d5a3f, // Pinheiro escuro
-      0x1f3630, // Sombra profunda de folhagem
-      0x362432  // Tom murcho gótico
-    ];
+
+    const currentPalette = palettes[Math.abs(variantIndex) % palettes.length];
+    const trunkColors = currentPalette.trunk;
+    const foliageColors = currentPalette.foliage;
 
     let rngState = seed;
     const pseudoRandom = (): number => {
@@ -683,6 +719,7 @@ export class ProceduralForestGenerator {
 
   /**
    * Instancia árvores procedurais como Sprites de alta performance usando as texturas dinâmicas assadas (Phaser 4 WebGL2).
+   * Inclui camada de paralaxe no plano de fundo (silhuetas menores, mais escuras/dessaturadas com scrollFactor diferenciado).
    */
   private generateAndRenderTrees(gridW: number, gridH: number): void {
     const gameScene = this.scene as GameScene;
@@ -693,6 +730,64 @@ export class ProceduralForestGenerator {
       throw new Error('GameScene.depthGroup is required for tree rendering');
     }
 
+    // 1. Árvores de Paralaxe no Plano de Fundo (Background Parallax Layer)
+    const bgTrees: Array<{ x: number; y: number; variant: number }> = [];
+    const xSpanBg = Math.max(1, gridW - 2);
+    const ySpanBg = Math.max(1, gridH - 2);
+    for (let i = 0; i < 14; i++) {
+      bgTrees.push({
+        x: 1 + Math.floor(i * 2.1) % xSpanBg,
+        y: 1 + Math.floor(i / 1.8) % ySpanBg,
+        variant: i % 3
+      });
+    }
+
+    let bgTreeIndex = 0;
+    bgTrees.forEach(bgTree => {
+      try {
+        bgTreeIndex++;
+        const isoX = this.CAMERA_OFFSET_X + (bgTree.x - bgTree.y) * (this.TILE_WIDTH / 2);
+        const isoY = this.CAMERA_OFFSET_Y + (bgTree.x + bgTree.y) * (this.TILE_HEIGHT / 2) - 30;
+
+        const variant = bgTree.variant % 3;
+        const texKey = `procedural_tree_${variant}`;
+        const finalTexKey = gameScene.textures.exists(texKey) ? texKey : 'forest_trunk';
+
+        const treeObject = createAtmosphericTree(gameScene, isoX, isoY, finalTexKey, {
+          windSpeed: 1.0 + (variant * 0.2),
+          windStrength: 2.5 + (variant * 0.5),
+          lightDirection: [0.6, -0.8],
+          ambientOcclusion: 0.7,
+          lightIntensity: 0.5,
+          atmosphereColor: [0.03, 0.05, 0.07],
+          atmosphereFogDensity: 0.4,
+        });
+
+        if ('setScrollFactor' in treeObject && typeof (treeObject as any).setScrollFactor === 'function') {
+          (treeObject as any).setScrollFactor(0.65, 0.65);
+        }
+        if ('setScale' in treeObject && typeof (treeObject as any).setScale === 'function') {
+          (treeObject as any).setScale(0.65);
+        }
+        if ('setTint' in treeObject && typeof (treeObject as any).setTint === 'function') {
+          (treeObject as any).setTint(0x556655);
+        }
+        if ('setAlpha' in treeObject && typeof (treeObject as any).setAlpha === 'function') {
+          (treeObject as any).setAlpha(0.75);
+        }
+
+        // Profundidade menor que o solo/objetos do primeiro plano
+        if ('setDepth' in treeObject && typeof (treeObject as any).setDepth === 'function') {
+          (treeObject as any).setDepth(-10);
+        }
+
+        logger.info('ProceduralForestGenerator.generateAndRenderTrees', `Background Parallax Tree ${bgTreeIndex} rendered`, { x: bgTree.x, y: bgTree.y, variant });
+      } catch (e) {
+        logger.error('ProceduralForestGenerator.generateAndRenderTrees', `Failed to render background tree ${bgTreeIndex}`, { bgTree, error: String(e) });
+      }
+    });
+
+    // 2. Árvores do Primeiro Plano (Foreground Layer)
     const trees: Array<{ x: number; y: number; variant: number }> = [];
 
     const centerGridX = Math.floor(gridW / 2);
@@ -718,7 +813,7 @@ export class ProceduralForestGenerator {
       });
     }
 
-    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'Tree positions generated', { treeCount: trees.length });
+    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'Tree positions generated', { treeCount: trees.length, bgTreeCount: bgTrees.length });
 
     let treeIndex = 0;
     trees.forEach(tree => {
@@ -750,6 +845,6 @@ export class ProceduralForestGenerator {
       }
     });
 
-    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'All procedural fractal tree sprites rendered successfully', { totalTrees: treeIndex });
+    logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'All procedural fractal tree sprites rendered successfully', { totalTrees: treeIndex, bgTrees: bgTreeIndex });
   }
 }
