@@ -39,6 +39,13 @@ vi.mock('phaser', () => {
     clearTint() { this.isTinted = false; return this; }
     setAlpha() { return this; }
     setFlipX(f: boolean) { this.flipX = f; return this; }
+    // enableFilters existe no mock (Phaser 4 real sempre expõe o método),
+    // mas só popula `this.filters` quando chamado — Enemy.applyEliteGlow
+    // só chama isso quando scene.game.renderer.isWebGL === true, então o
+    // "no-op" real de ambientes headless continua coberto pelos testes
+    // que usam makeScene() sem `game` (a maioria).
+    public filters: any = null;
+    enableFilters() { this.filters = { internal: { addGlow: vi.fn() } }; return this; }
   }
 
   class Scene {
@@ -192,10 +199,38 @@ describe('Enemy Monster Balancing & Scaling', () => {
     expect(reflective.hp).toBe(115); // 85 * 1.35 = 114.75 -> 115
     expect(reflective.eliteAffix).toBe('reflective');
 
+    // Ambiente headless (makeScene() padrão, sem scene.game): o glow FX
+    // (phaser-4-fx-filters — filters só existem sob WebGL real) faz no-op
+    // silencioso — halo-ring + tint continuam sendo a distinção de elite
+    // aqui. Nada lançou construindo os 5 elites acima; é essa a garantia.
+    expect((reflective as any).filters).toBeNull();
+
     // Take 40 damage from source (100, 50). 35% mitigation -> 26 damage
     reflective.takeDamage(40, 100, 50);
     expect(reflective.hp).toBe(115 - 26);
     expect(scene.spawnReflectedSpark).toHaveBeenCalledWith(100, 100, 100, 50);
+  });
+
+  it('aplica glow FX (postFX addGlow) na cor do afixo quando WebGL está disponível', () => {
+    const scene = makeScene();
+    scene.game = { renderer: { isWebGL: true } };
+
+    const vampiric = new Enemy(scene, 100, 100, 'skeleton_warrior', {
+      floorDepth: 1,
+      eliteAffix: 'vampiric',
+    });
+
+    expect((vampiric as any).filters).not.toBeNull();
+    expect((vampiric as any).filters.internal.addGlow).toHaveBeenCalledWith(0xd97706, 3, 0, 1);
+  });
+
+  it('NÃO aplica glow FX em inimigos comuns (sem afixo de elite)', () => {
+    const scene = makeScene();
+    scene.game = { renderer: { isWebGL: true } };
+
+    const commonEnemy = new Enemy(scene, 100, 100, 'skeleton_warrior', { floorDepth: 1 });
+
+    expect((commonEnemy as any).filters).toBeNull();
   });
 
   it('handles advanced damage effects (flinch, knockback, hit flash) and gibs on overkill', () => {
