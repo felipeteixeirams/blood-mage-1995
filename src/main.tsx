@@ -46,7 +46,7 @@ if (typeof window !== 'undefined') {
 import './index.css';
 
 // ─── PWA Service Worker Registration ───
-if ('serviceWorker' in navigator) {
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', {
