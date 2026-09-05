@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { GameScene } from '../scenes/GameScene';
 import type { RoomData } from './DungeonGenerator';
 import { logger } from '../../utils/logger';
+import { createAtmosphericTree } from '../shaders/AtmosphericTreeShader';
 
 /**
  * ProceduralForestGenerator — Gera uma floresta procedural isométrica
@@ -730,17 +731,19 @@ export class ProceduralForestGenerator {
         const texKey = `procedural_tree_${variant}`;
         const finalTexKey = gameScene.textures.exists(texKey) ? texKey : 'forest_trunk';
 
-        const treeSprite = gameScene.add.sprite(isoX, isoY - 15, finalTexKey);
-        treeSprite.setOrigin(0.5, 0.85);
-        treeSprite.setPixelArt(true);
-        treeSprite.setDepth(isoY + 5);
-        
-        if (gameScene.lightingSystem) {
-          gameScene.lightingSystem.applyLightPipeline(treeSprite);
-        }
-        gameScene.depthGroup.add(treeSprite);
+        const treeObject = createAtmosphericTree(gameScene, isoX, isoY, finalTexKey, {
+          windSpeed: 1.6 + (variant * 0.3),
+          windStrength: 4.5 + (variant * 0.8),
+          lightDirection: [0.6, -0.8],
+          ambientOcclusion: 0.52,
+          lightIntensity: 0.88,
+          atmosphereColor: [0.06, 0.10, 0.12],
+          atmosphereFogDensity: 0.18,
+        });
 
-        logger.info('ProceduralForestGenerator.generateAndRenderTrees', `Fractal Tree Sprite ${treeIndex} rendered`, { x: tree.x, y: tree.y, variant });
+        gameScene.depthGroup.add(treeObject);
+
+        logger.info('ProceduralForestGenerator.generateAndRenderTrees', `Atmospheric Fractal Tree ${treeIndex} rendered`, { x: tree.x, y: tree.y, variant });
       } catch (e) {
         logger.error('ProceduralForestGenerator.generateAndRenderTrees', `Failed to render tree ${treeIndex}`, { tree, error: String(e) });
         throw e;

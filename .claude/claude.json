@@ -13,6 +13,7 @@
     },
     "contextPriority": [
       "CLAUDE.md",
+      ".claude/skills/",
       "docs/critical/",
       "docs/architecture/",
       "src/",
@@ -51,6 +52,11 @@
   },
   "documentation": {
     "criticalDocs": [
+      ".claude/skills/phaser-4-development/SKILL.md",
+      ".claude/skills/phaser-4-animation-tweens/SKILL.md",
+      ".claude/skills/phaser-4-physics-combat/SKILL.md",
+      ".claude/skills/phaser-4-fx-filters/SKILL.md",
+      ".claude/skills/phaser-4-playtest-harness/SKILL.md",
       "docs/critical/01_CRITICAL_FILES.md",
       "docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md",
       "docs/architecture/03_PHASER_PATTERNS.md"

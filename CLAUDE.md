@@ -61,6 +61,12 @@ docs/
 5. **`docs/architecture/04_STATE_MANAGEMENT.md`** — Zustand + React ↔ Phaser bridge
 6. **`docs/critical/01_CRITICAL_FILES.md`** — Arquivos que NÃO se deve tocar (MUST READ)
 7. **`docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md`** — Bugs conhecidos e workarounds
+8. **`.claude/skills/` (Phaser 4.2.1 Skills Especializadas)**:
+   - `phaser-4-development/SKILL.md`: WebGL2, baking pattern e shaders
+   - `phaser-4-animation-tweens/SKILL.md`: Animações, tweens encadeados e FSM de ataque
+   - `phaser-4-physics-combat/SKILL.md`: Arcade Physics, hitboxes e poda espacial
+   - `phaser-4-fx-filters/SKILL.md`: Beam Renderer, `enableFilters()`, auras e vinhetas
+   - `phaser-4-playtest-harness/SKILL.md`: Verificação de runtime e testes de fumaça E2E
 
 ### 2. Regras de Ouro
 

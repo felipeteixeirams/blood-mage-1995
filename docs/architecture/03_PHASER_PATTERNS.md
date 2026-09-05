@@ -41,3 +41,12 @@ Bloodmage 1995 utiliza padrões consagrados no ecossistema do Phaser para garant
      `CollisionHandlers.ts`, `DungeonFlowController.ts`, `ScavengingSystem.ts`
      e `CombatEffectsSystem.ts`. Histórico completo e estado atual em
      `05_GAMESCENE_REFACTOR.md`.
+5. **Renderização WebGL2, Dynamic Textures e Shaders Customizados (Phaser 4.2.1)**:
+   - Arte procedural pesada (como árvores fractais de `ProceduralForestGenerator.ts`) deve ser assada uma única vez no WebGL2 via `textures.addDynamicTexture(...)` e renderizada como `Sprite` leve ou `Shader` de alta performance. NUNCA desenhe gráficos procedurais a cada frame no loop `update()`.
+   - Para efeitos visuais atmosféricos (como o vento balançando galhos e sombreamento difuso/AO), utilize `Phaser.GameObjects.Shader` com `ShaderQuadConfig` e `setupUniforms` (ver `src/game/shaders/AtmosphericTreeShader.ts`).
+   - Consulte a suíte de skills especializadas em `.claude/skills/`:
+     - `phaser-4-development/SKILL.md`: WebGL2, baking pattern e shaders GLSL
+     - `phaser-4-animation-tweens/SKILL.md`: Spritesheets, tweens encadeados (`this.tweens.chain`) e FSM de ataque telegrafado (`Windup` -> `Strike` -> `Recovery`)
+     - `phaser-4-physics-combat/SKILL.md`: Arcade Physics, hitboxes isométricas, colisão com paredes e poda espacial (`distanceSquared`) antes de raycasts
+     - `phaser-4-fx-filters/SKILL.md`: Beam Renderer, regra de `enableFilters()`, auras sanguíneas e vinhetas
+     - `phaser-4-playtest-harness/SKILL.md`: Smoke tests automatizados no Playwright para detecção de telas pretas e assets 404
