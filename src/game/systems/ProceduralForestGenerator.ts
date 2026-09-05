@@ -677,9 +677,23 @@ export class ProceduralForestGenerator {
 
     const trees: Array<{ x: number; y: number; variant: number }> = [];
 
+    // Garantir uma árvore linda bem próxima de onde o personagem aparece (centro do grid / spawn)
+    const centerGridX = Math.floor(gridW / 2);
+    const centerGridY = Math.floor(gridH / 2);
+    trees.push({
+      x: centerGridX + 1,
+      y: centerGridY + 1,
+      variant: 0
+    });
+    trees.push({
+      x: centerGridX - 1,
+      y: centerGridY + 1,
+      variant: 1
+    });
+
     const xSpan = Math.max(1, gridW - 4);
     const ySpan = Math.max(1, gridH - 2);
-    for (let i = 0; i < 24; i++) {
+    for (let i = 0; i < 22; i++) {
       trees.push({
         x: 2 + Math.floor(i * 1.3) % xSpan,
         y: 1 + Math.floor(i / 2.8) % ySpan,
