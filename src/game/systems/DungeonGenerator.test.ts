@@ -255,6 +255,6 @@ describe('DungeonGenerator (spec 11, Frente 1 — layout orgânico via BSP + Cel
     expect(centerKey).toMatch(/^tile_ground_var_\d$/);
 
     const safeHouseKey = generator.getGroundTextureKey(10, 10, true);
-    expect(safeHouseKey).toBe('tile_wood_floor');
+    expect(safeHouseKey).toMatch(/^tile_wood_floor(_var_\d|_rug)?$/);
   });
 });

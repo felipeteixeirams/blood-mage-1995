@@ -4,6 +4,7 @@ import { SpikeTrap, ExplosiveBarrel } from '../objects/Traps';
 import { HeightmapGenerator, calculateIsometricDepth } from './HeightmapGenerator';
 import { ProceduralForestGenerator } from './ProceduralForestGenerator';
 import { DungeonDetailFactory } from './DungeonDetailFactory';
+import { SafeHouseDetailFactory } from './SafeHouseDetailFactory';
 import type { GameScene } from '../scenes/GameScene';
 
 export interface RoomData {
@@ -71,7 +72,7 @@ export class DungeonGenerator {
     }
 
     const isSafeHouse = biome === 'safe_house';
-    const groundTexture = isSafeHouse ? 'tile_wood_floor' : 'tile_ground';
+    const groundTexture = 'tile_ground';
     const tints = BIOME_TINTS[biome] || BIOME_TINTS.fosso_chagas;
     this.heightGenerator = new HeightmapGenerator(1995);
     const heightGen = this.heightGenerator;
@@ -173,7 +174,7 @@ export class DungeonGenerator {
         const renderY = y - (zElevation * 2);
         const tileX = x + (y % 48 === 0 ? 0 : 24);
 
-        const tileTexKey = isSafeHouse ? groundTexture : this.getGroundTextureKey(gridX, gridY, isSafeHouse, isFloorCell);
+        const tileTexKey = this.getGroundTextureKey(gridX, gridY, isSafeHouse, isFloorCell);
         const tile = this.scene.add.image(tileX, renderY, tileTexKey);
         if (!isSafeHouse) {
           tile.setTint(tints.ground);
@@ -346,12 +347,18 @@ export class DungeonGenerator {
       }
     });
 
-    // Scatter decor details per room using DungeonDetailFactory
+    // Scatter decor details per room using DungeonDetailFactory or SafeHouseDetailFactory
     if (!isSafeHouse) {
       const detailFactory = new DungeonDetailFactory(this.scene);
       detailFactory.bakeDetailTextures();
       rooms.forEach((room) => {
         detailFactory.scatterDetails(room, biome);
+      });
+    } else {
+      const safeHouseFactory = new SafeHouseDetailFactory(this.scene);
+      safeHouseFactory.bakeDetailTextures();
+      rooms.forEach((room) => {
+        safeHouseFactory.scatterDetails(room);
       });
     }
 
@@ -540,7 +547,20 @@ export class DungeonGenerator {
     isSafeHouse: boolean = false,
     isFloorFn?: (gx: number, gy: number) => boolean
   ): string {
-    if (isSafeHouse) return 'tile_wood_floor';
+    if (isSafeHouse) {
+      // Deterministic pseudo-noise for wood floor variants and rare tapestry rug tile
+      const noiseVal = Math.abs(Math.sin(gridX * 12.9898 + gridY * 78.233));
+      const rugChance = Math.abs(Math.sin(gridX * 43.123 + gridY * 19.876));
+
+      // 1 in 18 tiles (~5.5% probability) displays carpet rug overlay
+      if (rugChance > 0.945) {
+        return this.scene.textures?.exists('tile_wood_floor_rug') ? 'tile_wood_floor_rug' : 'tile_wood_floor';
+      }
+
+      const variantIdx = Math.floor(noiseVal * 5) % 5;
+      const varKey = `tile_wood_floor_var_${variantIdx}`;
+      return this.scene.textures?.exists(varKey) ? varKey : 'tile_wood_floor';
+    }
 
     // Deterministic pseudo-noise variant for center tiles
     const variantIdx = Math.floor(Math.abs(Math.sin(gridX * 12.9898 + gridY * 78.233)) * 5) % 5;
