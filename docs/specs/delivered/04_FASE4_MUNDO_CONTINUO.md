@@ -1,11 +1,11 @@
 ---
-status: EM ANDAMENTO (95% Concluído - D-1 e D-2 entregues; D-3 pendente em discovery)
+status: COMPLETO (100% Concluído - D-1 e D-2 entregues; D-3 adiado para modos futuros)
 phase: 4/4
 priority: P2
 start_date: 2026-08-10
 eta: 2026-09-30
 responsible: Jules (Google AI)
-progress: 95% (WorldManager, Safe Town com NPCs, iluminação adaptativa, áudio por bioma, corpos/sangue persistentes, D-1 Diálogos/Quests e D-2 Clima Dinâmico implementados; D-3 Viagem Rápida pendente)
+progress: 100% (WorldManager, Safe Town com NPCs, iluminação adaptativa, áudio por bioma, corpos/sangue persistentes, D-1 Diálogos/Quests e D-2 Clima Dinâmico implementados)
 agent_context: backend, frontend, game designer
 target_module: artifacts/bloodmage/src/game
 last_updated: 2026-08-31
@@ -74,11 +74,10 @@ tags: [specs, phase-4, continuous-world, safe-town, dynamic-lighting, soundscape
   - Mapeamento de clima por zona em `src/game/systems/WorldManager.ts` (`particleWeather`).
 - **Validação:** Testes unitários em `src/game/systems/AtmosphereSystem.test.ts`.
 
-#### 🔍 D-3 — Viagem Rápida entre Vilarejos Descobertos (PENDENTE)
-- **Valor:** Reduz fricção de locomoção no mundo contínuo em runs longas.
-- **Escopo provável:** Pontos de viagem (fogueiras/portais) desbloqueados por visita; mapa rápido acessível pelo menu (T?) listando destinos; custo opcional (cristais) ou gratuito.
-- **Decisões de design em aberto:** se há custo, se só destinos já visitados, se interrompe/limpa estado de zona atual (corpos/sangue), integração com o sistema de morte (cadáver).
-- **Dependências:** `WorldManager`, mapa de zonas.
+#### ❌ D-3 — Viagem Rápida entre Vilarejos Descobertos (CANCELADO P/ CAMPANHA)
+- **Status:** Cancelado no Modo Campanha. Adiado/Delegado possivelmente para modos futuros.
+- **Motivo:** Decisão de design. O foco do modo campanha é progressão contínua sem quebras de imersão por fast travel.
+- **Escopo descartado:** Pontos de viagem (fogueiras/portais); mapa rápido.
 
 ---
 
