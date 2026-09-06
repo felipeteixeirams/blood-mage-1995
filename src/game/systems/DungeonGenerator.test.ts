@@ -63,10 +63,24 @@ function makeMockScene() {
         imagesCreated.push(img);
         return img;
       }),
+      graphics: vi.fn(() => ({
+        fillStyle: vi.fn(),
+        fillEllipse: vi.fn(),
+        fillCircle: vi.fn(),
+        fillRect: vi.fn(),
+        fillTriangle: vi.fn(),
+        lineStyle: vi.fn(),
+        beginPath: vi.fn(),
+        moveTo: vi.fn(),
+        lineTo: vi.fn(),
+        strokePath: vi.fn(),
+        strokeCircle: vi.fn(),
+        destroy: vi.fn(),
+      })),
       star: vi.fn(() => chainable()),
       circle: vi.fn(() => chainable()),
     },
-    textures: { exists: vi.fn(() => true) },
+    textures: { exists: vi.fn(() => true), remove: vi.fn(), createCanvas: vi.fn() },
     spikeTrapsGroup: { add: vi.fn() },
     barrelsGroup: { add: vi.fn() },
   };
@@ -218,5 +232,29 @@ describe('DungeonGenerator (spec 11, Frente 1 — layout orgânico via BSP + Cel
     });
 
     expect(scene.lightingSystem.applyLightPipeline).toHaveBeenCalled();
+  });
+
+  it('calcula máscara de bits (bitmask) corretamente para diferentes vizinhanças de grid', () => {
+    const { scene, wallsGroup, chestsGroup } = makeMockScene();
+    const generator = new DungeonGenerator(scene, wallsGroup as any, chestsGroup as any);
+
+    // Todos os vizinhos N, E, S, W presentes -> Bitmask 15
+    const fullMask = generator.calculateBitmask(5, 5, () => true);
+    expect(fullMask).toBe(15);
+
+    // Borda N (sem vizinho N) -> Bitmask 14 (E + S + W)
+    const edgeN = generator.calculateBitmask(5, 5, (gx, gy) => gy >= 5);
+    expect(edgeN).toBe(14); // E(2) + S(4) + W(8) = 14
+  });
+
+  it('seleciona variante orgânica ou autotile mask para o piso de acordo com a posição e vizinhança', () => {
+    const { scene, wallsGroup, chestsGroup } = makeMockScene();
+    const generator = new DungeonGenerator(scene, wallsGroup as any, chestsGroup as any);
+
+    const centerKey = generator.getGroundTextureKey(10, 10, false);
+    expect(centerKey).toMatch(/^tile_ground_var_\d$/);
+
+    const safeHouseKey = generator.getGroundTextureKey(10, 10, true);
+    expect(safeHouseKey).toBe('tile_wood_floor');
   });
 });

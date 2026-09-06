@@ -3,6 +3,7 @@ import { BiomeType } from '../../types/game';
 import { SpikeTrap, ExplosiveBarrel } from '../objects/Traps';
 import { HeightmapGenerator, calculateIsometricDepth } from './HeightmapGenerator';
 import { ProceduralForestGenerator } from './ProceduralForestGenerator';
+import { DungeonDetailFactory } from './DungeonDetailFactory';
 import type { GameScene } from '../scenes/GameScene';
 
 export interface RoomData {
@@ -76,7 +77,92 @@ export class DungeonGenerator {
 
     const wallTextureKey = this.scene.textures?.exists('spr_wall') ? 'spr_wall' : 'tile_wall_brick';
 
-    // Fill Isometric Floor Tiles with Biome Tinting & 2.5D Elevation (Spec 16)
+    let rooms: RoomData[] = [];
+    let orderedCells: Array<{ leaf: BspLeaf; room: RoomData }> = [];
+
+    const originX = 90;
+    const originY = 70;
+    const usableW = mapW - originX - 90;
+    const usableH = mapH - originY - 70;
+
+    if (isSafeHouse) {
+      const roomW = 800;
+      const roomH = 600;
+      const rx = (mapW - roomW) / 2;
+      const ry = (mapH - roomH) / 2;
+
+      rooms.push({
+        x: rx,
+        y: ry,
+        width: roomW,
+        height: roomH,
+        centerX: rx + roomW / 2,
+        centerY: ry + roomH / 2,
+        type: 'spawn',
+      });
+    } else {
+      // Frente 1 (spec 11, 27/08) — layout orgânico via BSP + Cellular Automata
+      const minLeafW = 380;
+      const minLeafH = 320;
+      const targetLeafCount = 6 + Math.floor(Math.random() * 4); // 6..9 inclusive
+
+      const leaves = this.bspSplit(
+        { x: originX, y: originY, width: usableW, height: usableH },
+        targetLeafCount,
+        minLeafW,
+        minLeafH
+      );
+
+      const caCols = 6;
+      const caRows = 5;
+      const corridorGrid = this.computeCorridorZoneGrid(caCols, caRows);
+
+      const cells = leaves.map((leaf) => ({
+        leaf,
+        room: this.carveRoomFromLeaf(leaf, corridorGrid, caCols, caRows, originX, originY, usableW, usableH),
+      }));
+
+      // Sala de spawn: a mais próxima do canto superior-esquerdo utilizável
+      let spawnCell = cells[0];
+      cells.forEach((cell) => {
+        if (cell.room.centerX + cell.room.centerY < spawnCell.room.centerX + spawnCell.room.centerY) {
+          spawnCell = cell;
+        }
+      });
+      spawnCell.room.type = 'spawn';
+
+      const distFromSpawn = (c: typeof cells[number]) =>
+        Math.hypot(c.room.centerX - spawnCell.room.centerX, c.room.centerY - spawnCell.room.centerY);
+
+      let bossCell: typeof cells[number] | null = null;
+      cells.forEach((cell) => {
+        if (cell === spawnCell) return;
+        if (!bossCell || distFromSpawn(cell) > distFromSpawn(bossCell)) bossCell = cell;
+      });
+      if (bossCell) (bossCell as typeof cells[number]).room.type = 'boss';
+
+      let treasureCell: typeof cells[number] | null = null;
+      cells.forEach((cell) => {
+        if (cell === spawnCell || cell === bossCell) return;
+        if (!treasureCell || distFromSpawn(cell) > distFromSpawn(treasureCell)) treasureCell = cell;
+      });
+      if (treasureCell) (treasureCell as typeof cells[number]).room.type = 'secret_treasure';
+
+      orderedCells = [spawnCell, ...cells.filter((c) => c !== spawnCell)];
+      rooms = orderedCells.map((c) => c.room);
+    }
+
+    // Spatial predicate to check if a grid cell belongs to a carved room or door zone
+    const isFloorCell = (gx: number, gy: number): boolean => {
+      const wx = gx * 48;
+      const wy = gy * 24;
+      if (isSafeHouse) {
+        return wx >= (mapW - 800) / 2 && wx <= (mapW + 800) / 2 && wy >= (mapH - 600) / 2 && wy <= (mapH + 600) / 2;
+      }
+      return rooms.some((r) => wx >= r.x - 24 && wx <= r.x + r.width + 24 && wy >= r.y - 24 && wy <= r.y + r.height + 24);
+    };
+
+    // Fill Isometric Floor Tiles with Autotiling Bitmask & Biome Tinting (Spec 16)
     for (let x = 0; x < mapW; x += 48) {
       for (let y = 0; y < mapH; y += 24) {
         const gridX = Math.floor(x / 48);
@@ -86,7 +172,8 @@ export class DungeonGenerator {
         const renderY = y - (zElevation * 2);
         const tileX = x + (y % 48 === 0 ? 0 : 24);
 
-        const tile = this.scene.add.image(tileX, renderY, groundTexture);
+        const tileTexKey = isSafeHouse ? groundTexture : this.getGroundTextureKey(gridX, gridY, isSafeHouse, isFloorCell);
+        const tile = this.scene.add.image(tileX, renderY, tileTexKey);
         if (!isSafeHouse) {
           tile.setTint(tints.ground);
           // Sombreamento sutil conforme elevação Z para profundidade visual
@@ -150,21 +237,10 @@ export class DungeonGenerator {
     }
 
     if (isSafeHouse) {
-      const rooms: RoomData[] = [];
       const roomW = 800;
       const roomH = 600;
       const rx = (mapW - roomW) / 2;
       const ry = (mapH - roomH) / 2;
-
-      rooms.push({
-        x: rx,
-        y: ry,
-        width: roomW,
-        height: roomH,
-        centerX: rx + roomW / 2,
-        centerY: ry + roomH / 2,
-        type: 'spawn',
-      });
 
       // Build safe house specific walls
       this.buildWallLine(rx, ry, rx + roomW, ry, 0xffffff, 'tile_wood_wall', true); // Top
@@ -174,74 +250,6 @@ export class DungeonGenerator {
 
       return rooms;
     }
-
-    // Frente 1 (spec 11, 27/08) — layout orgânico via BSP + Cellular Automata,
-    // substitui o grid fixo 3x3 que existia antes (auditoria de 27/08 apontou
-    // que o dungeon sempre gerava a MESMA malha, só o conteúdo das salas
-    // variava). Ver `bspSplit`/`computeCorridorZoneGrid` mais abaixo e o
-    // changelog da spec pra rationale completo.
-    const originX = 90;
-    const originY = 70;
-    const usableW = mapW - originX - 90;
-    const usableH = mapH - originY - 70;
-    const minLeafW = 380;
-    const minLeafH = 320;
-    // Math.random()-based, não Phaser.Math.Between: acessar o namespace
-    // Phaser.Math em runtime (em vez de só como tipo) cascateia o carregamento
-    // de um chunk interno do bundle do Phaser 4 que espera um
-    // `canvas.getContext('2d')' de verdade — quebra em jsdom sem o pacote
-    // opcional `canvas` instalado (achado rodando `pnpm test` de verdade,
-    // 27/08). Resultado idêntico, sem tocar o runtime do Phaser.
-    const targetLeafCount = 6 + Math.floor(Math.random() * 4); // 6..9 inclusive
-
-    const leaves = this.bspSplit(
-      { x: originX, y: originY, width: usableW, height: usableH },
-      targetLeafCount,
-      minLeafW,
-      minLeafH
-    );
-
-    const caCols = 6;
-    const caRows = 5;
-    const corridorGrid = this.computeCorridorZoneGrid(caCols, caRows);
-
-    const cells = leaves.map((leaf) => ({
-      leaf,
-      room: this.carveRoomFromLeaf(leaf, corridorGrid, caCols, caRows, originX, originY, usableW, usableH),
-    }));
-
-    // Sala de spawn: a mais próxima do canto superior-esquerdo utilizável —
-    // igual ao antigo (0,0) do grid, mantém `rooms[0]` como sala de spawn
-    // (contrato usado por DungeonFlowController).
-    let spawnCell = cells[0];
-    cells.forEach((cell) => {
-      if (cell.room.centerX + cell.room.centerY < spawnCell.room.centerX + spawnCell.room.centerY) {
-        spawnCell = cell;
-      }
-    });
-    spawnCell.room.type = 'spawn';
-
-    const distFromSpawn = (c: typeof cells[number]) =>
-      Math.hypot(c.room.centerX - spawnCell.room.centerX, c.room.centerY - spawnCell.room.centerY);
-
-    let bossCell: typeof cells[number] | null = null;
-    cells.forEach((cell) => {
-      if (cell === spawnCell) return;
-      if (!bossCell || distFromSpawn(cell) > distFromSpawn(bossCell)) bossCell = cell;
-    });
-    if (bossCell) (bossCell as typeof cells[number]).room.type = 'boss';
-
-    let treasureCell: typeof cells[number] | null = null;
-    cells.forEach((cell) => {
-      if (cell === spawnCell || cell === bossCell) return;
-      if (!treasureCell || distFromSpawn(cell) > distFromSpawn(treasureCell)) treasureCell = cell;
-    });
-    if (treasureCell) (treasureCell as typeof cells[number]).room.type = 'secret_treasure';
-
-    // rooms[0] precisa ser sempre a sala de spawn (DungeonFlowController lê
-    // `rooms[0]` direto pra posicionar o jogador).
-    const orderedCells = [spawnCell, ...cells.filter((c) => c !== spawnCell)];
-    const rooms: RoomData[] = orderedCells.map((c) => c.room);
 
     // Outer Perimeter Walls
     this.buildWallLine(0, 0, mapW, 0, tints.wall); // Top
@@ -336,6 +344,15 @@ export class DungeonGenerator {
         }
       }
     });
+
+    // Scatter decor details per room using DungeonDetailFactory
+    if (!isSafeHouse) {
+      const detailFactory = new DungeonDetailFactory(this.scene);
+      detailFactory.bakeDetailTextures();
+      rooms.forEach((room) => {
+        detailFactory.scatterDetails(room, biome);
+      });
+    }
 
     return rooms;
   }
@@ -498,6 +515,60 @@ export class DungeonGenerator {
     return this.scene.textures.exists(key) ? key : 'spr_chest';
   }
 
+  /**
+   * Bitmask autotiling helper for dungeon floor tiles.
+   * Calculates 4-cardinal neighbor bitmask (0..15):
+   * Bit 0 (1): North
+   * Bit 1 (2): East
+   * Bit 2 (4): South
+   * Bit 3 (8): West
+   */
+  public calculateBitmask(gridX: number, gridY: number, isFloorFn?: (gx: number, gy: number) => boolean): number {
+    const isFloor = isFloorFn || ((gx: number, gy: number) => gx >= 0 && gy >= 0);
+    let mask = 0;
+    if (isFloor(gridX, gridY - 1)) mask |= 1;  // North
+    if (isFloor(gridX + 1, gridY)) mask |= 2;  // East
+    if (isFloor(gridX, gridY + 1)) mask |= 4;  // South
+    if (isFloor(gridX - 1, gridY)) mask |= 8;  // West
+    return mask;
+  }
+
+  public getGroundTextureKey(
+    gridX: number,
+    gridY: number,
+    isSafeHouse: boolean = false,
+    isFloorFn?: (gx: number, gy: number) => boolean
+  ): string {
+    if (isSafeHouse) return 'tile_wood_floor';
+
+    // Deterministic pseudo-noise variant for center tiles
+    const variantIdx = Math.floor(Math.abs(Math.sin(gridX * 12.9898 + gridY * 78.233)) * 5) % 5;
+    const centerKey = `tile_ground_var_${variantIdx}`;
+
+    const mask = this.calculateBitmask(gridX, gridY, isFloorFn);
+    // Mask 15 = all 4 cardinal neighbors exist (Center tile)
+    if (mask === 15) {
+      return this.scene.textures?.exists(centerKey) ? centerKey : 'tile_ground';
+    }
+
+    // Edge/corner map
+    let maskKey = 'edge_n';
+    if (mask === 14) maskKey = 'edge_n';
+    else if (mask === 13) maskKey = 'edge_e';
+    else if (mask === 11) maskKey = 'edge_s';
+    else if (mask === 7) maskKey = 'edge_w';
+    else if (mask === 12) maskKey = 'corner_ne';
+    else if (mask === 9) maskKey = 'corner_se';
+    else if (mask === 3) maskKey = 'corner_sw';
+    else if (mask === 6) maskKey = 'corner_nw';
+
+    const autotileKey = `tile_ground_${maskKey}`;
+    if (this.scene.textures?.exists(autotileKey)) {
+      return autotileKey;
+    }
+    return this.scene.textures?.exists(centerKey) ? centerKey : 'tile_ground';
+  }
+
   private buildWallLine(x1: number, y1: number, x2: number, y2: number, wallTint: number, textureKey: string = 'tile_wall_brick', disableTint: boolean = false) {
     const dx = x2 - x1;
     const dy = y2 - y1;
@@ -509,7 +580,16 @@ export class DungeonGenerator {
       const wx = x1 + dx * t;
       const wy = y1 + dy * t;
 
-      const wall = this.wallsGroup.create(wx, wy, textureKey);
+      let finalWallKey = textureKey;
+      if (textureKey === 'tile_wall_brick' || textureKey === 'spr_wall') {
+        const wallVariant = Math.floor(Math.abs(Math.sin(wx * 0.129 + wy * 0.782)) * 5) % 5;
+        const vKey = `tile_wall_brick_var_${wallVariant}`;
+        if (this.scene.textures?.exists(vKey)) {
+          finalWallKey = vKey;
+        }
+      }
+
+      const wall = this.wallsGroup.create(wx, wy, finalWallKey);
       if (!disableTint) {
         wall.setTint(wallTint);
       }
