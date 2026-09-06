@@ -65,6 +65,7 @@ export class DungeonGenerator {
     // Spec 10 (27/09/2026): gloomy_woods usa geração procedural de floresta em vez de salas
     if (biome === 'gloomy_woods') {
       const forestGen = new ProceduralForestGenerator(this.scene);
+      this.heightGenerator = forestGen.heightGenerator;
       return forestGen.generate(mapW, mapH);
     }
 
