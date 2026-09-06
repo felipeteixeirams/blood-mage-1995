@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Trophy, Check, Gift } from 'lucide-react';
 import { ModalBase } from './ui/ModalBase';
 import { useGameStore } from '../store/gameStore';
@@ -73,8 +72,16 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ onClose })
                 
                 {isReadyToRedeem && (
                   <button
-                    onClick={() => handleRedeem(achievement.id, achievement.reward)}
-                    className="px-3 py-1.5 bg-[#8c1f22] hover:bg-[#ef4444] text-[#f0d8a8] border border-[#d4af37] font-pixel text-xs cursor-pointer transition-colors whitespace-nowrap"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.nativeEvent?.stopImmediatePropagation?.();
+                      handleRedeem(achievement.id, achievement.reward);
+                    }}
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      e.nativeEvent?.stopImmediatePropagation?.();
+                    }}
+                    className="px-3 py-1.5 bg-[#8c1f22] hover:bg-[#ef4444] text-[#f0d8a8] border border-[#d4af37] font-pixel text-xs cursor-pointer transition-colors whitespace-nowrap active:scale-95"
                   >
                     RESGATAR
                   </button>

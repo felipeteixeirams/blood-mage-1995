@@ -19,7 +19,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/pressstart2p.woff2') format('woff2');
+  src: url('/fonts/pressstart2p.ttf') format('truetype');
 }
 @font-face {
   font-family: 'UnifrakturMaguntia';

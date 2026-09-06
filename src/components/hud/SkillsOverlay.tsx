@@ -176,14 +176,14 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
       size = presetIndex === 0 ? 'large' : 'medium';
     }
 
-    let sizeClasses = 'w-14 h-14 md:w-16 md:h-16 text-[9px]';
+    let sizeClasses = 'w-12 h-12 sm:w-13 sm:h-13 md:w-14 md:h-14 text-[8.5px]';
     let iconSize = 'w-5 h-5 md:w-6 md:h-6';
     if (size === 'small') {
-      sizeClasses = 'w-11 h-11 md:w-12 md:h-12 text-[8px]';
+      sizeClasses = 'w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 text-[7.5px]';
       iconSize = 'w-4 h-4 md:w-5 md:h-5';
     } else if (size === 'large') {
-      sizeClasses = 'w-20 h-20 md:w-24 md:h-24 text-xs'; // Made it slightly larger for the main attack
-      iconSize = 'w-8 h-8 md:w-10 md:h-10';
+      sizeClasses = 'w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 text-xs'; // Compact primary attack
+      iconSize = 'w-7 h-7 md:w-8 md:h-8';
     }
 
     // Determine default absolute positioning if no custom layout is set
@@ -193,11 +193,11 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
       if (presetIndex === 0) {
         defaultPositionStyle = { position: 'absolute', bottom: '0px', right: '0px' };
       } else if (presetIndex === 1) {
-        defaultPositionStyle = { position: 'absolute', bottom: '10px', right: '100px' };
+        defaultPositionStyle = { position: 'absolute', bottom: '4px', right: '76px' };
       } else if (presetIndex === 2) {
-        defaultPositionStyle = { position: 'absolute', bottom: '70px', right: '80px' };
+        defaultPositionStyle = { position: 'absolute', bottom: '52px', right: '62px' };
       } else if (presetIndex === 3) {
-        defaultPositionStyle = { position: 'absolute', bottom: '110px', right: '20px' };
+        defaultPositionStyle = { position: 'absolute', bottom: '84px', right: '12px' };
       }
     }
 
@@ -264,6 +264,8 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
       <button
         key={spellId}
         onPointerDown={(e) => {
+          e.stopPropagation();
+          e.nativeEvent?.stopImmediatePropagation?.();
           if (!canCast) {
             if (cd > 0) {
               CombatFeel.triggerVibration('cooldown_warning');
@@ -365,7 +367,7 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
       {!isEditingHUD && <SkillPresetEditor />}
 
       {/* Arc layout container */}
-      <div className="relative w-48 h-48 sm:w-56 sm:h-56">
+      <div className="relative w-40 h-40 sm:w-44 sm:h-44 md:w-48 md:h-48">
         {slots.map((spellId, idx) => {
           if (spellId) {
             return renderSkill(spellId);
@@ -374,14 +376,14 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
           // Empty slot positioning matching default arc
           let posStyle: React.CSSProperties = {};
           if (idx === 0) posStyle = { position: 'absolute', bottom: '0px', right: '0px' };
-          else if (idx === 1) posStyle = { position: 'absolute', bottom: '10px', right: '100px' };
-          else if (idx === 2) posStyle = { position: 'absolute', bottom: '70px', right: '80px' };
-          else if (idx === 3) posStyle = { position: 'absolute', bottom: '110px', right: '20px' };
+          else if (idx === 1) posStyle = { position: 'absolute', bottom: '4px', right: '76px' };
+          else if (idx === 2) posStyle = { position: 'absolute', bottom: '52px', right: '62px' };
+          else if (idx === 3) posStyle = { position: 'absolute', bottom: '84px', right: '12px' };
 
           return (
             <div
               key={`empty-${idx}`}
-              className={`absolute rounded-full border-2 border-dashed border-gray-800 bg-black/35 flex items-center justify-center text-gray-700 font-bold ${idx === 0 ? 'w-20 h-20 md:w-24 md:h-24 text-lg' : 'w-11 h-11 md:w-12 md:h-12 text-xs'}`}
+              className={`absolute rounded-full border-2 border-dashed border-gray-800 bg-black/35 flex items-center justify-center text-gray-700 font-bold ${idx === 0 ? 'w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 text-base' : 'w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 text-xs'}`}
               style={posStyle}
             >
               +

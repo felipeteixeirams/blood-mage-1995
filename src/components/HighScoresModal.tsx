@@ -64,14 +64,22 @@ export const HighScoresModal: React.FC<HighScoresModalProps> = ({ scores, onClos
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 select-none"
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 select-none pointer-events-auto"
       role="dialog"
       aria-modal="true"
       aria-label="Salão de Recordes do Bloodmage 1995"
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        e.nativeEvent?.stopImmediatePropagation?.();
+      }}
     >
       <div
         ref={containerRef}
         className="w-full max-w-5xl h-[540px] max-h-[90vh] aspect-[16/9] flex items-center justify-center relative shadow-2xl"
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          e.nativeEvent?.stopImmediatePropagation?.();
+        }}
       />
     </motion.div>
   );

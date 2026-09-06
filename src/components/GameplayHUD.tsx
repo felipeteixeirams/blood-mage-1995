@@ -11,12 +11,12 @@ import { QuestTracker } from './hud/QuestTracker';
 import { DialogueModal } from './hud/DialogueModal';
 import { RecordsDisplay } from './hud/RecordsDisplay';
 import { AchievementToast } from './hud/AchievementToast';
+import { JoystickVisual } from './hud/JoystickVisual';
 import palettesData from '../data/palettes.json';
 import { useFloatingJoystick } from '../hooks/useFloatingJoystick';
 import { soundEngine } from '../utils/soundEngine';
 import { useGameStore } from '../store/gameStore';
 import { getMaelenDialogueTreeId } from '../types/campaign';
-import type { FloatingJoystickState } from '../hooks/useFloatingJoystick';
 import {
   Eye, EyeOff, Settings, X, Shield, RefreshCw,
   MapPin, Backpack, Sparkles, Volume2, VolumeX, Pause, Play, LogOut, CheckSquare, Square, Skull
@@ -33,90 +33,6 @@ interface BloodSplatter {
   size: number;
   rotation: number;
 }
-
-// ─── Floating joystick visual overlay ────────────────────────────────────────
-
-const JoystickVisual: React.FC<{
-  state: FloatingJoystickState;
-  variant: 'move' | 'aim';
-  opacity: number;
-}> = ({ state, variant, opacity }) => {
-  if (!state.active || opacity === 0) return null;
-
-  const ringBg = "bg-gradient-to-br from-[#0c0a09]/95 to-[#1f1a17]/95";
-  const ringBorder = variant === 'move' ? "border-[#dc2626]/80" : "border-[#7c3aed]/80";
-  const knobBg = variant === 'move' ? "from-[#ef4444] to-[#7f1d1d]" : "from-[#c084fc] to-[#4c1d95]";
-  const dist = Math.hypot(state.knobX, state.knobY);
-  const angleDeg = (Math.atan2(state.knobY, state.knobX) * 180) / Math.PI;
-
-  return (
-    <div
-      className="fixed pointer-events-none"
-      style={{
-        left: state.originX,
-        top: state.originY,
-        transform: 'translate(-50%, -50%)',
-        zIndex: 200,
-        opacity,
-        transition: 'opacity 0.15s ease',
-      }}
-    >
-      {/* Base ring with runic subdivided indicators */}
-      <div className={`w-28 h-28 rounded-full border-4 ${ringBorder} ${ringBg} shadow-[0_0_20px_rgba(220,38,38,0.35)] flex items-center justify-center relative`}>
-        {/* Cardinal Notches */}
-        <div className="absolute top-1 w-1.5 h-3.5 bg-amber-400 rounded-sm shadow-sm" />
-        <div className="absolute bottom-1 w-1.5 h-3.5 bg-amber-400 rounded-sm shadow-sm" />
-        <div className="absolute left-1 w-3.5 h-1.5 bg-amber-400 rounded-sm shadow-sm" />
-        <div className="absolute right-1 w-3.5 h-1.5 bg-amber-400 rounded-sm shadow-sm" />
-
-        {/* Directional Chevron Pointer at outer edge */}
-        {dist > 4 && (
-          <div
-            className="absolute w-full h-full pointer-events-none flex items-center justify-end"
-            style={{
-              transform: `rotate(${angleDeg}deg)`,
-            }}
-          >
-            <div className="w-0 h-0 border-t-[7px] border-t-transparent border-b-[7px] border-b-transparent border-l-[11px] border-l-amber-400 drop-shadow-[0_0_6px_#f59e0b] translate-x-2" />
-          </div>
-        )}
-
-        {/* Tether line */}
-        {state.active && (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none">
-            <line
-              x1="56" y1="56"
-              x2={56 + state.knobX} y2={56 + state.knobY}
-              stroke={variant === 'move' ? '#ef4444' : '#a855f7'}
-              strokeWidth="2.5"
-              strokeDasharray="4, 2"
-            />
-          </svg>
-        )}
-      </div>
-
-      {/* Inner stone beveled thumbstick knob */}
-      <div
-        className={`absolute top-1/2 left-1/2 w-12 h-12 rounded-full bg-gradient-to-br ${knobBg} border-2 border-[#fbbf24] shadow-[0_0_10px_rgba(0,0,0,0.9)] flex items-center justify-center`}
-        style={{
-          transform: `translate(calc(-50% + ${state.knobX}px), calc(-50% + ${state.knobY}px))`,
-        }}
-      >
-        {/* Center runic gem with forward direction bead */}
-        <div className="w-4 h-4 rounded-full bg-black/70 border border-amber-400/90 relative flex items-center justify-center">
-          {dist > 4 && (
-            <div
-              className="w-1.5 h-1.5 rounded-full bg-amber-300 absolute"
-              style={{
-                transform: `rotate(${angleDeg}deg) translate(5px)`,
-              }}
-            />
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // ─── Main HUD ────────────────────────────────────────────────────────────────
 
@@ -150,7 +66,6 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
     campaignState,
     startDialogue,
     buyCurative,
-    useCurative,
     bloodCrystals,
     addBloodCrystals,
     setStatusCondition,
@@ -277,6 +192,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
   return (
     <div className="absolute inset-0 pointer-events-none z-20 select-none overflow-hidden font-pixel">
       <TargetFrame />
+      <LootLog />
 
       {/* ── Unconscious Tunnel Vision & Desaturation Overlay ── */}
       {stats.isUnconscious && (
@@ -355,49 +271,6 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       {/* ── TOP LEFT HUD: Segmented HP/MP & Portrait (Spec 16 Safe Area) ── */}
       <div className="absolute top-2 left-2 safe-area-left safe-area-top p-1 z-30 pointer-events-auto flex flex-col gap-1">
         <PlayerStatus stats={stats} />
-        {(stats.statusConditions?.bleeding || stats.statusConditions?.poison || stats.statusConditions?.infection) && (
-          <div className="flex gap-1 pl-0.5">
-            {stats.statusConditions.bleeding && (
-              <button
-                onClick={() => useCurative('bandages')}
-                disabled={(stats.curatives?.bandages || 0) < 1}
-                className="flex items-center gap-1 bg-[#0c0a09]/95 border border-red-700 px-1 py-0.5 shadow-[2px_2px_0px_#000000] disabled:opacity-50"
-                title="Sangramento — drena HP ao se mover. Clique para usar Atadura."
-              >
-                <span className="text-[9px]">🩸</span>
-                <span className="text-[7px] font-pixel text-red-300 uppercase font-bold">
-                  SANGUE ({stats.curatives?.bandages || 0})
-                </span>
-              </button>
-            )}
-            {stats.statusConditions.poison && (
-              <button
-                onClick={() => useCurative('antidotes')}
-                disabled={(stats.curatives?.antidotes || 0) < 1}
-                className="flex items-center gap-1 bg-[#0c0a09]/95 border border-lime-700 px-1 py-0.5 shadow-[2px_2px_0px_#000000] disabled:opacity-50"
-                title="Envenenado — reduz regeneração de mana e causa dano gradual. Clique para usar Antídoto."
-              >
-                <span className="text-[9px]">🧪</span>
-                <span className="text-[7px] font-pixel text-lime-300 uppercase font-bold">
-                  VENENO ({stats.curatives?.antidotes || 0})
-                </span>
-              </button>
-            )}
-            {stats.statusConditions.infection && (
-              <button
-                onClick={() => useCurative('antibiotics')}
-                disabled={(stats.curatives?.antibiotics || 0) < 1}
-                className="flex items-center gap-1 bg-[#0c0a09]/95 border border-purple-700 px-1 py-0.5 shadow-[2px_2px_0px_#000000] disabled:opacity-50"
-                title="Infeccionado — reduz HP máximo e bloqueia regeneração. Clique para usar Antibiótico."
-              >
-                <span className="text-[9px]">🧪</span>
-                <span className="text-[7px] font-pixel text-purple-300 uppercase font-bold">
-                  INFECT ({stats.curatives?.antibiotics || 0})
-                </span>
-              </button>
-            )}
-          </div>
-        )}
       </div>
 
       {/* ── TOP CENTER: Area Banner & Time SURVIVED (Discreet Line-Style for Mobile First) ── */}
@@ -411,51 +284,14 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
         {/* Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md */}
         <Minimap />
 
+        {/* Console de Botões de Ação Forjados alinhados à largura do Minimapa */}
+        <ActionButtons
+          onPauseToggle={handlePauseToggle}
+          onQuickSettingsToggle={() => setQuickSettingsOpen(!isQuickSettingsOpen)}
+        />
+
         {/* Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md — só aparece com quest ativa */}
         <QuestTracker />
-
-        {/* Compact action buttons row to clean the view for smartphones */}
-        <div className="flex gap-1.5">
-          {/* Trophy Button — Records Hall */}
-          <button
-            className="bg-[#0c0a09]/95 border border-[#b8860b]/50 p-1.5 text-[#e8c76a] hover:bg-[#1c140e] shadow-[2px_2px_4px_rgba(0,0,0,0.8)] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center w-8 h-8"
-            onClick={() => { soundEngine.playButtonClick(); setRecordsOpen(true); setGameState('paused'); }}
-            title="Recordes"
-          >
-            {/* Pixel-art trophy icon */}
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="2" y="13" width="12" height="1" fill="currentColor" />
-              <rect x="7" y="9" width="2" height="4" fill="currentColor" />
-              <rect x="4" y="5" width="8" height="4" fill="currentColor" opacity="0.8" />
-              <rect x="2" y="6" width="2" height="3" fill="currentColor" opacity="0.6" />
-              <rect x="12" y="6" width="2" height="3" fill="currentColor" opacity="0.6" />
-            </svg>
-          </button>
-
-          <button
-            className="bg-[#0c0a09]/95 border border-[#b8860b]/50 p-1.5 text-[#e8c76a] hover:bg-[#1c140e] shadow-[2px_2px_4px_rgba(0,0,0,0.8)] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center w-8 h-8"
-            onClick={() => { soundEngine.playButtonClick(); setInventoryOpen(true); }}
-            title="Inventário"
-          >
-            <Backpack size={14} />
-          </button>
-
-          <button
-            className="bg-[#0c0a09]/95 border border-[#b8860b]/50 p-1.5 text-[#e8c76a] hover:bg-[#1c140e] shadow-[2px_2px_4px_rgba(0,0,0,0.8)] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center w-8 h-8"
-            onClick={() => { soundEngine.playButtonClick(); setQuickSettingsOpen(!isQuickSettingsOpen); }}
-            title="Configurações Rápidas"
-          >
-            <Settings size={14} />
-          </button>
-
-          <button
-            className="bg-[#0c0a09]/95 border border-[#b8860b]/50 p-1.5 text-white hover:bg-[#1c140e] shadow-[2px_2px_4px_rgba(0,0,0,0.8)] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center w-8 h-8"
-            onClick={handlePauseToggle}
-            title="Pausar"
-          >
-            <Pause size={14} />
-          </button>
-        </div>
 
         {/* Run contracts panel (Retractile / Compact) */}
         <ContractHUD />
@@ -719,16 +555,41 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
         />
       </div>
 
-      {/* ── Native Canvas Joystick hint label (Spec 16 Safe Area) ── */}
+      {/* ── Floating Joystick Touch Zone & Visuals ── */}
       {showTouchControls && (
-        <div
-          className={`absolute ${settings.leftHandedMode ? 'right-6 safe-area-right' : 'left-6 safe-area-left'} bottom-6 safe-area-bottom pointer-events-none select-none`}
-          style={{ opacity: settings.virtualControlsOpacity * 0.45, zIndex: 16 }}
-        >
-          <div className="w-14 h-14 rounded-full border border-dashed border-[#b8860b]/40 flex items-center justify-center animate-pulse">
-            <span className="text-[7px] font-pixel text-gray-400 uppercase tracking-widest">MOVER</span>
+        <>
+          {/* Touch Capture Zone (Bottom-half on movement side) */}
+          <div
+            className={`fixed top-1/3 bottom-0 ${settings.leftHandedMode ? 'right-0 w-1/2' : 'left-0 w-1/2'} z-30 touch-none pointer-events-auto select-none`}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.nativeEvent?.stopImmediatePropagation?.();
+              moveJoystick.onPointerDown(e);
+            }}
+            onPointerMove={moveJoystick.onPointerMove}
+            onPointerUp={moveJoystick.onPointerUp}
+            onPointerCancel={moveJoystick.onPointerCancel}
+          >
+            {/* Resting Hint Ring (visible when idle) */}
+            {!moveJoystick.state.active && (
+              <div
+                className={`absolute ${settings.leftHandedMode ? 'right-8 safe-area-right' : 'left-8 safe-area-left'} bottom-8 safe-area-bottom pointer-events-none select-none`}
+                style={{ opacity: (settings.virtualControlsOpacity ?? 0.85) * 0.4 }}
+              >
+                <div className="w-14 h-14 rounded-full border border-dashed border-[#b8860b]/40 flex items-center justify-center animate-pulse">
+                  <span className="text-[7px] font-pixel text-gray-400 uppercase tracking-widest">MOVER</span>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+
+          {/* Active Joystick Visual Overlay */}
+          <JoystickVisual
+            state={moveJoystick.state}
+            variant="move"
+            opacity={settings.virtualControlsOpacity ?? 0.85}
+          />
+        </>
       )}
 
       {/* ── HUD Edit Mode Banner ── */}

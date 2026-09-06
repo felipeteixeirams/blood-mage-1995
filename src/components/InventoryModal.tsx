@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Shield, Sword, Sparkles, X, Heart, Zap, Flame, Award, CheckCircle2, PlusCircle, Lock, ArrowUpRight, ArrowDownRight, Filter } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import { LootItem, RelicItem, ItemRarity } from '../types/game';
 import relicsData from '../data/relics.json';
+import { useGamepadUINavigation } from '../hooks/useGamepadUINavigation';
 
 interface InventoryModalProps {
   onClose: () => void;
@@ -29,6 +30,13 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
 
   const [selectedRelic, setSelectedRelic] = useState<RelicItem | null>(null);
   const [relicFilter, setRelicFilter] = useState<'all' | 'unlocked' | 'equipped'>('all');
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGamepadUINavigation({
+    containerRef,
+    isActive: true,
+    onClose,
+  });
 
   const activeRelicMods = getRelicModifiers();
   const allCatalogRelics = relicsData as RelicItem[];
@@ -47,25 +55,34 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
     return (
       <div 
         onClick={() => item && 'effect' in item && setSelectedRelic(item as RelicItem)}
-        className={`p-3 rounded-lg border-2 ${rarityConfig.border} ${rarityConfig.bg} flex flex-col justify-between transition-all relative group shadow-md cursor-pointer hover:border-amber-500`}
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          e.nativeEvent?.stopImmediatePropagation?.();
+        }}
+        className={`p-2.5 sm:p-3 border ${rarityConfig.border} ${rarityConfig.bg} flex flex-col justify-between transition-all relative group shadow-md cursor-pointer hover:border-[#b8860b] active:scale-[0.99]`}
       >
         <div className="flex items-center justify-between mb-1.5">
-          <div className="flex items-center gap-2">
-            <span className="p-1 bg-black/60 rounded border border-gray-800 text-amber-400">{icon}</span>
-            <span className="text-[11px] font-pixel text-amber-200/90 uppercase">{title}</span>
+          <div className="flex items-center gap-1.5">
+            <span className="p-1 bg-black/60 border border-[#b8860b]/40 text-[#e8c76a]">{icon}</span>
+            <span className="text-[10px] sm:text-[11px] font-pixel text-[#e8c76a]/90 uppercase">{title}</span>
           </div>
           {item && (
             <div className="flex items-center gap-1.5">
-              <span className={`text-[9px] font-pixel px-1.5 py-0.5 rounded border uppercase ${rarityConfig.border} ${rarityConfig.text} bg-black/80`}>
+              <span className={`text-[8px] sm:text-[9px] font-pixel px-1.5 py-0.5 border uppercase ${rarityConfig.border} ${rarityConfig.text} bg-black/80`}>
                 {item.rarity}
               </span>
               {onUnequip && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
+                    e.nativeEvent?.stopImmediatePropagation?.();
                     onUnequip();
                   }}
-                  className="text-[9px] font-pixel px-1.5 py-0.5 bg-red-950/90 hover:bg-red-900 border border-red-800 text-red-300 rounded transition-colors cursor-pointer"
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    e.nativeEvent?.stopImmediatePropagation?.();
+                  }}
+                  className="text-[8px] sm:text-[9px] font-pixel px-1.5 py-0.5 bg-red-950/90 hover:bg-red-900 border border-red-800 text-red-300 transition-colors cursor-pointer active:scale-95"
                   title="Desequipar relíquia"
                 >
                   REMOVER
@@ -81,7 +98,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
             <p className="text-[10px] text-gray-300 font-retro leading-tight">{item.description}</p>
           </div>
         ) : (
-          <p className="text-[11px] text-gray-600 font-retro italic py-1.5">Nenhum item equipado</p>
+          <p className="text-[10px] sm:text-[11px] text-gray-600 font-retro italic py-1">Nenhum item equipado</p>
         )}
       </div>
     );
@@ -89,16 +106,38 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 pointer-events-auto"
+      exit={{ opacity: 0, scale: 0.96 }}
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 pointer-events-auto select-none"
+      onClick={onClose}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        e.nativeEvent?.stopImmediatePropagation?.();
+      }}
     >
-      <div className="bg-[#120a0e] border-4 border-amber-900 rounded-xl p-5 max-w-3xl w-full max-h-[92vh] overflow-y-auto text-gray-100 shadow-[0_0_35px_rgba(180,83,9,0.35)]">
+      <div 
+        ref={containerRef}
+        className="bg-[#0f0b09]/98 border-2 border-[#b8860b]/60 p-3.5 sm:p-5 max-w-3xl w-full max-h-[92vh] overflow-y-auto text-gray-100 shadow-[0_0_40px_rgba(0,0,0,0.9)] relative"
+        onClick={(e) => {
+          e.stopPropagation();
+          e.nativeEvent?.stopImmediatePropagation?.();
+        }}
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          e.nativeEvent?.stopImmediatePropagation?.();
+        }}
+      >
+        {/* Cantoneiras forjadas douradas */}
+        <div className="absolute top-1 left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-[#b8860b]" />
+        <div className="absolute top-1 right-1 w-2.5 h-2.5 border-t-2 border-r-2 border-[#b8860b]" />
+        <div className="absolute bottom-1 left-1 w-2.5 h-2.5 border-b-2 border-l-2 border-[#b8860b]" />
+        <div className="absolute bottom-1 right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-[#b8860b]" />
+
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-amber-900/60 pb-3 mb-4">
-          <div className="flex items-center gap-4">
-            <div className="relative w-16 h-16 bg-black/60 rounded-md border-2 border-amber-900/80 overflow-hidden flex items-center justify-center shadow-inner">
+        <div className="flex items-center justify-between border-b border-[#b8860b]/40 pb-3 mb-3.5">
+          <div className="flex items-center gap-3">
+            <div className="relative w-12 h-12 sm:w-16 sm:h-16 bg-black/70 border border-[#b8860b]/60 overflow-hidden flex items-center justify-center shadow-inner shrink-0">
               <img 
                 src="assets/sprites/player/animated/bloodmage_showcase.gif" 
                 alt="Blood Mage Avatar" 
@@ -107,13 +146,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
               />
             </div>
             <div>
-              <h2 className="text-xl font-gothic text-amber-200 tracking-wide">INVENTÁRIO & RELÍQUIAS MÍSTICAS</h2>
-              <p className="text-[11px] text-amber-400/80 font-retro">Gerencie seus artefatos passivos, atributos e artefatos de sangue</p>
+              <h2 className="text-base sm:text-xl font-gothic text-[#e8c76a] tracking-wide">INVENTÁRIO & RELÍQUIAS MÍSTICAS</h2>
+              <p className="text-[9px] sm:text-[11px] text-[#b8860b] font-retro">Gerencie seus artefatos passivos, atributos e artefatos de sangue</p>
             </div>
           </div>
           <button
-            onClick={onClose}
-            className="p-1.5 bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-300 rounded transition-colors cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.nativeEvent?.stopImmediatePropagation?.();
+              onClose();
+            }}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.nativeEvent?.stopImmediatePropagation?.();
+            }}
+            className="p-1.5 bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-300 transition-colors cursor-pointer active:scale-95"
+            title="Fechar inventário"
           >
             <X className="w-5 h-5" />
           </button>
@@ -261,34 +309,58 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
         </div>
 
         {/* Gallery of Unlocked / Catalog Relics */}
-        <div className="border-t border-amber-900/60 pt-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-            <h3 className="text-xs font-pixel text-amber-300 uppercase tracking-wide flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-400" /> GALERIA DE RELÍQUIAS ({unlockedRelics.length}/{allCatalogRelics.length})
+        <div className="border-t border-[#b8860b]/40 pt-3 sm:pt-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
+            <h3 className="text-[11px] sm:text-xs font-pixel text-[#e8c76a] uppercase tracking-wide flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#b8860b]" /> GALERIA DE RELÍQUIAS ({unlockedRelics.length}/{allCatalogRelics.length})
             </h3>
             
             {/* Filter Tabs */}
-            <div className="flex items-center gap-1 bg-black/60 p-1 rounded border border-amber-900/50">
+            <div className="flex items-center gap-1 bg-black/70 p-1 border border-[#b8860b]/40">
               <button
-                onClick={() => setRelicFilter('all')}
-                className={`px-2 py-0.5 text-[9px] font-pixel rounded transition-colors ${
-                  relicFilter === 'all' ? 'bg-amber-900 text-amber-100' : 'text-gray-400 hover:text-gray-200'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.nativeEvent?.stopImmediatePropagation?.();
+                  setRelicFilter('all');
+                }}
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  e.nativeEvent?.stopImmediatePropagation?.();
+                }}
+                className={`px-2 py-0.5 text-[9px] font-pixel transition-colors ${
+                  relicFilter === 'all' ? 'bg-[#4a3604] text-[#e8c76a] border border-[#b8860b]/60' : 'text-gray-400 hover:text-gray-200'
                 }`}
               >
                 TODAS
               </button>
               <button
-                onClick={() => setRelicFilter('unlocked')}
-                className={`px-2 py-0.5 text-[9px] font-pixel rounded transition-colors ${
-                  relicFilter === 'unlocked' ? 'bg-amber-900 text-amber-100' : 'text-gray-400 hover:text-gray-200'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.nativeEvent?.stopImmediatePropagation?.();
+                  setRelicFilter('unlocked');
+                }}
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  e.nativeEvent?.stopImmediatePropagation?.();
+                }}
+                className={`px-2 py-0.5 text-[9px] font-pixel transition-colors ${
+                  relicFilter === 'unlocked' ? 'bg-[#4a3604] text-[#e8c76a] border border-[#b8860b]/60' : 'text-gray-400 hover:text-gray-200'
                 }`}
               >
                 DESBLOQUEADAS
               </button>
               <button
-                onClick={() => setRelicFilter('equipped')}
-                className={`px-2 py-0.5 text-[9px] font-pixel rounded transition-colors ${
-                  relicFilter === 'equipped' ? 'bg-amber-900 text-amber-100' : 'text-gray-400 hover:text-gray-200'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.nativeEvent?.stopImmediatePropagation?.();
+                  setRelicFilter('equipped');
+                }}
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  e.nativeEvent?.stopImmediatePropagation?.();
+                }}
+                className={`px-2 py-0.5 text-[9px] font-pixel transition-colors ${
+                  relicFilter === 'equipped' ? 'bg-[#4a3604] text-[#e8c76a] border border-[#b8860b]/60' : 'text-gray-400 hover:text-gray-200'
                 }`}
               >
                 EQUIPADAS
@@ -296,7 +368,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-48 overflow-y-auto pr-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 sm:max-h-60 overflow-y-auto pr-1">
             {filteredRelics.map((relic) => {
               const isUnlocked = unlockedRelics.includes(relic.id);
               const isEquipped = (equipment.relics as RelicItem[]).some((r) => r.id === relic.id);
@@ -307,9 +379,13 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
                 <div
                   key={relic.id}
                   onClick={() => setSelectedRelic(relic)}
-                  className={`p-2.5 rounded-lg border flex items-center justify-between transition-all cursor-pointer ${
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    e.nativeEvent?.stopImmediatePropagation?.();
+                  }}
+                  className={`p-2.5 border flex items-center justify-between transition-all cursor-pointer ${
                     isSelected
-                      ? 'border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
+                      ? 'border-[#b8860b] bg-amber-950/30 shadow-[0_0_12px_rgba(184,134,11,0.5)]'
                       : isEquipped
                       ? 'bg-purple-950/40 border-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.3)]'
                       : isUnlocked
@@ -319,10 +395,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
                 >
                   <div className="flex-1 pr-2">
                     <div className="flex items-center gap-1.5 mb-0.5">
-                      <span className={`text-[9px] font-pixel px-1.5 py-0.2 rounded uppercase border ${rarityConfig.border} ${rarityConfig.text} bg-black/80`}>
+                      <span className={`text-[8px] sm:text-[9px] font-pixel px-1.5 py-0.2 uppercase border ${rarityConfig.border} ${rarityConfig.text} bg-black/80`}>
                         {relic.rarity}
                       </span>
-                      <h4 className={`text-xs font-gothic font-bold ${isUnlocked ? 'text-amber-200' : 'text-gray-500'}`}>{relic.name}</h4>
+                      <h4 className={`text-xs font-gothic font-bold ${isUnlocked ? 'text-[#e8c76a]' : 'text-gray-500'}`}>{relic.name}</h4>
                     </div>
                     <p className="text-[10px] text-gray-300 font-retro leading-tight">{relic.description}</p>
                   </div>
@@ -332,9 +408,14 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          e.nativeEvent?.stopImmediatePropagation?.();
                           unequipRelicById(relic.id);
                         }}
-                        className="px-2 py-1 bg-purple-900/90 hover:bg-purple-800 border border-purple-500 text-purple-200 font-pixel text-[9px] rounded flex items-center gap-1 cursor-pointer"
+                        onPointerDown={(e) => {
+                          e.stopPropagation();
+                          e.nativeEvent?.stopImmediatePropagation?.();
+                        }}
+                        className="px-2 py-1 bg-purple-900/90 hover:bg-purple-800 border border-purple-500 text-purple-200 font-pixel text-[9px] flex items-center gap-1 cursor-pointer active:scale-95"
                       >
                         <CheckCircle2 className="w-3 h-3 text-purple-300" /> ATIVA
                       </button>
@@ -342,14 +423,19 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          e.nativeEvent?.stopImmediatePropagation?.();
                           equipRelicById(relic.id);
                         }}
-                        className="px-2.5 py-1 bg-amber-950 hover:bg-amber-900 border border-amber-600 text-amber-200 font-pixel text-[9px] rounded flex items-center gap-1 transition-colors cursor-pointer"
+                        onPointerDown={(e) => {
+                          e.stopPropagation();
+                          e.nativeEvent?.stopImmediatePropagation?.();
+                        }}
+                        className="px-2.5 py-1 bg-[#2a1c12] hover:bg-[#4a3604] border border-[#b8860b] text-[#e8c76a] font-pixel text-[9px] flex items-center gap-1 transition-colors cursor-pointer active:scale-95"
                       >
-                        <PlusCircle className="w-3 h-3 text-amber-400" /> EQUIPAR
+                        <PlusCircle className="w-3 h-3 text-[#e8c76a]" /> EQUIPAR
                       </button>
                     ) : (
-                      <span className="px-2 py-1 bg-gray-900 border border-gray-800 text-gray-600 font-pixel text-[9px] rounded flex items-center gap-1">
+                      <span className="px-2 py-1 bg-gray-900 border border-gray-800 text-gray-600 font-pixel text-[9px] flex items-center gap-1">
                         <Lock className="w-3 h-3" /> BLOQUEADA
                       </span>
                     )}
@@ -361,10 +447,18 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end pt-3 mt-4 border-t border-amber-900/40">
+        <div className="flex justify-end pt-3 mt-3.5 border-t border-[#b8860b]/40">
           <button
-            onClick={onClose}
-            className="px-6 py-2 bg-amber-950 hover:bg-amber-900 border border-amber-700 text-amber-200 font-pixel text-xs rounded transition-all cursor-pointer shadow-lg"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.nativeEvent?.stopImmediatePropagation?.();
+              onClose();
+            }}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.nativeEvent?.stopImmediatePropagation?.();
+            }}
+            className="px-6 py-2 bg-[#2a1c12] hover:bg-[#4a3604] border border-[#b8860b] text-[#e8c76a] font-pixel text-xs transition-all cursor-pointer shadow-lg active:scale-95"
           >
             VOLTAR AO JOGO
           </button>

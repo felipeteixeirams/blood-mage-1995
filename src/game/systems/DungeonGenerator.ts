@@ -5,6 +5,14 @@ import { HeightmapGenerator, calculateIsometricDepth } from './HeightmapGenerato
 import { ProceduralForestGenerator } from './ProceduralForestGenerator';
 import { DungeonDetailFactory } from './DungeonDetailFactory';
 import { SafeHouseDetailFactory } from './SafeHouseDetailFactory';
+// Spec 18 de origin/main (PathDrivenGenerator, mundo contínuo por nós) e o
+// ProceduralForestGenerator desta branch (floresta orgânica por ruído) são
+// duas implementações concorrentes pro MESMO bioma (gloomy_woods) — decisão
+// arquitetural pendente (ver docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md).
+// Por ora, mantido instanciado mas NÃO usado em generate() — gloomy_woods
+// continua no ProceduralForestGenerator (produção/testado ao vivo) até a
+// escolha ser feita; não remover este import sem antes decidir o vencedor.
+import { PathDrivenGenerator, PathZone } from './PathDrivenGenerator';
 import type { GameScene } from '../scenes/GameScene';
 
 export interface RoomData {
@@ -47,6 +55,7 @@ export class DungeonGenerator {
   private cachedLine = new Phaser.Geom.Line();
   private cachedRect = new Phaser.Geom.Rectangle();
   public heightGenerator: HeightmapGenerator;
+  public pathDrivenGenerator: PathDrivenGenerator;
 
   constructor(
     scene: Phaser.Scene,
@@ -57,6 +66,7 @@ export class DungeonGenerator {
     this.wallsGroup = wallsGroup;
     this.chestsGroup = chestsGroup;
     this.heightGenerator = new HeightmapGenerator(1995);
+    this.pathDrivenGenerator = new PathDrivenGenerator(scene);
   }
 
   public isTraversable(fromX: number, fromY: number, toX: number, toY: number, isWorldCoords: boolean = true): boolean {
@@ -64,7 +74,12 @@ export class DungeonGenerator {
   }
 
   public generate(mapW: number, mapH: number, biome: BiomeType = 'fosso_chagas'): RoomData[] {
-    // Spec 10 (27/09/2026): gloomy_woods usa geração procedural de floresta em vez de salas
+    // gloomy_woods usa ProceduralForestGenerator (floresta orgânica por ruído,
+    // bugs de sobreposição/ruído "sal-e-pimenta" já corrigidos e validados ao
+    // vivo). Decisão pendente sobre migrar pro PathDrivenGenerator de
+    // origin/main ("Spec 18", mundo contínuo por nós) — ambos coexistem no
+    // código (ver import acima) até essa escolha ser feita; não trocar sem
+    // decidir antes (ver docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md).
     if (biome === 'gloomy_woods') {
       const forestGen = new ProceduralForestGenerator(this.scene);
       this.heightGenerator = forestGen.heightGenerator;

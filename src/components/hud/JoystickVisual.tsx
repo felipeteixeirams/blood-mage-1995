@@ -57,6 +57,22 @@ export const JoystickVisual: React.FC<JoystickVisualProps> = ({
             <div className="w-2.5 h-2.5 mr-1 bg-[#e8c76a] rotate-45 border border-black shadow-[0_0_6px_#b8860b]" />
           </div>
         )}
+
+        {/* Dynamic Tether Line */}
+        {dist > 6 && (
+          <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
+            <line
+              x1="56"
+              y1="56"
+              x2={56 + state.knobX}
+              y2={56 + state.knobY}
+              stroke={isAim ? '#a855f7' : '#e8c76a'}
+              strokeWidth="2"
+              strokeDasharray="3 2"
+              opacity="0.7"
+            />
+          </svg>
+        )}
       </div>
 
       {/* Floating Thumb Knob */}

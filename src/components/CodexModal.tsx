@@ -122,12 +122,18 @@ export const CodexModal: React.FC<CodexModalProps> = ({ onClose }) => {
             return (
               <button
                 key={cat}
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.nativeEvent?.stopImmediatePropagation?.();
                   soundEngine.playButtonClick();
                   setActiveTab(cat);
                   setSelectedEntryId(null);
                 }}
-                className={`flex-1 py-2 font-pixel text-[9px] uppercase transition-all flex items-center justify-center gap-1.5 border cursor-pointer ${
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  e.nativeEvent?.stopImmediatePropagation?.();
+                }}
+                className={`flex-1 py-2 font-pixel text-[9px] uppercase transition-all flex items-center justify-center gap-1.5 border cursor-pointer active:scale-95 ${
                   isActive
                     ? 'bg-[#2a1d17] text-[#e8c76a] border-[#b8860b] shadow-[0_0_10px_rgba(184,134,11,0.3)] font-bold'
                     : 'bg-black/60 border-gray-800 text-gray-500 hover:text-gray-300 hover:border-gray-700'
@@ -232,17 +238,23 @@ export const CodexModal: React.FC<CodexModalProps> = ({ onClose }) => {
 
                                 <button
                                   disabled={!isAchieved || isClaimed}
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.nativeEvent?.stopImmediatePropagation?.();
                                     const success = claimCodexMilestone(entry.id, m.killCount);
                                     if (success) {
                                       soundEngine.playOrbPickup();
                                     }
                                   }}
+                                  onPointerDown={(e) => {
+                                    e.stopPropagation();
+                                    e.nativeEvent?.stopImmediatePropagation?.();
+                                  }}
                                   className={`px-2 py-0.5 font-pixel text-[8px] rounded uppercase transition-all cursor-pointer ${
                                     isClaimed
                                       ? 'bg-gray-800 text-gray-500 border border-gray-700 cursor-not-allowed'
                                       : isAchieved
-                                      ? 'bg-amber-600 hover:bg-amber-500 text-black font-bold border border-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.5)]'
+                                      ? 'bg-amber-600 hover:bg-amber-500 text-black font-bold border border-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.5)] active:scale-95'
                                       : 'bg-black/60 text-gray-600 border border-gray-800 cursor-not-allowed'
                                   }`}
                                 >

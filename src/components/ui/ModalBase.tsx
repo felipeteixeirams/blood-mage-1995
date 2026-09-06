@@ -42,9 +42,13 @@ export const ModalBase: React.FC<ModalBaseProps> = ({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.12 }} // fade 120ms
-      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto select-none"
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 pointer-events-auto select-none"
       role="dialog"
       aria-modal="true"
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        e.nativeEvent?.stopImmediatePropagation?.();
+      }}
     >
       {/* Placa de pedra cinza escura / gótica medieval de Diablo II */}
       <motion.div
@@ -53,7 +57,11 @@ export const ModalBase: React.FC<ModalBaseProps> = ({
         animate={{ scale: 1 }}
         exit={{ scale: 0.95 }}
         transition={{ duration: 0.12 }}
-        className="bg-[#0c0a09] border-4 border-double border-[#b8860b] p-5 max-w-2xl w-full max-h-[90vh] overflow-y-auto text-[#E3DAC9] shadow-[0_0_35px_rgba(0,0,0,0.95)] relative flex flex-col gap-4 font-pixel"
+        className="bg-[#0c0a09] border-4 border-double border-[#b8860b] p-4 sm:p-5 max-w-2xl w-full max-h-[92vh] overflow-y-auto text-[#E3DAC9] shadow-[0_0_35px_rgba(0,0,0,0.95)] relative flex flex-col gap-3.5 font-pixel"
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          e.nativeEvent?.stopImmediatePropagation?.();
+        }}
       >
         {/* Cantoneiras douradas simuladas nos quatro cantos */}
         <div className="absolute top-1 left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-[#b8860b]" />
@@ -64,12 +72,20 @@ export const ModalBase: React.FC<ModalBaseProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b-2 border-[#b8860b]/30 pb-2.5">
           <div>
-            <h2 className="text-lg md:text-xl font-cinzel text-[#e8c76a] font-bold uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{title}</h2>
+            <h2 className="text-base sm:text-lg md:text-xl font-cinzel text-[#e8c76a] font-bold uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{title}</h2>
             {subtitle && <p className="text-[9px] text-[#e8c76a]/60 font-sans block mt-0.5 uppercase tracking-wide">{subtitle}</p>}
           </div>
           <button
-            onClick={onClose}
-            className="p-1.5 bg-[#171309] hover:bg-[#282216] border border-[#b8860b]/50 text-[#e8c76a] transition-colors cursor-pointer w-9 h-9 flex items-center justify-center shadow-[inset_1px_1px_3px_rgba(0,0,0,0.8)] active:scale-95"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.nativeEvent?.stopImmediatePropagation?.();
+              onClose();
+            }}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.nativeEvent?.stopImmediatePropagation?.();
+            }}
+            className="p-1.5 bg-[#171309] hover:bg-[#282216] border border-[#b8860b]/50 text-[#e8c76a] transition-colors cursor-pointer w-9 h-9 flex items-center justify-center shadow-[inset_1px_1px_3px_rgba(0,0,0,0.8)] active:scale-95 outline-none focus:border-[#e8c76a]"
             title="Fechar (B / Esc)"
             aria-label="Fechar"
           >

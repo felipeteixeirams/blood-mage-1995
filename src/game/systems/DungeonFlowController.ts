@@ -316,7 +316,11 @@ export class DungeonFlowController {
       if (biome === 'gloomy_woods') {
         const totalScouts = 4;
         let scoutsSpawned = 0;
-        const huntingGrounds = rooms.filter((r) => r.type !== 'spawn' && r.type !== 'boss');
+        let huntingGrounds = rooms.filter((r) => r.type !== 'spawn' && r.type !== 'boss');
+        if (huntingGrounds.length === 0) huntingGrounds = rooms;
+
+        // Spec 18 Task 3: Ecology mapping by zones/habitats in continuous topology
+        const zones = scene.dungeonGenerator?.pathDrivenGenerator?.lastZones || [];
 
         huntingGrounds.forEach((room, idx) => {
           if (scoutsSpawned >= totalScouts) return;
@@ -327,7 +331,21 @@ export class DungeonFlowController {
           for (let i = 0; i < countHere; i++) {
             const spawnX = room.x + 50 + Math.random() * (room.width - 100);
             const spawnY = room.y + 50 + Math.random() * (room.height - 100);
-            scene.pendingEnemySpawns.push({ x: spawnX, y: spawnY, monsterId: 'scout_beast', room });
+
+            // Determine habitat at spawn position
+            let monsterId = 'scout_beast';
+            const matchingZone = zones.find((z) => Math.hypot(z.x - spawnX, z.y - spawnY) <= z.radius);
+            if (matchingZone) {
+              if (matchingZone.type === 'lake') {
+                monsterId = 'gore_abomination';
+              } else if (matchingZone.type === 'ruins') {
+                monsterId = 'skeleton_warrior';
+              } else if (matchingZone.type === 'cave_entrance') {
+                monsterId = 'bat_swarm';
+              }
+            }
+
+            scene.pendingEnemySpawns.push({ x: spawnX, y: spawnY, monsterId, room });
             scene.totalFloorMonsters++;
             scoutsSpawned++;
           }
