@@ -2,7 +2,7 @@
 agent_context: backend, game-engine, game designer
 target_module: src/game/systems/ChunkStreamer.ts, src/game/systems/DungeonGenerator.ts, src/game/systems/DungeonFlowController.ts, src/game/scenes/GameScene.ts
 priority: alta
-status: Fase A entregue (mecanismo isolado, testado, NÃO conectado ao jogo real) — Fases B-D em discovery
+status: Fases A e B (encanamento interno) entregues — Fases B.2/C/D em discovery
 last_updated: 2026-09-06
 tags: [design, world-structure, continuous-world, dungeon-siege, chunk-streaming, discovery]
 ---
@@ -116,7 +116,34 @@ no nosso mundo de tiles 2D:
   nenhuma mudança de comportamento no jogo real** (nenhum arquivo do fluxo
   de produção foi tocado).
 
-### 🔍 Fase B — Integração com `DungeonGenerator`/`GameScene` (discovery)
+### ✅ Fase B — "Encanamento interno" (ENTREGUE nesta rodada, escopo reduzido deliberadamente)
+Antes de integrar de verdade, investiguei `GameScene.ts` (arquivo 🔴
+crítico) e confirmei: `physics.world.setBounds`/`cameras.main.setBounds`
+são setados **uma vez**, fixos, em `create()`; toda troca de bioma reusa
+o MESMO retângulo 1920×1440. Trocar isso de verdade (bounds dinâmicos +
+gatilho por posição em vez de colisão com portal) é mudança de
+comportamento de jogo, não só encanamento — decidido com Felipe **adiar
+isso pra Fase B.2/C** e entregar agora só a parte 100% sem risco:
+
+- `DungeonFlowController.getNextCampaignZone()`: substitui o if/else
+  hardcoded de 5 ramos (que decidia o próximo bioma) por uma consulta ao
+  `ChunkStreamer` sobre `CAMPAIGN_ZONE_CHUNKS` (a mesma cadeia, agora como
+  dado ordenado em vez de comparações de string). `onLoad`/`onUnload` são
+  no-ops nesta fase — carga/descarga de conteúdo continua exatamente como
+  antes (inline em `advanceToNextFloor()`); o streamer só decide a ordem
+  e mantém `getCurrentChunkIndex()` sincronizado com a progressão real,
+  preparando o terreno pras fases seguintes.
+- **Gatilho continua sendo colidir com o portal** — zero mudança de
+  comportamento pro jogador.
+- Validado em 2 camadas: `DungeonFlowController.test.ts` (3 testes,
+  prova que a nova lógica reproduz bit-a-bit a sequência do if/else
+  antigo, incluindo saturar em `santuario_sangue`) **e** rodando o jogo
+  de verdade via Playwright (chamando `advanceToNextFloor()` 5x através
+  de `window.gameScene.dungeonFlow` e confirmando a sequência real:
+  `safe_house → gloomy_woods → fosso_chagas → catacumbas_martires →
+  santuario_sangue → santuario_sangue`).
+
+### 🔍 Fase B.2 — Bounds dinâmicos + integração real com `DungeonGenerator` (discovery, decisão pendente)
 - Decisão em aberto: cada bioma vira 1 chunk largo (como hoje, só
   encadeado fisicamente) ou N chunks menores dentro do mesmo bioma?
 - Como mapear `ChunkStreamer.onLoad` pra `DungeonGenerator.generate()` —
@@ -124,6 +151,9 @@ no nosso mundo de tiles 2D:
   câmera, `rooms[0]` como spawn); precisa gerar só a fatia do chunk.
 - Câmera/física do Phaser usam `world.setBounds()` fixo — precisa virar
   dinâmico (o mundo cresce conforme chunks são adicionados à frente).
+- **Esta é a fase que muda o gatilho** de "colidir com portal" pra
+  "posição cruzar fronteira" — decisão explícita de Felipe foi adiar
+  isso, então só avançar aqui com validação prévia.
 
 ### 🔍 Fase C — Transições sem corte (indoor↔outdoor, bioma↔bioma)
 - Portar a lógica de luz/névoa/áudio do `WorldManager` pra reagir à
