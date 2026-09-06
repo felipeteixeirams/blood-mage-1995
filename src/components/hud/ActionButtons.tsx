@@ -1,53 +1,88 @@
 import React from 'react';
-import { Pause, Volume2, VolumeX, Backpack, Sparkles } from 'lucide-react';
+import { Pause, Backpack, Sparkles, Settings, Trophy } from 'lucide-react';
 import { useGameStore } from '../../store/gameStore';
 import { soundEngine } from '../../utils/soundEngine';
 
-interface ActionButtonsProps {
+export interface ActionButtonsProps {
   onPauseToggle: () => void;
-  isMuted: boolean;
-  onToggleMute: () => void;
+  onQuickSettingsToggle: () => void;
 }
 
 export const ActionButtons: React.FC<ActionButtonsProps> = ({
   onPauseToggle,
-  isMuted,
-  onToggleMute
+  onQuickSettingsToggle,
 }) => {
-  const { setInventoryOpen, setTalentsOpen } = useGameStore();
+  const { setInventoryOpen, setTalentsOpen, setRecordsOpen, setGameState } = useGameStore();
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    e.stopPropagation();
+    e.nativeEvent?.stopImmediatePropagation?.();
+  };
 
   return (
-    <div className="flex gap-2 pointer-events-auto">
-      <button 
-        className="bg-black/80 border-2 border-amber-800/80 p-2.5 rounded hover:bg-amber-950/80 transition-colors cursor-pointer touch-manipulation text-amber-400"
-        onClick={() => { soundEngine.playButtonClick(); setInventoryOpen(true); }}
+    <div
+      className="w-[100px] sm:w-[120px] flex gap-0.5 pointer-events-auto select-none"
+      onPointerDown={handlePointerDown}
+    >
+      {/* Trophy / Records */}
+      <button
+        className="flex-1 h-6 sm:h-7 bg-[#0c0a09]/95 border border-[#b8860b]/40 hover:border-[#b8860b] p-1 text-[#e8c76a] hover:bg-[#1c140e] shadow-[2px_2px_4px_rgba(0,0,0,0.8)] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center"
+        onClick={() => {
+          soundEngine.playButtonClick();
+          setRecordsOpen(true);
+          setGameState('paused');
+        }}
+        title="Recordes"
+      >
+        <Trophy size={12} className="text-[#e8c76a]" />
+      </button>
+
+      {/* Inventory */}
+      <button
+        className="flex-1 h-6 sm:h-7 bg-[#0c0a09]/95 border border-[#b8860b]/40 hover:border-[#b8860b] p-1 text-[#e8c76a] hover:bg-[#1c140e] shadow-[2px_2px_4px_rgba(0,0,0,0.8)] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center"
+        onClick={() => {
+          soundEngine.playButtonClick();
+          setInventoryOpen(true);
+        }}
         title="Inventário [I]"
       >
-        <Backpack size={20} />
+        <Backpack size={12} className="text-[#e8c76a]" />
       </button>
 
-      <button 
-        className="bg-black/80 border-2 border-red-800/80 p-2.5 rounded hover:bg-red-950/80 transition-colors cursor-pointer touch-manipulation text-red-400"
-        onClick={() => { soundEngine.playButtonClick(); setTalentsOpen(true); }}
-        title="Árvore de Talentos [T]"
+      {/* Talents */}
+      <button
+        className="flex-1 h-6 sm:h-7 bg-[#0c0a09]/95 border border-[#b8860b]/40 hover:border-[#b8860b] p-1 text-[#e8c76a] hover:bg-[#1c140e] shadow-[2px_2px_4px_rgba(0,0,0,0.8)] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center"
+        onClick={() => {
+          soundEngine.playButtonClick();
+          setTalentsOpen(true);
+        }}
+        title="Talentos [T]"
       >
-        <Sparkles size={20} />
+        <Sparkles size={12} className="text-[#e8c76a]" />
       </button>
 
-      <button 
-        className="bg-black/80 border-2 border-gray-700 p-2.5 rounded hover:bg-gray-800 transition-colors cursor-pointer touch-manipulation"
-        onClick={onToggleMute}
-        title={isMuted ? "Ativar Áudio" : "Mutar"}
+      {/* Quick Settings */}
+      <button
+        className="flex-1 h-6 sm:h-7 bg-[#0c0a09]/95 border border-[#b8860b]/40 hover:border-[#b8860b] p-1 text-[#e8c76a] hover:bg-[#1c140e] shadow-[2px_2px_4px_rgba(0,0,0,0.8)] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center"
+        onClick={() => {
+          soundEngine.playButtonClick();
+          onQuickSettingsToggle();
+        }}
+        title="Ajustes Rápidos"
       >
-        {isMuted ? <VolumeX size={20} className="text-gray-400" /> : <Volume2 size={20} className="text-white" />}
+        <Settings size={12} className="text-[#e8c76a]" />
       </button>
-      
-      <button 
-        className="bg-black/80 border-2 border-gray-700 p-2.5 rounded hover:bg-gray-800 transition-colors cursor-pointer touch-manipulation"
-        onClick={onPauseToggle}
+
+      {/* Pause */}
+      <button
+        className="flex-1 h-6 sm:h-7 bg-[#0c0a09]/95 border border-[#b8860b]/40 hover:border-[#b8860b] p-1 text-white hover:bg-[#1c140e] shadow-[2px_2px_4px_rgba(0,0,0,0.8)] transition active:scale-95 cursor-pointer touch-manipulation flex items-center justify-center"
+        onClick={() => {
+          soundEngine.playButtonClick();
+          onPauseToggle();
+        }}
         title="Pausar"
       >
-        <Pause size={20} className="text-white" />
+        <Pause size={12} className="text-white" />
       </button>
     </div>
   );

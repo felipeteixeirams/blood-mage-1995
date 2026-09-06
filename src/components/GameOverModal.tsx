@@ -27,13 +27,23 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
   });
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-4 select-none animate-blood-pulse">
+    <div 
+      className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-4 select-none animate-blood-pulse pointer-events-auto"
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        e.nativeEvent?.stopImmediatePropagation?.();
+      }}
+    >
       {/* Dark vignette border representing tunneling vision */}
       <div className="absolute inset-0 bg-gradient-radial from-transparent to-black pointer-events-none z-10" />
 
       <div
         ref={containerRef}
         className="w-full max-w-md bg-[#171309] border-4 border-[#B8860B] rounded-none p-6 shadow-[0_0_60px_rgba(153,0,0,0.85)] flex flex-col items-center space-y-6 text-center relative z-20"
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          e.nativeEvent?.stopImmediatePropagation?.();
+        }}
       >
         {/* Title Header */}
         <div className="space-y-2">
@@ -101,10 +111,16 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
         {/* Actions */}
         <div className="flex flex-col gap-3 w-full pt-2">
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
+              e.nativeEvent?.stopImmediatePropagation?.();
               soundEngine.playButtonClick();
               // Comando tipado via store — ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
               useGameStore.getState().setRespawnRequested(true);
+            }}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.nativeEvent?.stopImmediatePropagation?.();
             }}
             className="w-full py-4 bg-gradient-to-r from-red-950 via-red-900 to-red-950 hover:from-red-900 hover:to-red-800 focus:from-red-900 focus:to-red-800 text-red-100 font-pixel text-xs rounded-none border border-red-600 shadow-[0_0_20px_rgba(153,0,0,0.5)] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer outline-none"
           >
@@ -113,9 +129,15 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
           </button>
 
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
+              e.nativeEvent?.stopImmediatePropagation?.();
               soundEngine.playButtonClick();
               onGoHome();
+            }}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.nativeEvent?.stopImmediatePropagation?.();
             }}
             className="w-full py-3 bg-black/80 hover:bg-gray-950 focus:bg-gray-900 border border-gray-800 focus:border-gray-500 rounded-none text-gray-400 font-retro text-sm flex items-center justify-center gap-2 hover:border-gray-600 transition-colors cursor-pointer outline-none"
           >
