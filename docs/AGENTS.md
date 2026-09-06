@@ -65,3 +65,18 @@ Toda mudança relevante deve atualizar os documentos impactados. Ao fechar uma t
 
 - Rodar typecheck do jogo: `pnpm run typecheck` ou `pnpm run verify`.
 - Validar mudanças contra `critical/03_TESTING_GATES.md` e anti-regressão (`critical/00_ANTI_REGRESSION_GUIDE.md`).
+
+## Manutenção recorrente da base documental
+
+Desde 2026-09-06 existe uma atividade recorrente do Jules (agendada em
+jules.google.com, semanal, fora deste repositório) que audita `docs/`
+inteiro em busca de links quebrados, entradas órfãs/mortas em
+`docs/specs/README.md`, duplicatas e specs cujas citações de arquivo/
+método já não batem com o código real — corrigindo o mecânico
+automaticamente e abrindo PR contra `claude/frentes-atuacao-projeto-qypbg3`
+(nunca mescla sozinha; decisões de conteúdo ambíguas vão pra uma seção
+dedicada do PR para revisão humana). Ver `scripts/docs-audit.mjs` (criado
+por essa atividade) e o precedente completo em
+`docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md`. Se encontrar esse
+script ou notar que a base documental está incomumente saudável/
+consistente, é por causa dessa rotina — não é acaso.
