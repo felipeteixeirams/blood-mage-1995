@@ -250,6 +250,20 @@ export class DungeonGenerator {
       this.buildWallLine(rx, ry, rx, ry + roomH, 0xffffff, 'tile_wood_wall', true); // Left
       this.buildWallLine(rx + roomW, ry, rx + roomW, ry + roomH, 0xffffff, 'tile_wood_wall', true); // Right
 
+      // Props ambiente da Safe House (tapete, estante, vela, ervas, barril,
+      // tapeçaria) — PRECISA rodar aqui, antes do `return rooms` acima ser
+      // alcançado. O bloco "Scatter decor details" mais abaixo (que trata o
+      // ramo `isSafeHouse` do if/else) nunca é executado pra safe house
+      // porque este `return` sai da função antes de chegar lá — confirmado
+      // rodando o jogo de verdade (Playwright): 0 props apareciam na Safe
+      // House mesmo com bakeDetailTextures()/scatterDetails() implementados
+      // corretamente, porque eram código morto.
+      const safeHouseFactory = new SafeHouseDetailFactory(this.scene);
+      safeHouseFactory.bakeDetailTextures();
+      rooms.forEach((room) => {
+        safeHouseFactory.scatterDetails(room);
+      });
+
       return rooms;
     }
 
@@ -347,20 +361,15 @@ export class DungeonGenerator {
       }
     });
 
-    // Scatter decor details per room using DungeonDetailFactory or SafeHouseDetailFactory
-    if (!isSafeHouse) {
-      const detailFactory = new DungeonDetailFactory(this.scene);
-      detailFactory.bakeDetailTextures();
-      rooms.forEach((room) => {
-        detailFactory.scatterDetails(room, biome);
-      });
-    } else {
-      const safeHouseFactory = new SafeHouseDetailFactory(this.scene);
-      safeHouseFactory.bakeDetailTextures();
-      rooms.forEach((room) => {
-        safeHouseFactory.scatterDetails(room);
-      });
-    }
+    // Scatter decor details per room using DungeonDetailFactory.
+    // NOTA: isSafeHouse já retornou mais acima (bloco `if (isSafeHouse)`),
+    // onde o SafeHouseDetailFactory correspondente roda — chegar aqui
+    // implica sempre !isSafeHouse, então não há mais ramo a checar.
+    const detailFactory = new DungeonDetailFactory(this.scene);
+    detailFactory.bakeDetailTextures();
+    rooms.forEach((room) => {
+      detailFactory.scatterDetails(room, biome);
+    });
 
     return rooms;
   }
@@ -552,8 +561,17 @@ export class DungeonGenerator {
       const noiseVal = Math.abs(Math.sin(gridX * 12.9898 + gridY * 78.233));
       const rugChance = Math.abs(Math.sin(gridX * 43.123 + gridY * 19.876));
 
-      // 1 in 18 tiles (~5.5% probability) displays carpet rug overlay
-      if (rugChance > 0.945) {
+      // 1 in 18 tiles (~5.5% probability) displays carpet rug overlay.
+      // NOTA: o threshold real não é `probabilidade-alvo` direto porque
+      // `|sin(x)|` não é uniformemente distribuído — segue distribuição
+      // arcoseno (mais densidade perto de 0 e perto de 1), então valores
+      // acima de 0.9 são muito mais comuns do que num sorteio uniforme.
+      // Confirmado rodando o jogo: com threshold 0.945 o tapete cobria
+      // ~21% dos tiles (quase todo tile alternado), não os ~5.5%
+      // pretendidos — visualmente virava "carpete de parede a parede" em
+      // vez de um acento ocasional. 0.9965 é o valor empírico (medido
+      // amostrando a malha) que produz de fato ~5.3% de cobertura.
+      if (rugChance > 0.9965) {
         return this.scene.textures?.exists('tile_wood_floor_rug') ? 'tile_wood_floor_rug' : 'tile_wood_floor';
       }
 
