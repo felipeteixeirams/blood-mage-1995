@@ -264,7 +264,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   public getEffectiveMoveSpeed(): number {
     const relicMods = useGameStore.getState().getRelicModifiers();
     const base = this.stats.moveSpeed + (relicMods.speedBonus || 0);
-    return Math.max(40, base * (this.stats.statusConditions?.bleeding ? 0.8 : 1.0));
+    let speed = Math.max(40, base * (this.stats.statusConditions?.bleeding ? 0.8 : 1.0));
+
+    // Spec 18 Task 2: 30% movement speed penalty on water tiles (Lago Raso)
+    const dungeonGen = (this.scene as any)?.dungeonGenerator;
+    if (dungeonGen?.pathDrivenGenerator?.isWaterTileAt(this.x, this.y)) {
+      speed *= 0.70;
+    }
+
+    return speed;
   }
 
   public getEffectiveMaxHp(): number {

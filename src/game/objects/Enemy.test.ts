@@ -86,7 +86,13 @@ vi.mock('phaser', () => {
         },
         Angle: {
           Between: (x1: number, y1: number, x2: number, y2: number) => Math.atan2(y2 - y1, x2 - x1),
+          Normalize: (a: number) => {
+            let angle = a % (Math.PI * 2);
+            if (angle < 0) angle += Math.PI * 2;
+            return angle;
+          },
         },
+        DegToRad: (deg: number) => (deg * Math.PI) / 180,
         Clamp: (v: number, min: number, max: number) => Math.max(min, Math.min(max, v)),
       },
     },
@@ -248,5 +254,19 @@ describe('Enemy Monster Balancing & Scaling', () => {
     const isLethal = enemy.takeDamage(100, 80, 100, true, false);
     expect(isLethal).toBe(true);
     expect(spawnGibsSpy).toHaveBeenCalled();
+  });
+
+  it('respects Line of Sight (hasWallBetween) and blocks perception / aggro when obscured (Task 4)', () => {
+    const scene = makeScene();
+    const enemy = new Enemy(scene, 100, 100, 'skeleton_warrior');
+
+    // Without wall blocking, enemy can see player within range and facing angle
+    enemy.facingAngle = 0; // facing East
+    const canSeeWithoutWall = enemy.canSeePlayer(150, 100, false);
+    expect(canSeeWithoutWall).toBe(true);
+
+    // With wall blocking (hasWallBetween = true), enemy perception fails
+    const canSeeWithWall = enemy.canSeePlayer(150, 100, true);
+    expect(canSeeWithWall).toBe(false);
   });
 });

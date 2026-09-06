@@ -611,7 +611,13 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     const isFrozen = (this.scene as any)?.statusEffectSystem?.hasStatus?.(this, 'frozen');
-    const effectiveBaseSpeed = isFrozen ? 0 : this.config.speed * this.speedMultiplier;
+    let effectiveBaseSpeed = isFrozen ? 0 : this.config.speed * this.speedMultiplier;
+
+    // Spec 18 Task 2: 30% movement speed penalty on water tiles for terrestrial enemies
+    const dungeonGen = (this.scene as any)?.dungeonGenerator;
+    if (dungeonGen?.pathDrivenGenerator?.isWaterTileAt(this.x, this.y)) {
+      effectiveBaseSpeed *= 0.70;
+    }
 
     // STATE MACHINE IMPLEMENTATION
     switch (this.aiState) {

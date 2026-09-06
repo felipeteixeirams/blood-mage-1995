@@ -3,6 +3,7 @@ import { BiomeType } from '../../types/game';
 import { SpikeTrap, ExplosiveBarrel } from '../objects/Traps';
 import { HeightmapGenerator, calculateIsometricDepth } from './HeightmapGenerator';
 import { ProceduralForestGenerator } from './ProceduralForestGenerator';
+import { PathDrivenGenerator, PathZone } from './PathDrivenGenerator';
 import type { GameScene } from '../scenes/GameScene';
 
 export interface RoomData {
@@ -45,6 +46,7 @@ export class DungeonGenerator {
   private cachedLine = new Phaser.Geom.Line();
   private cachedRect = new Phaser.Geom.Rectangle();
   public heightGenerator: HeightmapGenerator;
+  public pathDrivenGenerator: PathDrivenGenerator;
 
   constructor(
     scene: Phaser.Scene,
@@ -55,6 +57,7 @@ export class DungeonGenerator {
     this.wallsGroup = wallsGroup;
     this.chestsGroup = chestsGroup;
     this.heightGenerator = new HeightmapGenerator(1995);
+    this.pathDrivenGenerator = new PathDrivenGenerator(scene);
   }
 
   public isTraversable(fromX: number, fromY: number, toX: number, toY: number, isWorldCoords: boolean = true): boolean {
@@ -62,10 +65,10 @@ export class DungeonGenerator {
   }
 
   public generate(mapW: number, mapH: number, biome: BiomeType = 'fosso_chagas'): RoomData[] {
-    // Spec 10 (27/09/2026): gloomy_woods usa geração procedural de floresta em vez de salas
+    // Spec 18 (06/09/2026): gloomy_woods e biomas continuos usam PathDrivenGenerator
     if (biome === 'gloomy_woods') {
-      const forestGen = new ProceduralForestGenerator(this.scene);
-      return forestGen.generate(mapW, mapH);
+      const result = this.pathDrivenGenerator.generate(mapW, mapH);
+      return result.rooms;
     }
 
     const isSafeHouse = biome === 'safe_house';
