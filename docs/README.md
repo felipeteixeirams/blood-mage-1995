@@ -34,6 +34,7 @@ Index mestre: `docs/specs/README.md`
 * `docs/specs/in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md` - **Fase 5:** Polimento de Produção, PWA e Builds Electron/Steam.
 * `docs/specs/in-progress/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md` - Mapeamento completo de Sprites e Checklist de integração.
 * `docs/specs/in-progress/09_PIXEL_LAB_PROMPT_GUIDE.md` - Guia de Prompts e parâmetros PixelLab para Sprites.
+* `docs/specs/in-progress/25_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md` - **Spec 25:** Padronização de Modais Secundários, Navegação Gamepad & Retratos Rúnicos.
 
 #### 🟢 Entregues / Concluídas (`docs/specs/delivered/`)
 * `docs/specs/delivered/11_VISUAL_POLISH_FRONTS.md` - **Spec 11:** Índice Mestre de Polimento Visual (Satélites 11.01 a 11.08: Masmorra, Neblina, Sangue, Hit-Stop, Bloom, Áudio, Paletas, NPCs).

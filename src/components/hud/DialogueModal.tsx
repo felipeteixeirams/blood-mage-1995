@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Feather, Sparkles, BookOpen, Coins, ShieldAlert, Skull } from 'lucide-react';
 import { useGameStore } from '../../store/gameStore';
 import { soundEngine } from '../../utils/soundEngine';
+import { useGamepadUINavigation } from '../../hooks/useGamepadUINavigation';
 
 /**
  * Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md:
@@ -14,14 +15,56 @@ import { soundEngine } from '../../utils/soundEngine';
  */
 const TYPEWRITER_MS_PER_CHAR = 22;
 
-const getSpeakerIcon = (speakerName?: string, speakerTitle?: string) => {
+const getSpeakerInfo = (speakerName?: string, speakerTitle?: string) => {
   const combined = `${speakerName || ''} ${speakerTitle || ''}`.toLowerCase();
-  if (combined.includes('maelen')) return Sparkles;
-  if (combined.includes('ancião') || combined.includes('elder') || combined.includes('mestre') || combined.includes('erudito')) return BookOpen;
-  if (combined.includes('mercador') || combined.includes('vendedor') || combined.includes('moeda') || combined.includes('comércio')) return Coins;
-  if (combined.includes('guarda') || combined.includes('sentinela') || combined.includes('capitão') || combined.includes('soldado')) return ShieldAlert;
-  if (combined.includes('morte') || combined.includes('ceifador') || combined.includes('espectro') || combined.includes('necromante')) return Skull;
-  return Feather;
+  
+  if (combined.includes('maelen')) return {
+    Icon: Sparkles,
+    color: '#e8c76a', // Gold/holy
+    gradient: 'from-[#2a1c12] to-[#0c0a09]',
+    border: 'border-[#b8860b]',
+    glow: 'drop-shadow-[0_0_15px_rgba(184,134,11,0.3)]'
+  };
+  
+  if (combined.includes('ancião') || combined.includes('elder') || combined.includes('mestre') || combined.includes('erudito')) return {
+    Icon: BookOpen,
+    color: '#a855f7', // Purple/Arcane
+    gradient: 'from-[#1f102b] to-[#0c0a09]',
+    border: 'border-purple-800',
+    glow: 'drop-shadow-[0_0_15px_rgba(168,85,247,0.3)]'
+  };
+  
+  if (combined.includes('mercador') || combined.includes('vendedor') || combined.includes('moeda') || combined.includes('comércio')) return {
+    Icon: Coins,
+    color: '#fbbf24', // Amber/Coin
+    gradient: 'from-[#3a280e] to-[#0c0a09]',
+    border: 'border-amber-600',
+    glow: 'drop-shadow-[0_0_15px_rgba(245,158,11,0.3)]'
+  };
+  
+  if (combined.includes('guarda') || combined.includes('sentinela') || combined.includes('capitão') || combined.includes('soldado')) return {
+    Icon: ShieldAlert,
+    color: '#9ca3af', // Gray/Steel
+    gradient: 'from-[#1f2328] to-[#0c0a09]',
+    border: 'border-gray-500',
+    glow: 'drop-shadow-[0_0_15px_rgba(156,163,175,0.3)]'
+  };
+  
+  if (combined.includes('morte') || combined.includes('ceifador') || combined.includes('espectro') || combined.includes('necromante') || combined.includes('lorde')) return {
+    Icon: Skull,
+    color: '#ef4444', // Red/Blood
+    gradient: 'from-[#3b1212] to-[#0c0a09]',
+    border: 'border-red-800',
+    glow: 'drop-shadow-[0_0_15px_rgba(239,68,68,0.3)]'
+  };
+  
+  return {
+    Icon: Feather,
+    color: '#e8c76a',
+    gradient: 'from-[#2a1f16] to-[#0c0a09]',
+    border: 'border-[#b8860b]',
+    glow: 'drop-shadow-[0_0_15px_rgba(184,134,11,0.3)]'
+  };
 };
 
 export const DialogueModal: React.FC = () => {
@@ -32,9 +75,18 @@ export const DialogueModal: React.FC = () => {
 
   const [typedLength, setTypedLength] = useState(0);
   const typewriterRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const choicesRef = useRef<HTMLDivElement>(null);
 
   const node =
     activeDialogueTree && activeDialogueNodeId ? activeDialogueTree.nodes[activeDialogueNodeId] : null;
+
+  const isTyping = node ? typedLength < node.text.length : false;
+
+  useGamepadUINavigation({
+    containerRef: choicesRef,
+    isActive: Boolean(node && !isTyping),
+    onClose: closeDialogue,
+  });
 
   // Reinicia o efeito de máquina de escrever sempre que o nó muda
   useEffect(() => {
@@ -63,19 +115,31 @@ export const DialogueModal: React.FC = () => {
 
   if (!node) return null;
 
-  const isTyping = typedLength < node.text.length;
   const displayedText = node.text.slice(0, typedLength);
 
-  const handleSkipTypewriter = (e?: React.SyntheticEvent) => {
+  const handleSkipTypewriter = (e?: React.SyntheticEvent | KeyboardEvent) => {
     if (e) {
-      e.stopPropagation();
-      (e as unknown as { nativeEvent?: { stopImmediatePropagation?: () => void } }).nativeEvent?.stopImmediatePropagation?.();
+      if ('stopPropagation' in e) e.stopPropagation();
+      if ('nativeEvent' in e && (e as any).nativeEvent?.stopImmediatePropagation) {
+        (e as any).nativeEvent.stopImmediatePropagation();
+      }
     }
     if (isTyping) {
       if (typewriterRef.current) clearInterval(typewriterRef.current);
       setTypedLength(node.text.length);
     }
   };
+
+  useEffect(() => {
+    if (!isTyping) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' || e.code === 'Enter') {
+        handleSkipTypewriter(e);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isTyping, handleSkipTypewriter]);
 
   const handleChoice = (choiceId: string, e?: React.SyntheticEvent) => {
     if (e) {
@@ -86,7 +150,8 @@ export const DialogueModal: React.FC = () => {
     selectDialogueChoice(choiceId);
   };
 
-  const SpeakerIcon = getSpeakerIcon(node.speakerName, node.speakerTitle);
+  const speakerInfo = getSpeakerInfo(node.speakerName, node.speakerTitle);
+  const SpeakerIcon = speakerInfo.Icon;
 
   // Base64 gothic border pattern for 9-slice usage in pure CSS
   const borderImageStyle = {
@@ -119,17 +184,15 @@ export const DialogueModal: React.FC = () => {
         }}
       >
         {/* Retrato Expressivo do NPC (Esquerda - Fluido e Responsivo) */}
-        <div className="shrink-0 w-20 h-28 sm:w-28 sm:h-36 md:w-32 md:h-40 relative flex items-end z-10 drop-shadow-[0_0_15px_rgba(184,134,11,0.3)]">
-          <div className="absolute inset-0 bg-[#1c140e] border-2 border-[#b8860b] rounded-t-sm overflow-hidden flex flex-col items-center justify-center pb-2" style={{
-             backgroundImage: 'radial-gradient(circle at top, #2a1f16 0%, #0c0a09 100%)',
-          }}>
+        <div className={`shrink-0 w-20 h-28 sm:w-28 sm:h-36 md:w-32 md:h-40 relative flex items-end z-10 ${speakerInfo.glow}`}>
+          <div className={`absolute inset-0 bg-[#1c140e] border-2 ${speakerInfo.border} rounded-t-sm overflow-hidden flex flex-col items-center justify-center pb-2 bg-gradient-to-t ${speakerInfo.gradient}`}>
             {/* Insígnia ou Silhueta Procedural Contextual */}
-            <SpeakerIcon className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14 text-[#b8860b]/60 mb-1" strokeWidth={1.25} />
+            <SpeakerIcon className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1" style={{ color: speakerInfo.color }} strokeWidth={1.25} />
             <div className="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-[#0c0a09] to-transparent pointer-events-none" />
           </div>
           {/* Placa com Nome */}
-          <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-[115%] bg-[#0c0a09] border border-[#b8860b] py-0.5 sm:py-1 px-1 text-center shadow-lg">
-            <span className="text-[8px] sm:text-[9px] md:text-[10px] font-pixel text-[#e8c76a] uppercase tracking-wider block font-bold leading-tight truncate">
+          <div className={`absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-[115%] bg-[#0c0a09] border ${speakerInfo.border} py-0.5 sm:py-1 px-1 text-center shadow-lg`}>
+            <span className="text-[8px] sm:text-[9px] md:text-[10px] font-pixel uppercase tracking-wider block font-bold leading-tight truncate" style={{ color: speakerInfo.color }}>
               {node.speakerName}
             </span>
           </div>
@@ -159,7 +222,7 @@ export const DialogueModal: React.FC = () => {
 
           {/* Opções de Resposta */}
           {!isTyping && (
-            <div className="mt-3 sm:mt-4 space-y-1 font-pixel text-[9px] sm:text-[10px] flex flex-col items-end">
+            <div ref={choicesRef} className="mt-3 sm:mt-4 space-y-1 font-pixel text-[9px] sm:text-[10px] flex flex-col items-end">
               {node.choices.map((choice) => (
                 <button
                   key={choice.id}
@@ -168,7 +231,7 @@ export const DialogueModal: React.FC = () => {
                     e.stopPropagation();
                     e.nativeEvent?.stopImmediatePropagation?.();
                   }}
-                  className="w-full sm:w-[92%] text-left px-2.5 sm:px-3 py-2 sm:py-2.5 bg-gradient-to-r from-transparent via-[#1c140e] to-[#2a1c12] hover:via-[#2a1c12] hover:to-[#4a3604] border-r-4 border-[#b8860b]/50 hover:border-[#e8c76a] text-[#e3dac9] transition-all cursor-pointer touch-manipulation uppercase shadow-md active:scale-[0.99]"
+                  className="w-full sm:w-[92%] text-left px-2.5 sm:px-3 py-2 sm:py-2.5 bg-gradient-to-r from-transparent via-[#1c140e] to-[#2a1c12] hover:via-[#2a1c12] hover:to-[#4a3604] border-r-4 border-[#b8860b]/50 focus:border-[#e8c76a] focus:bg-gradient-to-r focus:from-transparent focus:via-[#2a1c12] focus:to-[#4a3604] outline-none hover:border-[#e8c76a] text-[#e3dac9] transition-all cursor-pointer touch-manipulation uppercase shadow-md active:scale-[0.99]"
                 >
                   <span className="text-[#b8860b] mr-1.5">♦</span> {choice.text}
                 </button>
@@ -187,7 +250,7 @@ export const DialogueModal: React.FC = () => {
                     e.stopPropagation();
                     e.nativeEvent?.stopImmediatePropagation?.();
                   }}
-                  className="w-full sm:w-[92%] text-left px-2.5 sm:px-3 py-2 sm:py-2.5 bg-gradient-to-r from-transparent via-[#1c140e] to-[#2a1c12] hover:via-[#2a1c12] hover:to-[#4a3604] border-r-4 border-[#b8860b]/50 hover:border-[#e8c76a] text-[#e3dac9] transition-all cursor-pointer touch-manipulation uppercase shadow-md active:scale-[0.99]"
+                  className="w-full sm:w-[92%] text-left px-2.5 sm:px-3 py-2 sm:py-2.5 bg-gradient-to-r from-transparent via-[#1c140e] to-[#2a1c12] hover:via-[#2a1c12] hover:to-[#4a3604] border-r-4 border-[#b8860b]/50 focus:border-[#e8c76a] focus:bg-gradient-to-r focus:from-transparent focus:via-[#2a1c12] focus:to-[#4a3604] outline-none hover:border-[#e8c76a] text-[#e3dac9] transition-all cursor-pointer touch-manipulation uppercase shadow-md active:scale-[0.99]"
                 >
                   <span className="text-[#b8860b] mr-1.5">♦</span> (Sair)
                 </button>

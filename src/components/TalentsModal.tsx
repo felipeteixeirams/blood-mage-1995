@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'motion/react';
 import { Flame, Heart, Droplet, Zap, Shield, Sparkles, X, PlusCircle, Lock } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import talentsData from '../data/talents.json';
 import { soundEngine } from '../utils/soundEngine';
+import { useGamepadUINavigation } from '../hooks/useGamepadUINavigation';
 
 interface ExtendedTalentNode {
   id: string;
@@ -29,6 +30,13 @@ const ICON_MAP: Record<string, React.ElementType> = {
 
 export const TalentsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { bloodCrystals, talentLevels, upgradeTalent } = useGameStore();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGamepadUINavigation({
+    containerRef,
+    isActive: true,
+    onClose,
+  });
 
   const isExclusiveBlocked = (node: ExtendedTalentNode): boolean => {
     if (!node.exclusive_with) return false;
@@ -67,9 +75,20 @@ export const TalentsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => 
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto select-none"
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 pointer-events-auto select-none"
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        e.nativeEvent?.stopImmediatePropagation?.();
+      }}
     >
-      <div className="bg-[#0c0a09] border-4 border-double border-[#b8860b] p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto text-[#E3DAC9] shadow-[0_0_35px_rgba(0,0,0,0.95)] relative flex flex-col gap-4 font-pixel">
+      <div 
+        ref={containerRef}
+        className="bg-[#0c0a09] border-4 border-double border-[#b8860b] p-4 sm:p-6 max-w-2xl w-full max-h-[92vh] overflow-y-auto text-[#E3DAC9] shadow-[0_0_35px_rgba(0,0,0,0.95)] relative flex flex-col gap-3 sm:gap-4 font-pixel"
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          e.nativeEvent?.stopImmediatePropagation?.();
+        }}
+      >
 
         {/* Cantoneiras douradas simuladas nos quatro cantos */}
         <div className="absolute top-1 left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-[#b8860b]" />
@@ -78,17 +97,27 @@ export const TalentsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         <div className="absolute bottom-1 right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-[#b8860b]" />
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b-2 border-[#b8860b]/30 pb-3 mb-2">
-          <div className="flex items-center gap-3">
-            <Sparkles className="w-6 h-6 text-[#e8c76a] animate-pulse" />
+        <div className="flex items-center justify-between border-b-2 border-[#b8860b]/30 pb-2.5 mb-1">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-[#e8c76a] animate-pulse" />
             <div>
-              <h2 className="text-xl font-cinzel text-[#e8c76a] font-bold uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">ÁRVORE DE TALENTOS</h2>
-              <p className="text-[9px] text-[#e8c76a]/60 font-sans uppercase tracking-wide">Evolução permanente alimentada por Cristais de Sangue</p>
+              <h2 className="text-lg sm:text-xl font-cinzel text-[#e8c76a] font-bold uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">ÁRVORE DE TALENTOS</h2>
+              <p className="text-[8px] sm:text-[9px] text-[#e8c76a]/60 font-sans uppercase tracking-wide">Evolução permanente alimentada por Cristais de Sangue</p>
             </div>
           </div>
           <button
-            onClick={onClose}
-            className="p-1.5 bg-[#171309] hover:bg-[#282216] border border-[#b8860b]/50 text-[#e8c76a] transition-colors cursor-pointer w-9 h-9 flex items-center justify-center shadow-[inset_1px_1px_3px_rgba(0,0,0,0.8)] active:scale-95"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.nativeEvent?.stopImmediatePropagation?.();
+              onClose();
+            }}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.nativeEvent?.stopImmediatePropagation?.();
+            }}
+            className="p-1.5 bg-[#171309] hover:bg-[#282216] border border-[#b8860b]/50 text-[#e8c76a] transition-colors cursor-pointer w-9 h-9 flex items-center justify-center shadow-[inset_1px_1px_3px_rgba(0,0,0,0.8)] active:scale-95 outline-none focus:border-[#e8c76a]"
+            title="Fechar (B / Esc)"
+            aria-label="Fechar"
           >
             <X className="w-4 h-4" />
           </button>
@@ -154,9 +183,17 @@ export const TalentsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                   </div>
 
                   <button
-                    onClick={() => handleUpgradeNode(node)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.nativeEvent?.stopImmediatePropagation?.();
+                      handleUpgradeNode(node);
+                    }}
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      e.nativeEvent?.stopImmediatePropagation?.();
+                    }}
                     disabled={!canAfford || isMax || blocked}
-                    className={`w-full py-2 px-3 font-pixel text-[9px] uppercase flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    className={`w-full py-2 px-3 font-pixel text-[9px] uppercase flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 outline-none focus:border-[#e8c76a] ${
                       isMax
                         ? 'bg-[#1c140e] border border-[#b8860b] text-[#e8c76a] opacity-90 cursor-default shadow-[inset_1px_1px_3px_rgba(0,0,0,0.8)]'
                         : blocked
@@ -190,8 +227,16 @@ export const TalentsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => 
             * Dica: Derrote chefes e complete andares para ganhar mais Cristais de Sangue.
           </p>
           <button
-            onClick={onClose}
-            className="px-5 py-2 bg-[#171309] hover:bg-[#282216] border border-[#b8860b]/60 text-[#e8c76a] font-pixel text-[9px] uppercase shadow-[inset_1px_1px_3px_rgba(0,0,0,0.8)] cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.nativeEvent?.stopImmediatePropagation?.();
+              onClose();
+            }}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.nativeEvent?.stopImmediatePropagation?.();
+            }}
+            className="px-5 py-2 bg-[#171309] hover:bg-[#282216] border border-[#b8860b]/60 text-[#e8c76a] font-pixel text-[9px] uppercase shadow-[inset_1px_1px_3px_rgba(0,0,0,0.8)] cursor-pointer active:scale-95 outline-none focus:border-[#e8c76a]"
           >
             FECHAR
           </button>

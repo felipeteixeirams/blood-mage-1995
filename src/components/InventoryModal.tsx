@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Shield, Sword, Sparkles, X, Heart, Zap, Flame, Award, CheckCircle2, PlusCircle, Lock, ArrowUpRight, ArrowDownRight, Filter } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import { LootItem, RelicItem, ItemRarity } from '../types/game';
 import relicsData from '../data/relics.json';
+import { useGamepadUINavigation } from '../hooks/useGamepadUINavigation';
 
 interface InventoryModalProps {
   onClose: () => void;
@@ -29,6 +30,13 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
 
   const [selectedRelic, setSelectedRelic] = useState<RelicItem | null>(null);
   const [relicFilter, setRelicFilter] = useState<'all' | 'unlocked' | 'equipped'>('all');
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGamepadUINavigation({
+    containerRef,
+    isActive: true,
+    onClose,
+  });
 
   const activeRelicMods = getRelicModifiers();
   const allCatalogRelics = relicsData as RelicItem[];
@@ -109,6 +117,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
       }}
     >
       <div 
+        ref={containerRef}
         className="bg-[#0f0b09]/98 border-2 border-[#b8860b]/60 p-3.5 sm:p-5 max-w-3xl w-full max-h-[92vh] overflow-y-auto text-gray-100 shadow-[0_0_40px_rgba(0,0,0,0.9)] relative"
         onClick={(e) => {
           e.stopPropagation();
