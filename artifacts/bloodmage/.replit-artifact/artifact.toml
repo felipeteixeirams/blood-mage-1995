@@ -12,12 +12,12 @@ paths = [ "/" ]
 localPort = 24502
 
 [services.development]
-run = "pnpm --filter @workspace/bloodmage run dev"
+run = "cd ../.. && pnpm run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/bloodmage", "run", "build" ]
+build = [ "sh", "-c", "cd ../.. && pnpm run build" ]
 serve = "static"
-publicDir = "artifacts/bloodmage/dist/public"
+publicDir = "dist"
 
 [[services.production.rewrites]]
 from = "/*"
