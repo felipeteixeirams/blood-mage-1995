@@ -71,6 +71,7 @@ As regras de produto, onde estamos, diretrizes de retenção mobile e para onde 
 Relatórios de auditoria técnica, cobertura de testes e análise de segurança.
 * `docs/reviews/02_SPECS_AND_DISCOVERY_RETENTION_AUDIT.md` - **Auditoria Geral de Specs, Roadmap & Discovery** (Filtro de Sucesso Mobile).
 * `docs/reviews/AUDIT_REPORT_QUALIDADE_CODIGO_2026.md` - **Relatório de Auditoria de Qualidade de Código 2026** (Testes, Tratamento de Erros, Padrões de Design, Segurança e Resiliência).
+* `docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md` - **Auditoria da Base Documental (2026-09)** — links quebrados, specs duplicadas/órfãs, erros factuais em `critical/`, mandato desatualizado do próprio `docs/README.md`, gaps de ADR/acessibilidade/segurança. ⚠️ Achados ainda não aplicados, ver tabela de remediação no final do arquivo.
 
 ### 6. 🗄️ Arquivo (Documentação Legada)
 Specs originais, planos passados e documentação desatualizada. **Não use como verdade absoluta.**
