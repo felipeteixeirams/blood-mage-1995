@@ -260,8 +260,11 @@ describe('Enemy Monster Balancing & Scaling', () => {
     const scene = makeScene();
     const enemy = new Enemy(scene, 100, 100, 'skeleton_warrior');
 
-    // Without wall blocking, enemy can see player within range and facing angle
-    enemy.facingAngle = 0; // facing East
+    // Without wall blocking, enemy can see player within range and facing angle.
+    // facingAngle é private em Enemy.ts — bug de typecheck pré-existente em
+    // origin/main (commit 2d3fdb7, Spec 18) que passou pelo merge; corrigido
+    // aqui com o mesmo acesso via cast já usado alhures neste arquivo de teste.
+    (enemy as unknown as { facingAngle: number }).facingAngle = 0; // facing East
     const canSeeWithoutWall = enemy.canSeePlayer(150, 100, false);
     expect(canSeeWithoutWall).toBe(true);
 
