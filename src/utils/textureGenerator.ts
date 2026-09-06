@@ -59,42 +59,140 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     return canvas;
   };
 
-  // 1. Dark Gothic Isometric Ground Tile (64x32 Isometric Diamond)
-  const tileCanvas = createPixelCanvas(64, 32, (ctx) => {
-    // Fill dark stone diamond base
-    ctx.fillStyle = '#140e15';
-    ctx.beginPath();
-    ctx.moveTo(32, 0);
-    ctx.lineTo(64, 16);
-    ctx.lineTo(32, 32);
-    ctx.lineTo(0, 16);
-    ctx.closePath();
-    ctx.fill();
+  // 1. Dark Gothic Isometric Ground Tile & Organic Variants (64x32 Isometric Diamond)
+  const bayer2x2 = [[0, 2], [3, 1]];
 
-    // Dark slate stone border mortar
-    ctx.strokeStyle = '#221623';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
+  const createGroundTileCanvas = (variant: number): HTMLCanvasElement => {
+    return createPixelCanvas(64, 32, (ctx) => {
+      // Fill dark stone diamond base
+      ctx.fillStyle = '#140e15';
+      ctx.beginPath();
+      ctx.moveTo(32, 0);
+      ctx.lineTo(64, 16);
+      ctx.lineTo(32, 32);
+      ctx.lineTo(0, 16);
+      ctx.closePath();
+      ctx.fill();
 
-    // Cobblestone / Flagstone slab pixel textures
-    ctx.fillStyle = '#1f1621';
-    ctx.fillRect(18, 6, 12, 6);
-    ctx.fillRect(34, 10, 14, 7);
-    ctx.fillRect(12, 16, 16, 8);
-    ctx.fillRect(32, 20, 12, 6);
+      // Dark slate stone border mortar
+      ctx.strokeStyle = '#221623';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
 
-    // Subtle stone highlights
-    ctx.fillStyle = '#2b1e2d';
-    ctx.fillRect(19, 7, 10, 2);
-    ctx.fillRect(35, 11, 12, 2);
-    ctx.fillRect(13, 17, 14, 2);
+      // Multi-layer noise & Bayer 2x2 dithering for organic stone texture
+      for (let y = 4; y < 28; y++) {
+        for (let x = 8; x < 56; x++) {
+          // Check if point is inside diamond
+          const dx = Math.abs(x - 32) / 32;
+          const dy = Math.abs(y - 16) / 16;
+          if (dx + dy <= 0.88) {
+            const bayerVal = bayer2x2[y % 2][x % 2];
+            const noiseVal = Math.sin(x * 0.2 + variant * 3.1) * Math.cos(y * 0.3 + variant * 1.7) * 0.5 + 0.5;
+            if (bayerVal === 3 || noiseVal > 0.65) {
+              ctx.fillStyle = variant === 2 ? 'rgba(30, 56, 35, 0.25)' : 'rgba(43, 30, 45, 0.2)';
+              ctx.fillRect(x, y, 1, 1);
+            }
+          }
+        }
+      }
 
-    // Ancient blood stains on dungeon floor
-    ctx.fillStyle = 'rgba(100, 12, 20, 0.65)';
-    ctx.fillRect(26, 12, 6, 4);
-    ctx.fillRect(30, 15, 5, 4);
-  });
+      // Cobblestone / Flagstone slab pixel textures
+      ctx.fillStyle = '#1f1621';
+      ctx.fillRect(18, 6, 12, 6);
+      ctx.fillRect(34, 10, 14, 7);
+      ctx.fillRect(12, 16, 16, 8);
+      ctx.fillRect(32, 20, 12, 6);
+
+      // Variant-specific features
+      if (variant === 0) {
+        // Standard highlights
+        ctx.fillStyle = '#2b1e2d';
+        ctx.fillRect(19, 7, 10, 2);
+        ctx.fillRect(35, 11, 12, 2);
+        ctx.fillRect(13, 17, 14, 2);
+      } else if (variant === 1) {
+        // Cracked flagstone
+        ctx.fillStyle = '#0a070b';
+        ctx.fillRect(20, 8, 8, 1);
+        ctx.fillRect(24, 9, 1, 4);
+        ctx.fillRect(25, 13, 6, 1);
+      } else if (variant === 2) {
+        // Mossy mortar
+        ctx.fillStyle = '#1e382b';
+        ctx.fillRect(18, 12, 10, 2);
+        ctx.fillRect(30, 18, 8, 2);
+      } else if (variant === 3) {
+        // Ancient blood stains
+        ctx.fillStyle = 'rgba(100, 12, 20, 0.75)';
+        ctx.fillRect(26, 12, 6, 4);
+        ctx.fillRect(30, 15, 5, 4);
+        ctx.fillRect(22, 18, 4, 3);
+      } else if (variant === 4) {
+        // Slate specular edge highlights
+        ctx.fillStyle = '#3a2b3e';
+        ctx.fillRect(18, 6, 12, 1);
+        ctx.fillRect(34, 10, 14, 1);
+        ctx.fillRect(12, 16, 16, 1);
+      }
+    });
+  };
+
+  // Register base tile_ground and 5 organic variants
+  const tileCanvas = createGroundTileCanvas(0);
   addTextureWithNormalMap('tile_ground', tileCanvas);
+
+  for (let v = 0; v < 5; v++) {
+    const vCanvas = createGroundTileCanvas(v);
+    addTextureWithNormalMap(`tile_ground_var_${v}`, vCanvas);
+  }
+
+  // Ground Autotile Mask Textures (12 edge & corner masks)
+  const autotileMasks = [
+    'edge_n', 'edge_e', 'edge_s', 'edge_w',
+    'corner_nw', 'corner_ne', 'corner_se', 'corner_sw',
+    'inner_nw', 'inner_ne', 'inner_se', 'inner_sw'
+  ];
+
+  autotileMasks.forEach((maskKey) => {
+    const maskCanvas = createPixelCanvas(64, 32, (ctx) => {
+      // Draw base diamond ground
+      ctx.fillStyle = '#140e15';
+      ctx.beginPath();
+      ctx.moveTo(32, 0);
+      ctx.lineTo(64, 16);
+      ctx.lineTo(32, 32);
+      ctx.lineTo(0, 16);
+      ctx.closePath();
+      ctx.fill();
+
+      // Border trim / wall transition shadow according to mask
+      ctx.fillStyle = 'rgba(10, 6, 12, 0.85)';
+      ctx.strokeStyle = '#0e080f';
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      if (maskKey.includes('edge_n') || maskKey.includes('corner_nw') || maskKey.includes('corner_ne')) {
+        ctx.moveTo(32, 0); ctx.lineTo(64, 16); ctx.lineTo(32, 8); ctx.lineTo(0, 16);
+      }
+      if (maskKey.includes('edge_s') || maskKey.includes('corner_sw') || maskKey.includes('corner_se')) {
+        ctx.moveTo(0, 16); ctx.lineTo(32, 24); ctx.lineTo(64, 16); ctx.lineTo(32, 32);
+      }
+      if (maskKey.includes('edge_w') || maskKey.includes('corner_nw') || maskKey.includes('corner_sw')) {
+        ctx.moveTo(0, 16); ctx.lineTo(32, 0); ctx.lineTo(16, 16); ctx.lineTo(32, 32);
+      }
+      if (maskKey.includes('edge_e') || maskKey.includes('corner_ne') || maskKey.includes('corner_se')) {
+        ctx.moveTo(64, 16); ctx.lineTo(32, 0); ctx.lineTo(48, 16); ctx.lineTo(32, 32);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Cobblestone detail overlay
+      ctx.fillStyle = '#1f1621';
+      ctx.fillRect(24, 12, 16, 8);
+    });
+    addTextureWithNormalMap(`tile_ground_${maskKey}`, maskCanvas);
+  });
 
   // 2. Bloodmage Character Spritesheet (544x612: 8 columns x 9 rows of 68x68 frames)
   const bloodmageCanvas = createPixelCanvas(544, 612, (ctx) => {
@@ -1451,68 +1549,81 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   });
   addTexture('footprint_bloody', footprintBloodyCanvas);
 
-  // 16. Dungeon Stone Brick Wall Block (32x32)
-  // Fase 4 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
-  // esse tile se repete lado a lado por todo corredor — a grade perfeita de retângulos
-  // ficava muito óbvia no repeat. Mantém as mesmas fiadas/dimensões gerais (não muda a
-  // "leitura" arquitetônica do tijolo), mas quebra a regularidade com: cantos
-  // levemente lascados (pequenos chanfros), musgo em blobs orgânicos (elipses
-  // sobrepostas em vez de um retângulo só) e um ruído sutil de textura na pedra base.
-  const wallCanvas = createPixelCanvas(32, 32, (ctx) => {
-    ctx.fillStyle = '#221922'; // Base dark stone
-    ctx.fillRect(0, 0, 32, 32);
+  // 16. Dungeon Stone Brick Wall Block & Organic Variants (32x32)
+  const createWallTileCanvas = (variant: number): HTMLCanvasElement => {
+    return createPixelCanvas(32, 32, (ctx) => {
+      ctx.fillStyle = '#221922'; // Base dark stone
+      ctx.fillRect(0, 0, 32, 32);
 
-    // Ruído sutil na pedra base — quebra a leitura de cor 100% chapada antes dos tijolos
-    for (let i = 0; i < 24; i++) {
-      const nx = Math.random() * 32;
-      const ny = Math.random() * 32;
-      ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)';
-      ctx.fillRect(nx, ny, 1, 1);
-    }
+      // Ruído sutil na pedra base
+      for (let i = 0; i < 24; i++) {
+        const nx = ((i * 13 + variant * 7) % 32);
+        const ny = ((i * 23 + variant * 11) % 32);
+        ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)';
+        ctx.fillRect(nx, ny, 1, 1);
+      }
 
-    // Chanfro: desenha um tijolo com um ou dois cantos levemente cortados, em vez de
-    // um fillRect perfeitamente retangular — quebra a régua reta sem perder o formato
-    const drawBrick = (bx: number, by: number, bw: number, bh: number) => {
-      const chip = 1 + Math.floor(Math.random() * 2); // 1-2px de chanfro
-      ctx.beginPath();
-      ctx.moveTo(bx + chip, by);
-      ctx.lineTo(bx + bw, by);
-      ctx.lineTo(bx + bw, by + bh - chip);
-      ctx.lineTo(bx + bw - chip, by + bh);
-      ctx.lineTo(bx, by + bh);
-      ctx.lineTo(bx, by + chip);
-      ctx.closePath();
-      ctx.fill();
-    };
+      const drawBrick = (bx: number, by: number, bw: number, bh: number) => {
+        const chip = 1 + (bx + by + variant) % 2;
+        ctx.beginPath();
+        ctx.moveTo(bx + chip, by);
+        ctx.lineTo(bx + bw, by);
+        ctx.lineTo(bx + bw, by + bh - chip);
+        ctx.lineTo(bx + bw - chip, by + bh);
+        ctx.lineTo(bx, by + bh);
+        ctx.lineTo(bx, by + chip);
+        ctx.closePath();
+        ctx.fill();
+      };
 
-    ctx.fillStyle = '#3a2d3c'; // Bricks
-    drawBrick(2, 2, 13, 6);
-    drawBrick(17, 2, 13, 6);
-    drawBrick(2, 10, 28, 6);
-    drawBrick(2, 18, 13, 6);
-    drawBrick(17, 18, 13, 6);
-    drawBrick(2, 26, 28, 4);
+      ctx.fillStyle = '#3a2d3c'; // Bricks
+      drawBrick(2, 2, 13, 6);
+      drawBrick(17, 2, 13, 6);
+      drawBrick(2, 10, 28, 6);
+      drawBrick(2, 18, 13, 6);
+      drawBrick(17, 18, 13, 6);
+      drawBrick(2, 26, 28, 4);
 
-    // Highlights
-    ctx.fillStyle = '#533e56';
-    ctx.fillRect(2, 2, 13, 1);
-    ctx.fillRect(17, 2, 13, 1);
+      // Highlights
+      ctx.fillStyle = '#533e56';
+      ctx.fillRect(2, 2, 13, 1);
+      ctx.fillRect(17, 2, 13, 1);
 
-    // Musgo — blobs orgânicos (elipses sobrepostas) em vez de um retângulo reto
-    const drawMossBlob = (cx: number, cy: number, r: number) => {
-      ctx.fillStyle = '#1e382b';
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, r, r * 0.65, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.ellipse(cx + r * 0.6, cy + r * 0.3, r * 0.6, r * 0.4, 0, 0, Math.PI * 2);
-      ctx.fill();
-    };
-    drawMossBlob(13, 15, 2.4);
-    drawMossBlob(4, 25, 2.2);
-  });
+      if (variant === 1) {
+        // Deep fissure
+        ctx.fillStyle = '#110b12';
+        ctx.fillRect(16, 2, 1, 14);
+        ctx.fillRect(15, 8, 1, 6);
+      } else if (variant === 2) {
+        // Heavy Moss
+        ctx.fillStyle = '#1e382b';
+        ctx.beginPath(); ctx.ellipse(13, 15, 3, 2, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(22, 25, 4, 2.5, 0, 0, Math.PI * 2); ctx.fill();
+      } else if (variant === 3) {
+        // Blood spatter
+        ctx.fillStyle = 'rgba(120, 10, 20, 0.75)';
+        ctx.fillRect(8, 12, 5, 8);
+        ctx.fillRect(12, 16, 3, 4);
+      } else if (variant === 4) {
+        // Iron-banded stone
+        ctx.fillStyle = '#18181b';
+        ctx.fillRect(0, 8, 32, 2);
+        ctx.fillRect(0, 22, 32, 2);
+        ctx.fillStyle = '#71717a';
+        ctx.fillRect(4, 8, 2, 2);
+        ctx.fillRect(26, 8, 2, 2);
+      }
+    });
+  };
+
+  const wallCanvas = createWallTileCanvas(0);
   addTextureWithNormalMap('tile_wall_brick', wallCanvas);
   addTextureWithNormalMap('spr_wall', wallCanvas);
+
+  for (let v = 0; v < 5; v++) {
+    const vWallCanvas = createWallTileCanvas(v);
+    addTextureWithNormalMap(`tile_wall_brick_var_${v}`, vWallCanvas);
+  }
 
   // 17. Dungeon Door Archway (32x32)
   const doorCanvas = createPixelCanvas(32, 32, (ctx) => {
