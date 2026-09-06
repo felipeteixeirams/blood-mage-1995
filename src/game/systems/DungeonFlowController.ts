@@ -259,7 +259,8 @@ export class DungeonFlowController {
       if (biome === 'gloomy_woods') {
         const totalScouts = 4;
         let scoutsSpawned = 0;
-        const huntingGrounds = rooms.filter((r) => r.type !== 'spawn' && r.type !== 'boss');
+        let huntingGrounds = rooms.filter((r) => r.type !== 'spawn' && r.type !== 'boss');
+        if (huntingGrounds.length === 0) huntingGrounds = rooms;
 
         huntingGrounds.forEach((room, idx) => {
           if (scoutsSpawned >= totalScouts) return;
