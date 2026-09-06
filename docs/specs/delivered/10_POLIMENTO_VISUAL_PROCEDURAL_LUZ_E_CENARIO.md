@@ -207,7 +207,7 @@ revisitar se algum dia entrarem no cenário jogável.
 
 ## Referências
 
-- `docs/archive/specs/andamento/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md` — estado
+- `docs/specs/in-progress/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md` — estado
   real de quais entidades ainda dependem 100% do fallback procedural (todo o bestiário,
   hoje 0% com sprite físico)
 - `docs/archive/design/00_DESIGN_PHILOSOPHY.md` / `01_VISUAL_IDENTITY.md` — paleta e

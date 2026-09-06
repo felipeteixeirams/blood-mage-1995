@@ -275,10 +275,10 @@ pnpm run typecheck
 
 ## 🔗 Documentação Relacionada
 
-- **Context (Jules):** [[../../context/GAME_DESIGNER.md]]
+- **Context (Jules):** [[../../archive/context/GAME_DESIGNER.md]]
 - **Critical Files:** [[../../critical/01_CRITICAL_FILES.md]]
 - **Testing Gates:** [[../../critical/03_TESTING_GATES.md]]
-- **Discovery completo:** [[../../legacy/DISCOVERY_DUNGEON_SIEGE_EVOLUTION.md]]
+- **Discovery completo:** [[../../archive/legacy/DISCOVERY_DUNGEON_SIEGE_EVOLUTION.md]]
 
 ---
 
@@ -320,4 +320,4 @@ Deploy    ████████████████████ 100% ✅
 **Lead:** Felipe  
 **Status:** Pronto para implementação  
 
-[[../../README.md]] | [[../README.md]] | [[../../features/01_INCONSCIOUSNESS_PHASE1.md]]
+[[../../README.md]] | [[../README.md]] | [[../../archive/features/01_INCONSCIOUSNESS_PHASE1.md]]

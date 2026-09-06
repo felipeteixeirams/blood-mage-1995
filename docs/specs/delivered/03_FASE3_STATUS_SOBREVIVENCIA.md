@@ -77,9 +77,9 @@ progress: 75% (gameplay loop completo, faltam polimentos)
 
 ## 📚 Documentação Relacionada
 
-- Spec original: [[../../DISCOVERY_DUNGEON_SIEGE_EVOLUTION.md]] (Seção 2.4)
-- Validação geral do projeto: [[../../VALIDATION_DUNGEON_SIEGE_2026_08_10.md]]
-- Anti-regressão: [[../../CRITICAL/01_CRITICAL_FILES.md]] — `takeDamage()` não foi tocado, `applyStatusDamage()` é um método novo e isolado
+- Spec original: [[../../archive/legacy/DISCOVERY_DUNGEON_SIEGE_EVOLUTION.md]] (Seção 2.4)
+- Validação geral do projeto: [[../../archive/reviews/VALIDATION_DUNGEON_SIEGE_2026_08_10.md]]
+- Anti-regressão: [[../../critical/01_CRITICAL_FILES.md]] — `takeDamage()` não foi tocado, `applyStatusDamage()` é um método novo e isolado
 
 ---
 

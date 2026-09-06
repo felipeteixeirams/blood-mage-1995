@@ -96,7 +96,7 @@ Diablo II define o padrão de opressão visual, paleta grimdark, iluminação r�
 6. **Menu contextual "ENGAGE / ATACAR / MIRAR MAIS PRÓXIMO"** ao passar o mouse sobre um
    alvo. Só tem valor real em desktop com mouse — no touch já resolvemos com tap direto.
    Baixa prioridade dado o público mobile-first do projeto (ver
-   `docs/archive/specs/propostas/04_MOBILE_APP_E_MONETIZACAO_INDIE.md`).
+   `docs/specs/discovery/04_MOBILE_APP_E_MONETIZACAO_INDIE.md`).
 
 ### Tier C — Só faz sentido quando houver sprites customizados (fora do escopo desta spec)
 
@@ -168,9 +168,9 @@ commit.
 - `docs/archive/design/02_UI_PATTERNS.md` — regras de composição de UI
 - `docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md` — padrão "valor + versão" a
   reaproveitar na sincronização do minimap (Fase 2)
-- `docs/archive/specs/propostas/04_MOBILE_APP_E_MONETIZACAO_INDIE.md` — prioridade
+- `docs/specs/discovery/04_MOBILE_APP_E_MONETIZACAO_INDIE.md` — prioridade
   mobile-first que pesa contra o menu contextual de mouse (Tier B.6)
-- `docs/archive/specs/andamento/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md` — estado
+- `docs/specs/in-progress/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md` — estado
   real dos sprites físicos pendentes (nenhum item deste documento depende deles)
 
 ## Registro de mudanças

@@ -19,7 +19,18 @@ Como o sistema funciona *hoje*. Leitura obrigatória antes de refatorar sistemas
 * `docs/architecture/02_CODE_ORGANIZATION.md` - Estrutura de pastas da `/src`.
 * `docs/architecture/03_PHASER_PATTERNS.md` - Padrões de código dentro do motor de jogo.
 * `docs/architecture/04_STATE_MANAGEMENT.md` - Como React e Phaser compartilham estado.
+* `docs/architecture/05_GAMESCENE_REFACTOR.md` - Tracker do corte incremental de `GameScene.ts` em sistemas extraídos.
+* `docs/architecture/05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md` - Metodologia de engenharia com IA (quando/como consultar specs antes de codificar).
+* `docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md` - Histórico da migração 100% Zustand (zero `CustomEvent` de gameplay).
+* `docs/architecture/07_DECISION_LOG.md` - Registro de decisões arquiteturais (ADR-lite): contexto, decisão e consequências das mudanças grandes.
+* `docs/architecture/SEAMLESS_OPEN_WORLD_FEASIBILITY.md` - Viabilidade de mundo contínuo sem costuras (roadmap de streaming de chunks).
+* `docs/critical/00_ANTI_REGRESSION_GUIDE.md` - Regras de ouro anti-regressão.
+* `docs/critical/01_CRITICAL_FILES.md` - **CRÍTICO:** Arquivos que quebram o jogo se mexidos sem cuidado (Player.ts, Enemy.ts, GameScene.ts, DungeonGenerator.ts, gameStore.ts, localStorage.ts).
+* `docs/critical/02_PERFORMANCE_OPTIMIZATION.md` - Padrões de pooling e poda espacial já validados.
+* `docs/critical/03_TESTING_GATES.md` - Requisitos de teste antes de merge.
 * `docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md` - **CRÍTICO:** Leia antes de debugar qualquer erro de renderização, áudio ou assets.
+* `docs/critical/06_SECURITY_GUIDELINES.md` - CSP, validação de `localStorage` e gestão de segredos.
+* `docs/product/ACCESSIBILITY.md` - Estado real dos toggles de acessibilidade/ergonomia já implementados.
 
 ### 2. 🧪 Experimentos & Discovery (Laboratório Mobile)
 O que testamos e estamos validando. Hipóteses orientadas a *Game Feel* e retenção.

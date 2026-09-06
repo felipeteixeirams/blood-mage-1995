@@ -102,8 +102,8 @@ Como um desenvolvedor com baixo orçamento de anúncios para marketing de massa,
 
 ## Referências
 
-- [[docs/specs/propostas/05_SISTEMA_DE_SKINNING_E_CAMADAS_DINAMICAS.md]] — Conexão com o sistema de cosméticos das skins
-- [[docs/deployment/FASE5_EMPACOTAMENTO_COMPLETO.md]] — Configurações existentes de PWA/TWA
+- [[docs/specs/rejected/05_SISTEMA_DE_SKINNING_E_CAMADAS_DINAMICAS.md]] — Conexão com o sistema de cosméticos das skins
+- [[docs/archive/deployment/FASE5_EMPACOTAMENTO_COMPLETO.md]] — Configurações existentes de PWA/TWA
 
 ## Registro de mudanças
 

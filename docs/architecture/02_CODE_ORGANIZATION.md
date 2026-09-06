@@ -15,7 +15,7 @@ O projeto é estruturado como um monorepo PNPM composto pelos seguintes módulos
 - `src/data/`: Configurações do domínio do jogo em JSON (monstros, magias, talentos, relíquias, codex, conquistas, contratos, modificadores de run).
 - `src/game/`: Motor principal do jogo (Phaser).
   - `/objects/`: Entidades de jogo físico (`Player`, `Enemy`, `Projectile`, `Traps`, `Scavengeable`, `Collectible`, `Loot`).
-  - `/scenes/`: Fluxos visuais do Phaser (`BootScene`, `TitleScene`, `GameScene`, `SettingsScene`, `RecordsScene`).
+  - `/scenes/`: Fluxos visuais do Phaser. Só `BootScene` + `GameScene` compõem a instância principal de `Phaser.Game` (`PhaserGame.tsx`) — `TitleScene`, `SettingsScene` e `RecordsScene` rodam cada uma em sua PRÓPRIA instância `Phaser.Game` separada, montada dentro do componente React equivalente (`MainMenu.tsx`, `SettingsModal.tsx`, `HighScoresModal.tsx` — ver `docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md` item 3).
   - `/systems/`: Lógica de jogo desacoplada das cenas — dungeon/loot/combate,
     efeitos visuais (partículas, shake, pós-processamento, iluminação),
     infraestrutura (pooling, culling, input) e os módulos extraídos do
@@ -25,4 +25,4 @@ O projeto é estruturado como um monorepo PNPM composto pelos seguintes módulos
 - `src/store/`: Zustand global shareable store (`gameStore.ts`).
 - `src/types/`: Definições e interfaces TypeScript do domínio (`game.ts`, `campaign.ts`).
 - `src/utils/`: Sintetizador procedural de áudio (`soundEngine.ts`), Logger global estruturado (`logger.ts`) e utilitários de localStorage (`localStorage.ts`).
-- `lib/`: Módulos compartilhados reutilizáveis entre frontend e backend.
+- `lib/`: infraestrutura de scaffolding do monorepo (não é importada por nenhum arquivo em `src/game` ou `src/components` — confirmado por auditoria em 2026-09-06). Não procure lógica de jogo compartilhada aqui.

@@ -38,11 +38,19 @@ docs/specs/
 |---|---|---|
 | **[`in-progress/04_FASE4_MUNDO_CONTINUO.md`](./in-progress/04_FASE4_MUNDO_CONTINUO.md)** | • Safe Town (Room 0) com NPCs<br>• Iluminação adaptativa & reverberação por bioma<br>• `WorldManager.ts` e corpos persistentes | • Backlog de Discovery (Quests de NPCs locais, Clima e Viagem Rápida) |
 | **[`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md)** | • PWA Offline-First (Spec 15)<br>• Scripts de build Electron (`scripts/build-steam.sh`) | • Localização multilíngue (i18n) e publicação nas lojas |
-| **[`in-progress/06_EIXO_A_GRAFICOS_AVANCADOS.md`](./in-progress/06_EIXO_A_GRAFICOS_AVANCADOS.md)** | • Quick wins de partículas e paletas de equipamento | • Pipeline de pós-processamento e iluminação de segunda geração |
 | **[`in-progress/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`](./in-progress/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md)** | • Arquitetura híbrida (Loader assíncrono + Fallback procedural unificado)<br>• UI 9-slice React<br>• 18.7% dos assets físicos integrados | • Geração e integração física dos sprites de monstros (Tier 1 a 3), projéteis e tilesets |
 | **[`in-progress/09_PIXEL_LAB_PROMPT_GUIDE.md`](./in-progress/09_PIXEL_LAB_PROMPT_GUIDE.md)** | • Prompt templates e parâmetros para geração PixelLab | • Utilizado continuamente durante a produção de novos sprites |
-| **[`in-progress/10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md`](./in-progress/10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md)** | • Quick wins auditados e integrados | • Acompanhamento contínuo dos marcos do roadmap |
 | **[`in-progress/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`](./in-progress/25_MUNDO_CONTINUO_CHUNK_STREAMING.md)** | • Pesquisa Dungeon Siege 1 (Siege Nodes)<br>• Fase A: `ChunkStreamer.ts` isolado e testado (13 testes)<br>• Fase B: decisão de próximo bioma via ChunkStreamer, gatilho intacto (3 testes + validação e2e ao vivo) | • Fase B.2: bounds dinâmicos + integração real com `DungeonGenerator`<br>• Fase C: transições sem corte<br>• Fase D: porta em vez de portal (Safe House) |
+
+> *Nota (2026-09-06):* `in-progress/06_EIXO_A_GRAFICOS_AVANCADOS.md` e
+> `in-progress/10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md` foram
+> removidos — ambos se autodeclaravam 100% concluídos e duplicavam,
+> palavra por palavra, o que já existia (e estava correto) em
+> `delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md` e
+> `delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md` — este
+> índice chegou a listá-los como se ainda faltasse trabalho que já estava
+> pronto há semanas. Ver auditoria em
+> [`docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md`](../reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md).
 
 > *Nota:* O arquivo histórico consolidado de acompanhamento (`SPECS_EVOLUCAO.md`) foi arquivado para [`in-progress/_ARCHIVED_SPECS_EVOLUCAO_2026_09_REFACTOR.md`](./in-progress/_ARCHIVED_SPECS_EVOLUCAO_2026_09_REFACTOR.md) durante a refatoração hierárquica por satélites.
 
@@ -52,7 +60,7 @@ docs/specs/
 
 | Spec | Escopo Concluído | Verificação / Testes |
 |---|---|---|
-| **[`delivered/11_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md`](./delivered/11_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md)** | **Joystick Virtual Nativo Phaser (Padrão Mobile Legends / Diablo Immortal):** Canvas nativo 60 FPS, drag-to-follow, floating stick, multi-touch isolado por `pointer.id`, curva de resposta, deadzone, escala S/M/L e modo canhoto | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/27_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md`](./delivered/27_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md)** | **Joystick Virtual Nativo Phaser (Padrão Mobile Legends / Diablo Immortal):** Canvas nativo 60 FPS, drag-to-follow, floating stick, multi-touch isolado por `pointer.id`, curva de resposta, deadzone, escala S/M/L e modo canhoto | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md`](./delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md)** | **Evolução Gráfica, Terreno 2.5D & UI Adaptativa:** Base 1080p, Boss Zoom Out, Heightmap em Octaves, Cliff Faces verticais, colisão de desnível $\Delta Z$, Safe Area Insets e personalização de Joystick/Modo Canhoto | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/11_VISUAL_POLISH_FRONTS.md`](./delivered/11_VISUAL_POLISH_FRONTS.md)** | **ÍNDICE MESTRE — Visual Polish & VFX Fronts:** Gestão descentralizada das 8 frentes de polimento gráfico, procedural e sonoro do jogo | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/11_01_VISUAL_DUNGEON_GENERATION.md`](./delivered/11_01_VISUAL_DUNGEON_GENERATION.md)** | **Geração Orgânica de Dungeon:** Divisão espacial por BSP iterativo e autômato celular para corredores e criptas orgânicas | Vitest + E2E (`pnpm verify`) |
@@ -79,8 +87,16 @@ docs/specs/
 | **[`delivered/21_ACHIEVEMENTS_SYSTEM.md`](./delivered/21_ACHIEVEMENTS_SYSTEM.md)** | **Sistema de Conquistas:** Rastreamento em tempo real de conquistas góticas, persistência Zod, toasts animadas e modal React | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md`](./delivered/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md)** | **Polimento Visual Procedural:** 8 inimigos com silhuetas curvas e normal maps, sombras elípticas radiais, partículas com degradê, tochas alinhadas e tijolos com musgo orgânico | Vitest + E2E (`spec10-validation.spec.ts`) |
 | **[`delivered/22_DASH_EVASION_MECHANIC.md`](./delivered/22_DASH_EVASION_MECHANIC.md)** | **Mecânica de Dash/Esquiva:** Janelas de invulnerabilidade (200ms I-Frames), cooldown de 3s, velocidade 800px/s e rastros visuais | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md`](./delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md)** | **ÍNDICE MESTRE — Eixo A: Gráficos Avançados:** Iluminação GPU real (Light2D), pós-processamento WebGL (PostFXSystem) e normal maps procedurais, substituindo o antigo overlay de escuridão via Canvas | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/23_01_POSTFX_GPU_SHADERS.md`](./delivered/23_01_POSTFX_GPU_SHADERS.md)** | **Pós-Processamento GPU (PostFXSystem):** Vinheta dinâmica, aberração cromática, gradação de cor por bioma e distorções de onda/shockwave, com fallback Canvas via `ScreenEffects` | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/23_02_PROCEDURAL_NORMAL_MAPS.md`](./delivered/23_02_PROCEDURAL_NORMAL_MAPS.md)** | **Normal Maps Procedurais:** Geração Sobel-ish de normal maps RGB em runtime (`generateNormalMap`), aplicada ao jogador, monstros de elite, paredes e baús | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/23_03_LIGHT2D_DYNAMIC_LIGHTING.md`](./delivered/23_03_LIGHT2D_DYNAMIC_LIGHTING.md)** | **Iluminação Dinâmica 2D (Light2D):** `LightingSystem`/`LightingPolish` — cor ambiente por bioma, luz do jogador modulada por HP, flicker orgânico de tochas e glow em itens/elites | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md`](./delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md)** | **ÍNDICE MESTRE — Evolução Gráfica & Auditiva:** Quick wins (Medo, Cascata de Luz, Tinnitus), animações 8-direcionais, ragdoll/gibs e shaders de status/sombra/reflexo, com toggles de acessibilidade | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/24_01_GRAPHICS_AUDIO_QUICKWINS.md`](./delivered/24_01_GRAPHICS_AUDIO_QUICKWINS.md)** | **Quick Wins Visuais & Auditivos:** Distorção de Medo, Cascata de Luz por `floorDepth` e Tinnitus de Ameaça em HP crítico — todos com toggle de acessibilidade | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/24_02_PROCEDURAL_ANIMATIONS_RAGDOLL_GIBS.md`](./delivered/24_02_PROCEDURAL_ANIMATIONS_RAGDOLL_GIBS.md)** | **Animações 8-Direcionais & Ragdoll Gibs:** Deformação procedural por vetor angular, hit flash/flinch/knockback por massa e desmembramento gore em mortes críticas | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/24_03_STATUS_EFFECTS_SHADOWS_REFLECTIONS.md`](./delivered/24_03_STATUS_EFFECTS_SHADOWS_REFLECTIONS.md)** | **Shaders de Status, Sombras 2.5D e Reflexos:** `ShadowSystem` (sombras elípticas orientadas à luz), `StatusEffectSystem` (queimado/congelado/etc.) e reflexos em líquidos | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/01_FASE1_INCONSCIENCIA.md`](./delivered/01_FASE1_INCONSCIENCIA.md)** | **Sistema de Inconsciência:** Transição para estado de quase-morte, perda temporária de controle e mecânica de recuperação | Vitest + Unit Tests |
-| **[`delivered/01_RECORDS_DISPLAY.md`](./delivered/01_RECORDS_DISPLAY.md)** | **Exibição de Recordes:** Modal e cena de recordes históricos, tempos de sobrevivência e abates | Vitest + Unit Tests |
+| **[`delivered/26_RECORDS_DISPLAY.md`](./delivered/26_RECORDS_DISPLAY.md)** | **Exibição de Recordes:** Modal e cena de recordes históricos, tempos de sobrevivência e abates | Vitest + Unit Tests |
 | **[`delivered/02_FASE2_TELA_DE_MORTE_E_GORE.md`](./delivered/02_FASE2_TELA_DE_MORTE_E_GORE.md)** | **Tela de Morte & Gore:** Modal de Game Over gótico, estatísticas da run, estilhaçamento corporal e marcas de sangue | Vitest + Unit Tests |
 | **[`delivered/03_FASE3_CONDICOES_DE_SOBREVIVENCIA.md`](./delivered/03_FASE3_CONDICOES_DE_SOBREVIVENCIA.md)** | **Condições de Sobrevivência:** Mecânicas de debuff ambiental, sangramento e resistência a dano | Vitest + Unit Tests |
 | **[`delivered/03_FASE3_STATUS_SOBREVIVENCIA.md`](./delivered/03_FASE3_STATUS_SOBREVIVENCIA.md)** | **Status de Sobrevivência:** HUD de efeitos ativos, contadores de tempo e ícones de status | Vitest + Unit Tests |
@@ -109,10 +125,11 @@ docs/specs/
 | Documento de Discovery | Domínio / Hipótese de Pesquisa | Status / Foco |
 |---|---|---|
 | **[`discovery/01_EVOLUCAO_GRAFICA_AVANCADA.md`](./discovery/01_EVOLUCAO_GRAFICA_AVANCADA.md)** | Avaliação do Phaser 4.2.1 (PostFX GPU, Light2D e Procedural) para superar/dispensar assets externos | Alta |
+| **[`discovery/02_EIXO_A_DISCOVERY_UI_ASSETS_EXTERNOS.md`](./discovery/02_EIXO_A_DISCOVERY_UI_ASSETS_EXTERNOS.md)** | Viabilidade de evoluir UI/sonoplastia com assets externos góticos (Pixel Art estilo Diablo I/II/Dungeon Siege 1) | Média |
 | **[`discovery/03_MULTIJOGADOR_COOPERATIVO_E_INTERATIVIDADE.md`](./discovery/03_MULTIJOGADOR_COOPERATIVO_E_INTERATIVIDADE.md)** | Co-op Multiplayer P2P leve via WebRTC (Pesquisa exploratória pós-campanha) | Baixa |
-| **[`discovery/04_DISCOVERY_AI_ART_PIPELINE.md`](./discovery/04_DISCOVERY_AI_ART_PIPELINE.md)** | Pipeline automatizado de conversão e animação por IA (PixelLab e modelos) | Média |
 | **[`discovery/04_MOBILE_APP_E_MONETIZACAO_INDIE.md`](./discovery/04_MOBILE_APP_E_MONETIZACAO_INDIE.md)** | Empacotamento para lojas oficiais (Capacitor/TWA) e monetização indie ética (Base: PWA) | Média |
 | **[`discovery/05_DISCOVERY_CAMPAIGN_PROGRESSION_LORE.md`](./discovery/05_DISCOVERY_CAMPAIGN_PROGRESSION_LORE.md)** | Progressão de campanha em atos, diálogos ramificados e lore profunda | Média |
+| **[`discovery/06_DISCOVERY_AI_ART_PIPELINE.md`](./discovery/06_DISCOVERY_AI_ART_PIPELINE.md)** | Pipeline automatizado de conversão e animação por IA (PixelLab e modelos) | Média |
 
 ---
 

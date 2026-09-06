@@ -102,8 +102,8 @@ O Ritual de Prestígio será acessado através de uma interface dedicada e intim
 
 ## Referências
 
-- [[docs/specs/propostas/04_MOBILE_APP_E_MONETIZACAO_INDIE.md]] — Monetização e retenção de jogadores
-- [[docs/gameplay/00_CORE_MECHANICS.md]] — Atributos base e escalonamento
+- [[docs/specs/discovery/04_MOBILE_APP_E_MONETIZACAO_INDIE.md]] — Monetização e retenção de jogadores
+- [[docs/archive/gameplay/00_CORE_MECHANICS.md]] — Atributos base e escalonamento
 
 ## Registro de mudanças
 

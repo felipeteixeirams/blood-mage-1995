@@ -28,7 +28,7 @@ tags: [specs, discovery, assets, pipeline, performance, procedural-replacement]
 - ✅ 60+ FPS garantido
 - ✅ Pronto para produção
 
-**Eixo B** cobra: "E depois, quando quisermos arte externa?" Para a visão de UI híbrida do React com fatiamento de imagens (9-slice CSS) e a transição gradativa de áudio (Eixo C), consulte o documento de direcionamento macro em `[[02_EIXO_A_DISCOVERY_UI_ASSETS_EXTERNOS.md]]`.
+**Eixo B** cobra: "E depois, quando quisermos arte externa?" Para a visão de UI híbrida do React com fatiamento de imagens (9-slice CSS) e a transição gradativa de áudio (Eixo C), consulte o documento de direcionamento macro em `[[../discovery/02_EIXO_A_DISCOVERY_UI_ASSETS_EXTERNOS.md]]`.
 
 ---
 
@@ -428,6 +428,17 @@ node scripts/validate-atlas.js sprites.atlas.json
 - Primeiro lote de sprites pronto
 
 **Paralelização:** AssetLoader pode ser desenvolvido mesmo sem sprites prontos (testes com fallback).
+
+**Item adiado que depende deste Eixo B (migrado de
+`in-progress/10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md` antes do
+arquivo ser removido por estar 100% concluído/duplicado — ver
+`docs/specs/delivered/24_01_GRAPHICS_AUDIO_QUICKWINS.md`):**
+- **Aura de Inimigo (A.2).** Decisão registrada: aura colorida direta sobre
+  sprites planares 2D sem assets de iluminação/spritesheet dedicados gera
+  sobreposição indesejada e poluição visual. Implementar só quando este
+  Eixo B entregar atlas de sprites com normais e blend modes aditivos
+  (`Light2D` glow halos: violeta para mágicos, vermelho para sangue,
+  laranja para infernais).
 
 ---
 
