@@ -167,6 +167,12 @@ interface GameStore {
   /** Comando "respawnar jogador" disparado pelo GameOverModal; PhaserGame processa e reseta para false. */
   respawnRequested: boolean;
   setRespawnRequested: (requested: boolean) => void;
+  /** Comando "sincronizar reset de prestígio" disparado por performPrestige(); PhaserGame processa
+   *  (GameScene.applyPrestigeReset() escreve o reset na instância viva do Player) e reseta para false.
+   *  Mesmo padrão de respawnRequested — necessário porque performPrestige() só tem acesso à store,
+   *  não à instância viva do Player.ts (ver docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md). */
+  prestigeResetRequested: boolean;
+  setPrestigeResetRequested: (requested: boolean) => void;
   /** Incrementado sempre que uma paleta cosmética é aplicada; PhaserGame reage à mudança de valor (sem payload). */
   cosmeticTintVersion: number;
   bumpCosmeticTint: () => void;
@@ -855,6 +861,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({
       prestige: updatedPrestige,
       playerStats: resetStats,
+      // Bug corrigido em 2026-09: sem isso, este reset só existia aqui na
+      // store — a instância viva do Player.ts (this.stats) nunca era
+      // tocada, e o próximo evento natural de sync (ex: takeDamage
+      // chamando setPlayerStats({...this.stats})) sobrescrevia o reset
+      // com os valores antigos. GameScene.applyPrestigeReset() (disparado
+      // por este trigger, ver PhaserGame.tsx) sincroniza a instância viva.
+      prestigeResetRequested: true,
     });
     return true;
   },
@@ -1055,6 +1068,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   respawnRequested: false,
   setRespawnRequested: (requested) => set({ respawnRequested: requested }),
+
+  prestigeResetRequested: false,
+  setPrestigeResetRequested: (requested) => set({ prestigeResetRequested: requested }),
 
   cosmeticTintVersion: 0,
   bumpCosmeticTint: () => set((state) => ({ cosmeticTintVersion: state.cosmeticTintVersion + 1 })),
