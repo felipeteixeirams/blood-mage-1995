@@ -377,10 +377,10 @@ segredos).
 
 ## Tabela de remediação proposta (para decisão)
 
-> **Atualização (2026-09-06):** itens A–D, F, G, J e K foram aplicados
-> nesta mesma sessão (mecânicos/baixo-risco, aprovados pelo Felipe). H e I
-> ficaram de fora deliberadamente — são decisões de conteúdo que precisam
-> de validação humana antes de apagar/consolidar texto histórico. E
+> **Atualização (2026-09-06):** todos os itens (A–K) foram aplicados nesta
+> mesma sessão, com aprovação explícita do Felipe em duas rodadas — A–D, F,
+> G, J, K primeiro (mecânicos/baixo-risco); E, H, I depois de verificação
+> extra contra o código real. E
 > (mandato do `docs/README.md`) também ficou de fora — decisão de
 > conteúdo/tom, não mecânica.
 
@@ -390,11 +390,11 @@ segredos).
 | B | Apagar cópias obsoletas em `in-progress/` já supersedidas por `delivered/` (`11_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md`, `16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md`, `06_EIXO_A_GRAFICOS_AVANCADOS.md`, `10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md`) | Baixo | Sim (git) | ✅ Aplicado (nota sobre "Aura de Inimigo" migrada pro `backlog/14` antes de apagar) |
 | C | Corrigir os ~20 links quebrados (formato wikilink → markdown padrão, apontando pro caminho real) | Muito baixo | Sim | ✅ Aplicado (validado programaticamente: zero links ativos quebrados restantes; só sobra o histórico dentro de `docs/archive/`, intencionalmente congelado) |
 | D | Completar `docs/specs/README.md` (adicionar Spec 23/24 + satélites, remover entradas mortas) | Baixo | Sim | ✅ Aplicado (também completado o índice de `docs/architecture/`/`docs/critical/` no `docs/README.md` raiz) |
-| E | Reescrever mandato de `docs/README.md` (Fase 1→2, Supabase/Auth) | Baixo | Sim | ⏳ Pendente — decisão de conteúdo/tom, aguardando validação |
+| E | Reescrever mandato de `docs/README.md` (Fase 1→2, Supabase/Auth) | Baixo | Sim | ✅ Aplicado |
 | F | Corrigir os 4 erros factuais de `docs/critical/01_CRITICAL_FILES.md` + adicionar `DungeonGenerator.ts`/`localStorage.ts` à lista | Baixo, mas exige cuidado de precisão | Sim | ✅ Aplicado (também corrigido `00_ANTI_REGRESSION_GUIDE.md` e `02_CODE_ORGANIZATION.md`, que tinham os mesmos erros) |
 | G | Corrigir versão de engine em `SEAMLESS_OPEN_WORLD_FEASIBILITY.md` (Phaser 3→4) | Baixo | Sim | ✅ Aplicado (+ nota de status de implementação do `ChunkManager`/`ChunkStreamer`) |
-| H | **Decisão de conteúdo:** apagar/reduzir `backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md` (duplicata perigosa) | Requer confirmação — é decisão de conteúdo, não só mecânica | Sim, mas perde texto histórico se não arquivado com cuidado | ⏳ Pendente |
-| I | **Decisão de conteúdo:** consolidar as 2 specs de sobrevivência concorrentes (`03_FASE3_CONDICOES_DE_SOBREVIVENCIA.md` vs `03_FASE3_STATUS_SOBREVIVENCIA.md`) — checar código pra saber qual está certa | Requer verificação de código antes de decidir qual versão vira a fonte da verdade | Sim | ⏳ Pendente |
+| H | **Decisão de conteúdo:** apagar/reduzir `backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md` (duplicata perigosa) | Requer confirmação — é decisão de conteúdo, não só mecânica | Sim, mas perde texto histórico se não arquivado com cuidado | ✅ Aplicado — reduzido a um pointer apontando pro gap real (modal React), não apagado por completo |
+| I | **Decisão de conteúdo:** consolidar as 2 specs de sobrevivência concorrentes (`03_FASE3_CONDICOES_DE_SOBREVIVENCIA.md` vs `03_FASE3_STATUS_SOBREVIVENCIA.md`) — checar código pra saber qual está certa | Requer verificação de código antes de decidir qual versão vira a fonte da verdade | Sim | ✅ Aplicado — `CONDICOES_DE_SOBREVIVENCIA.md` apagada (citava 3 arquivos inexistentes: `StatusConditionSystem.ts`, `Consumables.ts`, `StatusHUD.tsx`); `STATUS_SOBREVIVENCIA.md` confirmada 1:1 com o código real e movida pra `in-progress/` (ainda não é 100% — QA manual e cura via NPC Clérigo pendentes) |
 | J | Renumerar colisões acidentais (`delivered/01`, `03`, `11`; `discovery/02`, `04`) | Baixo, mas gera muitos links pra atualizar | Sim | ✅ Aplicado (`delivered/01_RECORDS_DISPLAY→26`, `delivered/11_NATIVE_PHASER_TOUCHPAD_JOYSTICK→27`, `discovery/04_DISCOVERY_AI_ART_PIPELINE→06`; a colisão em `delivered/03` fica pendente — é a mesma decisão de conteúdo do item I) |
 | K | Criar os 3 documentos de gap (ADR-lite, acessibilidade, segurança) | Nenhum (puro adicional) | N/A | ✅ Aplicado (`docs/architecture/07_DECISION_LOG.md`, `docs/product/ACCESSIBILITY.md`, `docs/critical/06_SECURITY_GUIDELINES.md`) |
 

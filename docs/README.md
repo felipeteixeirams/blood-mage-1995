@@ -3,9 +3,27 @@
 > **MANDATO PARA AGENTES IA:** 
 > O *Bloodmage 1995* opera em **Spec-Driven Mode restrito** associado a **Context-Driven Engineering**.
 > 
-> **NUNCA INICIE CÓDIGO** sem ler a documentação pertinente ao domínio solicitado.  
-> **NUNCA ASSUMA** arquiteturas passadas (como Supabase/Google Auth) a menos que explicitamente indicado na árvore atual. O jogo está na **Fase 1 (Descoberta)**, onde velocidade e experimentação de Game Feel (câmera, controle, hitbox) superam integrações em nuvem e overengineering.
-> 
+> **NUNCA INICIE CÓDIGO** sem ler a documentação pertinente ao domínio solicitado.
+>
+> **Estado real do projeto (atualizado em 2026-09-06):** a Fase 1
+> (Descoberta) já está **concluída** — o jogo tem hoje uma campanha de 4
+> capítulos, sistema de habilidades, loot procedural, prestígio,
+> relíquias, conquistas, PWA instalável e mais de 24 specs formalmente
+> **entregues** (ver índice completo em `docs/specs/README.md`). O foco
+> atual é a **Fase 2** (Vertical Slice / polimento — ver
+> `docs/product/ROADMAP.md`). Não trate este projeto como um protótipo
+> inicial: ele tem um processo spec-driven maduro com ciclo de vida
+> completo (`in-progress/ → delivered/`) e um histórico de decisões
+> arquiteturais registrado (`docs/architecture/07_DECISION_LOG.md`).
+>
+> **Sobre integrações em nuvem (Supabase/Google Auth/Cloud Save):** não
+> existiram no projeto e foram removidas — são apenas uma possibilidade
+> **futura condicional**, cogitada só pra Fase 5 e "se aplicável" (ver
+> `docs/product/ACCOUNT_AND_DATA.md`). **NÃO implemente nenhuma
+> integração de conta/nuvem sem confirmar com Felipe primeiro** — isso
+> continua valendo mesmo com o projeto mais maduro do que "Fase 1"
+> sugeria.
+>
 > Use os links abaixo para carregar contexto antes de codificar.
 
 ---
