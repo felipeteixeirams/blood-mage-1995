@@ -2112,43 +2112,151 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   });
   addTexture('fog_haze', hazeCanvas);
 
-  // 26. Safe House Wooden Floor Tile (64x32 Isometric Diamond Oak Planks)
-  const woodFloorCanvas = createPixelCanvas(64, 32, (ctx) => {
-    // Fill dark oak wood diamond base
-    ctx.fillStyle = '#2d1810';
-    ctx.beginPath();
-    ctx.moveTo(32, 0);
-    ctx.lineTo(64, 16);
-    ctx.lineTo(32, 32);
-    ctx.lineTo(0, 16);
-    ctx.closePath();
-    ctx.fill();
+  // 26. Safe House Wooden Floor Tile & 5 Organic Variants (64x32 Isometric Diamond Planks)
+  const createWoodFloorCanvas = (variant: number): HTMLCanvasElement => {
+    return createPixelCanvas(64, 32, (ctx) => {
+      // Color Palettes for Wood Floor Variants
+      // Var 0: Light Warm Oak (#341c13 base, #44261a plank, #563223 highlight)
+      // Var 1: Medium Golden Chestnut (#3a2014 base, #4d2b1b plank, #623a26 highlight)
+      // Var 2: Dark Roasted Timber (#22120b base, #2e1a10 plank, #3d2317 highlight)
+      // Var 3: Aged Knotty Pine (#382218 base, #4a2f22 plank, #5d3d2e highlight)
+      // Var 4: Weathered Mahogany (#2e1411 base, #3d1c18 plank, #502823 highlight)
+      // Var 5 (Rug accent): Rich Crimson & Gold Tapestry Overlay over Medium Chestnut
 
-    // Dark wood grain mortar & plank seams
-    ctx.strokeStyle = '#1a0e08';
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
+      let baseColor = '#2d1810';
+      let plankColor = '#3a2016';
+      let highlightColor = '#4a2a1d';
 
-    // Wood plank horizontal divisions
-    ctx.fillStyle = '#3a2016';
-    ctx.fillRect(16, 8, 32, 4);
-    ctx.fillRect(10, 14, 44, 4);
-    ctx.fillRect(16, 20, 32, 4);
+      if (variant === 0) {
+        baseColor = '#341c13';
+        plankColor = '#44261a';
+        highlightColor = '#563223';
+      } else if (variant === 1) {
+        baseColor = '#3a2014';
+        plankColor = '#4d2b1b';
+        highlightColor = '#623a26';
+      } else if (variant === 2) {
+        baseColor = '#22120b';
+        plankColor = '#2e1a10';
+        highlightColor = '#3d2317';
+      } else if (variant === 3) {
+        baseColor = '#382218';
+        plankColor = '#4a2f22';
+        highlightColor = '#5d3d2e';
+      } else if (variant === 4) {
+        baseColor = '#2e1411';
+        plankColor = '#3d1c18';
+        highlightColor = '#502823';
+      } else if (variant === 5) {
+        baseColor = '#3a2014';
+        plankColor = '#4d2b1b';
+        highlightColor = '#623a26';
+      }
 
-    // Warm highlights on wood planks
-    ctx.fillStyle = '#4a2a1d';
-    ctx.fillRect(18, 9, 28, 1);
-    ctx.fillRect(12, 15, 40, 1);
-    ctx.fillRect(18, 21, 28, 1);
+      // Fill diamond base
+      ctx.fillStyle = baseColor;
+      ctx.beginPath();
+      ctx.moveTo(32, 0);
+      ctx.lineTo(64, 16);
+      ctx.lineTo(32, 32);
+      ctx.lineTo(0, 16);
+      ctx.closePath();
+      ctx.fill();
 
-    // Iron nails in planks
-    ctx.fillStyle = '#110b08';
-    ctx.fillRect(20, 10, 2, 2);
-    ctx.fillRect(42, 10, 2, 2);
-    ctx.fillRect(16, 16, 2, 2);
-    ctx.fillRect(46, 16, 2, 2);
-  });
+      // Dark wood grain mortar & plank seams
+      ctx.strokeStyle = '#120804';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // Variant plank layouts / direction variations
+      if (variant === 2) {
+        // Vertical-skewed plank seams
+        ctx.fillStyle = plankColor;
+        ctx.fillRect(20, 4, 24, 10);
+        ctx.fillRect(12, 16, 40, 10);
+
+        ctx.fillStyle = highlightColor;
+        ctx.fillRect(22, 5, 20, 1);
+        ctx.fillRect(14, 17, 36, 1);
+      } else if (variant === 3) {
+        // Horizontal planks with wood knots
+        ctx.fillStyle = plankColor;
+        ctx.fillRect(16, 6, 32, 4);
+        ctx.fillRect(8, 14, 48, 4);
+        ctx.fillRect(16, 22, 32, 4);
+
+        ctx.fillStyle = highlightColor;
+        ctx.fillRect(18, 7, 28, 1);
+        ctx.fillRect(10, 15, 44, 1);
+
+        // Wood knots
+        ctx.fillStyle = '#1a0e08';
+        ctx.fillRect(26, 8, 3, 2);
+        ctx.fillRect(40, 16, 4, 2);
+      } else if (variant === 4) {
+        // Herringbone / parquet plank pattern
+        ctx.fillStyle = plankColor;
+        ctx.fillRect(14, 6, 18, 10);
+        ctx.fillRect(32, 16, 18, 10);
+
+        ctx.fillStyle = highlightColor;
+        ctx.fillRect(15, 7, 16, 1);
+        ctx.fillRect(33, 17, 16, 1);
+      } else {
+        // Standard horizontal plank divisions (Var 0, Var 1, Var 5 base)
+        ctx.fillStyle = plankColor;
+        ctx.fillRect(16, 8, 32, 4);
+        ctx.fillRect(10, 14, 44, 4);
+        ctx.fillRect(16, 20, 32, 4);
+
+        ctx.fillStyle = highlightColor;
+        ctx.fillRect(18, 9, 28, 1);
+        ctx.fillRect(12, 15, 40, 1);
+        ctx.fillRect(18, 21, 28, 1);
+      }
+
+      // Iron nails in planks
+      ctx.fillStyle = '#110b08';
+      ctx.fillRect(20, 10, 2, 2);
+      ctx.fillRect(42, 10, 2, 2);
+      ctx.fillRect(16, 16, 2, 2);
+      ctx.fillRect(46, 16, 2, 2);
+
+      // Variant 5: Tapestry/Carpet Overlay (Baixa probabilidade sobreposição)
+      if (variant === 5) {
+        // Crimson carpet center with gold fringed border
+        ctx.fillStyle = '#7f1d1d'; // Crimson
+        ctx.beginPath();
+        ctx.moveTo(32, 6);
+        ctx.lineTo(52, 16);
+        ctx.lineTo(32, 26);
+        ctx.lineTo(12, 16);
+        ctx.closePath();
+        ctx.fill();
+
+        // Carpet gold fringe border
+        ctx.strokeStyle = '#d97706'; // Gold
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Interior gold rune/diamond embroidery
+        ctx.fillStyle = '#b45309';
+        ctx.fillRect(30, 14, 4, 4);
+      }
+    });
+  };
+
+  const woodFloorCanvas = createWoodFloorCanvas(0);
   addTextureWithNormalMap('tile_wood_floor', woodFloorCanvas);
+
+  for (let v = 0; v < 5; v++) {
+    const vCanvas = createWoodFloorCanvas(v);
+    addTextureWithNormalMap(`tile_wood_floor_var_${v}`, vCanvas);
+  }
+
+  // Tapestry/Rug overlay floor tile variant
+  const woodFloorRugCanvas = createWoodFloorCanvas(5);
+  addTextureWithNormalMap('tile_wood_floor_rug', woodFloorRugCanvas);
 
   // 27. Safe House Wall (32x32 Stone & Timber Beam Wall)
   const woodWallCanvas = createPixelCanvas(32, 32, (ctx) => {

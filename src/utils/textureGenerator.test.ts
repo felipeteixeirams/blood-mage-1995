@@ -212,7 +212,9 @@ describe('generateGameTextures', () => {
     for (let v = 0; v < 5; v++) {
       expect(existingKeys.has(`tile_ground_var_${v}`)).toBe(true);
       expect(existingKeys.has(`tile_wall_brick_var_${v}`)).toBe(true);
+      expect(existingKeys.has(`tile_wood_floor_var_${v}`)).toBe(true);
     }
+    expect(existingKeys.has('tile_wood_floor_rug')).toBe(true);
 
     expect(existingKeys.has('tile_ground_edge_n')).toBe(true);
     expect(existingKeys.has('tile_ground_corner_ne')).toBe(true);
