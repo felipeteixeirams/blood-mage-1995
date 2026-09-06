@@ -63,6 +63,7 @@ docs/
 7. **`docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md`** — Bugs conhecidos e workarounds
 8. **`.claude/skills/` (Phaser 4.2.1 Skills Especializadas)**:
    - `phaser-4-development/SKILL.md`: WebGL2, baking pattern e shaders
+   - `phaser-4-procedural-generation/SKILL.md`: Determinismo por seed (terreno/textura), autotiling por bitmask, normal maps, paleta/dithering e busca ativa na web quando a API do Phaser 4 for incerta
    - `phaser-4-animation-tweens/SKILL.md`: Animações, tweens encadeados e FSM de ataque
    - `phaser-4-physics-combat/SKILL.md`: Arcade Physics, hitboxes e poda espacial
    - `phaser-4-fx-filters/SKILL.md`: Beam Renderer, `enableFilters()`, auras e vinhetas
