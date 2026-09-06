@@ -182,6 +182,21 @@ export class ProceduralForestGenerator {
     let grassCanvas = this.scene.textures.createCanvas('forest_grass', 64, 32)!;
     let grassCtx = grassCanvas.context;
 
+    // IMPORTANTE: `forest_grass` continua um retângulo 64x32 OPACO, sem
+    // recorte em losango. O piso da floresta usa o mesmo truque clássico
+    // de tiling isométrico por sobreposição: tiles são desenhados na
+    // ordem de varredura (x, y crescentes) com passo de meia-largura/
+    // meia-altura, então cada retângulo novo cobre exatamente as bordas
+    // do tile anterior, fechando o mosaico sem gaps — isso só funciona
+    // porque a textura é 100% opaca. Um recorte em losango (como o de
+    // `tile_ground` nas masmorras) deixa os cantos transparentes e quebra
+    // essa sobreposição, abrindo buracos entre os tiles (confirmado
+    // rodando o jogo). A elevação (`zElevation`) NÃO desloca o Y do
+    // sprite do piso (ver `renderForestFloor`, variável `isoY` vs.
+    // `renderY`) — só afeta falésias e altura de árvores/props — então o
+    // grid de piso permanece plano e a sobreposição por retângulo cheio
+    // segue válida.
+
     // Cores profissionais de grama
     const grassLight = '#a4d65e';    // Luz (frente)
     const grassMain = '#9ccc65';     // Principal
@@ -478,9 +493,21 @@ export class ProceduralForestGenerator {
           const zElevation = this.heightGenerator.getHeightAt(x, y);
           const isoX = this.CAMERA_OFFSET_X + (x - y) * (this.TILE_WIDTH / 2);
           const isoY = this.CAMERA_OFFSET_Y + (x + y) * (this.TILE_HEIGHT / 2);
+          // `renderY` desloca a base das falésias (abaixo) proporcionalmente à
+          // elevação — mas o SPRITE do piso em si fica em `isoY` (grid plano).
+          // Verificado rodando o jogo: mesmo com o recorte em losango, cada
+          // tile deslocando seu Y individualmente por `zElevation` quebra a
+          // malha contínua sempre que dois vizinhos têm elevação diferente
+          // (que é quase sempre, num heightmap orgânico) — abria uma emenda
+          // escura visível entre tiles. O piso das masmorras nunca teve esse
+          // problema porque a maioria das salas é plana (zElevation=0
+          // uniforme); a floresta usa elevação em toda a área. Relevo real
+          // continua expresso via: tint por altura (abaixo), paredes de
+          // falésia nos desníveis de verdade, e árvores/props que seguem a
+          // altura do próprio sprite (não fazem parte de uma malha contígua).
           const renderY = isoY - zElevation * 2;
 
-          let grass = gameScene.add.image(isoX, renderY, 'forest_grass');
+          let grass = gameScene.add.image(isoX, isoY, 'forest_grass');
 
           // Aplica variação de tonalidade ligada à elevação Z real e ruído macro
           const macroNoise = this.noise(x * 0.12, y * 0.12);
