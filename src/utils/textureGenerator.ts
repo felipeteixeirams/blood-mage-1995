@@ -1651,18 +1651,27 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
         const corner = pieceType.replace('corner_outer_', '');
         drawBricksInArea(2, 6, 28, 24);
         ctx.fillStyle = '#533e56'; // Top cap
+        ctx.strokeStyle = '#6b4d70'; // Top cap highlight edge
         if (corner === 'nw') {
           ctx.fillRect(0, 0, 32, 6);
           ctx.fillRect(0, 0, 6, 32);
+          ctx.strokeRect(0, 0.5, 32, 0);
+          ctx.strokeRect(0.5, 0, 0, 32);
         } else if (corner === 'ne') {
           ctx.fillRect(0, 0, 32, 6);
           ctx.fillRect(26, 0, 6, 32);
+          ctx.strokeRect(0, 0.5, 32, 0);
+          ctx.strokeRect(31.5, 0, 0, 32);
         } else if (corner === 'se') {
           ctx.fillRect(0, 26, 32, 6);
           ctx.fillRect(26, 0, 6, 32);
+          ctx.strokeRect(0, 26.5, 32, 0);
+          ctx.strokeRect(31.5, 0, 0, 32);
         } else if (corner === 'sw') {
           ctx.fillRect(0, 26, 32, 6);
           ctx.fillRect(0, 0, 6, 32);
+          ctx.strokeRect(0, 26.5, 32, 0);
+          ctx.strokeRect(0.5, 0, 0, 32);
         }
       } else if (pieceType.startsWith('corner_inner_')) {
         const corner = pieceType.replace('corner_inner_', '');
@@ -1678,15 +1687,27 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
         else if (corner === 'ne') { ctx.fillRect(0, 0, 20, 6); ctx.fillRect(26, 12, 6, 20); }
         else if (corner === 'se') { ctx.fillRect(0, 26, 20, 6); ctx.fillRect(26, 0, 6, 20); }
         else if (corner === 'sw') { ctx.fillRect(12, 26, 20, 6); ctx.fillRect(0, 0, 6, 20); }
+
+        ctx.strokeStyle = '#6b4d70'; // Top cap highlight edge
+        if (corner === 'nw') { ctx.strokeRect(12, 0.5, 20, 0); ctx.strokeRect(0.5, 12, 0, 20); }
+        else if (corner === 'ne') { ctx.strokeRect(0, 0.5, 20, 0); ctx.strokeRect(31.5, 12, 0, 20); }
+        else if (corner === 'se') { ctx.strokeRect(0, 26.5, 20, 0); ctx.strokeRect(31.5, 0, 0, 20); }
+        else if (corner === 'sw') { ctx.strokeRect(12, 26.5, 20, 0); ctx.strokeRect(0.5, 0, 0, 20); }
       } else if (pieceType === 't_junction') {
         drawBricksInArea(0, 0, 32, 32);
         ctx.fillStyle = '#533e56';
         ctx.fillRect(0, 0, 32, 6);
         ctx.fillRect(13, 6, 6, 26);
+        ctx.strokeStyle = '#6b4d70';
+        ctx.strokeRect(0, 0.5, 32, 0);
+        ctx.strokeRect(13.5, 6, 0, 26);
       } else if (pieceType === 'endcap') {
         drawBricksInArea(4, 4, 24, 24);
         ctx.fillStyle = '#533e56';
         ctx.fillRect(2, 2, 28, 6);
+        ctx.fillRect(2, 2, 4, 28);
+        ctx.strokeStyle = '#6b4d70';
+        ctx.strokeRect(2, 2.5, 28, 0);
       }
     });
   };
