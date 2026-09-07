@@ -118,7 +118,8 @@ export class ShadowSystem {
 
       shadow.setVisible(true);
 
-      const footY = entity.y + ((entity.height || 32) * 0.35);
+      const entityHeight = entity.height || 32;
+      const footY = entity.y + (entityHeight * 0.38);
       let closestLight: LightSource | null = null;
       let minDistance = Infinity;
 
@@ -144,24 +145,24 @@ export class ShadowSystem {
         const ny = dy / dist;
 
         // Projeção direcional: afasta a sombra na direção oposta
-        const maxOffset = 18;
+        const maxOffset = 16;
         const offsetDist = Math.min(maxOffset, (dist / closestLight.radius) * maxOffset);
         
         shadow.x = entity.x + nx * offsetDist;
-        shadow.y = footY + ny * (offsetDist * 0.5);
+        shadow.y = footY + ny * (offsetDist * 0.45);
 
         // Rotação sutil alinhada à direção da luz
         const angle = Math.atan2(ny, nx);
         shadow.setRotation(angle);
 
         // Elongação proporcional à proximidade e distância da luz
-        const stretch = 1.0 + (dist / closestLight.radius) * 0.4;
+        const stretch = 1.0 + (dist / closestLight.radius) * 0.35;
         const baseScaleX = entity.scaleX || 1.0;
         shadow.setScale(baseScaleX * stretch, baseScaleX * 0.45);
 
         // Alpha atenuado com base na intensidade da luz e distância
         const lightFactor = (1 - dist / closestLight.radius) * (closestLight.intensity || 1.0);
-        shadow.setAlpha(Math.min(0.55, Math.max(0.18, 0.25 + lightFactor * 0.25)));
+        shadow.setAlpha(Math.min(0.50, Math.max(0.18, 0.22 + lightFactor * 0.25)));
       } else {
         // Sombra de contato estática padrão sob os pés
         shadow.x = entity.x;

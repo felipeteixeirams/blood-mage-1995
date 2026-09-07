@@ -288,8 +288,8 @@ export class AtmosphereSystem {
     if (!this.enabled) return;
 
     // Ajuste dinâmico de proteção de visibilidade durante combates intensos
-    const targetGuard = isCombatIntense ? 0.7 : 1.0;
-    this.visibilityGuard += (targetGuard - this.visibilityGuard) * 0.05;
+    const targetGuard = isCombatIntense ? 0.65 : 1.0;
+    this.visibilityGuard += (targetGuard - this.visibilityGuard) * 0.04;
 
     const timeScale = delta / 16.6;
 

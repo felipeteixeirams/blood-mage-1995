@@ -141,17 +141,28 @@ export class PostFXSystem {
   private isLowHpTensionActive = false;
   private tensionPulseTimer = 0;
   private tensionPulsePeriod = 1200; // ms per pulse
+  private effectSequenceCounter = 0;
+
+  private nextSeq(): number {
+    this.effectSequenceCounter++;
+    return this.effectSequenceCounter;
+  }
 
   public triggerShockwave(durationMs: number = 450, intensity: number = 0.5): void {
     const postProcessing = useGameStore.getState().settings.postProcessingEnabled ?? true;
     if (!postProcessing) return;
 
+    const seq = this.nextSeq();
     this.setDisplacement(Math.min(1.0, intensity * 0.9), durationMs * 0.3);
     this.scene.time.delayedCall(durationMs * 0.3, () => {
-      this.setDisplacement(intensity * 0.3, durationMs * 0.35);
+      if (this.effectSequenceCounter === seq) {
+        this.setDisplacement(intensity * 0.3, durationMs * 0.35);
+      }
     });
     this.scene.time.delayedCall(durationMs * 0.65, () => {
-      this.setDisplacement(0, durationMs * 0.35);
+      if (this.effectSequenceCounter === seq) {
+        this.setDisplacement(0, durationMs * 0.35);
+      }
     });
   }
 
@@ -165,19 +176,25 @@ export class PostFXSystem {
   }
 
   public triggerBossImpactFX(): void {
+    const seq = this.nextSeq();
     this.triggerShockwave(600, 0.7);
     this.setVignette(0.7, 150);
     this.scene.time.delayedCall(150, () => {
-      this.setVignette(0, 450);
+      if (this.effectSequenceCounter === seq) {
+        this.setVignette(0, 450);
+      }
     });
   }
 
   public triggerLevelUpFX(): void {
+    const seq = this.nextSeq();
     this.setTint('#fef08a', 200);
     this.setVignette(0.4, 200);
     this.scene.time.delayedCall(200, () => {
-      this.setTint('transparent', 600);
-      this.setVignette(0, 600);
+      if (this.effectSequenceCounter === seq) {
+        this.setTint('transparent', 600);
+        this.setVignette(0, 600);
+      }
     });
   }
 
@@ -185,19 +202,24 @@ export class PostFXSystem {
     const isFearEnabled = useGameStore.getState().settings.fearDistortionEnabled ?? true;
     if (!isFearEnabled) return;
 
+    const seq = this.nextSeq();
     this.setDisplacement(0.35, 200);
     this.setVignette(0.75, 200);
     this.setTint('#581c87', 200);
 
     this.scene.time.delayedCall(durationMs * 0.4, () => {
-      this.setDisplacement(0.15, 300);
-      this.setVignette(0.35, 300);
+      if (this.effectSequenceCounter === seq) {
+        this.setDisplacement(0.15, 300);
+        this.setVignette(0.35, 300);
+      }
     });
 
     this.scene.time.delayedCall(durationMs, () => {
-      this.setDisplacement(0, 400);
-      this.setVignette(0, 400);
-      this.setTint('transparent', 400);
+      if (this.effectSequenceCounter === seq) {
+        this.setDisplacement(0, 400);
+        this.setVignette(0, 400);
+        this.setTint('transparent', 400);
+      }
     });
   }
 

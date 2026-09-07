@@ -54,7 +54,7 @@ export class LightingPolish {
    * de performance do jogador (`postProcessingEnabled`/`lowPerformanceParticles`)
    * e o limite de instâncias simultâneas.
    */
-  private isBloomEnabled(): boolean {
+  private isBloomEnabled(sprite?: Phaser.GameObjects.Image): boolean {
     try {
       const settings = useGameStore.getState().settings;
       if (settings.postProcessingEnabled === false) return false;
@@ -62,6 +62,8 @@ export class LightingPolish {
     } catch {
       // Store indisponível (ex: em testes fora de contexto) — segue habilitado.
     }
+    // Se o sprite já é um alvo de bloom ativo, permite a re-aplicação/calibração mesmo no limite
+    if (sprite && this.bloomTargets.has(sprite)) return true;
     return this.bloomTargets.size < MAX_ACTIVE_BLOOM_TARGETS;
   }
 
@@ -71,7 +73,7 @@ export class LightingPolish {
    * empilhar Glows de spells/cores diferentes no mesmo objeto reutilizado.
    */
   private applyBloomFilter(sprite: Phaser.GameObjects.Image, color: number, strength: number = 3): void {
-    if (!sprite || !this.isBloomEnabled()) return;
+    if (!sprite || !this.isBloomEnabled(sprite)) return;
 
     try {
       if (typeof (sprite as any).enableFilters === 'function') {
@@ -96,6 +98,7 @@ export class LightingPolish {
         }
         this.bloomTargets.delete(sprite);
       };
+      sprite.off('destroy', removeBloom);
       sprite.once('destroy', removeBloom);
     } catch {
       // Filtro indisponível (renderer sem suporte, ex: Canvas) — a luz Light2D
