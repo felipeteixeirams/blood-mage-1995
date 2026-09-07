@@ -16,7 +16,7 @@ tags:
   - pointer-isolation
 ---
 
-# Spec 25 — Padronização de Modais Secundários, Navegação Gamepad & Retratos Rúnicos
+# Spec 28 — Padronização de Modais Secundários, Navegação Gamepad & Retratos Rúnicos
 
 > **Status:** Spec em andamento; execução dividida em 3 fases sequenciais.  
 > **Data:** 6 de setembro de 2026  
