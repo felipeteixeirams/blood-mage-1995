@@ -191,9 +191,13 @@ export class LightingSystem {
       const entry = this.torchLights[i];
       if (!entry.light) continue;
 
-      const flicker = Math.sin(time * 0.007 + entry.seed) * 0.08 + Math.cos(time * 0.015 + entry.seed * 2.1) * 0.05;
-      entry.light.intensity = Math.max(0.35, entry.baseIntensity + flicker);
-      entry.light.radius = Math.max(20, entry.baseRadius * (1 + flicker * 0.35));
+      // Harmônica dupla refinada para evitar oscilações abruptas ou pulsos sincronizados
+      const wave1 = Math.sin(time * 0.005 + entry.seed) * 0.06;
+      const wave2 = Math.cos(time * 0.012 + entry.seed * 1.83) * 0.04;
+      const flicker = wave1 + wave2;
+
+      entry.light.intensity = Math.max(0.4, Math.min(1.4, entry.baseIntensity + flicker));
+      entry.light.radius = Math.max(30, entry.baseRadius * (1 + flicker * 0.25));
     }
   }
 

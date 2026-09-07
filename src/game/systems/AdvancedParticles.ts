@@ -163,6 +163,7 @@ export class AdvancedParticles {
     this.emitters.forEach((emitter) => {
       emitter.stop();
     });
+    this.stopAmbient();
   }
 
   /**

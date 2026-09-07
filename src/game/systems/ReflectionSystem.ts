@@ -94,7 +94,8 @@ export class ReflectionSystem {
         return;
       }
 
-      const footY = entity.y + ((entity.height || 32) * 0.35);
+      const entityHeight = entity.height || 32;
+      const footY = entity.y + (entityHeight * 0.38);
 
       // Verificar se a entidade está sobre ou muito próxima de alguma zona líquida/poça de sangue
       let inZone: LiquidZone | null = null;
@@ -117,10 +118,10 @@ export class ReflectionSystem {
         }
 
         // Ondulação senoidal horizontal e vertical sutil no reflexo
-        const rippleX = Math.sin(time * 0.006 + entity.y * 0.1) * 1.5;
-        const rippleScale = 0.85 + Math.sin(time * 0.008) * 0.05;
+        const rippleX = Math.sin(time * 0.005 + entity.y * 0.08) * 1.2;
+        const rippleScale = 0.88 + Math.sin(time * 0.007 + entity.x * 0.05) * 0.04;
 
-        refl.setPosition(entity.x + rippleX, footY + 8);
+        refl.setPosition(entity.x + rippleX, footY + 6);
         refl.setScale(entity.scaleX, entity.scaleY * rippleScale);
 
         // Tint dependendo da composição do líquido (sangue = 0x881122, água escura = 0x224466)
