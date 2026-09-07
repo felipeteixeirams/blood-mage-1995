@@ -623,32 +623,114 @@ export class DungeonGenerator {
     return this.scene.textures?.exists(centerKey) ? centerKey : 'tile_ground';
   }
 
+  /**
+   * Calculates 4-cardinal wall neighbor bitmask (0..15):
+   * Bit 0 (1): North
+   * Bit 1 (2): East
+   * Bit 2 (4): South
+   * Bit 3 (8): West
+   */
+  public calculateWallBitmask(gx: number, gy: number, wallGrid: Set<string>): number {
+    let mask = 0;
+    if (wallGrid.has(`${gx},${gy - 1}`)) mask |= 1;  // North
+    if (wallGrid.has(`${gx + 1},${gy}`)) mask |= 2;  // East
+    if (wallGrid.has(`${gx},${gy + 1}`)) mask |= 4;  // South
+    if (wallGrid.has(`${gx - 1},${gy}`)) mask |= 8;  // West
+    return mask;
+  }
+
+  public getWallTextureKey(
+    gx: number,
+    gy: number,
+    wallGrid: Set<string>,
+    baseTextureKey: string = 'tile_wall_brick'
+  ): string {
+    if (baseTextureKey === 'tile_wood_wall') {
+      return 'tile_wood_wall';
+    }
+
+    const mask = this.calculateWallBitmask(gx, gy, wallGrid);
+
+    // 0 or 1 neighbor -> endcap
+    if (mask === 0 || mask === 1 || mask === 2 || mask === 4 || mask === 8) {
+      const endcapKey = 'tile_wall_brick_endcap';
+      return this.scene.textures?.exists(endcapKey) ? endcapKey : baseTextureKey;
+    }
+
+    // 2 opposite neighbors -> straight wall
+    if (mask === 5 || mask === 10) { // N+S or E+W
+      const variantIdx = Math.floor(Math.abs(Math.sin(gx * 12.9898 + gy * 78.233)) * 5) % 5;
+      const vKey = `tile_wall_brick_var_${variantIdx}`;
+      return this.scene.textures?.exists(vKey) ? vKey : baseTextureKey;
+    }
+
+    // 2 adjacent neighbors -> Corners (check diagonal for inner vs outer)
+    let cornerType = '';
+    if (mask === 3) { // N + E
+      const hasDiagonal = wallGrid.has(`${gx + 1},${gy - 1}`);
+      cornerType = hasDiagonal ? 'corner_inner_ne' : 'corner_outer_ne';
+    } else if (mask === 6) { // E + S
+      const hasDiagonal = wallGrid.has(`${gx + 1},${gy + 1}`);
+      cornerType = hasDiagonal ? 'corner_inner_se' : 'corner_outer_se';
+    } else if (mask === 12) { // S + W
+      const hasDiagonal = wallGrid.has(`${gx - 1},${gy + 1}`);
+      cornerType = hasDiagonal ? 'corner_inner_sw' : 'corner_outer_sw';
+    } else if (mask === 9) { // W + N
+      const hasDiagonal = wallGrid.has(`${gx - 1},${gy - 1}`);
+      cornerType = hasDiagonal ? 'corner_inner_nw' : 'corner_outer_nw';
+    }
+
+    if (cornerType) {
+      const cornerKey = `tile_wall_brick_${cornerType}`;
+      if (this.scene.textures?.exists(cornerKey)) return cornerKey;
+    }
+
+    // 3 or 4 neighbors -> T-Junction or Cross
+    if (mask === 7 || mask === 11 || mask === 13 || mask === 14 || mask === 15) {
+      const tKey = 'tile_wall_brick_t_junction';
+      if (this.scene.textures?.exists(tKey)) return tKey;
+    }
+
+    const variantIdx = Math.floor(Math.abs(Math.sin(gx * 12.9898 + gy * 78.233)) * 5) % 5;
+    const vKey = `tile_wall_brick_var_${variantIdx}`;
+    return this.scene.textures?.exists(vKey) ? vKey : baseTextureKey;
+  }
+
   private buildWallLine(x1: number, y1: number, x2: number, y2: number, wallTint: number, textureKey: string = 'tile_wall_brick', disableTint: boolean = false) {
     const dx = x2 - x1;
     const dy = y2 - y1;
     const dist = Math.hypot(dx, dy);
     const steps = Math.ceil(dist / 32);
 
+    const wallGrid = new Set<string>();
+    const wallItems: Array<{ wx: number; wy: number; gx: number; gy: number }> = [];
+
     for (let i = 0; i <= steps; i++) {
       const t = steps === 0 ? 0 : i / steps;
       const wx = x1 + dx * t;
       const wy = y1 + dy * t;
+      const gx = Math.round(wx / 32);
+      const gy = Math.round(wy / 32);
 
+      const key = `${gx},${gy}`;
+      if (!wallGrid.has(key)) {
+        wallGrid.add(key);
+        wallItems.push({ wx, wy, gx, gy });
+      }
+    }
+
+    for (const item of wallItems) {
       let finalWallKey = textureKey;
       if (textureKey === 'tile_wall_brick' || textureKey === 'spr_wall') {
-        const wallVariant = Math.floor(Math.abs(Math.sin(wx * 0.129 + wy * 0.782)) * 5) % 5;
-        const vKey = `tile_wall_brick_var_${wallVariant}`;
-        if (this.scene.textures?.exists(vKey)) {
-          finalWallKey = vKey;
-        }
+        finalWallKey = this.getWallTextureKey(item.gx, item.gy, wallGrid, textureKey);
       }
 
-      const wall = this.wallsGroup.create(wx, wy, finalWallKey);
+      const wall = this.wallsGroup.create(item.wx, item.wy, finalWallKey);
       if (!disableTint) {
         wall.setTint(wallTint);
       }
       wall.setSize(32, 32);
-      wall.setDepth(wy + 16);
+      wall.setDepth(item.wy + 16);
       wall.refreshBody();
       if ((this.scene as any).lightingSystem) {
         (this.scene as any).lightingSystem.applyLightPipeline(wall);

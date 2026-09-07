@@ -1625,6 +1625,76 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     addTextureWithNormalMap(`tile_wall_brick_var_${v}`, vWallCanvas);
   }
 
+  // Dungeon Wall Autotile Pieces (Corners, Inner Corners, T-Junctions, Endcaps)
+  const createWallAutotileCanvas = (pieceType: string): HTMLCanvasElement => {
+    return createPixelCanvas(32, 32, (ctx) => {
+      // Base dark stone face
+      ctx.fillStyle = '#221922';
+      ctx.fillRect(0, 0, 32, 32);
+
+      // Top edge cap (highlighted wall top)
+      ctx.fillStyle = '#4a384e';
+
+      if (pieceType.startsWith('corner_outer_')) {
+        const corner = pieceType.replace('corner_outer_', '');
+        // Face bricks
+        ctx.fillStyle = '#3a2d3c';
+        ctx.fillRect(2, 6, 28, 24);
+        ctx.fillStyle = '#533e56'; // Top cap
+        if (corner === 'nw') {
+          ctx.fillRect(0, 0, 32, 6);
+          ctx.fillRect(0, 0, 6, 32);
+        } else if (corner === 'ne') {
+          ctx.fillRect(0, 0, 32, 6);
+          ctx.fillRect(26, 0, 6, 32);
+        } else if (corner === 'se') {
+          ctx.fillRect(0, 26, 32, 6);
+          ctx.fillRect(26, 0, 6, 32);
+        } else if (corner === 'sw') {
+          ctx.fillRect(0, 26, 32, 6);
+          ctx.fillRect(0, 0, 6, 32);
+        }
+      } else if (pieceType.startsWith('corner_inner_')) {
+        const corner = pieceType.replace('corner_inner_', '');
+        ctx.fillStyle = '#3a2d3c';
+        ctx.fillRect(0, 0, 32, 32);
+        ctx.fillStyle = '#181119'; // Shadow inner corner
+        if (corner === 'nw') ctx.fillRect(0, 0, 12, 12);
+        else if (corner === 'ne') ctx.fillRect(20, 0, 12, 12);
+        else if (corner === 'se') ctx.fillRect(20, 20, 12, 12);
+        else if (corner === 'sw') ctx.fillRect(0, 20, 12, 12);
+
+        ctx.fillStyle = '#533e56'; // L-shaped wall top cap
+        if (corner === 'nw') { ctx.fillRect(12, 0, 20, 6); ctx.fillRect(0, 12, 6, 20); }
+        else if (corner === 'ne') { ctx.fillRect(0, 0, 20, 6); ctx.fillRect(26, 12, 6, 20); }
+        else if (corner === 'se') { ctx.fillRect(0, 26, 20, 6); ctx.fillRect(26, 0, 6, 20); }
+        else if (corner === 'sw') { ctx.fillRect(12, 26, 20, 6); ctx.fillRect(0, 0, 6, 20); }
+      } else if (pieceType === 't_junction') {
+        ctx.fillStyle = '#3a2d3c';
+        ctx.fillRect(0, 0, 32, 32);
+        ctx.fillStyle = '#533e56';
+        ctx.fillRect(0, 0, 32, 6);
+        ctx.fillRect(13, 6, 6, 26);
+      } else if (pieceType === 'endcap') {
+        ctx.fillStyle = '#3a2d3c';
+        ctx.fillRect(4, 4, 24, 24);
+        ctx.fillStyle = '#533e56';
+        ctx.fillRect(2, 2, 28, 6);
+      }
+    });
+  };
+
+  const wallAutotilePieces = [
+    'corner_outer_nw', 'corner_outer_ne', 'corner_outer_se', 'corner_outer_sw',
+    'corner_inner_nw', 'corner_inner_ne', 'corner_inner_se', 'corner_inner_sw',
+    't_junction', 'endcap'
+  ];
+
+  wallAutotilePieces.forEach((piece) => {
+    const canvas = createWallAutotileCanvas(piece);
+    addTextureWithNormalMap(`tile_wall_brick_${piece}`, canvas);
+  });
+
   // 17. Dungeon Door Archway (32x32)
   const doorCanvas = createPixelCanvas(32, 32, (ctx) => {
     ctx.fillStyle = '#1c131d';
