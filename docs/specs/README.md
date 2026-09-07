@@ -2,8 +2,9 @@
 agent_context: Product Managers, Game Designers, Engenheiros e Agentes IA
 target_module: docs/specs
 priority: high
+criticality: high
 status: active
-last_updated: 2026-09-01
+last_updated: 2026-09-07
 tags: [specs, index, workflow, in-progress, delivered, backlog, discovery, rejected]
 ---
 
@@ -15,6 +16,45 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, discovery, rejec
 > - **`backlog/`**: Especificações formais e propostas de features aguardando início de desenvolvimento (0% de código).
 > - **`discovery/`**: Pesquisas exploratórias, avaliações arquiteturais, spikes técnicos e descobertas de produto/arte.
 > - **`rejected/`**: Propostas arquivadas/rejeitadas para proteger os guardrails arquiteturais contra regressões.
+>
+> Padrão de cabeçalho (`priority` + `criticality` + demais campos) e regras de
+> profundidade técnica mínima por spec: ver Seção 6 de
+> [`docs/architecture/05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md`](../architecture/05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md).
+
+---
+
+## 🎯 Fila de Prioridade — "Pega a Próxima"
+
+> Tabela única (`in-progress/` + `backlog/`), ordenada por **prioridade** (produto) e,
+> dentro do mesmo nível, por **criticidade** (risco técnico/regressão — ver definição
+> na Seção 6 do doc de metodologia linkado acima). Pedir **"pega a próxima"** resolve
+> para a **linha 1**. Item concluído sai desta fila e vira uma linha em "🟢 Delivered" abaixo.
+
+| # | Spec | Pasta | Prioridade | Criticidade | Progresso |
+|---|---|---|---|---|---|
+| 1 | [`in-progress/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`](./in-progress/25_MUNDO_CONTINUO_CHUNK_STREAMING.md) | in-progress | 🔴 high | ⚠️ critical | Fases A/B entregues — **próximo passo: B.2** (bounds dinâmicos + integração real com `DungeonGenerator`) |
+| 2 | [`in-progress/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./in-progress/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md) | in-progress | 🔴 high | ⚠️ critical | not_started — sobreposição de escopo com #1, ver nota abaixo antes de iniciar |
+| 3 | [`in-progress/17_POLIMENTO_GRAFICO_CALIBRACAO_SISTEMAS_EXISTENTES.md`](./in-progress/17_POLIMENTO_GRAFICO_CALIBRACAO_SISTEMAS_EXISTENTES.md) | in-progress | 🔴 high | ⚠️ high | not_started — frentes P0–P2 mapeadas, aguardando implementação |
+| 4 | [`in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md`](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md) | in-progress | 🔴 high | ⚠️ high | 75% — faltam QA manual, ícones sprite e cura via Clérigo |
+| 5 | [`backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md`](./backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md) | backlog | 🔴 high | ⚠️ high | parcialmente_implementado |
+| 6 | [`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md) | in-progress | 🔴 high | 🟡 medium | 90% — falta só i18n e Cloud Save (Nice-to-Have) |
+| 7 | [`in-progress/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`](./in-progress/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md) | in-progress | 🔴 high | 🟡 medium | 18.7% dos assets físicos integrados |
+| 8 | [`backlog/08_GUIA_EVOLUCAO_COMERCIAL.md`](./backlog/08_GUIA_EVOLUCAO_COMERCIAL.md) | backlog | 🔴 high | 🟢 low | Checklist de requisitos comerciais (Steam/Play Store/itch.io) |
+| 9 | [`backlog/16_FILA_AUTOMACAO_JULES.md`](./backlog/16_FILA_AUTOMACAO_JULES.md) | backlog | 🔴 high | 🟢 low | Fila operacional consumida pela sessão recorrente do Jules |
+| 10 | [`in-progress/09_PIXEL_LAB_PROMPT_GUIDE.md`](./in-progress/09_PIXEL_LAB_PROMPT_GUIDE.md) | in-progress | 🔴 high | 🟢 low | Guia de referência vivo, usado continuamente na produção de sprites |
+| 11 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟡 medium | 🟡 medium | Tier A completo — Tiers B/C pendentes |
+| 12 | [`backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md) | backlog | 🟡 medium | 🟡 medium | draft |
+| 13 | [`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
+| 14 | [`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) | backlog | 🟡 medium | 🟡 medium | partial |
+| 15 | [`backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md`](./backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md) | backlog | 🟡 medium | 🟡 medium | parcialmente implementado — bloqueado por orçamento de arte |
+| 16 | [`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
+| 17 | [`backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) | backlog | 🟡 medium | 🟢 low | Falta só o modal React de UI (~90% já entregue em `delivered/18`) |
+
+> *Nota (#1 vs #2):* `25_MUNDO_CONTINUO_CHUNK_STREAMING` e
+> `18_ARPG_CONTINUOUS_WORLD_TOPOLOGY` cobrem o mesmo domínio (mundo
+> contínuo estilo Dungeon Siege). #1 já tem fases A/B entregues — comece
+> por ele. Antes de iniciar #2, confirme com Felipe se o escopo dele já
+> não foi coberto pelas Fases B.2/C/D de #1, para não duplicar trabalho.
 
 ---
 
@@ -57,68 +97,39 @@ docs/specs/
 
 ---
 
-## 🟢 Delivered (100% Concluídas e Integradas)
+## 🟢 Delivered (Últimos 7 dias — janela "quente")
 
-| Spec | Escopo Concluído | Verificação / Testes |
-|---|---|---|
-| **[`delivered/04_FASE4_MUNDO_CONTINUO.md`](./delivered/04_FASE4_MUNDO_CONTINUO.md)** | **Fase 4: Mundo Contínuo:** Safe Town (Room 0), iluminação adaptativa, NPCs interativos, áudio e clima por bioma | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/27_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md`](./delivered/27_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md)** | **Joystick Virtual Nativo Phaser (Padrão Mobile Legends / Diablo Immortal):** Canvas nativo 60 FPS, drag-to-follow, floating stick, multi-touch isolado por `pointer.id`, curva de resposta, deadzone, escala S/M/L e modo canhoto | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/28_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md`](./delivered/28_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md)** | **Padronização de Modais Secundários, Navegação Gamepad & Retratos Rúnicos:** UI consistente entre modais secundários, navegação completa via gamepad e retratos temáticos | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md`](./delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md)** | **Evolução Gráfica, Terreno 2.5D & UI Adaptativa:** Base 1080p, Boss Zoom Out, Heightmap em Octaves, Cliff Faces verticais, colisão de desnível $\Delta Z$, Safe Area Insets e personalização de Joystick/Modo Canhoto | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/11_VISUAL_POLISH_FRONTS.md`](./delivered/11_VISUAL_POLISH_FRONTS.md)** | **ÍNDICE MESTRE — Visual Polish & VFX Fronts:** Gestão descentralizada das 8 frentes de polimento gráfico, procedural e sonoro do jogo | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/11_01_VISUAL_DUNGEON_GENERATION.md`](./delivered/11_01_VISUAL_DUNGEON_GENERATION.md)** | **Geração Orgânica de Dungeon:** Divisão espacial por BSP iterativo e autômato celular para corredores e criptas orgânicas | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/11_02_VISUAL_ATMOSFERA_NEBLINA.md`](./delivered/11_02_VISUAL_ATMOSFERA_NEBLINA.md)** | **Atmosfera e Névoa Volumétrica:** Camadas de névoa rasteira (`groundFog`) e alta (`upperHaze`) reativas ao bioma | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/11_03_VISUAL_DECALS_SANGUE.md`](./delivered/11_03_VISUAL_DECALS_SANGUE.md)** | **Decals de Sangue e Reações de Mundo:** Gerenciador FIFO de marcas no solo, pegadas de sangue fresco e rugosidade | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/11_04_VISUAL_GORE_HIT_STOP.md`](./delivered/11_04_VISUAL_GORE_HIT_STOP.md)** | **Gore, Hit-Stop e Character FX:** Pausas de impacto (Hit Stop 40-80ms), Squash & Stretch, Hit Flash e ragdoll gibs | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/11_05_VISUAL_ILUMINACAO_BLOOM.md`](./delivered/11_05_VISUAL_ILUMINACAO_BLOOM.md)** | **Iluminação 2D e Bloom FX:** Light2D Pipeline, PointLights pontuais e filtros procedural Glow FX | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/11_06_VISUAL_AUDIO_PITCH_DRONES.md`](./delivered/11_06_VISUAL_AUDIO_PITCH_DRONES.md)** | **Pitch Shifting e Drones de Áudio:** Micro-variação de tom (±6%) e sintetizador sub-grave reativo ao perigo | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/11_07_VISUAL_PALETTE_SWAP.md`](./delivered/11_07_VISUAL_PALETTE_SWAP.md)** | **Palette Swap Procedural e Cosméticos:** Tint dinâmico por raridade do equipamento e faíscas lendárias | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/11_08_VISUAL_NPCS_INTERATIVIDADE.md`](./delivered/11_08_VISUAL_NPCS_INTERATIVIDADE.md)** | **NPCs e Interatividade de Mundo:** Modais de diálogo, barks flutuantes, acompanhamento de quests e Altar Glow | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/12_EXPANSION_FRONTS.md`](./delivered/12_EXPANSION_FRONTS.md)** | **ÍNDICE MESTRE — Expansion & Replayability Fronts:** Gestão das 5 frentes de expansão de conteúdo, metajogo, IA e áudio FM | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/12_01_EXPANSION_TRAPS_INTERACTIONS.md`](./delivered/12_01_EXPANSION_TRAPS_INTERACTIONS.md)** | **Interações de Ambiente e Armadilhas:** Armadilhas mecânicas com ciclo temporal e barris explosivos voláteis em área | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/12_02_EXPANSION_AI_ELITE_MOBS.md`](./delivered/12_02_EXPANSION_AI_ELITE_MOBS.md)** | **Inteligência Artificial e Modificadores de Elite:** Inimigos Elites com afixos (Vampírico, Rápido), telegrafia AoE e esquiva | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/12_03_EXPANSION_META_PROGRESSION.md`](./delivered/12_03_EXPANSION_META_PROGRESSION.md)** | **Meta-Progressão e Economia:** Árvore de talentos permanente financiada por Cristais de Sangue | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/12_04_EXPANSION_UX_POLISH.md`](./delivered/12_04_EXPANSION_UX_POLISH.md)** | **Interface/UX e Polimento Sombrio:** Tooltips comparativos de equipamento, minimapa adaptativo e barras de status | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/12_05_EXPANSION_AUDIO_SOUNDTRACK.md`](./delivered/12_05_EXPANSION_AUDIO_SOUNDTRACK.md)** | **Trilha Sonora Procedural 16-Bit:** Motor de síntese de áudio FM via Web Audio API sem consumo extra de VRAM | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md`](./delivered/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md)** | **Safe House & Campanha ARPG:** Santuário Seguro, Diálogos de Maelen, Desbloqueio progressivo de magias e Grimório de Runas | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/14_IMMERSION_AND_GAME_FEEL.md`](./delivered/14_IMMERSION_AND_GAME_FEEL.md)** | **Imersão & Game Feel:** Feedback Háptico (`navigator.vibrate`), Retículo Rúnico de Mira no Solo, Câmera Look-Ahead Lerp, Screen Shake direcional e Caixas 9-Slice | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/15_PWA_AND_OFFLINE_READY.md`](./delivered/15_PWA_AND_OFFLINE_READY.md)** | **PWA & Offline Engine:** Service Worker Workbox, Cache offline completo, Hook `usePWA`, Indicador visual de rede e Banner de Instalação 1-Touch | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/17_IN_MEDIA_RES_ONBOARDING_AND_COMBAT_FLOW.md`](./delivered/17_IN_MEDIA_RES_ONBOARDING_AND_COMBAT_FLOW.md)** | **Onboarding In Media Res (<10s TTF):** Cerco Inicial instantâneo, Banner reativo de esquiva, Aceleração de XP para Nível 2 em <30s e Persistência segura Zod | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md`](./delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md)** | **Sistema de Prestígio 'Blood Seal':** Sacrifício voluntário de nível por Selos de Sangue permanentes e New Game+ | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/19_RELICS_AND_ARTIFACTS_SYSTEM.md`](./delivered/19_RELICS_AND_ARTIFACTS_SYSTEM.md)** | **Sistema de Relíquias e Artefatos Passivos:** 8 relíquias passivas equipáveis com multiplicadores dinâmicos de estatísticas | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/20_ADVANCED_PARTICLES_SYSTEM.md`](./delivered/20_ADVANCED_PARTICLES_SYSTEM.md)** | **Sistema de Partículas Avançadas:** 5 tipos de emissores visuais (sangue, poeira, magia, almas) no motor Phaser | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/21_ACHIEVEMENTS_SYSTEM.md`](./delivered/21_ACHIEVEMENTS_SYSTEM.md)** | **Sistema de Conquistas:** Rastreamento em tempo real de conquistas góticas, persistência Zod, toasts animadas e modal React | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md`](./delivered/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md)** | **Polimento Visual Procedural:** 8 inimigos com silhuetas curvas e normal maps, sombras elípticas radiais, partículas com degradê, tochas alinhadas e tijolos com musgo orgânico | Vitest + E2E (`spec10-validation.spec.ts`) |
-| **[`delivered/22_DASH_EVASION_MECHANIC.md`](./delivered/22_DASH_EVASION_MECHANIC.md)** | **Mecânica de Dash/Esquiva:** Janelas de invulnerabilidade (200ms I-Frames), cooldown de 3s, velocidade 800px/s e rastros visuais | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md`](./delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md)** | **ÍNDICE MESTRE — Eixo A: Gráficos Avançados:** Iluminação GPU real (Light2D), pós-processamento WebGL (PostFXSystem) e normal maps procedurais, substituindo o antigo overlay de escuridão via Canvas | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/23_01_POSTFX_GPU_SHADERS.md`](./delivered/23_01_POSTFX_GPU_SHADERS.md)** | **Pós-Processamento GPU (PostFXSystem):** Vinheta dinâmica, aberração cromática, gradação de cor por bioma e distorções de onda/shockwave, com fallback Canvas via `ScreenEffects` | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/23_02_PROCEDURAL_NORMAL_MAPS.md`](./delivered/23_02_PROCEDURAL_NORMAL_MAPS.md)** | **Normal Maps Procedurais:** Geração Sobel-ish de normal maps RGB em runtime (`generateNormalMap`), aplicada ao jogador, monstros de elite, paredes e baús | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/23_03_LIGHT2D_DYNAMIC_LIGHTING.md`](./delivered/23_03_LIGHT2D_DYNAMIC_LIGHTING.md)** | **Iluminação Dinâmica 2D (Light2D):** `LightingSystem`/`LightingPolish` — cor ambiente por bioma, luz do jogador modulada por HP, flicker orgânico de tochas e glow em itens/elites | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md`](./delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md)** | **ÍNDICE MESTRE — Evolução Gráfica & Auditiva:** Quick wins (Medo, Cascata de Luz, Tinnitus), animações 8-direcionais, ragdoll/gibs e shaders de status/sombra/reflexo, com toggles de acessibilidade | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/24_01_GRAPHICS_AUDIO_QUICKWINS.md`](./delivered/24_01_GRAPHICS_AUDIO_QUICKWINS.md)** | **Quick Wins Visuais & Auditivos:** Distorção de Medo, Cascata de Luz por `floorDepth` e Tinnitus de Ameaça em HP crítico — todos com toggle de acessibilidade | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/24_02_PROCEDURAL_ANIMATIONS_RAGDOLL_GIBS.md`](./delivered/24_02_PROCEDURAL_ANIMATIONS_RAGDOLL_GIBS.md)** | **Animações 8-Direcionais & Ragdoll Gibs:** Deformação procedural por vetor angular, hit flash/flinch/knockback por massa e desmembramento gore em mortes críticas | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/24_03_STATUS_EFFECTS_SHADOWS_REFLECTIONS.md`](./delivered/24_03_STATUS_EFFECTS_SHADOWS_REFLECTIONS.md)** | **Shaders de Status, Sombras 2.5D e Reflexos:** `ShadowSystem` (sombras elípticas orientadas à luz), `StatusEffectSystem` (queimado/congelado/etc.) e reflexos em líquidos | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/01_FASE1_INCONSCIENCIA.md`](./delivered/01_FASE1_INCONSCIENCIA.md)** | **Sistema de Inconsciência:** Transição para estado de quase-morte, perda temporária de controle e mecânica de recuperação | Vitest + Unit Tests |
-| **[`delivered/26_RECORDS_DISPLAY.md`](./delivered/26_RECORDS_DISPLAY.md)** | **Exibição de Recordes:** Modal e cena de recordes históricos, tempos de sobrevivência e abates | Vitest + Unit Tests |
-| **[`delivered/02_FASE2_TELA_DE_MORTE_E_GORE.md`](./delivered/02_FASE2_TELA_DE_MORTE_E_GORE.md)** | **Tela de Morte & Gore:** Modal de Game Over gótico, estatísticas da run, estilhaçamento corporal e marcas de sangue | Vitest + Unit Tests |
-| **[`delivered/05_FASE5_POLIMENTO_PRODUCAO_COMPLETO.md`](./delivered/05_FASE5_POLIMENTO_PRODUCAO_COMPLETO.md)** | **Polimento de Produção Completo:** Limpeza de ciclo de vida de cenas, otimização de garbage collector e pooling | Vitest + Unit Tests |
+> Histórico completo (tudo entregue há mais de 7 dias, nunca apagado):
+> [`delivered/_HISTORY_ARCHIVE.md`](./delivered/_HISTORY_ARCHIVE.md).
+> Ao passar dos 7 dias, mova a linha daqui para o topo do arquivo.
+
+| Spec | Escopo Concluído | Entregue em | Verificação / Testes |
+|---|---|---|---|
+| **[`delivered/28_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md`](./delivered/28_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md)** | **Padronização de Modais Secundários, Navegação Gamepad & Retratos Rúnicos:** UI consistente entre modais secundários, navegação completa via gamepad e retratos temáticos | 2026-09-06 | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md`](./delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md)** | **Sistema de Prestígio 'Blood Seal':** Sacrifício voluntário de nível por Selos de Sangue permanentes e New Game+ | 2026-09-06 | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md`](./delivered/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md)** | **Polimento Visual Procedural:** 8 inimigos com silhuetas curvas e normal maps, sombras elípticas radiais, partículas com degradê, tochas alinhadas e tijolos com musgo orgânico | 2026-09-05 | Vitest + E2E (`spec10-validation.spec.ts`) |
+| **[`delivered/04_FASE4_MUNDO_CONTINUO.md`](./delivered/04_FASE4_MUNDO_CONTINUO.md)** | **Fase 4: Mundo Contínuo:** Safe Town (Room 0), iluminação adaptativa, NPCs interativos, áudio e clima por bioma | 2026-08-31 | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md`](./delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md)** | **ÍNDICE MESTRE — Eixo A: Gráficos Avançados:** Iluminação GPU real (Light2D), pós-processamento WebGL (PostFXSystem) e normal maps procedurais | 2026-08-31 | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md`](./delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md)** | **ÍNDICE MESTRE — Evolução Gráfica & Auditiva:** Quick wins (Medo, Cascata de Luz, Tinnitus), animações 8-direcionais, ragdoll/gibs e shaders de status/sombra/reflexo | 2026-08-31 | Vitest + E2E (`pnpm verify`) |
 
 ---
 
 ## 🔵 Backlog (Propostas de Features Formais — 0% Desenvolvimento Iniciado)
 
-| Spec / Proposta | Domínio / Resumo | Prioridade |
-|---|---|---|
-| **[`backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md)** | Gap real do sistema de Prestígio já ~90% entregue (`delivered/18`): falta só o modal React de UI | Média |
-| **[`backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md)** | Eventos dinâmicos sazonais (Lua de Sangue, Eclipse, Solstício Negro) | Baixa |
-| **[`backlog/08_GUIA_EVOLUCAO_COMERCIAL.md`](./backlog/08_GUIA_EVOLUCAO_COMERCIAL.md)** | Checklist comercial e requisitos para Steam, Play Store e itch.io | Média |
-| **[`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md)** | Referências estéticas e proposta de HUD estilo ARPG clássico | Média |
-| **[`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md)** | Atmosfera, Tensão e Indicadores de Ameaça (Indicadores fora de tela, áudio espacial e iluminação) | Média |
-| **[`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md)** | Progressão, Micro-Quests e Evolução de Habilidades (Contratos, Modificadores e Talentos) *(Parcialmente Implementado)* | Média |
-| **[`backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md`](./backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md)** | Framework de Evolução de UI e Assets Externos Góticos (Híbrido 9-slice React & Web Audio) | Alta |
-| **[`backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md`](./backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md)** | Discovery Eixo B — Pipeline de Integração de Assets Externos e Spritesheets por Tiers | Média |
-| **[`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** | Toggle de Intensidade de Conteúdo — mitigação de classificação indicativa (gore visual configurável) | Média |
-| **[`backlog/16_FILA_AUTOMACAO_JULES.md`](./backlog/16_FILA_AUTOMACAO_JULES.md)** | ⚠️ Fila operacional (não uma proposta de feature) — itens que a sessão recorrente do Jules consome em ordem de prioridade | Alta |
+> Ordem de execução sugerida (por prioridade/criticidade): ver "🎯 Fila de Prioridade" no topo deste documento.
+
+| Spec / Proposta | Domínio / Resumo | Prioridade | Criticidade |
+|---|---|---|---|
+| **[`backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md)** | Gap real do sistema de Prestígio já ~90% entregue (`delivered/18`): falta só o modal React de UI | medium | low |
+| **[`backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md)** | Eventos dinâmicos sazonais (Lua de Sangue, Eclipse, Solstício Negro) | medium | medium |
+| **[`backlog/08_GUIA_EVOLUCAO_COMERCIAL.md`](./backlog/08_GUIA_EVOLUCAO_COMERCIAL.md)** | Checklist comercial e requisitos para Steam, Play Store e itch.io | high | low |
+| **[`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md)** | Referências estéticas e proposta de HUD estilo ARPG clássico (Tier A completo, Tiers B/C pendentes) | medium | medium |
+| **[`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md)** | Atmosfera, Tensão e Indicadores de Ameaça (Indicadores fora de tela, áudio espacial e iluminação) | medium | medium |
+| **[`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md)** | Progressão, Micro-Quests e Evolução de Habilidades (Contratos, Modificadores e Talentos) *(Parcialmente Implementado)* | medium | medium |
+| **[`backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md`](./backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md)** | Framework de Evolução de UI e Assets Externos Góticos (Híbrido 9-slice React & Web Audio) | high | high |
+| **[`backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md`](./backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md)** | Discovery Eixo B — Pipeline de Integração de Assets Externos e Spritesheets por Tiers | medium | medium |
+| **[`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** | Toggle de Intensidade de Conteúdo — mitigação de classificação indicativa (gore visual configurável) | medium | medium |
+| **[`backlog/16_FILA_AUTOMACAO_JULES.md`](./backlog/16_FILA_AUTOMACAO_JULES.md)** | ⚠️ Fila operacional (não uma proposta de feature) — itens que a sessão recorrente do Jules consome em ordem de prioridade | high | low |
 
 ---
 

@@ -1,8 +1,9 @@
 ---
 agent_context: [backend, frontend, all]
 target_module: root
-priority: alta
-status: active
+priority: high
+criticality: low
+status: backlog
 last_updated: 2026-09-07
 tags: [automacao, jules, backlog-operacional, qualidade]
 ---

@@ -2,7 +2,8 @@
 agent_context: game-designer, game-engine
 target_module: src/game/systems/DungeonGenerator.ts, src/game/systems/WorldManager.ts
 priority: high
-status: active
+criticality: critical
+status: in-progress
 implementation_status: not_started
 last_updated: 2026-09-06
 tags:

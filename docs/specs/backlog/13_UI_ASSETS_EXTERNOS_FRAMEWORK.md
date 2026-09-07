@@ -1,8 +1,10 @@
 ---
 agent_context: game-engine, frontend, game-designer, product-manager
 target_module: artifacts/bloodmage/src/game
-priority: alta
-status: parcialmente_implementado
+priority: high
+criticality: high
+status: backlog
+progress: parcialmente_implementado
 last_updated: 2026-09-02
 tags: [specs, proposta, ui, assets-externos, pixel-art, hybrid-system, performance, audio]
 ---

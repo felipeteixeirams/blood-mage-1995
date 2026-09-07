@@ -1,8 +1,10 @@
 ---
 agent_context: frontend, game designer
 target_module: src/components/GameplayHUD.tsx, src/components/hud, src/game/scenes/GameScene.ts
-priority: media
-status: implementado (Tier A completo, validado)
+priority: medium
+criticality: medium
+status: backlog
+progress: implementado (Tier A completo, validado) — Tiers B/C pendentes
 last_updated: 2026-08-31
 tags: [design, ui, hud, referencia-visual, diablo2, dungeon-siege-1, mobile, combat-dynamics]
 ---

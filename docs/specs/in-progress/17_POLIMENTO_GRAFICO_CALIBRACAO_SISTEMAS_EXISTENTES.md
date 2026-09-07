@@ -2,7 +2,8 @@
 agent_context: game-engine, graphics-architect, frontend, qa
 target_module: src/game/systems, src/game/scenes, src/game/shaders, src/utils
 priority: high
-status: active
+criticality: high
+status: in-progress
 implementation_status: not_started
 last_updated: 2026-09-05
 tags:

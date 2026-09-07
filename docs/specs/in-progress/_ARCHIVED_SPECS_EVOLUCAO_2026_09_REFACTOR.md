@@ -2,6 +2,7 @@
 agent_context: all agents
 target_module: root
 priority: low
+criticality: low
 status: archived
 last_updated: 2026-09-01
 tags: [specs, archived]

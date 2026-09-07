@@ -2,8 +2,9 @@
 agent_context: Engenheiros de Software, Arquitetos e Agentes IA
 target_module: Metodologia de Desenvolvimento, Governança de Código e IA
 priority: high
+criticality: high
 status: active
-last_updated: 2026-08-19
+last_updated: 2026-09-07
 tags: [spec-driven, context-driven, architecture, ai-guidelines, workflow]
 ---
 
@@ -155,3 +156,49 @@ Toda tarefa concluída deve passar pelo checklist:
 - [ ] **Testes Unitários:** `npm test` executado e todos os testes passando.
 - [ ] **Build de Produção:** `npm run build` bem-sucedido.
 - [ ] **Registro de Troubleshooting:** Qualquer bug ou comportamento inesperado resolvido deve ser documentado em `docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md`.
+
+---
+
+## 🏷️ 6. Padrão de Cabeçalho de Specs (Frontmatter Standard)
+
+Toda spec nova (`in-progress/`, `backlog/`, `discovery/`) **DEVE** abrir com este frontmatter YAML, com valores restritos aos enums abaixo (nunca livre, nunca em português misturado com inglês — isso já causou inconsistência real: `priority: P1`, `priority: alta`, `priority: MÉDIA` coexistindo no mesmo índice):
+
+```yaml
+---
+agent_context: [backend|frontend|game-engine|game-designer|pixel-artist|product-manager|qa|all]
+target_module: src/... (arquivos/pastas exatos impactados)
+priority: high | medium | low          # Valor de produto/roadmap (impacto no jogador)
+criticality: critical | high | medium | low   # Risco técnico/regressão (ver definição abaixo)
+status: in-progress | delivered | backlog | discovery | rejected
+last_updated: YYYY-MM-DD               # Sem aspas, sem timestamp de hora
+tags: [categoria, subcategoria, ...]
+---
+```
+
+### `priority` vs `criticality` — são eixos diferentes, não sinônimos
+* **`priority`** responde: *"o quanto isso importa para o jogador/roadmap agora?"* — mesma régua de `docs/product/00_MOBILE_FIRST_SUCCESS_BIBLE.md`.
+* **`criticality`** responde: *"o quanto isso pode quebrar o jogo se for mal executado?"* — mesma régua da Matriz de Complexidade (Seção 3):
+  * **critical** — toca `Player.ts`, `Enemy.ts`, `GameScene.ts`, física do Arcade Physics, schema Zod de persistência (`localStorage.ts`) ou pipeline de assets binários.
+  * **high** — toca sistema compartilhado usado por múltiplas cenas/features (bridge Zustand↔Phaser, `DungeonGenerator`, `CombatSystem`, `LightingSystem`).
+  * **medium** — feature nova, mas isolada (novo componente UI, novo tipo de inimigo, nova magia).
+  * **low** — cosmético, aditivo, fácil de reverter (paleta, tween, prop ambiente).
+
+Uma spec pode ser `priority: low` + `criticality: critical` (ex: um ajuste estético em `Player.ts`) — os dois eixos combinados é que decidem o rigor de validação exigido, não um substituindo o outro.
+
+### Profundidade Técnica Mínima Exigida
+Uma spec só está "pronta para implementação por qualquer agente IA" (inclusive um que não tenha o histórico desta conversa) quando ela cita, de forma explícita:
+1. **Métodos/APIs exatos a usar** — não "adicionar glow no hearth", e sim `hearth.enableFilters()` → `hearth.filters.internal.addGlow(cor, radius, offset, intensity)`.
+2. **A skill especializada a consultar** quando o domínio tiver uma em `.claude/skills/` (ex: `phaser-4-fx-filters` para filtros, `phaser-4-physics-combat` para hitboxes, `phaser-4-procedural-generation` para bake de textura determinística).
+3. **Arquivos/linhas alvo** (ou pelo menos classe/método) e o padrão Extract/Delegate quando aplicável (`03_PHASER_PATTERNS.md`).
+4. **Critério de aceite testável** (o que rodar — `pnpm test`, `pnpm e2e`, cena específica — para considerar concluído).
+
+Specs que não atingem esse nível de detalhe ficam em `discovery/` (pesquisa/rascunho), não em `in-progress/`.
+
+### Escopo por Arquivo (Tamanho Máximo)
+Cada spec cobre um trabalho concluível em **dias a uma semana** — nunca uma fase inteira do roadmap em um único arquivo monolítico. Domínios grandes usam o padrão já validado de **Índice Mestre + Satélites** (ver `delivered/11_VISUAL_POLISH_FRONTS.md` e suas 8 satélites `11_01` a `11_08`): o mestre lista escopo e status de cada frente; cada satélite é a spec técnica isolada daquela frente. Um satélite passando de ~500 linhas é sinal de que deveria virar dois.
+
+### Fila de Prioridade ("Pega a Próxima")
+`docs/specs/README.md` mantém, na sua primeira seção, uma tabela única (`in-progress/` + `backlog/`) ordenada por `criticality` e depois `priority`. Pedir "pega a próxima" resolve para a primeira linha dessa tabela — sem precisar vasculhar as 5 pastas manualmente.
+
+### Retenção de Histórico (`delivered/`)
+O índice principal (`docs/specs/README.md`) lista em `delivered/` apenas o que foi entregue **nos últimos 7 dias**. Tudo mais fica em `docs/specs/delivered/_HISTORY_ARCHIVE.md` (histórico completo, cronológico, nunca apagado — só sai da visão "quente"). Ao marcar uma spec como entregue, mova a linha mais antiga que sair da janela de 7 dias do índice principal para o arquivo.

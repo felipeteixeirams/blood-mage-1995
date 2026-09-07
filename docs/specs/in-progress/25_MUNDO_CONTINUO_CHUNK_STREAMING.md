@@ -1,8 +1,10 @@
 ---
 agent_context: backend, game-engine, game designer
 target_module: src/game/systems/ChunkStreamer.ts, src/game/systems/DungeonGenerator.ts, src/game/systems/DungeonFlowController.ts, src/game/scenes/GameScene.ts
-priority: alta
-status: Fases A e B (encanamento interno) entregues — Fases B.2/C/D em discovery
+priority: high
+criticality: critical
+status: in-progress
+progress: Fases A e B (encanamento interno) entregues — Fases B.2/C/D em discovery
 last_updated: 2026-09-06
 tags: [design, world-structure, continuous-world, dungeon-siege, chunk-streaming, discovery]
 ---

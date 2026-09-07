@@ -1,7 +1,8 @@
 ---
-agent_context: technical_specification_atmosphere_and_tension
-target_module: docs/specs/backlog/11_ATMOSFERA_E_TENSAO.md
+agent_context: game-engine, frontend, audio
+target_module: src/game/systems, src/utils/soundEngine.ts
 priority: medium
+criticality: medium
 status: backlog
 last_updated: "2026-09-01"
 tags:

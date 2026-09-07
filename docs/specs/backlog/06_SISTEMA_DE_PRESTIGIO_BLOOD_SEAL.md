@@ -1,8 +1,9 @@
 ---
 agent_context: frontend
 target_module: src/components
-priority: media
-status: active
+priority: medium
+criticality: low
+status: backlog
 last_updated: 2026-09-06
 tags: [specs, prestige, ui, backlog-real]
 ---

@@ -1,11 +1,15 @@
 ---
-status: ANDAMENTO
+agent_context: game-engine, backend, qa
+target_module: src/game/systems, src/game/objects/Player.ts
+priority: high
+criticality: high
+status: in-progress
 phase: 3/4
-priority: P1
 start_date: 2026-08-10
 last_updated: 2026-09-06
 responsible: Claude
 progress: 75% (gameplay loop completo, faltam polimentos)
+tags: [specs, phase-3, survival, status-effects, bleed, poison, infection]
 ---
 
 # 🟡 Fase 3: Status de Sobrevivência

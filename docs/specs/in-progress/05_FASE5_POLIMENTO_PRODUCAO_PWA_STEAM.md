@@ -1,13 +1,14 @@
 ---
-status: 90% IMPLEMENTADO / EM ANDAMENTO
+agent_context: backend, frontend, game-designer, release-engineer
+target_module: /src (root)
+priority: high
+criticality: medium
+status: in-progress
 phase: 5/5
-priority: P1 (Alta para Lançamento)
 start_date: 2026-08-11
 eta: 2026-09-15
 responsible: Claude (Anthropic), Felipe Teixeira & Jules (Google AI)
-progress: 90% (Todos os requisitos Must Have implementados e testados; pendentes apenas itens Nice-to-Have: i18n e Cloud Save)
-agent_context: backend, frontend, game designer, release engineer
-target_module: /src (root)
+progress: "90% (Todos os requisitos Must Have implementados e testados; pendentes apenas itens Nice-to-Have: i18n e Cloud Save)"
 last_updated: 2026-08-31
 tags: [specs, phase-5, production-polish, pwa, twa, steam, gamepad, haptics, performance, graphics]
 ---

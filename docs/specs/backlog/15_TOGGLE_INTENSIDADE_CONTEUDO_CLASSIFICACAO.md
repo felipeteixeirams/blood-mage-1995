@@ -1,7 +1,8 @@
 ---
-agent_context: technical_specification_content_rating_toggle
-target_module: docs/specs/backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md
+agent_context: frontend, game-designer
+target_module: src/game/systems, src/components/SettingsModal.tsx
 priority: medium
+criticality: medium
 status: backlog
 last_updated: "2026-09-02"
 tags:

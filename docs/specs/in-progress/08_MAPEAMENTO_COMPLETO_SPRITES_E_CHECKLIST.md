@@ -1,8 +1,9 @@
 ---
 agent_context: game-engine, frontend, game-designer, pixel-artist, developer
 target_module: src/assets, src/game, src/utils, src/game/scenes/BootScene.ts
-priority: alta
-status: andamento
+priority: high
+criticality: medium
+status: in-progress
 last_updated: 2026-08-31
 tags: [specs, sprites, pixel-art, assets, mapping, checklist, hybrid-system, maturity, architecture]
 ---

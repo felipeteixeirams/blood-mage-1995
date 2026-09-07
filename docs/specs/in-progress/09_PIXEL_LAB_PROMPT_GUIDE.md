@@ -1,8 +1,9 @@
 ---
 agent_context: game-designer, pixel-artist, developer
 target_module: artifacts/bloodmage/src/assets, src/game
-priority: alta
-status: ativo
+priority: high
+criticality: low
+status: in-progress
 last_updated: 2026-08-14
 tags: [pixel-art, pixel-lab, prompts, prompt-engineering, sprites, assets, grimdark, ui-mapping]
 ---
