@@ -63,7 +63,7 @@ tags: [automacao, jules, backlog-operacional, qualidade]
 
 ### 1. Autotiling de paredes das masmorras
 
-**Status:** 🟡 PENDENTE
+**Status:** ✅ CONCLUÍDO (PR: feat(masmorras): autotiling de paredes com peças de canto e junção)
 
 **Contexto:** O piso das 3 masmorras (`fosso_chagas`, `catacumbas_martires`,
 `santuario_sangue`) já tem autotiling de verdade (bitmask de vizinhos, 13
