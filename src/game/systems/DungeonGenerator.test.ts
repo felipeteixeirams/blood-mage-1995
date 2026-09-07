@@ -188,15 +188,15 @@ describe('DungeonGenerator (spec 11, Frente 1 — layout orgânico via BSP + Cel
     expect(doorCount).toBeGreaterThan(0);
   });
 
-  it('mantém o comportamento fixo e inalterado da safe_house (sala única 800x600, sem BSP/CA)', () => {
+  it('mantém o comportamento fixo e inalterado da safe_house (sala única 550x420, sem BSP/CA)', () => {
     const { scene, wallsGroup, chestsGroup } = makeMockScene();
     const generator = new DungeonGenerator(scene, wallsGroup as any, chestsGroup as any);
 
     const rooms = generator.generate(MAP_W, MAP_H, 'safe_house');
     expect(rooms.length).toBe(1);
     expect(rooms[0].type).toBe('spawn');
-    expect(rooms[0].width).toBe(800);
-    expect(rooms[0].height).toBe(600);
+    expect(rooms[0].width).toBe(550);
+    expect(rooms[0].height).toBe(420);
   });
 
   it('gera sempre pelo menos uma sala secret_treasure com 2 baús garantidos', () => {

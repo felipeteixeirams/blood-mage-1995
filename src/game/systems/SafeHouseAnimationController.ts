@@ -118,9 +118,10 @@ export class SafeHouseAnimationController {
   /**
    * Hearth: lareira com chama cintilante usando tweens de escala/alpha.
    *
-   * Padrão de fogo realista:
+   * Padrão de fogo realista com Phaser 4 Filters:
    * 1. Flame sprite com tweens de breathing (1.0 → 1.1 → 0.95 → 1.0 @ 0.8s)
-   * 2. Warm light glow (Light2D + dynamic intensity)
+   * 2. Internal Glow filter (orange 0xffb347, radius 4px)
+   * 3. Light2D glow pulse (fallback se disponível)
    */
   private setupHearthFlameEffect(): void {
     if (!this.hearth) return;
@@ -139,7 +140,10 @@ export class SafeHouseAnimationController {
 
     this.activeTweens.push(flameBreathTween);
 
-    // ===== LIGHT2D DYNAMIC GLOW (se disponível) =====
+    // ===== PHASER 4 BEAM RENDERER GLOW FILTER (WebGL2) =====
+    this.setupHearthGlowFilter();
+
+    // ===== LIGHT2D DYNAMIC GLOW (fallback / complementary) =====
     if ((this.scene as any).lightingSystem?.addLightSource) {
       try {
         const hearthLight = (this.scene as any).lightingSystem.addLightSource({
@@ -162,13 +166,44 @@ export class SafeHouseAnimationController {
 
         this.activeTweens.push(lightPulseTween);
       } catch (e) {
-        logger.warn('SafeHouseAnimationController.setupHearthFlameEffect', 'Could not add light source', { error: String(e) });
+        logger.warn('SafeHouseAnimationController.setupHearthFlameEffect', 'Could not add Light2D source', { error: String(e) });
       }
     }
 
     logger.info('SafeHouseAnimationController.setupHearthFlameEffect', 'Hearth flame effect initialized', {
-      hasLight: !!(this.scene as any).lightingSystem?.addLightSource,
+      hasGlowFilter: !!this.hearth.filters,
+      hasLight2D: !!(this.scene as any).lightingSystem?.addLightSource,
     });
+  }
+
+  /**
+   * Adiciona Glow Filter (Phaser 4 Beam Renderer) ao hearth com fallback seguro.
+   */
+  private setupHearthGlowFilter(): void {
+    if (!this.hearth) return;
+
+    try {
+      const renderer = this.scene.game.renderer as any;
+
+      // Verificar se WebGL2 está disponível
+      if (renderer?.isWebGL && typeof this.hearth.enableFilters === 'function') {
+        this.hearth.enableFilters();
+
+        if (this.hearth.filters?.internal) {
+          // Adicionar glow interno: orange quente, radius 4px, sem offset, intensidade 1.2
+          this.hearth.filters.internal.addGlow(0xffb347, 4, 0, 1.2);
+          logger.info('SafeHouseAnimationController.setupHearthGlowFilter', 'Hearth glow filter applied', {
+            color: '0xffb347',
+            radius: 4,
+          });
+        }
+      }
+    } catch (e) {
+      // Fallback silencioso: sem glow, continua funcionando
+      logger.warn('SafeHouseAnimationController.setupHearthGlowFilter', 'Glow filter not available (Canvas/headless mode)', {
+        error: String(e),
+      });
+    }
   }
 
   /**

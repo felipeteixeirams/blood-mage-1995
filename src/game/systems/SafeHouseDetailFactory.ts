@@ -88,9 +88,6 @@ export class SafeHouseDetailFactory {
     const cx = size / 2;
     const cy = size / 2;
 
-    // Clear background with transparency
-    g.clear();
-
     switch (key) {
       case 'safehouse_detail_rug':
         // Woven Tapestry Rug com sombra e detalhes (Crimson, Gold fringe, Warm Ochre pattern)
