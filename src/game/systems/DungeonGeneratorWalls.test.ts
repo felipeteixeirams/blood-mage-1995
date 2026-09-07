@@ -33,6 +33,7 @@ vi.mock('phaser', () => {
       image: vi.fn().mockReturnValue({ ...mockImage }),
       star: vi.fn().mockReturnValue({ ...mockImage }),
       circle: vi.fn().mockReturnValue({ setStrokeStyle: vi.fn().mockReturnThis(), setDepth: vi.fn().mockReturnThis() }),
+      existing: vi.fn().mockImplementation((obj: any) => obj),
     };
     textures = {
       exists: vi.fn().mockImplementation((key: string) => {
@@ -44,8 +45,11 @@ vi.mock('phaser', () => {
     physics = {
       add: {
         staticGroup: vi.fn().mockReturnValue(new MockStaticGroup()),
+        existing: vi.fn().mockImplementation((obj: any) => obj),
       },
     };
+    spikeTrapsGroup = { add: vi.fn() };
+    barrelsGroup = { add: vi.fn() };
   }
 
   return {
@@ -126,5 +130,26 @@ describe('DungeonGenerator - Wall Autotiling Bitmasks', () => {
     const wallGrid = new Set<string>(['1,0']); // N only (mask 1)
     const endcapKey = generator.getWallTextureKey(1, 1, wallGrid, 'tile_wall_brick');
     expect(endcapKey).toBe('tile_wall_brick_endcap');
+  });
+
+  it('autotiles intersecting lines correctly during full dungeon generation', () => {
+    const createdKeys: string[] = [];
+    vi.spyOn(mockWallsGroup, 'create').mockImplementation((_x: number, _y: number, key: string) => {
+      createdKeys.push(key);
+      return {
+        setTint: vi.fn().mockReturnThis(),
+        setSize: vi.fn().mockReturnThis(),
+        setDepth: vi.fn().mockReturnThis(),
+        refreshBody: vi.fn().mockReturnThis(),
+      } as any;
+    });
+
+    generator.generate(1280, 960, 'fosso_chagas');
+
+    expect(createdKeys.length).toBeGreaterThan(0);
+    // Outer corners should be present
+    expect(createdKeys.some((k) => k.startsWith('tile_wall_brick_corner_outer_'))).toBe(true);
+    // Straight wall variants should be present
+    expect(createdKeys.some((k) => /^tile_wall_brick_var_\d$/.test(k))).toBe(true);
   });
 });

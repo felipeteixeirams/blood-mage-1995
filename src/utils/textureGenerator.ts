@@ -1632,14 +1632,24 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
       ctx.fillStyle = '#221922';
       ctx.fillRect(0, 0, 32, 32);
 
-      // Top edge cap (highlighted wall top)
-      ctx.fillStyle = '#4a384e';
+      const drawBricksInArea = (x: number, y: number, w: number, h: number) => {
+        ctx.fillStyle = '#3a2d3c';
+        ctx.fillRect(x, y, w, h);
+
+        // Mortar lines
+        ctx.strokeStyle = '#110b12';
+        ctx.lineWidth = 1;
+        for (let my = y + 6; my < y + h; my += 8) {
+          ctx.beginPath();
+          ctx.moveTo(x, my);
+          ctx.lineTo(x + w, my);
+          ctx.stroke();
+        }
+      };
 
       if (pieceType.startsWith('corner_outer_')) {
         const corner = pieceType.replace('corner_outer_', '');
-        // Face bricks
-        ctx.fillStyle = '#3a2d3c';
-        ctx.fillRect(2, 6, 28, 24);
+        drawBricksInArea(2, 6, 28, 24);
         ctx.fillStyle = '#533e56'; // Top cap
         if (corner === 'nw') {
           ctx.fillRect(0, 0, 32, 6);
@@ -1656,8 +1666,7 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
         }
       } else if (pieceType.startsWith('corner_inner_')) {
         const corner = pieceType.replace('corner_inner_', '');
-        ctx.fillStyle = '#3a2d3c';
-        ctx.fillRect(0, 0, 32, 32);
+        drawBricksInArea(0, 0, 32, 32);
         ctx.fillStyle = '#181119'; // Shadow inner corner
         if (corner === 'nw') ctx.fillRect(0, 0, 12, 12);
         else if (corner === 'ne') ctx.fillRect(20, 0, 12, 12);
@@ -1670,14 +1679,12 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
         else if (corner === 'se') { ctx.fillRect(0, 26, 20, 6); ctx.fillRect(26, 0, 6, 20); }
         else if (corner === 'sw') { ctx.fillRect(12, 26, 20, 6); ctx.fillRect(0, 0, 6, 20); }
       } else if (pieceType === 't_junction') {
-        ctx.fillStyle = '#3a2d3c';
-        ctx.fillRect(0, 0, 32, 32);
+        drawBricksInArea(0, 0, 32, 32);
         ctx.fillStyle = '#533e56';
         ctx.fillRect(0, 0, 32, 6);
         ctx.fillRect(13, 6, 6, 26);
       } else if (pieceType === 'endcap') {
-        ctx.fillStyle = '#3a2d3c';
-        ctx.fillRect(4, 4, 24, 24);
+        drawBricksInArea(4, 4, 24, 24);
         ctx.fillStyle = '#533e56';
         ctx.fillRect(2, 2, 28, 6);
       }
