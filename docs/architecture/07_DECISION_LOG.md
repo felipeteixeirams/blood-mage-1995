@@ -103,10 +103,10 @@ por ruído determinístico. Ver `DungeonGenerator.calculateBitmask()` /
 
 **Consequências:** a mesma técnica foi estendida pro piso da Safe House
 (variantes de madeira) sem bitmask de vizinhos (não há transição piso/
-parede dinâmica lá) — só variantes por ruído de posição. Uma frente futura
-de autotiling de PAREDES (peças de canto/junção) já está na fila
-(`docs/specs/backlog/16_FILA_AUTOMACAO_JULES.md`, item 1) e deve
-reaproveitar `calculateBitmask()`, não duplicar a lógica.
+parede dinâmica lá) — só variantes por ruído de posição. A frente de
+autotiling de PAREDES (peças de canto/junção) reaproveitando
+`calculateBitmask()` foi entregue em 2026-09-07 (mesclada em duas rodadas,
+PR #86 e #88, refinamento visual de destaque em `029067f`).
 
 ---
 
