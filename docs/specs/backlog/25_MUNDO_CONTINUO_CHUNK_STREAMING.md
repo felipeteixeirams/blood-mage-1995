@@ -3,11 +3,21 @@ agent_context: backend, game-engine, game designer
 target_module: src/game/systems/ChunkStreamer.ts, src/game/systems/DungeonGenerator.ts, src/game/systems/DungeonFlowController.ts, src/game/scenes/GameScene.ts
 priority: high
 criticality: critical
-status: in-progress
-progress: Fases A e B (encanamento interno) entregues — Fases B.2/C/D em discovery
-last_updated: 2026-09-06
+status: backlog
+progress: Fases A e B (encanamento interno) entregues — Fases B.2/C/D bloqueadas por decisão pendente de Felipe
+last_updated: 2026-09-07
 tags: [design, world-structure, continuous-world, dungeon-siege, chunk-streaming, discovery]
 ---
+
+> ⛔ **IMPEDIMENTO (movido de `in-progress/` em 2026-09-07):** Fases A e B
+> estão entregues (mantidas documentadas abaixo). Mas o próximo passo,
+> Fase B.2, tem uma **decisão explicitamente adiada pelo próprio Felipe**
+> (ver Seção 4, Fase B.2 abaixo: "decisão explícita de Felipe foi adiar
+> isso"), e as Fases C/D dependem dela. Não há próximo passo executável
+> sem essa decisão. Ver também `backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`
+> — mesma decisão pendente também resolve a sobreposição de escopo entre
+> as duas specs. Volta a `in-progress/` assim que Felipe decidir o rumo
+> da Fase B.2.
 
 # 🌍 Mundo Contínuo Estilo Dungeon Siege — Chunk Streaming
 

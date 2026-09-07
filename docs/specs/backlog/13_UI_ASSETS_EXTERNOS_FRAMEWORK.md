@@ -9,6 +9,13 @@ last_updated: 2026-09-02
 tags: [specs, proposta, ui, assets-externos, pixel-art, hybrid-system, performance, audio]
 ---
 
+> ⛔ **IMPEDIMENTO (sinalizado em 2026-09-07):** o núcleo desta proposta
+> (transição de sprites/UI para assets físicos externos) depende do mesmo
+> bloqueio de orçamento/direção de arte de `backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`
+> e `backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md` — pendente de decisão de
+> Felipe. As partes de áudio/telemetria já implementadas (`bgmSynthesizer.ts`,
+> `telemetry.ts`) não são afetadas e continuam válidas.
+
 # Proposta de Discovery — Evolução de UI e Assets Externos Góticos (Pixel Art)
 
 > Este documento detalha a viabilidade técnica, o design de arte, o plano de transição e o gerenciamento de recursos para evoluir o visual e a sonoplastia do **Bloodmage 1995** a partir de assets externos gratuitos ou licenciados. O objetivo é atingir a estética gótica sombria de meados dos anos 90 (estilo *Diablo I*, *Diablo II* e *Dungeon Siege 1*), no formato de **Pixel Art de Alta Resolução/Fidelidade** e sonorização imersiva, sem comprometer a robustez técnica do jogo.

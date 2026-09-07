@@ -8,8 +8,8 @@ phase: 5/5
 start_date: 2026-08-11
 eta: 2026-09-15
 responsible: Claude (Anthropic), Felipe Teixeira & Jules (Google AI)
-progress: "90% (Todos os requisitos Must Have implementados e testados; pendentes apenas itens Nice-to-Have: i18n e Cloud Save)"
-last_updated: 2026-08-31
+progress: "90% (Todos os requisitos Must Have implementados e testados; pendente apenas i18n — Cloud Save extraído para backlog/29_CLOUD_SAVE_FASE5.md por impedimento)"
+last_updated: 2026-09-07
 tags: [specs, phase-5, production-polish, pwa, twa, steam, gamepad, haptics, performance, graphics]
 ---
 
@@ -49,10 +49,16 @@ tags: [specs, phase-5, production-polish, pwa, twa, steam, gamepad, haptics, per
 
 ---
 
-### 🔍 Nice to Have (Pendente / Backlog Futuro)
+### 🔍 Nice to Have (Pendente)
 
-- [ ] **Suporte a múltiplos idiomas (i18n)**: Internacionalização da interface para Inglês, Português e Espanhol.
-- [ ] **Cloud Save automatizado (Firebase/Firestore)**: Salvamento em nuvem multiplataforma para sincronização de progresso.
+- [ ] **Suporte a múltiplos idiomas (i18n)**: Internacionalização da interface para Inglês, Português e Espanhol. **Destravado** — nenhuma dependência externa, pode ser iniciado a qualquer momento.
+
+> ⛔ **Cloud Save extraído desta spec em 2026-09-07** (impedimento): item
+> movido para [`backlog/29_CLOUD_SAVE_FASE5.md`](../backlog/29_CLOUD_SAVE_FASE5.md)
+> — `docs/README.md` e `docs/product/ACCOUNT_AND_DATA.md` são explícitos:
+> nenhuma integração de conta/nuvem sem confirmação prévia de Felipe. Essa
+> confirmação nunca aconteceu, então não há próximo passo executável aqui
+> agora. Esta spec (05) fica com escopo restrito a i18n até nova decisão.
 
 ---
 

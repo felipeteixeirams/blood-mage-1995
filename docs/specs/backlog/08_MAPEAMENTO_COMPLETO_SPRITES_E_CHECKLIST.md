@@ -3,10 +3,20 @@ agent_context: game-engine, frontend, game-designer, pixel-artist, developer
 target_module: src/assets, src/game, src/utils, src/game/scenes/BootScene.ts
 priority: high
 criticality: medium
-status: in-progress
-last_updated: 2026-08-31
+status: backlog
+last_updated: 2026-09-07
 tags: [specs, sprites, pixel-art, assets, mapping, checklist, hybrid-system, maturity, architecture]
 ---
+
+> ⛔ **IMPEDIMENTO (movido de `in-progress/` em 2026-09-07):** Fase 0
+> (adequação de arquitetura) está 100% concluída — isso não está bloqueado.
+> Porém **todo** o trabalho restante (Fase 1.3 em diante: Bestiário, Projéteis,
+> Tilesets) depende de **sprites físicos que ainda não existem**, cuja
+> produção está gated pelo mesmo bloqueio de `backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md`:
+> orçamento de arte / decisão de direção artística ainda pendente de Felipe.
+> Sem isso, não há próximo passo executável por um agente IA. Volta a
+> `in-progress/` assim que o primeiro lote de sprites físicos (Tier 1)
+> estiver disponível para integração.
 
 # 🎨 Mapeamento Completo de Sprites & Checklist de Substituição
 

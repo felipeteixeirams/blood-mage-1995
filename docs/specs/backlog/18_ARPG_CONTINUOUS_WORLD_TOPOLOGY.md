@@ -3,15 +3,26 @@ agent_context: game-designer, game-engine
 target_module: src/game/systems/DungeonGenerator.ts, src/game/systems/WorldManager.ts
 priority: high
 criticality: critical
-status: in-progress
+status: backlog
 implementation_status: not_started
-last_updated: 2026-09-06
+last_updated: 2026-09-07
 tags:
   - specs
   - world-building
   - level-design
   - continuous-world
 ---
+
+> ⛔ **IMPEDIMENTO (movido de `in-progress/` em 2026-09-07):** esta spec
+> propõe abandonar BSP/Cellular Automata por um `PathDrivenGenerator`
+> (Random Walk/Voronoi) — uma abordagem **arquiteturalmente diferente e
+> potencialmente conflitante** com `backlog/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`,
+> que já tem Fases A/B entregues resolvendo o mesmo problema ("mundo
+> parece um quadrado") via chunk streaming sobre o gerador atual. As duas
+> specs nunca foram reconciliadas entre si. Confirmar com Felipe qual
+> abordagem seguir (ou como elas se complementam) antes de retomar —
+> começar a implementar aqui sem essa decisão arrisca duplicar ou
+> contradizer o trabalho já em produção da Fase B/B.2 da spec 25.
 
 # Spec 18 — Topologia de Mundo Contínuo e Variedade Orgânica (Padrão Dungeon Siege)
 
