@@ -39,6 +39,7 @@ export class PostFXSystem {
   private easeDuration = 0;
   private enabled = true;
   private activeBiome: BiomeType = 'fosso_chagas';
+  private activeFloorDepth = 1;
 
   /** Config por bioma: gradação de cor + saturação. */
   private biomeColor: Record<BiomeType, { saturate: number; hue: number; brightness: number }> = {
@@ -89,6 +90,7 @@ export class PostFXSystem {
 
   public setBiome(biome: BiomeType, floorDepth: number = 1): void {
     this.activeBiome = biome;
+    this.activeFloorDepth = floorDepth;
     if (this.colorMatrix) {
       this.applyBiomeMatrix(floorDepth);
     }
@@ -98,7 +100,7 @@ export class PostFXSystem {
     }
   }
 
-  private applyBiomeMatrix(floorDepth: number = 1): void {
+  private applyBiomeMatrix(floorDepth: number = this.activeFloorDepth): void {
     const config = this.biomeColor[this.activeBiome] || this.biomeColor.fosso_chagas;
     if (!this.colorMatrix) return;
     try {

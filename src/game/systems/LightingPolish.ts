@@ -529,6 +529,18 @@ export class LightingPolish {
    * Limpar todos os glows ativos
    */
   public cleanup(): void {
+    this.bloomTargets.forEach((sprite) => {
+      try {
+        const filters = (sprite as any).filters;
+        if (filters && filters.internal && typeof filters.internal.clear === 'function') {
+          filters.internal.clear();
+        }
+      } catch {
+        // ignore
+      }
+    });
+    this.bloomTargets.clear();
+
     this.glowLights.forEach((light) => {
       try {
         this.scene.lights?.removeLight(light);
