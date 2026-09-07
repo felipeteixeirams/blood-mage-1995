@@ -7,7 +7,7 @@ completion_date: 2026-08-10
 responsible: Jules (Google AI)
 progress: 100% (Implementado e Validado)
 agent_context: backend, frontend
-target_module: artifacts/bloodmage/src/game
+target_module: src/game
 last_updated: 2026-08-10
 tags: [specs, phase-1, unconsciousness]
 ---
@@ -91,7 +91,7 @@ Se knockoutCount == 3:
 ### Arquivos a Modificar
 
 ```
-artifacts/bloodmage/src/game/objects/Player.ts
+src/game/objects/Player.ts
 ├── ✅ SEGURO: Adicionar
 │   ├─ isUnconscious: boolean
 │   ├─ knockoutCount: number
@@ -100,7 +100,7 @@ artifacts/bloodmage/src/game/objects/Player.ts
 │   └─ wakeUp(): void
 └─ ❌ NUNCA: Alterar motor de aceleração
 
-artifacts/bloodmage/src/game/objects/Enemy.ts
+src/game/objects/Enemy.ts
 ├── ✅ SEGURO: Adicionar
 │   ├─ Verificar player.isUnconscious no update
 │   ├─ clearTargetAndAggro() se player desmaiado
@@ -108,14 +108,14 @@ artifacts/bloodmage/src/game/objects/Enemy.ts
 │   └─ resumeNormalBehavior()
 └─ ❌ NUNCA: Alterar FSM transitions
 
-artifacts/bloodmage/src/game/scenes/GameScene.ts
+src/game/scenes/GameScene.ts
 ├── ✅ SEGURO: Adicionar
 │   ├─ Handler para desmaio
 │   ├─ Pausa de input durante desmaio
 │   └─ Levantamento de inimigos
 └─ ❌ NUNCA: Remover colliders
 
-artifacts/bloodmage/src/store/gameStore.ts
+src/store/gameStore.ts
 ├── ✅ SEGURO: Adicionar
 │   ├─ knockoutCount: number
 │   └─ Reset ao visitar vila segura (Fase 4)

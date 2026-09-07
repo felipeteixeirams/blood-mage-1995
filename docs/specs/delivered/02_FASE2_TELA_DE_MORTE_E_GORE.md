@@ -7,7 +7,7 @@ completion_date: 2026-08-10
 responsible: Jules (Google AI)
 progress: 100% (Implementado e Validado)
 agent_context: backend, frontend, game designer
-target_module: artifacts/bloodmage/src/game
+target_module: src/game
 last_updated: 2026-08-10
 tags: [specs, phase-2, death-screen, corpse-retrieval, gore]
 ---
@@ -50,10 +50,10 @@ tags: [specs, phase-2, death-screen, corpse-retrieval, gore]
 ## 🏗️ Arquitetura e Estrutura Técnica
 
 ### Arquivos Envolvidos
-- `src/game/entities/Corpse.ts`: Entidade física interativa do cadáver.
-- `src/game/scenes/GameOverScene.ts` / `GameOverModal.tsx`: Interface de morte e resumo da run.
-- `src/game/systems/CombatFeel.ts`: Centralização de hit-stop, screen shake, e haptics.
-- `src/game/systems/GoreSystem.ts`: Divisão procedural de sprites e partículas de sangue.
+- `src/game/scenes/GameScene.ts` e `src/utils/localStorage.ts`: Lógica de cadáver (`DroppedCorpse`) e ponto de resgate no mapa com ícone de lápide.
+- `src/components/GameOverModal.tsx`: Modal React de morte e resumo estatístico da run.
+- `src/game/systems/CombatFeel.ts`: Centralização de hit-stop, screen shake e haptics.
+- `src/game/systems/DismembermentSystem.ts` e `src/game/systems/BloodSplatterSystem.ts`: Divisão procedural de sprites, ragdoll gibs e manchas de sangue.
 
 ---
 
