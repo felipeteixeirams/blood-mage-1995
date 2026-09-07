@@ -7,47 +7,50 @@ last_updated: 2026-09-06
 tags: [automacao, jules, backlog-operacional, qualidade]
 ---
 
-# Fila de Automação — Jules (Sessão Recorrente)
+# Fila de Automação — Jules (Delegação Manual por Item)
 
 > ⚠️ **Este documento é diferente dos demais specs de `backlog/`.** Não é uma
 > proposta de feature aguardando início — é uma **fila operacional viva**,
-> consumida automaticamente por uma sessão recorrente do Jules (agendada em
-> jules.google.com). Ela é editada com frequência (itens entram, são
-> marcados como concluídos, e são removidos por um humano depois de
-> revisados) — não segue o ciclo normal `backlog/ → in-progress/ →
-> delivered/` dos outros specs.
+> consumida item a item quando o Felipe abre uma sessão em jules.google.com
+> e aponta pro item de maior prioridade desta fila. Ela é editada com
+> frequência (itens entram, são marcados como concluídos, e são removidos
+> por um humano depois de revisados) — não segue o ciclo normal
+> `backlog/ → in-progress/ → delivered/` dos outros specs.
+>
+> **Correção (2026-09-07):** este documento descrevia antes uma "sessão
+> recorrente do Jules agendada em jules.google.com" que consumiria a fila
+> sozinha. Confirmado com o Felipe que isso NÃO existe — as 3 PRs reais até
+> agora (#80, #81, #82) vieram todas de sessões ao vivo que ele mesmo
+> iniciou manualmente em jules.google.com (cada PR traz `"started by
+> @felipeteixeirams"` no corpo), nenhuma delas consumindo este arquivo.
+> Não há automação recorrente rodando hoje.
 
-## Como esta fila funciona
+## Como esta fila funciona de fato
 
-1. Uma atividade recorrente do Jules (configurada fora deste repo, no
-   agendamento do jules.google.com) lê este arquivo a cada disparo.
-2. Se houver algum item com `Status: 🟡 PENDENTE`, o Jules pega **o de maior
-   prioridade** (o primeiro na lista, de cima pra baixo), executa **só
-   esse**, abre PR contra `claude/frentes-atuacao-projeto-qypbg3`, e marca
-   o próprio item como `Status: ✅ CONCLUÍDO (PR: <link>)` — na mesma sessão,
-   como parte do PR.
-3. Se **não** houver nenhum item `🟡 PENDENTE`, o Jules cai no protocolo de
-   manutenção em cascata (test coverage → tratamento de erro → performance/
-   pooling — ver o texto completo da instrução recorrente, mantido fora
-   deste arquivo, no agendamento do Jules).
+1. Claude (ou Felipe) escreve um item novo aqui, no formato do template
+   abaixo, bem específico o suficiente pra Jules não precisar de nenhuma
+   pergunta de esclarecimento pra começar.
+2. **Felipe abre manualmente uma sessão em jules.google.com** e cola/aponta
+   pro item `🟡 PENDENTE` de maior prioridade (o primeiro na lista, de cima
+   pra baixo). Não há disparo automático — cada item exige essa ação manual.
+3. Jules executa, abre PR contra `claude/frentes-atuacao-projeto-qypbg3`, e
+   o item deveria ser atualizado pra `Status: ✅ CONCLUÍDO (PR: <link>)`
+   (por Felipe ou Claude, ao notar o PR nascer — não é automático).
 4. **Este documento nunca é revisado pelo Jules como aprovação final.** Todo
-   PR gerado por ele (implementação ou manutenção) ainda passa por revisão
-   humana/Claude — pull, verificação ao vivo do jogo (não só os testes
-   unitários passarem), ajuste se precisar, e só então merge. Ver
-   histórico de PRs #80/#81 nesta mesma branch: os testes unitários
-   passaram 100% e ainda assim havia uma regressão visual real que só a
-   verificação ao vivo (Playwright rodando o jogo de verdade) capturou.
+   PR gerado por ele ainda passa por revisão humana/Claude — pull,
+   verificação ao vivo do jogo (não só os testes unitários passarem),
+   ajuste se precisar, e só então merge. Ver histórico de PRs #80/#81
+   nesta mesma branch: os testes unitários passaram 100% e ainda assim
+   havia uma regressão visual real que só a verificação ao vivo (Playwright
+   rodando o jogo de verdade) capturou.
 5. Depois que um item `✅ CONCLUÍDO` for revisado e confirmado (PR mesclado
    e validado), um humano remove a entrada deste arquivo — a fila deve
    ficar enxuta, refletindo só o que ainda está pendente ou aguardando
    confirmação recente.
-6. Novos itens são adicionados por nós (Claude ou Felipe), sempre no mesmo
-   formato abaixo, para que o Jules não precise de nenhuma pergunta de
-   esclarecimento pra começar.
 
 ## Legenda de Status
 
-- 🟡 PENDENTE — aguardando a próxima sessão recorrente pegar
+- 🟡 PENDENTE — pronto pra ser colado numa sessão nova em jules.google.com
 - 🔵 EM ANDAMENTO — uma sessão já pegou, PR ainda não chegou (deveria ser
   transitório; se ficar assim por muito tempo, verificar se a sessão travou)
 - ✅ CONCLUÍDO (PR: `<link>`) — PR aberto, aguardando revisão humana/Claude
