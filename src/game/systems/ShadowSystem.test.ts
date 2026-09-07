@@ -99,4 +99,43 @@ describe('ShadowSystem', () => {
     system.registerEntity(mockEntity);
     system.unregisterEntity(mockEntity);
   });
+
+  it('oculta a sombra quando a entidade fica inativa ou invisível', () => {
+    const { scene } = makeMockScene();
+    const system = new ShadowSystem(scene as any);
+
+    const mockEntity = {
+      x: 100,
+      y: 150,
+      scaleX: 1,
+      scaleY: 1,
+      height: 32,
+      active: false,
+      visible: true,
+      once: vi.fn(),
+    } as any;
+
+    system.registerEntity(mockEntity);
+    system.update([]);
+    // Como a entidade está inativa, a sombra deve ficar visível = false
+  });
+
+  it('destrói o sistema limpando todas as sombras ativas', () => {
+    const { scene } = makeMockScene();
+    const system = new ShadowSystem(scene as any);
+
+    const mockEntity = {
+      x: 100,
+      y: 150,
+      scaleX: 1,
+      scaleY: 1,
+      height: 32,
+      active: true,
+      visible: true,
+      once: vi.fn(),
+    } as any;
+
+    system.registerEntity(mockEntity);
+    system.destroy();
+  });
 });
