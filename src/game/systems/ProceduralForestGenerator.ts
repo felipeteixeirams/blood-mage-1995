@@ -4,6 +4,7 @@ import type { RoomData } from './DungeonGenerator';
 import { logger } from '../../utils/logger';
 import { createAtmosphericTree } from '../shaders/AtmosphericTreeShader';
 import { TerrainDetailFactory } from './TerrainDetailFactory';
+import { HeightmapGenerator } from './HeightmapGenerator';
 
 /**
  * ProceduralForestGenerator — Gera uma floresta procedural isométrica
@@ -20,6 +21,8 @@ export class ProceduralForestGenerator {
   private CAMERA_OFFSET_X = 1600;
   private CAMERA_OFFSET_Y = 400;
 
+  public heightGenerator: HeightmapGenerator;
+
   // Depth fixo para o piso (grama + manchas de luz) — deliberadamente FORA
   // do `depthGroup`/Y-sort: são planos, sem altura real, então nunca devem
   // competir de profundidade com objetos verticais (personagem, árvores,
@@ -32,6 +35,7 @@ export class ProceduralForestGenerator {
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
+    this.heightGenerator = new HeightmapGenerator(1995);
     this.initPerlinNoise();
     logger.info('ProceduralForestGenerator', 'Constructor called', { sceneKey: scene.sys.settings.key });
   }
@@ -88,12 +92,15 @@ export class ProceduralForestGenerator {
 
     logger.info('ProceduralForestGenerator.generate', 'Starting forest generation', { mapW, mapH, gridW, gridH });
     try {
+      // Gerar heightmap procedural
+      this.heightGenerator.generateHeightmap(gridW, gridH);
+
       // Gerar texturas procedurais
       logger.info('ProceduralForestGenerator.generate', 'Generating procedural textures');
       this.generateProceduralTextures();
       logger.info('ProceduralForestGenerator.generate', 'Textures generated successfully');
 
-      // Renderizar piso de grama (com luz solar filtrada pela copa)
+      // Renderizar piso de grama (com luz solar filtrada pela copa e relevo)
       logger.info('ProceduralForestGenerator.generate', 'Rendering forest floor');
       this.renderForestFloor(gridW, gridH);
       logger.info('ProceduralForestGenerator.generate', 'Forest floor rendered successfully');
@@ -115,8 +122,9 @@ export class ProceduralForestGenerator {
       // fora da área onde o piso/árvores foram desenhados).
       const centerGridX = gridW / 2;
       const centerGridY = gridH / 2;
+      const centerZ = this.heightGenerator.getHeightAt(Math.floor(centerGridX), Math.floor(centerGridY));
       const centerIsoX = this.CAMERA_OFFSET_X + (centerGridX - centerGridY) * (this.TILE_WIDTH / 2);
-      const centerIsoY = this.CAMERA_OFFSET_Y + (centerGridX + centerGridY) * (this.TILE_HEIGHT / 2);
+      const centerIsoY = this.CAMERA_OFFSET_Y + (centerGridX + centerGridY) * (this.TILE_HEIGHT / 2) - (centerZ * 2);
 
       const rooms: RoomData[] = [
         {
@@ -173,6 +181,21 @@ export class ProceduralForestGenerator {
     logger.info('ProceduralForestGenerator.generateProceduralTextures', 'Creating forest_grass texture (profissional)');
     let grassCanvas = this.scene.textures.createCanvas('forest_grass', 64, 32)!;
     let grassCtx = grassCanvas.context;
+
+    // IMPORTANTE: `forest_grass` continua um retângulo 64x32 OPACO, sem
+    // recorte em losango. O piso da floresta usa o mesmo truque clássico
+    // de tiling isométrico por sobreposição: tiles são desenhados na
+    // ordem de varredura (x, y crescentes) com passo de meia-largura/
+    // meia-altura, então cada retângulo novo cobre exatamente as bordas
+    // do tile anterior, fechando o mosaico sem gaps — isso só funciona
+    // porque a textura é 100% opaca. Um recorte em losango (como o de
+    // `tile_ground` nas masmorras) deixa os cantos transparentes e quebra
+    // essa sobreposição, abrindo buracos entre os tiles (confirmado
+    // rodando o jogo). A elevação (`zElevation`) NÃO desloca o Y do
+    // sprite do piso (ver `renderForestFloor`, variável `isoY` vs.
+    // `renderY`) — só afeta falésias e altura de árvores/props — então o
+    // grid de piso permanece plano e a sobreposição por retângulo cheio
+    // segue válida.
 
     // Cores profissionais de grama
     const grassLight = '#a4d65e';    // Luz (frente)
@@ -467,14 +490,32 @@ export class ProceduralForestGenerator {
     for (let y = 0; y < gridH; y++) {
       for (let x = 0; x < gridW; x++) {
         try {
+          const zElevation = this.heightGenerator.getHeightAt(x, y);
           const isoX = this.CAMERA_OFFSET_X + (x - y) * (this.TILE_WIDTH / 2);
           const isoY = this.CAMERA_OFFSET_Y + (x + y) * (this.TILE_HEIGHT / 2);
+          // `renderY` desloca a base das falésias (abaixo) proporcionalmente à
+          // elevação — mas o SPRITE do piso em si fica em `isoY` (grid plano).
+          // Verificado rodando o jogo: mesmo com o recorte em losango, cada
+          // tile deslocando seu Y individualmente por `zElevation` quebra a
+          // malha contínua sempre que dois vizinhos têm elevação diferente
+          // (que é quase sempre, num heightmap orgânico) — abria uma emenda
+          // escura visível entre tiles. O piso das masmorras nunca teve esse
+          // problema porque a maioria das salas é plana (zElevation=0
+          // uniforme); a floresta usa elevação em toda a área. Relevo real
+          // continua expresso via: tint por altura (abaixo), paredes de
+          // falésia nos desníveis de verdade, e árvores/props que seguem a
+          // altura do próprio sprite (não fazem parte de uma malha contígua).
+          const renderY = isoY - zElevation * 2;
 
           let grass = gameScene.add.image(isoX, isoY, 'forest_grass');
 
-          // Aplica variação de tonalidade multi-escala baseada em coordenadas de grid de grande escala
+          // Aplica variação de tonalidade ligada à elevação Z real e ruído macro
           const macroNoise = this.noise(x * 0.12, y * 0.12);
-          if (macroNoise < 0.35) {
+          if (zElevation >= 3) {
+            grass.setTint(0xcceea4); // Célula mais alta = leve destaque de luz
+          } else if (zElevation === 0) {
+            grass.setTint(0x557744); // Célula mais baixa = sombra sutil
+          } else if (macroNoise < 0.35) {
             grass.setTint(0x88aa77); // Tom mais úmido e sombrio
           } else if (macroNoise > 0.70) {
             grass.setTint(0xbbdd88); // Tom mais amarelado e iluminado
@@ -482,6 +523,31 @@ export class ProceduralForestGenerator {
 
           gameScene.lightingSystem?.applyLightPipeline(grass);
           grass.setDepth(ProceduralForestGenerator.GROUND_DEPTH); // fixo, fora do depthGroup
+
+          // Renderizar paredes de falésia para desníveis reais no terreno
+          if (zElevation > 0) {
+            const cliffEdges = this.heightGenerator.getCliffEdges(x, y);
+            if (cliffEdges.hasSouthCliff || cliffEdges.hasSouthEastCliff || cliffEdges.hasSouthWestCliff) {
+              const maxDelta = Math.max(
+                cliffEdges.deltaZSouth,
+                cliffEdges.deltaZSouthEast,
+                cliffEdges.deltaZSouthWest
+              );
+              const wallTextureKey = gameScene.textures?.exists('spr_wall') ? 'spr_wall' : 'tile_wall_brick';
+              const wallTint = 0x2f3e46; // gloomy_woods wall tint
+
+              for (let step = 1; step <= maxDelta; step++) {
+                const cliffY = renderY + step * 8;
+                const cliffSprite = gameScene.add.image(isoX, cliffY, wallTextureKey);
+                cliffSprite.setTint(wallTint);
+                cliffSprite.setDepth(ProceduralForestGenerator.GROUND_DEPTH + 2);
+                if (gameScene.lightingSystem) {
+                  gameScene.lightingSystem.applyLightPipeline(cliffSprite);
+                }
+              }
+            }
+          }
+
           tilesAdded++;
         } catch (e) {
           logger.error('ProceduralForestGenerator.renderForestFloor', 'Failed to add grass tile', { x, y, error: String(e) });
@@ -519,24 +585,24 @@ export class ProceduralForestGenerator {
 
     logger.info('ProceduralForestGenerator.renderForestFloor', 'Dappled light patches rendered', { patchesAdded });
 
-    // Tufos de grama selvagem (detalhe vertical real, Y-sorted de verdade)
+    // Vegetação rica e variada (tufos, arbustos, cogumelos, rochas e troncos Y-sorted)
     const terrainDetailFactory = new TerrainDetailFactory(this.scene);
-    terrainDetailFactory.bakeTuftTextures();
 
     const minIsoX = this.CAMERA_OFFSET_X - gridH * (this.TILE_WIDTH / 2);
     const maxIsoX = this.CAMERA_OFFSET_X + gridW * (this.TILE_WIDTH / 2);
     const maxIsoY = this.CAMERA_OFFSET_Y + (gridW + gridH) * (this.TILE_HEIGHT / 2);
 
-    const tufts = terrainDetailFactory.scatterTufts({
-      count: Math.min(220, Math.max(20, Math.floor((gridW * gridH) / 6))),
+    const tufts = terrainDetailFactory.scatterRichFlora({
+      count: Math.min(240, Math.max(30, Math.floor((gridW * gridH) / 5))),
       originX: minIsoX,
       originY: this.CAMERA_OFFSET_Y,
       areaWidth: maxIsoX - minIsoX,
       areaHeight: maxIsoY - this.CAMERA_OFFSET_Y,
       seed: 4242,
+      heightGenerator: this.heightGenerator,
     });
 
-    logger.info('ProceduralForestGenerator.renderForestFloor', 'Tufos de grama (Y-sorted) espalhados', { tufts: tufts.length });
+    logger.info('ProceduralForestGenerator.renderForestFloor', 'Vegetação rica (Y-sorted) espalhada', { tufts: tufts.length });
   }
 
   /**
@@ -849,14 +915,16 @@ export class ProceduralForestGenerator {
     trees.forEach(tree => {
       try {
         treeIndex++;
+        const zElevation = this.heightGenerator.getHeightAt(tree.x, tree.y);
         const isoX = this.CAMERA_OFFSET_X + (tree.x - tree.y) * (this.TILE_WIDTH / 2);
         const isoY = this.CAMERA_OFFSET_Y + (tree.x + tree.y) * (this.TILE_HEIGHT / 2);
+        const renderY = isoY - zElevation * 2;
 
         const variant = tree.variant % 3;
         const texKey = `procedural_tree_${variant}`;
         const finalTexKey = gameScene.textures.exists(texKey) ? texKey : 'forest_trunk';
 
-        const treeObject = createAtmosphericTree(gameScene, isoX, isoY, finalTexKey, {
+        const treeObject = createAtmosphericTree(gameScene, isoX, renderY, finalTexKey, {
           windSpeed: 1.6 + (variant * 0.3),
           windStrength: 4.5 + (variant * 0.8),
           lightDirection: [0.6, -0.8],
@@ -872,6 +940,26 @@ export class ProceduralForestGenerator {
         (treeObject as unknown as { setScale?: (s: number) => void }).setScale?.(scaleVariety);
 
         gameScene.depthGroup.add(treeObject);
+
+        // Corpo físico estático invisível na base do tronco para colisão no wallsGroup
+        if (gameScene.wallsGroup) {
+          const wallTextureKey = gameScene.textures?.exists('tile_wall_brick') ? 'tile_wall_brick' : undefined;
+          const trunkWall = gameScene.wallsGroup.create(isoX, renderY + 4, wallTextureKey);
+          if (trunkWall) {
+            if (typeof trunkWall.setVisible === 'function') {
+              trunkWall.setVisible(false);
+            }
+            if (typeof trunkWall.setSize === 'function') {
+              trunkWall.setSize(16, 10);
+            }
+            if (typeof trunkWall.setOffset === 'function') {
+              trunkWall.setOffset(8, 11);
+            }
+            if (typeof trunkWall.refreshBody === 'function') {
+              trunkWall.refreshBody();
+            }
+          }
+        }
 
         logger.info('ProceduralForestGenerator.generateAndRenderTrees', `Atmospheric Fractal Tree ${treeIndex} rendered`, { x: tree.x, y: tree.y, variant });
       } catch (e) {

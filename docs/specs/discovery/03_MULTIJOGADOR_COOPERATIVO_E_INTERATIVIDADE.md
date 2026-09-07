@@ -106,7 +106,7 @@ A interface do multijogador cooperativo respeitará rigorosamente o design syste
 
 - [[docs/specs/README.md]] — Status de desenvolvimento
 - [[docs/architecture/03_PHASER_PATTERNS.md]] — Integração com o loop do Phaser
-- [[docs/design/02_UI_PATTERNS.md]] — Padrões visuais de UI/UX
+- [[docs/archive/design/02_UI_PATTERNS.md]] — Padrões visuais de UI/UX
 
 ## Registro de mudanças
 

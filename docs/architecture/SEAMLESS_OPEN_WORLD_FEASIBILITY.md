@@ -4,12 +4,12 @@ target_module: architecture
 priority: high
 status: active
 last_updated: 2026-08-11
-tags: [architecture, open-world, seamless, phaser3, react, performance, memory-culling, chunks, biomes, fixed-camera, transition-corridors]
+tags: [architecture, open-world, seamless, phaser4, react, performance, memory-culling, chunks, biomes, fixed-camera, transition-corridors]
 ---
 
 # 🏛️ Relatório de Viabilidade Técnica: Mundo Contínuo Sem Costuras (Seamless Open World)
 
-**Autor:** Arquiteto de Software Sênior (Sistemas de Jogos Web Phaser 3 + React)
+**Autor:** Arquiteto de Software Sênior (Sistemas de Jogos Web Phaser 4.2.1 + React)
 **Projeto:** Bloodmage 1995
 **Data:** 11 de Agosto de 2026
 **Status:** Proposta de Arquitetura Aprovada / Análise de Viabilidade Técnica (Atualizado)
@@ -55,7 +55,7 @@ Na estimativa técnica realizada, cobrir a jornada no estilo *Dungeon Siege 1* c
 
 * **Por que um JSON único do Tiled FALHA no navegador mobile:**
   1. **Parse de JSON Bloqueante:** Um arquivo JSON contendo ~1,3 milhão de IDs de tiles (matriz `width: 36000, height: 36000`) teria um tamanho em disco superior a **150 MB - 300 MB**. O parse síncrono de string no JavaScript bloqueia a thread principal (*Main Thread*) por vários segundos ou causa estouro da memória RAM do celular.
-  2. **Consumo Abusivo de RAM/VRAM:** O Phaser 3 precisaria instanciar estruturas internas para milhões de células de mapa. Mesmo com culling, a estrutura de dados na Heap excederia **500 MB**, provocando o desligamento da aba no navegador móvel pelo sistema operacional (iOS Safari / Android Chrome WebKit OOM Killer).
+  2. **Consumo Abusivo de RAM/VRAM:** O Phaser 4 precisaria instanciar estruturas internas para milhões de células de mapa. Mesmo com culling, a estrutura de dados na Heap excederia **500 MB**, provocando o desligamento da aba no navegador móvel pelo sistema operacional (iOS Safari / Android Chrome WebKit OOM Killer).
 
 ### 2.2 Arquitetura de Carregamento Dinâmico por Chunks (Chunk Manager)
 
@@ -76,7 +76,7 @@ A única solução viável e de alta performance é o **Streaming Dinâmico por 
 ### 2.3 Culling Ativo e Otimizações de GPU / Renderização
 
 Para manter a renderização controlada a 60 FPS:
-* **Frustum Culling de Tilemap:** O Phaser 3 possui culling nativo habilitado por padrão em camadas de Tilemap (`layer.skipCull = false`). Devemos configurar `layer.setCullPadding(2, 2)` para evitar pop-in nas bordas da tela.
+* **Frustum Culling de Tilemap:** O Phaser 4 possui culling nativo habilitado por padrão em camadas de Tilemap (`layer.skipCull = false`). Devemos configurar `layer.setCullPadding(2, 2)` para evitar pop-in nas bordas da tela.
 * **Pruning Espacial AABB para Entidades e Luzes:** Conforme diretrizes do projeto (`AGENTS.md`), verificações de linha de visão (LoS), detecção de som e luzes dinâmicas aplicam primeiro uma poda espacial AABB por distância quadrática (`dx * dx + dy * dy < thresholdSq`) antes de submeter objetos à GPU ou a testes de intersecção geométrica complexos.
 * **Pool de Corpos Persistentes e Sangue:** Marcas de sangue (`blood_pool_stain`) e corpos ficam no chão limitados a um número máximo configurável (ex: no máximo 50 decalques ativos na janela visível). Decalques distantes no anel de desalocação são reciclados via *Object Pooling*.
 
@@ -272,6 +272,18 @@ Para garantir que a transição de biomas e a geração contínua não compromet
 Com base na análise efetuada, **a transição para um Mundo Contínuo Sem Costuras é TOTALMENTE VIÁVEL e RECOMENDADA**, desde que siga a arquitetura de **Chunks Dinâmicos**, **Corredores Gargalo de Transição** e aproveite a estrutura já existente no projeto (`gameStore.ts`, `WorldManager.ts`, `soundEngine.ts`, `textureGenerator.ts`).
 
 ### Roadmap Recomendado por Fases:
+
+> **Status de Implementação (nota adicionada em 2026-09-06):** a Fase 4.1
+> abaixo já tem uma implementação real, só que com outro nome:
+> `src/game/systems/ChunkStreamer.ts` (streaming genérico de janela
+> deslizante, agnóstico de Phaser — Fase A) +
+> `src/game/systems/WorldManager.ts`, e `DungeonFlowController.ts` já usa
+> `ChunkStreamer` para decidir o próximo bioma da campanha (Fase B, ver
+> `docs/specs/in-progress/25_MUNDO_CONTINUO_CHUNK_STREAMING.md` pro estado
+> exato). **Não crie um `ChunkManager.ts` do zero** — verifique primeiro
+> se o que falta (bounds dinâmicos reais, integração com `DungeonGenerator`
+> — Fase B.2 do spec 25) já cobre a necessidade antes de propor uma classe
+> nova.
 
 1. **Fase 4.1 — Implementação do ChunkManager & Grid Streaming (Core Engine):**
    * Criar a classe `src/game/systems/ChunkManager.ts` responsável por gerar e descarregar dinamicamente matrizes de 32x32 tiles em torno do jogador.

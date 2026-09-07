@@ -148,11 +148,11 @@ Aplicar via `camera.filters.internal` / `camera.filters.external` (v4) — sem s
 
 ## Referências
 
-- [[../andamento/SPECS_EVOLUCAO.md]] — spec-alvo (contextos 4 e 7, matriz Fase 3)
+- [[../in-progress/_ARCHIVED_SPECS_EVOLUCAO_2026_09_REFACTOR.md]] — spec-alvo (contextos 4 e 7, matriz Fase 3)
 - [[../../architecture/01_TECH_STACK.md]] — stack atual (Phaser 4.2.1, Vite 7)
 - [[../../critical/02_PERFORMANCE_OPTIMIZATION.md]] — gates de performance
 - [[../../critical/04_PERFORMANCE_METRICS.md]] — métricas a validar
-- [[../../features/00_DUNGEON_SIEGE_EVOLUTION.md]] — roadmap geral de features
+- [[../../archive/features/00_DUNGEON_SIEGE_EVOLUTION.md]] — roadmap geral de features
 
 ## Registro de mudanças
 

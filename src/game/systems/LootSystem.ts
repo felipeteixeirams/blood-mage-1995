@@ -26,9 +26,12 @@ const LEGENDARY_NAMES: Record<ItemType, string[]> = {
 };
 
 export class LootSystem {
-  public static rollLootChance(): boolean {
-    // 25% chance to drop loot on monster kill
-    return Math.random() < 0.25;
+  public static rollLootChance(dropMult: number = 1.0): boolean {
+    // 25% chance to drop loot on monster kill, escalado por dropMult (ex:
+    // selo de prestígio "macabre_fortune" — bug corrigido em 2026-09: o
+    // bônus era calculado em getPrestigeModifiers().dropMult mas nunca era
+    // lido em lugar nenhum, ver docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md)
+    return Math.random() < 0.25 * dropMult;
   }
 
   public static generateLoot(floorDepth: number, isChest: boolean = false): LootItem {

@@ -8,6 +8,9 @@ vi.mock('../utils/soundEngine', () => ({
     toggleMute: vi.fn(() => true),
     playEquipLoot: vi.fn(),
     playOrbPickup: vi.fn(),
+    playBloodNova: vi.fn(),
+    playRunicEmpowerment: vi.fn(),
+    playMenuSelect: vi.fn(),
   },
 }));
 
@@ -740,6 +743,118 @@ describe('gameStore', () => {
       expect(persisted.quests).toEqual({});
       expect(persisted.unlockedSpellIds).toEqual([]);
       expect(persisted.currentZone).toBe('safe_house');
+    });
+  });
+
+  // Cobertura adicionada em 2026-09 (auditoria encontrou zero testes pra
+  // este sistema — ver docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md).
+  describe('prestige system (Blood Seal)', () => {
+    it('canPrestige() é falso por padrão (nível 1, andar 1, 0 abates)', () => {
+      expect(useGameStore.getState().canPrestige()).toBe(false);
+    });
+
+    it('canPrestige() é verdadeiro ao atingir qualquer um dos 3 critérios (nível, andar ou abates)', () => {
+      useGameStore.setState({ playerStats: { ...useGameStore.getState().playerStats, level: 10 } });
+      expect(useGameStore.getState().canPrestige()).toBe(true);
+
+      useGameStore.setState({ playerStats: { ...useGameStore.getState().playerStats, level: 1, floorDepth: 3 } });
+      expect(useGameStore.getState().canPrestige()).toBe(true);
+
+      useGameStore.setState({ playerStats: { ...useGameStore.getState().playerStats, floorDepth: 1, kills: 30 } });
+      expect(useGameStore.getState().canPrestige()).toBe(true);
+    });
+
+    it('performPrestige() falha se canPrestige() for falso, sem mudar nada', () => {
+      const before = useGameStore.getState().prestige;
+      expect(useGameStore.getState().performPrestige()).toBe(false);
+      expect(useGameStore.getState().prestige).toEqual(before);
+      expect(useGameStore.getState().prestigeResetRequested).toBe(false);
+    });
+
+    it('performPrestige() eleva o nível de prestígio, reseta stats da run e dispara prestigeResetRequested', () => {
+      useGameStore.setState({
+        playerStats: { ...useGameStore.getState().playerStats, level: 15, floorDepth: 5, wave: 8, currentXp: 999, maxHp: 250, maxMana: 300 },
+      });
+
+      const performed = useGameStore.getState().performPrestige();
+      expect(performed).toBe(true);
+
+      const state = useGameStore.getState();
+      expect(state.prestige.level).toBe(1);
+      expect(state.prestige.totalSacrifices).toBe(1);
+      expect(state.prestige.unlockedDifficulties).toContain('nightmare');
+      // Reset da RUN (nível/andar/wave/XP voltam ao início; HP/mana cheios)
+      expect(state.playerStats.level).toBe(1);
+      expect(state.playerStats.floorDepth).toBe(1);
+      expect(state.playerStats.wave).toBe(1);
+      expect(state.playerStats.currentXp).toBe(0);
+      expect(state.playerStats.hp).toBe(250);
+      expect(state.playerStats.mana).toBe(300);
+      // Trigger que a GameScene consome pra sincronizar a instância viva do
+      // Player (bug corrigido em 2026-09: sem isso, o reset acima nunca
+      // chegava no jogo rodando de verdade — só existia na store).
+      expect(state.prestigeResetRequested).toBe(true);
+    });
+
+    it('performPrestige() com sealToAllocate já aloca 1 ponto no selo escolhido', () => {
+      useGameStore.setState({ playerStats: { ...useGameStore.getState().playerStats, level: 10 } });
+      useGameStore.getState().performPrestige('carnage');
+
+      const { prestige } = useGameStore.getState();
+      expect(prestige.seals.carnage).toBe(1);
+      expect(prestige.unspentSealPoints).toBe(0); // 1 ganho, 1 já alocado
+    });
+
+    it('performPrestige() sem sealToAllocate deixa o ponto pendente em unspentSealPoints', () => {
+      useGameStore.setState({ playerStats: { ...useGameStore.getState().playerStats, level: 10 } });
+      useGameStore.getState().performPrestige();
+
+      const { prestige } = useGameStore.getState();
+      expect(prestige.unspentSealPoints).toBe(1);
+      expect(Object.values(prestige.seals).every((v) => v === 0)).toBe(true);
+    });
+
+    it('allocateBloodSeal() gasta 1 ponto pendente e falha se não houver pontos', () => {
+      useGameStore.setState({ playerStats: { ...useGameStore.getState().playerStats, level: 10 } });
+      useGameStore.getState().performPrestige(); // gera 1 ponto pendente
+
+      expect(useGameStore.getState().allocateBloodSeal('dark_vitality')).toBe(true);
+      expect(useGameStore.getState().prestige.seals.dark_vitality).toBe(1);
+      expect(useGameStore.getState().prestige.unspentSealPoints).toBe(0);
+
+      // Sem pontos sobrando, uma segunda alocação deve falhar
+      expect(useGameStore.getState().allocateBloodSeal('dark_vitality')).toBe(false);
+      expect(useGameStore.getState().prestige.seals.dark_vitality).toBe(1);
+    });
+
+    it('getPrestigeModifiers() calcula os 5 bônus corretamente a partir dos selos alocados', () => {
+      expect(useGameStore.getState().getPrestigeModifiers()).toEqual({
+        damageMult: 1.0, bonusMaxHp: 0, cdrBonus: 0, vampBonus: 0, dropMult: 1.0,
+      });
+
+      useGameStore.setState({
+        prestige: {
+          ...useGameStore.getState().prestige,
+          seals: { carnage: 3, dark_vitality: 2, runic_flow: 1, deep_vampirism: 4, macabre_fortune: 5 },
+        },
+      });
+
+      expect(useGameStore.getState().getPrestigeModifiers()).toEqual({
+        damageMult: 1.0 + 3 * 0.03,
+        bonusMaxHp: 2 * 8,
+        cdrBonus: 1 * 0.025,
+        vampBonus: 4 * 0.005,
+        dropMult: 1.0 + 5 * 0.06,
+      });
+    });
+
+    it('prestige persiste no localStorage sob a chave bloodmage_1995_prestige', () => {
+      useGameStore.setState({ playerStats: { ...useGameStore.getState().playerStats, level: 10 } });
+      useGameStore.getState().performPrestige('carnage');
+
+      const persisted = JSON.parse(localStorage.getItem('bloodmage_1995_prestige')!);
+      expect(persisted.level).toBe(1);
+      expect(persisted.seals.carnage).toBe(1);
     });
   });
 });

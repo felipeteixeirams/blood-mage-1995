@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { generateNormalMap } from './textureGenerator';
+import { generateNormalMap, generateGameTextures } from './textureGenerator';
 
 // jsdom não implementa o contexto 2d real; mockamos no prototype do canvas
 // com um buffer de pixels RGBA por canvas.
@@ -10,7 +10,29 @@ type PixelBuffer = { data: Uint8ClampedArray; width: number; height: number };
 function makeContext(buffer: PixelBuffer) {
   const ctx = {
     fillStyle: '#000000',
+    strokeStyle: '#000000',
+    lineWidth: 1,
+    imageSmoothingEnabled: false,
     fillRect: vi.fn(),
+    strokeRect: vi.fn(),
+    beginPath: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    quadraticCurveTo: vi.fn(),
+    bezierCurveTo: vi.fn(),
+    closePath: vi.fn(),
+    fill: vi.fn(),
+    stroke: vi.fn(),
+    ellipse: vi.fn(),
+    arc: vi.fn(),
+    save: vi.fn(),
+    restore: vi.fn(),
+    rotate: vi.fn(),
+    translate: vi.fn(),
+    strokeText: vi.fn(),
+    fillText: vi.fn(),
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
     getImageData: (_x: number, _y: number, w: number, h: number) => {
       return {
         width: w,
@@ -155,5 +177,50 @@ describe('generateNormalMap', () => {
 
     // Direções opostas: se normal tem R<128, invertida deve ter R>128 (e vice-versa).
     expect(px[0] !== pxInv[0]).toBe(true);
+  });
+});
+
+describe('generateGameTextures', () => {
+  beforeEach(() => {
+    buffers.clear();
+    mockCanvasPrototype();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('geras as 5 variantes de tile_ground e tile_wall_brick com normal maps anexados', () => {
+    const addedImages: Array<{ key: string; canvas: any; normalMap: any }> = [];
+    const existingKeys = new Set<string>();
+
+    const mockScene: any = {
+      textures: {
+        exists: (key: string) => existingKeys.has(key),
+        remove: (key: string) => existingKeys.delete(key),
+        addCanvas: (key: string) => existingKeys.add(key),
+        addImage: (key: string, canvas: any, normalMap: any) => {
+          existingKeys.add(key);
+          addedImages.push({ key, canvas, normalMap });
+        },
+        addSpriteSheet: vi.fn(),
+      },
+    };
+
+    generateGameTextures(mockScene);
+
+    for (let v = 0; v < 5; v++) {
+      expect(existingKeys.has(`tile_ground_var_${v}`)).toBe(true);
+      expect(existingKeys.has(`tile_wall_brick_var_${v}`)).toBe(true);
+      expect(existingKeys.has(`tile_wood_floor_var_${v}`)).toBe(true);
+    }
+    expect(existingKeys.has('tile_wood_floor_rug')).toBe(true);
+
+    expect(existingKeys.has('tile_ground_edge_n')).toBe(true);
+    expect(existingKeys.has('tile_ground_corner_ne')).toBe(true);
+
+    const groundVar0 = addedImages.find((img) => img.key === 'tile_ground_var_0');
+    expect(groundVar0).toBeDefined();
+    expect(groundVar0?.normalMap).toBeDefined();
   });
 });

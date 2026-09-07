@@ -29,6 +29,8 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
     setActiveSkillTrigger: onSkillTriggerProcessed,
     respawnRequested,
     setRespawnRequested: onRespawnProcessed,
+    prestigeResetRequested,
+    setPrestigeResetRequested: onPrestigeResetProcessed,
     cosmeticTintVersion,
     activeCurativeTrigger,
     setActiveCurativeTrigger: onCurativeProcessed,
@@ -159,6 +161,21 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
       onRespawnProcessed(false);
     }
   }, [respawnRequested]);
+
+  // Handle prestige reset sync (ver docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md
+  // e docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md) — mesmo padrão de respawnRequested.
+  useEffect(() => {
+    if (!gameSceneRef.current && phaserGameRef.current?.scene) {
+      const scene = phaserGameRef.current.scene.getScene('GameScene') as GameScene;
+      if (scene) {
+        gameSceneRef.current = scene;
+      }
+    }
+    if (prestigeResetRequested && gameSceneRef.current) {
+      gameSceneRef.current.applyPrestigeReset();
+      onPrestigeResetProcessed(false);
+    }
+  }, [prestigeResetRequested]);
 
   // Handle cosmetic palette change (ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md).
   // cosmeticTintVersion é só um contador — o valor em si não importa, só a mudança.

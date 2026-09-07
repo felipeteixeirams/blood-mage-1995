@@ -3,6 +3,7 @@ status: ANDAMENTO
 phase: 3/4
 priority: P1
 start_date: 2026-08-10
+last_updated: 2026-09-06
 responsible: Claude
 progress: 75% (gameplay loop completo, faltam polimentos)
 ---
@@ -10,6 +11,22 @@ progress: 75% (gameplay loop completo, faltam polimentos)
 # 🟡 Fase 3: Status de Sobrevivência
 
 > **Status:** Gameplay loop implementado e validado | **Complexidade:** Média
+
+> **Nota de consolidação (2026-09-06):** existia uma segunda spec para o
+> mesmo domínio, `delivered/03_FASE3_CONDICOES_DE_SOBREVIVENCIA.md`
+> (assinada "Jules", `100% CONCLUIDO`), nunca reconciliada com esta. Ela
+> foi removida após verificação contra o código real: citava 3 arquivos
+> que não existem (`StatusConditionSystem.ts`, `Consumables.ts`,
+> `StatusHUD.tsx`) — descrevia uma implementação que nunca foi construída
+> dessa forma. Esta spec (`STATUS_SOBREVIVENCIA`) é a que bate 1:1 com o
+> código real (`Player.updateStatusConditions()`, `applyStatusDamage()`,
+> `statusEffectOnHit` em `monsters.json`, `useCurative()` em
+> `GameplayHUD.tsx` — todos confirmados presentes). Por isso ela também
+> foi movida de `delivered/` pra `in-progress/`: o próprio arquivo já
+> listava pendências reais (ver "O que NÃO foi feito" abaixo) — inclusive
+> confirmado nesta data que o NPC Clérigo (`DungeonFlowController.ts`,
+> `npcType: 'cleric'`) existe apenas como sprite decorativo, sem nenhuma
+> interação de cura implementada ainda.
 
 ---
 
@@ -77,9 +94,9 @@ progress: 75% (gameplay loop completo, faltam polimentos)
 
 ## 📚 Documentação Relacionada
 
-- Spec original: [[../../DISCOVERY_DUNGEON_SIEGE_EVOLUTION.md]] (Seção 2.4)
-- Validação geral do projeto: [[../../VALIDATION_DUNGEON_SIEGE_2026_08_10.md]]
-- Anti-regressão: [[../../CRITICAL/01_CRITICAL_FILES.md]] — `takeDamage()` não foi tocado, `applyStatusDamage()` é um método novo e isolado
+- Spec original: [[../../archive/legacy/DISCOVERY_DUNGEON_SIEGE_EVOLUTION.md]] (Seção 2.4)
+- Validação geral do projeto: [[../../archive/reviews/VALIDATION_DUNGEON_SIEGE_2026_08_10.md]]
+- Anti-regressão: [[../../critical/01_CRITICAL_FILES.md]] — `takeDamage()` não foi tocado, `applyStatusDamage()` é um método novo e isolado
 
 ---
 

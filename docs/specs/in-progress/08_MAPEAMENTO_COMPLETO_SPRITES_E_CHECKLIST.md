@@ -293,7 +293,7 @@ Sempre que um novo pacote ou lote de sprites for fornecido:
 ---
 
 ## 🔗 Documentos de Referência
-- `[[docs/specs/propostas/02_DISCOVERY_UI_ASSETS_EXTERNOS.md]]` — Proposta de Arte e UI Gótica.
-- `[[docs/specs/propostas/02_EIXO_B_ASSETS_EXTERNOS_DISCOVERY.md]]` — Discovery do Pipeline Híbrido de Assets.
+- `[[docs/specs/discovery/02_EIXO_A_DISCOVERY_UI_ASSETS_EXTERNOS.md]]` — Proposta de Arte e UI Gótica.
+- `[[docs/specs/backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md]]` — Discovery do Pipeline Híbrido de Assets.
 - `[[docs/critical/00_ANTI_REGRESSION_GUIDE.md]]` — Guardrails de Estabilidade e Fallback Mandatório.
 - `[[docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md]]` — Solução de Problemas Conhecidos com Assets.

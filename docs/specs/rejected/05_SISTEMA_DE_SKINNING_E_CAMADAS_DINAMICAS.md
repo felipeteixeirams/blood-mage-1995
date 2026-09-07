@@ -104,8 +104,8 @@ Para interagir com este sistema, propomos a criação de uma nova aba no painel 
 
 ## Referências
 
-- [[docs/specs/propostas/04_MOBILE_APP_E_MONETIZACAO_INDIE.md]] — Conexão com monetização de cosméticos
-- [[docs/gameplay/04_LOOT_SYSTEM.md]] — Funcionamento do sistema de itens e equipamentos
+- [[docs/specs/discovery/04_MOBILE_APP_E_MONETIZACAO_INDIE.md]] — Conexão com monetização de cosméticos
+- [[docs/archive/gameplay/04_LOOT_SYSTEM.md]] — Funcionamento do sistema de itens e equipamentos
 
 ## Registro de mudanças
 

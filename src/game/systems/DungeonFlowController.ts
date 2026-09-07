@@ -8,7 +8,27 @@ import { useGameStore } from '../../store/gameStore';
 import { telemetry } from '../../utils/telemetry';
 import { worldManager } from '../systems/WorldManager';
 import { ContractSystem } from './ContractSystem';
+import { ChunkStreamer, ChunkSpec } from './ChunkStreamer';
 import type { GameScene } from '../scenes/GameScene';
+
+/**
+ * Encadeamento real da campanha, na mesma ordem que existia como if/else
+ * hardcoded (ver histórico de `getNextCampaignZone` abaixo). Vira dado —
+ * consumido pelo `ChunkStreamer` (Fase A, `docs/specs/in-progress/
+ * 25_MUNDO_CONTINUO_CHUNK_STREAMING.md`) só para decidir o PRÓXIMO bioma
+ * por enquanto (Fase B — "encanamento interno": o GATILHO continua sendo
+ * colidir com o portal, comportamento do jogador idêntico ao de antes).
+ * `width` é simbólico (1 unidade por bioma) — os world bounds ainda são
+ * fixos, carga/descarga real de conteúdo via streamer é uma fase futura
+ * (precisa de bounds dinâmicos primeiro).
+ */
+const CAMPAIGN_ZONE_CHUNKS: ChunkSpec[] = [
+  { id: 'safe_house', index: 0, width: 1, biome: 'safe_house' },
+  { id: 'gloomy_woods', index: 1, width: 1, biome: 'gloomy_woods' },
+  { id: 'fosso_chagas', index: 2, width: 1, biome: 'fosso_chagas' },
+  { id: 'catacumbas_martires', index: 3, width: 1, biome: 'catacumbas_martires' },
+  { id: 'santuario_sangue', index: 4, width: 1, biome: 'santuario_sangue' },
+];
 
 /**
  * Extraído de GameScene.ts (item 4 do roadmap de refatoração, continuação da
@@ -28,7 +48,44 @@ import type { GameScene } from '../scenes/GameScene';
  * junto (só eram usados dentro deste bloco).
  */
 export class DungeonFlowController {
+  // Fase B (mundo contínuo): substitui o if/else hardcoded de transição de
+  // bioma pelo mecanismo genérico do ChunkStreamer (Fase A). `onLoad`/
+  // `onUnload` são no-ops nesta fase — carga/descarga real de conteúdo
+  // continua acontecendo do jeito de sempre logo abaixo, em
+  // `advanceToNextFloor()`. O streamer aqui serve só pra decidir o
+  // PRÓXIMO bioma da sequência e manter `getCurrentChunkIndex()`/
+  // `getLoadedIndices()` sincronizados com a progressão real da
+  // campanha — base pronta pra quando os world bounds virarem dinâmicos
+  // (Fase B.2/C) e o streamer passar a dirigir carga/descarga de verdade.
+  private zoneStreamer = new ChunkStreamer<BiomeType>(CAMPAIGN_ZONE_CHUNKS, {
+    loadRadius: 0,
+    onLoad: (chunk) => chunk.biome as BiomeType,
+    onUnload: () => {},
+  });
+
   constructor(private scene: GameScene) {}
+
+  /**
+   * Próximo bioma da campanha a partir do atual, usando o mesmo
+   * encadeamento linear ordenado do `ChunkStreamer` — substitui o if/else
+   * hardcoded que existia direto em `advanceToNextFloor()`. Satura no
+   * último bioma (`santuario_sangue`), exatamente como o `else` antigo
+   * ("Keeps the same, or handle end of campaign"). Público (não
+   * `private`) só pra ser testável diretamente, mesmo padrão já usado em
+   * `ProceduralForestGenerator.drawFractalTreeGraphics`.
+   */
+  public getNextCampaignZone(currentZone: BiomeType): BiomeType {
+    const currentChunk = CAMPAIGN_ZONE_CHUNKS.find((c) => c.biome === currentZone);
+    const currentPos = currentChunk ? currentChunk.index : 0;
+    const nextPos = Math.min(currentPos + 1, CAMPAIGN_ZONE_CHUNKS.length - 1);
+    const nextChunk = CAMPAIGN_ZONE_CHUNKS[nextPos];
+
+    // Mantém o streamer sincronizado com a progressão real da campanha
+    // (sem efeito colateral ainda — onLoad/onUnload são no-ops nesta fase).
+    this.zoneStreamer.update(nextPos + 0.5);
+
+    return nextChunk.biome as BiomeType;
+  }
 
   private getActiveEnemyCap(): number {
     const depth = this.scene.currentFloorDepth;
@@ -517,18 +574,12 @@ export class DungeonFlowController {
     const currentZone = store.campaignState.currentZone;
 
     if (gameMode === 'campaign') {
-      if (currentZone === 'safe_house') {
-        store.setCampaignZone('gloomy_woods');
-      } else if (currentZone === 'gloomy_woods') {
-        store.setCampaignZone('fosso_chagas');
-      } else if (currentZone === 'fosso_chagas') {
-        store.setCampaignZone('catacumbas_martires');
-      } else if (currentZone === 'catacumbas_martires') {
-        store.setCampaignZone('santuario_sangue');
-      } else {
-        // Keeps the same, or handle end of campaign
-        store.setCampaignZone('santuario_sangue');
-      }
+      // Fase B (mundo contínuo, ver docs/specs/in-progress/
+      // 25_MUNDO_CONTINUO_CHUNK_STREAMING.md): decisão de próximo bioma
+      // agora vem do ChunkStreamer (dado ordenado), não mais de if/else
+      // hardcoded — mesma sequência, mesmo comportamento de saturar no
+      // último bioma.
+      store.setCampaignZone(this.getNextCampaignZone(currentZone));
     }
 
     scene.currentFloorDepth++;

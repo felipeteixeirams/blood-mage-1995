@@ -795,6 +795,34 @@ export class GameScene extends Phaser.Scene {
   }
 
   /**
+   * Sincroniza o reset de estatísticas de performPrestige() (gameStore.ts)
+   * com a instância viva do Player. Bug encontrado em auditoria
+   * (2026-09-06, ver docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md):
+   * performPrestige() só mutava a store — a instância viva (this.player.stats)
+   * nunca era tocada, então o "sacrifício" (reset de nível/andar/HP) não
+   * surtia efeito nenhum no jogo rodando; o próximo evento natural de sync
+   * (qualquer dano recebido chama setPlayerStats({...this.stats})) revertia
+   * o reset da store de volta pros valores antigos. Mesmo padrão de
+   * respawnPlayer() acima: muta this.player.stats diretamente, depois
+   * empurra pra store — não o inverso.
+   */
+  public applyPrestigeReset() { // público: chamado por PhaserGame.tsx via store (prestigeResetRequested)
+    if (!this.player) return;
+    const store = useGameStore.getState();
+
+    this.player.stats.level = 1;
+    this.player.stats.currentXp = 0;
+    this.player.stats.nextLevelXp = 100;
+    this.player.stats.mana = this.player.stats.maxMana;
+    this.player.stats.hp = this.player.getEffectiveMaxHp();
+    this.player.stats.wave = 1;
+    this.player.stats.floorDepth = 1;
+    this.player.stats.pendingStatPoints = 0;
+
+    store.setPlayerStats({ ...this.player.stats });
+  }
+
+  /**
    * Reaplica a paleta cosmética atual ao sprite do jogador. Extraído do
    * antigo listener window.addEventListener('update-cosmetic-tint', ...) —
    * agora chamado por PhaserGame.tsx quando useGameStore().cosmeticTintVersion

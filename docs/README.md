@@ -3,9 +3,27 @@
 > **MANDATO PARA AGENTES IA:** 
 > O *Bloodmage 1995* opera em **Spec-Driven Mode restrito** associado a **Context-Driven Engineering**.
 > 
-> **NUNCA INICIE CÓDIGO** sem ler a documentação pertinente ao domínio solicitado.  
-> **NUNCA ASSUMA** arquiteturas passadas (como Supabase/Google Auth) a menos que explicitamente indicado na árvore atual. O jogo está na **Fase 1 (Descoberta)**, onde velocidade e experimentação de Game Feel (câmera, controle, hitbox) superam integrações em nuvem e overengineering.
-> 
+> **NUNCA INICIE CÓDIGO** sem ler a documentação pertinente ao domínio solicitado.
+>
+> **Estado real do projeto (atualizado em 2026-09-06):** a Fase 1
+> (Descoberta) já está **concluída** — o jogo tem hoje uma campanha de 4
+> capítulos, sistema de habilidades, loot procedural, prestígio,
+> relíquias, conquistas, PWA instalável e mais de 24 specs formalmente
+> **entregues** (ver índice completo em `docs/specs/README.md`). O foco
+> atual é a **Fase 2** (Vertical Slice / polimento — ver
+> `docs/product/ROADMAP.md`). Não trate este projeto como um protótipo
+> inicial: ele tem um processo spec-driven maduro com ciclo de vida
+> completo (`in-progress/ → delivered/`) e um histórico de decisões
+> arquiteturais registrado (`docs/architecture/07_DECISION_LOG.md`).
+>
+> **Sobre integrações em nuvem (Supabase/Google Auth/Cloud Save):** não
+> existiram no projeto e foram removidas — são apenas uma possibilidade
+> **futura condicional**, cogitada só pra Fase 5 e "se aplicável" (ver
+> `docs/product/ACCOUNT_AND_DATA.md`). **NÃO implemente nenhuma
+> integração de conta/nuvem sem confirmar com Felipe primeiro** — isso
+> continua valendo mesmo com o projeto mais maduro do que "Fase 1"
+> sugeria.
+>
 > Use os links abaixo para carregar contexto antes de codificar.
 
 ---
@@ -19,7 +37,18 @@ Como o sistema funciona *hoje*. Leitura obrigatória antes de refatorar sistemas
 * `docs/architecture/02_CODE_ORGANIZATION.md` - Estrutura de pastas da `/src`.
 * `docs/architecture/03_PHASER_PATTERNS.md` - Padrões de código dentro do motor de jogo.
 * `docs/architecture/04_STATE_MANAGEMENT.md` - Como React e Phaser compartilham estado.
+* `docs/architecture/05_GAMESCENE_REFACTOR.md` - Tracker do corte incremental de `GameScene.ts` em sistemas extraídos.
+* `docs/architecture/05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md` - Metodologia de engenharia com IA (quando/como consultar specs antes de codificar).
+* `docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md` - Histórico da migração 100% Zustand (zero `CustomEvent` de gameplay).
+* `docs/architecture/07_DECISION_LOG.md` - Registro de decisões arquiteturais (ADR-lite): contexto, decisão e consequências das mudanças grandes.
+* `docs/architecture/SEAMLESS_OPEN_WORLD_FEASIBILITY.md` - Viabilidade de mundo contínuo sem costuras (roadmap de streaming de chunks).
+* `docs/critical/00_ANTI_REGRESSION_GUIDE.md` - Regras de ouro anti-regressão.
+* `docs/critical/01_CRITICAL_FILES.md` - **CRÍTICO:** Arquivos que quebram o jogo se mexidos sem cuidado (Player.ts, Enemy.ts, GameScene.ts, DungeonGenerator.ts, gameStore.ts, localStorage.ts).
+* `docs/critical/02_PERFORMANCE_OPTIMIZATION.md` - Padrões de pooling e poda espacial já validados.
+* `docs/critical/03_TESTING_GATES.md` - Requisitos de teste antes de merge.
 * `docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md` - **CRÍTICO:** Leia antes de debugar qualquer erro de renderização, áudio ou assets.
+* `docs/critical/06_SECURITY_GUIDELINES.md` - CSP, validação de `localStorage` e gestão de segredos.
+* `docs/product/ACCESSIBILITY.md` - Estado real dos toggles de acessibilidade/ergonomia já implementados.
 
 ### 2. 🧪 Experimentos & Discovery (Laboratório Mobile)
 O que testamos e estamos validando. Hipóteses orientadas a *Game Feel* e retenção.
@@ -34,9 +63,9 @@ Index mestre: `docs/specs/README.md`
 * `docs/specs/in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md` - **Fase 5:** Polimento de Produção, PWA e Builds Electron/Steam.
 * `docs/specs/in-progress/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md` - Mapeamento completo de Sprites e Checklist de integração.
 * `docs/specs/in-progress/09_PIXEL_LAB_PROMPT_GUIDE.md` - Guia de Prompts e parâmetros PixelLab para Sprites.
-* `docs/specs/in-progress/25_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md` - **Spec 25:** Padronização de Modais Secundários, Navegação Gamepad & Retratos Rúnicos.
 
 #### 🟢 Entregues / Concluídas (`docs/specs/delivered/`)
+* `docs/specs/delivered/28_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md` - **Spec 28:** Padronização de Modais Secundários, Navegação Gamepad & Retratos Rúnicos.
 * `docs/specs/delivered/11_VISUAL_POLISH_FRONTS.md` - **Spec 11:** Índice Mestre de Polimento Visual (Satélites 11.01 a 11.08: Masmorra, Neblina, Sangue, Hit-Stop, Bloom, Áudio, Paletas, NPCs).
 * `docs/specs/delivered/12_EXPANSION_FRONTS.md` - **Spec 12:** Índice Mestre de Expansão (Satélites 12.01 a 12.05: Armadilhas, Elites, Meta-Progressão, UX/Minimapa, Áudio FM).
 * `docs/specs/delivered/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md` - **Spec 13:** Safe House do Santuário, Maelen e Transição de Campanha.
@@ -72,6 +101,7 @@ As regras de produto, onde estamos, diretrizes de retenção mobile e para onde 
 Relatórios de auditoria técnica, cobertura de testes e análise de segurança.
 * `docs/reviews/02_SPECS_AND_DISCOVERY_RETENTION_AUDIT.md` - **Auditoria Geral de Specs, Roadmap & Discovery** (Filtro de Sucesso Mobile).
 * `docs/reviews/AUDIT_REPORT_QUALIDADE_CODIGO_2026.md` - **Relatório de Auditoria de Qualidade de Código 2026** (Testes, Tratamento de Erros, Padrões de Design, Segurança e Resiliência).
+* `docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md` - **Auditoria da Base Documental (2026-09)** — links quebrados, specs duplicadas/órfãs, erros factuais em `critical/`, mandato desatualizado do próprio `docs/README.md`, gaps de ADR/acessibilidade/segurança. ⚠️ Achados ainda não aplicados, ver tabela de remediação no final do arquivo.
 
 ### 6. 🗄️ Arquivo (Documentação Legada)
 Specs originais, planos passados e documentação desatualizada. **Não use como verdade absoluta.**

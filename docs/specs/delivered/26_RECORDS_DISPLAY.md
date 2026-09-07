@@ -108,10 +108,10 @@ GameplayHUD
 
 ## 📚 Documentação
 
-- **Spec detalhada:** [[../../gameplay/05_RECORDS_SYSTEM.md]]
-- **Design patterns:** [[../../design/02_UI_PATTERNS.md]]
-- **Context Frontend:** [[../../context/FRONTEND_DEVELOPER.md]]
-- **Integration:** [[../../integration/00_LOVABLE_INTEGRATION.md]]
+- **Spec detalhada:** [[../../archive/gameplay/05_RECORDS_SYSTEM.md]]
+- **Design patterns:** [[../../archive/design/02_UI_PATTERNS.md]]
+- **Context Frontend:** [[../../archive/context/FRONTEND_DEVELOPER.md]]
+- **Integration:** [[../../archive/integration/00_LOVABLE_INTEGRATION.md]]
 
 ---
 

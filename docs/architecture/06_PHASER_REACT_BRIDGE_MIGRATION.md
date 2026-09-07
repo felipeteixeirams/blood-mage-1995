@@ -230,7 +230,7 @@ Ordem sugerida — da mais simples/baixo risco para a mais delicada:
 
 - [[05_GAMESCENE_REFACTOR.md]] — mesmo padrão de tracker e mesma filosofia de corte incremental
 - [[04_STATE_MANAGEMENT.md]] — visão geral do Zustand como camada de sincronização
-- [[../archive/specs/propostas/08_GUIA_EVOLUCAO_COMERCIAL.md]] — Pilar 2, origem deste item
+- [[../specs/backlog/08_GUIA_EVOLUCAO_COMERCIAL.md]] — Pilar 2, origem deste item
 
 ## Registro de mudanças
 

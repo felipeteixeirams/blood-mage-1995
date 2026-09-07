@@ -86,13 +86,62 @@ export class HeightmapGenerator {
     this.seed = seed;
   }
 
-  private pseudoNoise(x: number, y: number, freq: number): number {
-    const nx = x * freq + this.seed * 0.1337;
-    const ny = y * freq + this.seed * 0.7331;
+  // Hash puro de coordenadas de malha INTEIRAS (lattice) — determinístico por
+  // seed, mas deliberadamente caótico (clássico "random(vec2)" de shaders):
+  // uma mudança de 1 em ix/iy already produz um valor completamente
+  // descorrelacionado do anterior. Isso é o que queremos NOS PONTOS DA
+  // MALHA (âncoras do ruído), mas nunca deve ser usado diretamente por
+  // célula de grid — ver `pseudoNoise` abaixo.
+  private hashLattice(ix: number, iy: number): number {
+    const nx = ix + this.seed * 0.1337;
+    const ny = iy + this.seed * 0.7331;
     const sin1 = Math.sin(nx * 12.9898 + ny * 78.233);
     const sin2 = Math.sin(nx * 39.345 + ny * 11.123);
     const val = (Math.sin(sin1 * 43758.5453) + Math.cos(sin2 * 23421.631)) * 0.5;
     return (val + 1) * 0.5; // Normalizado entre 0 e 1
+  }
+
+  private smoothstep(t: number): number {
+    return t * t * (3 - 2 * t);
+  }
+
+  /**
+   * Ruído de valor (value noise) com interpolação bilinear suave entre
+   * pontos de uma malha esparsa (lattice espaçada por 1/freq células de
+   * grid) — não um hash cru por célula.
+   *
+   * Bug corrigido (confirmado rodando o jogo): a versão anterior chamava
+   * o hash caótico diretamente em `x*freq, y*freq` por CÉLULA DE GRID —
+   * como o hash é desenhado pra ser incoerente a propósito, células
+   * vizinhas ficavam com alturas praticamente descorrelacionadas ("ruído
+   * sal-e-pimenta", não terreno orgânico). Resultado visível: quase toda
+   * célula da floresta virava uma "falésia" em relação ao vizinho sul/
+   * sudeste/sudoeste (`getCliffEdges`), então `ProceduralForestGenerator`
+   * cobria a maior parte do piso de grama com sprites de parede de
+   * falésia — o piso parecia "furado"/quadriculado, quando na verdade a
+   * grama sempre esteve lá embaixo, coberta.
+   *
+   * Com interpolação bilinear sobre uma malha esparsa, a altura varia
+   * suavemente célula a célula — falésias voltam a marcar só desníveis
+   * reais e localizados, como o nome e os comentários do módulo sempre
+   * descreveram.
+   */
+  private pseudoNoise(x: number, y: number, freq: number): number {
+    const scaledX = x * freq;
+    const scaledY = y * freq;
+    const x0 = Math.floor(scaledX);
+    const y0 = Math.floor(scaledY);
+    const fx = this.smoothstep(scaledX - x0);
+    const fy = this.smoothstep(scaledY - y0);
+
+    const v00 = this.hashLattice(x0, y0);
+    const v10 = this.hashLattice(x0 + 1, y0);
+    const v01 = this.hashLattice(x0, y0 + 1);
+    const v11 = this.hashLattice(x0 + 1, y0 + 1);
+
+    const top = v00 + (v10 - v00) * fx;
+    const bottom = v01 + (v11 - v01) * fx;
+    return top + (bottom - top) * fy; // Normalizado entre 0 e 1
   }
 
   /**

@@ -235,8 +235,9 @@ export class CombatEffectsSystem {
       soundEngine.playOrbPickup();
     }
 
+    const dropMult = useGameStore.getState().getPrestigeModifiers?.().dropMult ?? 1.0;
     const hasBloodTide = useGameStore.getState().activeModifiers.includes('blood_tide');
-    const rolled = hasBloodTide ? (Math.random() < 0.325) : LootSystem.rollLootChance();
+    const rolled = hasBloodTide ? (Math.random() < 0.325 * dropMult) : LootSystem.rollLootChance(dropMult);
     if (rolled) {
       const lootData = LootSystem.generateLoot(scene.currentFloorDepth);
       const loot = new LootSprite(scene, enemy.x + (Math.random() - 0.5) * 30, enemy.y + (Math.random() - 0.5) * 30, lootData);
