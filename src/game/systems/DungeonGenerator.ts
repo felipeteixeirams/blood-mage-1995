@@ -103,8 +103,8 @@ export class DungeonGenerator {
     const usableH = mapH - originY - 70;
 
     if (isSafeHouse) {
-      const roomW = 800;
-      const roomH = 600;
+      const roomW = 550; // Reduzido de 800 (41% menor)
+      const roomH = 420; // Reduzido de 600 (30% menor)
       const rx = (mapW - roomW) / 2;
       const ry = (mapH - roomH) / 2;
 
@@ -174,7 +174,7 @@ export class DungeonGenerator {
       const wx = gx * 48;
       const wy = gy * 24;
       if (isSafeHouse) {
-        return wx >= (mapW - 800) / 2 && wx <= (mapW + 800) / 2 && wy >= (mapH - 600) / 2 && wy <= (mapH + 600) / 2;
+        return wx >= (mapW - 550) / 2 && wx <= (mapW + 550) / 2 && wy >= (mapH - 420) / 2 && wy <= (mapH + 420) / 2;
       }
       return rooms.some((r) => wx >= r.x - 24 && wx <= r.x + r.width + 24 && wy >= r.y - 24 && wy <= r.y + r.height + 24);
     };
@@ -254,12 +254,12 @@ export class DungeonGenerator {
     }
 
     if (isSafeHouse) {
-      const roomW = 800;
-      const roomH = 600;
+      const roomW = 550;
+      const roomH = 420;
       const rx = (mapW - roomW) / 2;
       const ry = (mapH - roomH) / 2;
 
-      // Build safe house specific walls
+      // Build safe house specific walls with thickness for cozy atmosphere
       this.buildWallLine(rx, ry, rx + roomW, ry, 0xffffff, 'tile_wood_wall', true); // Top
       this.buildWallLine(rx, ry + roomH, rx + roomW, ry + roomH, 0xffffff, 'tile_wood_wall', true); // Bottom
       this.buildWallLine(rx, ry, rx, ry + roomH, 0xffffff, 'tile_wood_wall', true); // Left

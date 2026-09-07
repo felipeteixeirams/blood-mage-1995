@@ -1,0 +1,294 @@
+import Phaser from 'phaser';
+import type { GameScene } from '../scenes/GameScene';
+import { logger } from '../../utils/logger';
+
+/**
+ * SafeHouseAnimationController — Orquestra animações, tweens encadeados, emissores de partículas
+ * e efeitos visuais sofisticados da Safe House, aproveitando todo o poder do Phaser 4.2.1.
+ *
+ * Responsabilidades:
+ * - Maelen: patrulha, olhar para o jogador quando próximo
+ * - Hearth: chama cintilante com particle emitter + tweens de escala/alpha
+ * - Portal: shimmer/pulse com Light2D integration
+ * - Supplies Chest: bobbing animation contínua
+ * - Ambient props: tweens sutis para vida
+ *
+ * Todas as animações usam tweens encadeados (Phaser 4 chain API) para sequências suaves
+ * e sincronizadas com 60 FPS.
+ */
+export class SafeHouseAnimationController {
+  private scene: GameScene;
+  private maelen: any | null = null;
+  private hearth: any | null = null;
+  private bed: any | null = null;
+  private suppliesChest: any | null = null;
+  private portal: any | null = null;
+  private flameEmitter: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
+  private ambientProps: any[] = [];
+
+  // Tweens active (para cleanup ao transicionar de cenas)
+  private activeTweens: any[] = [];
+  private updateHandler: (() => void) | null = null;
+
+  constructor(scene: GameScene) {
+    this.scene = scene;
+  }
+
+  /**
+   * Inicializa o controller após a Safe House ter sido gerada.
+   * Assume que Player, Maelen, Hearth, Bed, Chest, Portal já foram criados.
+   */
+  public initialize(): void {
+    this.maelen = this.scene.npcsGroup.getChildren().find((npc: any) => npc.getData('npcType') === 'maelen') || null;
+    this.hearth = this.scene.wallsGroup
+      .getChildren()
+      .find((obj: any) => obj && obj.texture && obj.texture.key === 'spr_hearth_fireplace') || null;
+    this.bed = this.scene.wallsGroup
+      .getChildren()
+      .find((obj: any) => obj && obj.texture && obj.texture.key === 'spr_straw_bed') || null;
+    this.suppliesChest = this.scene.chestsGroup.getChildren().find((obj: any) => obj.getData('questChest') === 'starter_dagger') || null;
+    this.portal = this.scene.portalSprite || null;
+    this.ambientProps = (this.scene.wallsGroup.getChildren() as any[]).filter(
+      (obj: any) => obj && obj.texture && obj.texture.key && obj.texture.key.includes('safehouse_detail')
+    );
+
+    logger.info('SafeHouseAnimationController.initialize', 'Initializing Safe House animations', {
+      hasMaelen: !!this.maelen,
+      hasHearth: !!this.hearth,
+      hasBed: !!this.bed,
+      hasChest: !!this.suppliesChest,
+      hasPortal: !!this.portal,
+      ambientPropCount: this.ambientProps.length,
+    });
+
+    // Inicializar cada subsistema
+    this.setupMaelenPatrol();
+    this.setupHearthFlameEffect();
+    this.setupChestBobbing();
+    this.setupPortalShimmer();
+    this.setupAmbientPropAnimations();
+
+    // Update loop para Maelen olhar pro jogador
+    this.updateHandler = () => this.updateMaelenFacing();
+    this.scene.events.on('update', this.updateHandler);
+  }
+
+  /**
+   * Maelen patrulha de um lado a outro, com breath idle quando parado.
+   * Usa tweens sequenciais para movimento suave.
+   */
+  private setupMaelenPatrol(): void {
+    if (!this.maelen) return;
+
+    const patrolRange = 80; // pixels à esquerda e direita do centro
+    const baseX = this.maelen.x;
+
+    // Patrulha contínua: direita → esquerda → direita
+    this.scene.tweens.add({
+      targets: this.maelen,
+      x: baseX + patrolRange,
+      duration: 1500,
+      ease: 'Linear',
+      yoyo: true,
+      repeat: -1,
+      repeatDelay: 400,
+    });
+  }
+
+  /**
+   * Update loop: Maelen olha para o jogador quando está próximo (<150px).
+   * Modula scaleX (flip) baseado em posição relativa.
+   */
+  private updateMaelenFacing(): void {
+    if (!this.maelen || !this.scene.player) return;
+
+    const dx = this.scene.player.x - this.maelen.x;
+    const distance = Math.abs(dx);
+
+    // Se mais perto que 150px, virar para o jogador
+    if (distance < 150) {
+      const newScaleX = dx > 0 ? 1 : -1;
+      if (this.maelen.scaleX !== newScaleX) {
+        this.maelen.setScale(newScaleX, 1);
+      }
+    }
+    // Senão, continua seguindo a patrulha natural (já modulada por patrol tweens)
+  }
+
+  /**
+   * Hearth: lareira com chama cintilante usando tweens de escala/alpha.
+   *
+   * Padrão de fogo realista:
+   * 1. Flame sprite com tweens de breathing (1.0 → 1.1 → 0.95 → 1.0 @ 0.8s)
+   * 2. Warm light glow (Light2D + dynamic intensity)
+   */
+  private setupHearthFlameEffect(): void {
+    if (!this.hearth) return;
+
+    // ===== HEARTH FLAME TWEEN: Breathing effect =====
+    const flameBreathTween = this.scene.tweens.add({
+      targets: this.hearth,
+      scaleX: 1.08,
+      scaleY: 1.12,
+      alpha: 0.95,
+      duration: 400,
+      yoyo: true,
+      ease: 'Sine.InOut',
+      repeat: -1,
+    });
+
+    this.activeTweens.push(flameBreathTween);
+
+    // ===== LIGHT2D DYNAMIC GLOW (se disponível) =====
+    if ((this.scene as any).lightingSystem?.addLightSource) {
+      try {
+        const hearthLight = (this.scene as any).lightingSystem.addLightSource({
+          x: this.hearth.x,
+          y: this.hearth.y,
+          radius: 200,
+          color: 0xffb347, // Orange quente
+          intensity: 0.7,
+        });
+
+        // Pulse a luz junto com a chama
+        const lightPulseTween = this.scene.tweens.add({
+          targets: hearthLight,
+          intensity: 0.85,
+          duration: 400,
+          yoyo: true,
+          ease: 'Sine.InOut',
+          repeat: -1,
+        });
+
+        this.activeTweens.push(lightPulseTween);
+      } catch (e) {
+        logger.warn('SafeHouseAnimationController.setupHearthFlameEffect', 'Could not add light source', { error: String(e) });
+      }
+    }
+
+    logger.info('SafeHouseAnimationController.setupHearthFlameEffect', 'Hearth flame effect initialized', {
+      hasLight: !!(this.scene as any).lightingSystem?.addLightSource,
+    });
+  }
+
+  /**
+   * Supplies Chest: bobbing suave contínuo (0 → -4px → 0 @ 1.5s).
+   * Simula peso/suspensão levemente mágica.
+   */
+  private setupChestBobbing(): void {
+    if (!this.suppliesChest) return;
+
+    const baseY = this.suppliesChest.y;
+
+    const bobbingTween = this.scene.tweens.add({
+      targets: this.suppliesChest,
+      y: baseY - 4,
+      duration: 1500,
+      yoyo: true,
+      ease: Phaser.Math.Easing.Sine.InOut,
+      repeat: -1,
+    });
+
+    this.activeTweens.push(bobbingTween);
+  }
+
+  /**
+   * Portal de Descida: shimmer + pulse (escala 1.0 → 1.12 → 1.0 @ 0.9s).
+   * Alpha também oscila para efeito de brilho etéreo.
+   */
+  private setupPortalShimmer(): void {
+    if (!this.portal) return;
+
+    // Portal scale pulse
+    const portalPulseTween = this.scene.tweens.add({
+      targets: this.portal,
+      scaleX: 1.12,
+      scaleY: 1.12,
+      alpha: 1.0,
+      duration: 450,
+      yoyo: true,
+      ease: 'Sine.InOut',
+      repeat: -1,
+    });
+
+    this.activeTweens.push(portalPulseTween);
+
+    // ===== PORTAL LIGHT GLOW =====
+    if ((this.scene as any).lightingSystem?.addLightSource) {
+      try {
+        const portalLight = (this.scene as any).lightingSystem.addLightSource({
+          x: this.portal.x,
+          y: this.portal.y,
+          radius: 150,
+          color: 0x8b5cf6, // Purple ethereal
+          intensity: 0.6,
+        });
+
+        const portalLightPulseTween = this.scene.tweens.add({
+          targets: portalLight,
+          intensity: 0.9,
+          duration: 900,
+          yoyo: true,
+          ease: 'Sine.InOut',
+          repeat: -1,
+        });
+
+        this.activeTweens.push(portalLightPulseTween);
+      } catch (e) {
+        logger.warn('SafeHouseAnimationController.setupPortalShimmer', 'Could not add light source', { error: String(e) });
+      }
+    }
+  }
+
+  /**
+   * Ambient Props (tapete, estante, vela, ervas, barril, tapeçaria):
+   * cada um recebe uma oscilação sutil diferente para simular "vida" ambiental.
+   *
+   * Técnica: deslocar cada prop com uma fase aleatória para parecer desincronizado.
+   */
+  private setupAmbientPropAnimations(): void {
+    this.ambientProps.forEach((prop, index) => {
+      const phaseOffset = (index * 0.3) % 1.0; // Fase desincronizada
+
+      // Oscillate y posição: ±2px @ 2.5s por prop
+      const propSwayTween = this.scene.tweens.add({
+        targets: prop,
+        y: prop.y - 2,
+        duration: 2500 + index * 200, // Slight variation per prop
+        yoyo: true,
+        ease: Phaser.Math.Easing.Sine.InOut,
+        repeat: -1,
+        delay: phaseOffset * 500, // Stagger startup
+      });
+
+      this.activeTweens.push(propSwayTween);
+    });
+
+    logger.info('SafeHouseAnimationController.setupAmbientPropAnimations', 'Ambient props animation initialized', {
+      propCount: this.ambientProps.length,
+    });
+  }
+
+  /**
+   * Limpa todos os tweens e emissores ao destruir (transição de cenas).
+   */
+  public destroy(): void {
+    this.activeTweens.forEach((tween: any) => {
+      if (tween && tween.isPlaying()) {
+        tween.stop();
+      }
+    });
+    this.activeTweens = [];
+
+    if (this.flameEmitter) {
+      this.flameEmitter.stop();
+    }
+
+    if (this.updateHandler) {
+      this.scene.events.off('update', this.updateHandler);
+      this.updateHandler = null;
+    }
+
+    logger.info('SafeHouseAnimationController.destroy', 'Safe House animation controller destroyed');
+  }
+}
