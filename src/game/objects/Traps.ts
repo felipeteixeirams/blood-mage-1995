@@ -5,7 +5,7 @@ export type TrapState = 'hidden' | 'warn' | 'active';
 
 export class SpikeTrap extends Phaser.Physics.Arcade.Sprite {
   public currentState: TrapState = 'hidden';
-  private timer: Phaser.Time.TimerEvent;
+  private timer?: Phaser.Time.TimerEvent;
   
   // Timings in ms
   private hiddenDuration = 2000;
@@ -19,14 +19,18 @@ export class SpikeTrap extends Phaser.Physics.Arcade.Sprite {
     
     // Non-blocking physically, but we'll use overlap detection
     const body = this.body as Phaser.Physics.Arcade.StaticBody;
-    body.setSize(24, 24);
-    body.setOffset(4, 4);
+    if (body && typeof body.setSize === 'function') {
+      body.setSize(24, 24);
+      body.setOffset(4, 4);
+    }
     this.setDepth(y - 10); // Under players
 
-    // Start cycle with some random offset
-    this.timer = scene.time.delayedCall(Math.random() * 2000, () => {
-      this.cycleState();
-    });
+    // Start cycle with some random offset if time manager exists
+    if (scene && scene.time && typeof scene.time.delayedCall === 'function') {
+      this.timer = scene.time.delayedCall(Math.random() * 2000, () => {
+        this.cycleState();
+      });
+    }
   }
 
   private cycleState() {
@@ -70,7 +74,9 @@ export class ExplosiveBarrel extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this, true); // static blocking body
     
     const body = this.body as Phaser.Physics.Arcade.StaticBody;
-    body.setCircle(12, 4, 4);
+    if (body && typeof body.setCircle === 'function') {
+      body.setCircle(12, 4, 4);
+    }
     this.setDepth(y);
   }
 
