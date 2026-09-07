@@ -72,10 +72,14 @@ export class LightingPolish {
    */
   private applyBloomFilter(sprite: Phaser.GameObjects.Image, color: number, strength: number = 3): void {
     if (!sprite || !this.isBloomEnabled()) return;
-    const filters = (sprite as any).filters;
-    if (!filters || !filters.internal || typeof filters.internal.addGlow !== 'function') return;
 
     try {
+      if (typeof (sprite as any).enableFilters === 'function') {
+        (sprite as any).enableFilters();
+      }
+      const filters = (sprite as any).filters;
+      if (!filters || !filters.internal || typeof filters.internal.addGlow !== 'function') return;
+
       if (typeof filters.internal.clear === 'function') {
         filters.internal.clear();
       }

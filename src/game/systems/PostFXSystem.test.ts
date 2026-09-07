@@ -7,14 +7,15 @@ function makeRenderer(isWebGL: boolean) {
 
 function makeScene(options: { isWebGL?: boolean } = {}) {
   const isWebGL = options.isWebGL ?? true;
+  const externalFilters = {
+    addVignette: vi.fn(() => ({ strength: 0 })),
+    addColorMatrix: vi.fn(() => ({ colorMatrix: { reset: vi.fn(), saturate: vi.fn(), hue: vi.fn(), brightness: vi.fn(), set: vi.fn() } })),
+    addDisplacement: vi.fn(() => ({ x: 0, y: 0 })),
+  };
   const camera = {
     filters: {
-      internal: {
-        addVignette: vi.fn(() => ({ strength: 0 })),
-        addColorMatrix: vi.fn(() => ({ colorMatrix: { reset: vi.fn(), saturate: vi.fn(), hue: vi.fn(), brightness: vi.fn(), set: vi.fn() } })),
-        addDisplacement: vi.fn(() => ({ x: 0, y: 0 })),
-      },
-      external: {},
+      internal: {},
+      external: externalFilters,
     },
   };
   const scene = {
@@ -33,16 +34,16 @@ describe('PostFXSystem', () => {
   it('cria filtros quando o renderer é WebGL', () => {
     const { scene, camera } = makeScene({ isWebGL: true });
     const system = new PostFXSystem(scene as any);
-    expect(camera.filters.internal.addVignette).toHaveBeenCalled();
-    expect(camera.filters.internal.addColorMatrix).toHaveBeenCalled();
-    expect(camera.filters.internal.addDisplacement).toHaveBeenCalled();
+    expect(camera.filters.external.addVignette).toHaveBeenCalled();
+    expect(camera.filters.external.addColorMatrix).toHaveBeenCalled();
+    expect(camera.filters.external.addDisplacement).toHaveBeenCalled();
     expect(system.isFilterActive()).toBe(true);
   });
 
   it('não cria filtros quando o renderer não é WebGL', () => {
     const { scene, camera } = makeScene({ isWebGL: false });
     const system = new PostFXSystem(scene as any);
-    expect(camera.filters.internal.addVignette).not.toHaveBeenCalled();
+    expect(camera.filters.external.addVignette).not.toHaveBeenCalled();
     expect(system.isFilterActive()).toBe(false);
   });
 
