@@ -66,9 +66,13 @@ export class PostFXSystem {
     if (!filters) return;
 
     try {
-      this.vignette = filters.internal.addVignette();
-      this.colorMatrix = filters.internal.addColorMatrix();
-      this.displacement = filters.internal.addDisplacement();
+      // Phaser 4 Beam Renderer: Filtros de câmera para tela cheia usam camera.filters.external
+      const scope = filters.external || filters.internal;
+      if (scope) {
+        if (typeof scope.addVignette === 'function') this.vignette = scope.addVignette();
+        if (typeof scope.addColorMatrix === 'function') this.colorMatrix = scope.addColorMatrix();
+        if (typeof scope.addDisplacement === 'function') this.displacement = scope.addDisplacement();
+      }
     } catch (e) {
       // Filtros indisponíveis (renderer sem suporte a filtros) — seguir sem eles.
       this.vignette = null;
