@@ -1628,58 +1628,93 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   // Dungeon Wall Autotile Pieces (Corners, Inner Corners, T-Junctions, Endcaps)
   const createWallAutotileCanvas = (pieceType: string): HTMLCanvasElement => {
     return createPixelCanvas(32, 32, (ctx) => {
-      // Base dark stone face
+      // Base dark stone mortar face
       ctx.fillStyle = '#221922';
       ctx.fillRect(0, 0, 32, 32);
 
-      // Top edge cap (highlighted wall top)
-      ctx.fillStyle = '#4a384e';
+      const drawBricks = (rx: number, ry: number, rw: number, rh: number) => {
+        ctx.fillStyle = '#3a2d3c';
+        ctx.fillRect(rx, ry, rw, rh);
+        // Brick course mortar lines
+        ctx.fillStyle = '#1c131d';
+        for (let y = ry + 6; y < ry + rh; y += 6) {
+          ctx.fillRect(rx, y, rw, 1);
+        }
+      };
 
       if (pieceType.startsWith('corner_outer_')) {
         const corner = pieceType.replace('corner_outer_', '');
-        // Face bricks
-        ctx.fillStyle = '#3a2d3c';
-        ctx.fillRect(2, 6, 28, 24);
-        ctx.fillStyle = '#533e56'; // Top cap
+        drawBricks(2, 6, 28, 24);
+
+        // Highlighted wall top cap (TOPO vs FACE)
+        ctx.fillStyle = '#533e56';
         if (corner === 'nw') {
           ctx.fillRect(0, 0, 32, 6);
           ctx.fillRect(0, 0, 6, 32);
+          ctx.fillStyle = '#6b4d70';
+          ctx.fillRect(0, 0, 32, 1);
+          ctx.fillRect(0, 0, 1, 32);
         } else if (corner === 'ne') {
           ctx.fillRect(0, 0, 32, 6);
           ctx.fillRect(26, 0, 6, 32);
+          ctx.fillStyle = '#6b4d70';
+          ctx.fillRect(0, 0, 32, 1);
+          ctx.fillRect(31, 0, 1, 32);
         } else if (corner === 'se') {
           ctx.fillRect(0, 26, 32, 6);
           ctx.fillRect(26, 0, 6, 32);
+          ctx.fillStyle = '#6b4d70';
+          ctx.fillRect(0, 26, 32, 1);
+          ctx.fillRect(31, 0, 1, 32);
         } else if (corner === 'sw') {
           ctx.fillRect(0, 26, 32, 6);
           ctx.fillRect(0, 0, 6, 32);
+          ctx.fillStyle = '#6b4d70';
+          ctx.fillRect(0, 26, 32, 1);
+          ctx.fillRect(0, 0, 1, 32);
         }
       } else if (pieceType.startsWith('corner_inner_')) {
         const corner = pieceType.replace('corner_inner_', '');
-        ctx.fillStyle = '#3a2d3c';
-        ctx.fillRect(0, 0, 32, 32);
-        ctx.fillStyle = '#181119'; // Shadow inner corner
-        if (corner === 'nw') ctx.fillRect(0, 0, 12, 12);
-        else if (corner === 'ne') ctx.fillRect(20, 0, 12, 12);
-        else if (corner === 'se') ctx.fillRect(20, 20, 12, 12);
-        else if (corner === 'sw') ctx.fillRect(0, 20, 12, 12);
+        drawBricks(0, 0, 32, 32);
 
-        ctx.fillStyle = '#533e56'; // L-shaped wall top cap
-        if (corner === 'nw') { ctx.fillRect(12, 0, 20, 6); ctx.fillRect(0, 12, 6, 20); }
-        else if (corner === 'ne') { ctx.fillRect(0, 0, 20, 6); ctx.fillRect(26, 12, 6, 20); }
-        else if (corner === 'se') { ctx.fillRect(0, 26, 20, 6); ctx.fillRect(26, 0, 6, 20); }
-        else if (corner === 'sw') { ctx.fillRect(12, 26, 20, 6); ctx.fillRect(0, 0, 6, 20); }
+        // Shadow inner corner pocket
+        ctx.fillStyle = '#140c15';
+        if (corner === 'nw') ctx.fillRect(0, 0, 10, 10);
+        else if (corner === 'ne') ctx.fillRect(22, 0, 10, 10);
+        else if (corner === 'se') ctx.fillRect(22, 22, 10, 10);
+        else if (corner === 'sw') ctx.fillRect(0, 22, 10, 10);
+
+        // L-shaped wall top cap
+        ctx.fillStyle = '#533e56';
+        if (corner === 'nw') { ctx.fillRect(10, 0, 22, 6); ctx.fillRect(0, 10, 6, 22); }
+        else if (corner === 'ne') { ctx.fillRect(0, 0, 22, 6); ctx.fillRect(26, 10, 6, 22); }
+        else if (corner === 'se') { ctx.fillRect(0, 26, 22, 6); ctx.fillRect(26, 0, 6, 22); }
+        else if (corner === 'sw') { ctx.fillRect(10, 26, 22, 6); ctx.fillRect(0, 0, 6, 22); }
+
+        ctx.fillStyle = '#6b4d70';
+        if (corner === 'nw') { ctx.fillRect(10, 0, 22, 1); ctx.fillRect(0, 10, 1, 22); }
+        else if (corner === 'ne') { ctx.fillRect(0, 0, 22, 1); ctx.fillRect(26, 10, 1, 22); }
+        else if (corner === 'se') { ctx.fillRect(0, 26, 22, 1); ctx.fillRect(26, 0, 1, 22); }
+        else if (corner === 'sw') { ctx.fillRect(10, 26, 22, 1); ctx.fillRect(0, 0, 1, 22); }
       } else if (pieceType === 't_junction') {
-        ctx.fillStyle = '#3a2d3c';
-        ctx.fillRect(0, 0, 32, 32);
+        drawBricks(0, 0, 32, 32);
+
+        // T-cap wall top
         ctx.fillStyle = '#533e56';
         ctx.fillRect(0, 0, 32, 6);
         ctx.fillRect(13, 6, 6, 26);
+        ctx.fillStyle = '#6b4d70';
+        ctx.fillRect(0, 0, 32, 1);
+        ctx.fillRect(13, 6, 1, 26);
       } else if (pieceType === 'endcap') {
-        ctx.fillStyle = '#3a2d3c';
-        ctx.fillRect(4, 4, 24, 24);
+        drawBricks(4, 4, 24, 24);
+
+        // Capped top and stone trim
         ctx.fillStyle = '#533e56';
         ctx.fillRect(2, 2, 28, 6);
+        ctx.fillRect(2, 2, 4, 28);
+        ctx.fillStyle = '#6b4d70';
+        ctx.fillRect(2, 2, 28, 1);
       }
     });
   };
