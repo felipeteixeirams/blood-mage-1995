@@ -259,11 +259,13 @@ export class DungeonGenerator {
       const rx = (mapW - roomW) / 2;
       const ry = (mapH - roomH) / 2;
 
+      const safeHouseWallGrid = new Set<string>();
+
       // Build safe house specific walls
-      this.buildWallLine(rx, ry, rx + roomW, ry, 0xffffff, 'tile_wood_wall', true); // Top
-      this.buildWallLine(rx, ry + roomH, rx + roomW, ry + roomH, 0xffffff, 'tile_wood_wall', true); // Bottom
-      this.buildWallLine(rx, ry, rx, ry + roomH, 0xffffff, 'tile_wood_wall', true); // Left
-      this.buildWallLine(rx + roomW, ry, rx + roomW, ry + roomH, 0xffffff, 'tile_wood_wall', true); // Right
+      this.buildWallLine(rx, ry, rx + roomW, ry, 0xffffff, 'tile_wood_wall', true, safeHouseWallGrid); // Top
+      this.buildWallLine(rx, ry + roomH, rx + roomW, ry + roomH, 0xffffff, 'tile_wood_wall', true, safeHouseWallGrid); // Bottom
+      this.buildWallLine(rx, ry, rx, ry + roomH, 0xffffff, 'tile_wood_wall', true, safeHouseWallGrid); // Left
+      this.buildWallLine(rx + roomW, ry, rx + roomW, ry + roomH, 0xffffff, 'tile_wood_wall', true, safeHouseWallGrid); // Right
 
       // Props ambiente da Safe House (tapete, estante, vela, ervas, barril,
       // tapeçaria) — PRECISA rodar aqui, antes do `return rooms` acima ser
@@ -282,11 +284,53 @@ export class DungeonGenerator {
       return rooms;
     }
 
+    // Master Wall Grid collecting all wall line coordinates for accurate autotiling
+    const masterWallGrid = new Set<string>();
+
+    // Helper to register wall coordinates into masterWallGrid before rendering
+    const registerWallLine = (x1: number, y1: number, x2: number, y2: number) => {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const dist = Math.hypot(dx, dy);
+      const steps = Math.ceil(dist / 32);
+      for (let i = 0; i <= steps; i++) {
+        const t = steps === 0 ? 0 : i / steps;
+        const wx = x1 + dx * t;
+        const wy = y1 + dy * t;
+        const gx = Math.round(wx / 32);
+        const gy = Math.round(wy / 32);
+        masterWallGrid.add(`${gx},${gy}`);
+      }
+    };
+
+    // Pre-pass: Register outer perimeter wall coordinates
+    registerWallLine(0, 0, mapW, 0);
+    registerWallLine(0, mapH - 32, mapW, mapH - 32);
+    registerWallLine(0, 0, 0, mapH);
+    registerWallLine(mapW - 32, 0, mapW - 32, mapH);
+
+    // Pre-pass: Register partition wall coordinates
+    orderedCells.forEach(({ room, leaf }) => {
+      const doorWidth = DOOR_WIDTH;
+      if (leaf.y > originY + 1) {
+        const midX = room.centerX;
+        registerWallLine(room.x, room.y, midX - doorWidth / 2, room.y);
+        registerWallLine(midX + doorWidth / 2, room.y, room.x + room.width, room.y);
+      }
+      if (leaf.x > originX + 1) {
+        const midY = room.centerY;
+        registerWallLine(room.x, room.y, room.x, midY - doorWidth / 2);
+        registerWallLine(room.x, midY + doorWidth / 2, room.x, room.y + room.height);
+      }
+    });
+
+    const renderedWallGrid = new Set<string>();
+
     // Outer Perimeter Walls
-    this.buildWallLine(0, 0, mapW, 0, tints.wall); // Top
-    this.buildWallLine(0, mapH - 32, mapW, mapH - 32, tints.wall); // Bottom
-    this.buildWallLine(0, 0, 0, mapH, tints.wall); // Left
-    this.buildWallLine(mapW - 32, 0, mapW - 32, mapH, tints.wall); // Right
+    this.buildWallLine(0, 0, mapW, 0, tints.wall, 'tile_wall_brick', false, masterWallGrid, renderedWallGrid); // Top
+    this.buildWallLine(0, mapH - 32, mapW, mapH - 32, tints.wall, 'tile_wall_brick', false, masterWallGrid, renderedWallGrid); // Bottom
+    this.buildWallLine(0, 0, 0, mapH, tints.wall, 'tile_wall_brick', false, masterWallGrid, renderedWallGrid); // Left
+    this.buildWallLine(mapW - 32, 0, mapW - 32, mapH, tints.wall, 'tile_wall_brick', false, masterWallGrid, renderedWallGrid); // Right
 
     // Build Partition Walls around rooms with door openings
     orderedCells.forEach(({ room, leaf }) => {
@@ -296,16 +340,16 @@ export class DungeonGenerator {
       // utilizável (senão a parede/porta duplicaria a Outer Perimeter Wall).
       if (leaf.y > originY + 1) {
         const midX = room.centerX;
-        this.buildWallLine(room.x, room.y, midX - doorWidth / 2, room.y, tints.wall);
-        this.buildWallLine(midX + doorWidth / 2, room.y, room.x + room.width, room.y, tints.wall);
+        this.buildWallLine(room.x, room.y, midX - doorWidth / 2, room.y, tints.wall, 'tile_wall_brick', false, masterWallGrid, renderedWallGrid);
+        this.buildWallLine(midX + doorWidth / 2, room.y, room.x + room.width, room.y, tints.wall, 'tile_wall_brick', false, masterWallGrid, renderedWallGrid);
         this.scene.add.image(midX, room.y, 'tile_door').setDepth(2);
       }
 
       // Left Wall — mesma lógica, pra borda esquerda utilizável.
       if (leaf.x > originX + 1) {
         const midY = room.centerY;
-        this.buildWallLine(room.x, room.y, room.x, midY - doorWidth / 2, tints.wall);
-        this.buildWallLine(room.x, midY + doorWidth / 2, room.x, room.y + room.height, tints.wall);
+        this.buildWallLine(room.x, room.y, room.x, midY - doorWidth / 2, tints.wall, 'tile_wall_brick', false, masterWallGrid, renderedWallGrid);
+        this.buildWallLine(room.x, midY + doorWidth / 2, room.x, room.y + room.height, tints.wall, 'tile_wall_brick', false, masterWallGrid, renderedWallGrid);
         this.scene.add.image(room.x, midY, 'tile_door').setDepth(2);
       }
 
@@ -631,12 +675,7 @@ export class DungeonGenerator {
    * Bit 3 (8): West
    */
   public calculateWallBitmask(gx: number, gy: number, wallGrid: Set<string>): number {
-    let mask = 0;
-    if (wallGrid.has(`${gx},${gy - 1}`)) mask |= 1;  // North
-    if (wallGrid.has(`${gx + 1},${gy}`)) mask |= 2;  // East
-    if (wallGrid.has(`${gx},${gy + 1}`)) mask |= 4;  // South
-    if (wallGrid.has(`${gx - 1},${gy}`)) mask |= 8;  // West
-    return mask;
+    return this.calculateBitmask(gx, gy, (x, y) => wallGrid.has(`${x},${y}`));
   }
 
   public getWallTextureKey(
@@ -696,13 +735,24 @@ export class DungeonGenerator {
     return this.scene.textures?.exists(vKey) ? vKey : baseTextureKey;
   }
 
-  private buildWallLine(x1: number, y1: number, x2: number, y2: number, wallTint: number, textureKey: string = 'tile_wall_brick', disableTint: boolean = false) {
+  private buildWallLine(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    wallTint: number,
+    textureKey: string = 'tile_wall_brick',
+    disableTint: boolean = false,
+    externalWallGrid?: Set<string>,
+    renderedWallGrid?: Set<string>
+  ) {
     const dx = x2 - x1;
     const dy = y2 - y1;
     const dist = Math.hypot(dx, dy);
     const steps = Math.ceil(dist / 32);
 
-    const wallGrid = new Set<string>();
+    const neighborGrid = externalWallGrid || new Set<string>();
+    const renderedGrid = renderedWallGrid || new Set<string>();
     const wallItems: Array<{ wx: number; wy: number; gx: number; gy: number }> = [];
 
     for (let i = 0; i <= steps; i++) {
@@ -713,8 +763,9 @@ export class DungeonGenerator {
       const gy = Math.round(wy / 32);
 
       const key = `${gx},${gy}`;
-      if (!wallGrid.has(key)) {
-        wallGrid.add(key);
+      neighborGrid.add(key);
+      if (!renderedGrid.has(key)) {
+        renderedGrid.add(key);
         wallItems.push({ wx, wy, gx, gy });
       }
     }
@@ -722,7 +773,7 @@ export class DungeonGenerator {
     for (const item of wallItems) {
       let finalWallKey = textureKey;
       if (textureKey === 'tile_wall_brick' || textureKey === 'spr_wall') {
-        finalWallKey = this.getWallTextureKey(item.gx, item.gy, wallGrid, textureKey);
+        finalWallKey = this.getWallTextureKey(item.gx, item.gy, neighborGrid, textureKey);
       }
 
       const wall = this.wallsGroup.create(item.wx, item.wy, finalWallKey);
