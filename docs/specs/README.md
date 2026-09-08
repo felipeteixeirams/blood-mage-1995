@@ -41,7 +41,7 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition
 
 | 📋 Backlog | 🔨 Em Desenvolvimento | 🔍 Em Qualidade | ✅ Concluído *(7 dias)* |
 |---|---|---|---|
-| [06](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) · 🔒[08](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md) · [09](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) · 🔒[09-PL](./backlog/09_PIXEL_LAB_PROMPT_GUIDE.md) · [11](./backlog/11_ATMOSFERA_E_TENSAO.md) · [12](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) · [15](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) · 🔒[29](./backlog/29_CLOUD_SAVE_FASE5.md) · [30](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) · [31](./backlog/31_NORMAL_MAP_TILE_DOOR.md) | [05 — Fase 5](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md) *(só falta i18n)* | [03 — Fase 3](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md) *(código pronto, falta QA+tuning)*<br>[09 — HUD Tier A](./delivered/09_HUD_TIER_A_REFERENCIAS_VISUAIS.md) *(código pronto, falta QA manual)*<br>[25 — Chunk Streaming](./delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md) *(código pronto, falta cruzar fronteira de chunk em jogo)* | 17 · 28 · 18 · 10 *(ver tabela "🟢 Delivered" abaixo)* |
+| [06](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) · 🔒[08](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md) · [09](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) · 🔒[09-PL](./backlog/09_PIXEL_LAB_PROMPT_GUIDE.md) · [11](./backlog/11_ATMOSFERA_E_TENSAO.md) · [12](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) · [15](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) · 🔒[29](./backlog/29_CLOUD_SAVE_FASE5.md) · [31](./backlog/31_NORMAL_MAP_TILE_DOOR.md) | [30 — Poisson Disk](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) *(Jules, determinismo por seed)*<br>[05 — Fase 5](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md) *(só falta i18n)* | [03 — Fase 3](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md) *(código pronto, falta QA+tuning)*<br>[09 — HUD Tier A](./delivered/09_HUD_TIER_A_REFERENCIAS_VISUAIS.md) *(código pronto, falta QA manual)*<br>[25 — Chunk Streaming](./delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md) *(código pronto, falta cruzar fronteira de chunk em jogo)* | 17 · 28 · 18 · 10 *(ver tabela "🟢 Delivered" abaixo)* |
 
 > 🔒 = bloqueada por insumo externo (ver seção "🚧 Bloqueados" abaixo) — ainda aparece na coluna Backlog porque o escopo já está pronto, só não tem próximo passo executável agora.
 
@@ -68,11 +68,11 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition
 
 | # | Spec | Pasta | Prioridade | Criticidade | Progresso |
 |---|---|---|---|---|---|
-| 1 | [`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md) | in-progress | 🔴 high | 🟡 medium | 90% — resta só i18n (Cloud Save extraído, ver bloqueados) |
-| 2 | [`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
-| 3 | [`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) | backlog | 🟡 medium | 🟡 medium | partial |
-| 4 | [`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
-| 5 | [`backlog/30_DETERMINISMO_SEED_POISSON_DISK.md`](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) | backlog | 🟡 medium | 🟢 low | Jules-ready — pronto pra execução sem esclarecimento |
+| 1 | [`backlog/30_DETERMINISMO_SEED_POISSON_DISK.md`](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) | backlog | 🟡 medium | 🟢 low | **→ Jules (2026-09-08)** — Determinismo por seed no Poisson Disk (`Math.random()` → hashLattice PRNG dentro de `samplePoissonDisk`) |
+| 2 | [`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md) | in-progress | 🔴 high | 🟡 medium | 90% — resta só i18n (Cloud Save extraído, ver bloqueados) |
+| 3 | [`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
+| 4 | [`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) | backlog | 🟡 medium | 🟡 medium | partial |
+| 5 | [`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
 | 6 | [`backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) | backlog | 🟡 medium | 🟢 low | Falta só o modal React de UI (~90% já entregue em `delivered/18`); default de gatilho (NPC Ancião) já definido |
 | 7 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟢 low | 🟢 low | Reduzido ao residual Tier B.6 (menu contextual de mouse) — Tier A entregue em `delivered/09` |
 | 8 | [`backlog/31_NORMAL_MAP_TILE_DOOR.md`](./backlog/31_NORMAL_MAP_TILE_DOOR.md) | backlog | 🟢 low | 🟢 low | Jules-ready — pronto pra execução sem esclarecimento |
@@ -87,6 +87,9 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition
 > — PR #97 (Jules) entregou a Fase C (transições sem corte entre biomas),
 > última fase pendente. Spec movida para `delivered/25` (ver tabela
 > "🟢 Delivered" abaixo).
+>
+> *Nota:* `30_DETERMINISMO_SEED_POISSON_DISK` moveu para posição 1 (Fila de Prioridade) e passou a "Em Desenvolvimento" (Kanban) em 2026-09-08
+> — entregue para Jules iniciar a implementação imediatamente (spec está 100% pronta, sem bloqueios ou esclarecimentos pendentes). Determinismo por seed no espalhamento de vegetação via Poisson Disk é crítico para _roguelike replayability_.
 
 ### 🟠 Escopo em Definição (proposta real, mas não pronta para implementação)
 
