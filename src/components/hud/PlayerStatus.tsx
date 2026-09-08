@@ -19,12 +19,33 @@ const BarRivet: React.FC<{ className: string }> = ({ className }) => (
   />
 );
 
+// Gothic Pixel Art SVG Badges for Status Conditions
+const BleedingIcon: React.FC = () => (
+  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="shrink-0">
+    <path d="M5 1L2 5.5C2 7 3.2 8.5 5 8.5C6.8 8.5 8 7 8 5.5L5 1Z" fill="#ef4444" stroke="#991b1b" strokeWidth="0.8" />
+  </svg>
+);
+
+const PoisonIcon: React.FC = () => (
+  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="shrink-0">
+    <circle cx="5" cy="5" r="3.5" fill="#22c55e" stroke="#14532d" strokeWidth="0.8" />
+    <path d="M5 3V5M5 6.5V7" stroke="#052e16" strokeWidth="0.8" strokeLinecap="round" />
+  </svg>
+);
+
+const InfectionIcon: React.FC = () => (
+  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="shrink-0">
+    <rect x="2" y="2" width="6" height="6" fill="#a855f7" stroke="#581c87" strokeWidth="0.8" rx="1" />
+    <path d="M3.5 3.5L6.5 6.5M6.5 3.5L3.5 6.5" stroke="#2e1065" strokeWidth="0.8" />
+  </svg>
+);
+
 // Slots de curativos contextuais (inspirados em Hades / Dead Cells: reativos apenas sob aflição)
 const CURATIVE_SLOTS: {
   type: 'bandages' | 'antidotes' | 'antibiotics';
   condition: 'bleeding' | 'poison' | 'infection';
   key: string;
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   title: string;
   activeBg: string;
@@ -36,7 +57,7 @@ const CURATIVE_SLOTS: {
     type: 'bandages',
     condition: 'bleeding',
     key: 'Z',
-    icon: '🩸',
+    icon: <BleedingIcon />,
     label: 'ATADURA',
     title: 'Sangramento: Pressione Z ou clique para usar Atadura',
     activeBg: 'bg-red-950/90',
@@ -48,7 +69,7 @@ const CURATIVE_SLOTS: {
     type: 'antidotes',
     condition: 'poison',
     key: 'X',
-    icon: '🍇',
+    icon: <PoisonIcon />,
     label: 'ANTÍDOTO',
     title: 'Veneno: Pressione X ou clique para usar Antídoto',
     activeBg: 'bg-emerald-950/90',
@@ -60,7 +81,7 @@ const CURATIVE_SLOTS: {
     type: 'antibiotics',
     condition: 'infection',
     key: 'V',
-    icon: '🧪',
+    icon: <InfectionIcon />,
     label: 'ANTIBIÓTICO',
     title: 'Infecção: Pressione V ou clique para usar Antibiótico',
     activeBg: 'bg-purple-950/90',
