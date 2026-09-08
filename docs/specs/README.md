@@ -46,7 +46,6 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, discovery, rejec
 | 6 | [`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
 | 7 | [`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) | backlog | 🟡 medium | 🟡 medium | partial |
 | 8 | [`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
-| 9 | [`backlog/30_DETERMINISMO_SEED_POISSON_DISK.md`](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) | backlog | 🟡 medium | 🟢 low | Jules-ready — pronto pra execução sem esclarecimento |
 | 10 | [`backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) | backlog | 🟡 medium | 🟢 low | Falta só o modal React de UI (~90% já entregue em `delivered/18`) |
 | 11 | [`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md) | backlog | 🟢 low | 🟡 medium | Superada em parte — só resta a pergunta menor de variedade interna em `gloomy_woods` |
 
@@ -127,6 +126,7 @@ docs/specs/
 
 | Spec | Escopo Concluído | Entregue em | Verificação / Testes |
 |---|---|---|---|
+| **[`delivered/30_DETERMINISMO_SEED_POISSON_DISK.md`](./delivered/30_DETERMINISMO_SEED_POISSON_DISK.md)** | **Determinismo por Seed no Espalhamento Poisson Disk:** Amostragem de vegetação e props 100% determinística por seed da instância de `HeightmapGenerator` | 2026-09-08 | Vitest (`HeightmapGenerator.test.ts`) |
 | **[`delivered/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./delivered/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md)** | **Fase 5: Polimento de Produção, Empacotamento Nativo & i18n:** Performance zero-GC, Gamepad API, Haptics, PWA/TWA/Steam builds, Advanced Particles, Achievements e internacionalização (PT-BR / EN-US) | 2026-09-08 | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`](./delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md)** | **Mundo Contínuo Estilo Dungeon Siege — Chunk Streaming:** Fases A, B, B.2, C e D entregues (streaming de chunks, bounds dinâmicos, transições sem corte de iluminação/névoa/áudio/FX e porta de saída física) | 2026-09-08 | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/17_POLIMENTO_GRAFICO_CALIBRACAO_SISTEMAS_EXISTENTES.md`](./delivered/17_POLIMENTO_GRAFICO_CALIBRACAO_SISTEMAS_EXISTENTES.md)** | **Polimento Gráfico por Calibração dos Sistemas Existentes:** Calibração completa das 9 Frentes (Glow, PostFX, Lighting, Atmosphere, Shadows, Reflections, Particles, Tree Shader & Terrain), tokens de sequência de FX e profundidades relativas | 2026-09-07 | Vitest + E2E (`pnpm verify`) |
@@ -157,7 +157,6 @@ docs/specs/
 | **[`backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md`](./backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md)** | Framework de Evolução de UI e Assets Externos Góticos (Híbrido 9-slice React & Web Audio) | high | high | **Sim** — mesmo gate acima (áudio/telemetria já entregues à parte) |
 | **[`backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md`](./backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md)** | Discovery Eixo B — Pipeline de Integração de Assets Externos e Spritesheets por Tiers | medium | medium | **Sim** — orçamento de arte |
 | **[`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** | Toggle de Intensidade de Conteúdo — mitigação de classificação indicativa (gore visual configurável) | medium | medium | Não |
-| **[`backlog/30_DETERMINISMO_SEED_POISSON_DISK.md`](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md)** | Determinismo por seed no espalhamento de vegetação/props (Poisson Disk) — Jules-ready | medium | low | Não |
 | **[`backlog/31_NORMAL_MAP_TILE_DOOR.md`](./backlog/31_NORMAL_MAP_TILE_DOOR.md)** | Normal map ausente na textura `tile_door` — Jules-ready | low | low | Não |
 | **[`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md)** | *(superada em parte, 2026-09-08)* `PathDrivenGenerator` pra `gloomy_woods` — escopo de conectividade entre biomas já resolvido pela abordagem escolhida em #25; resta só decidir se vale mais variedade interna na floresta | low | medium | Não |
 | **[`backlog/29_CLOUD_SAVE_FASE5.md`](./backlog/29_CLOUD_SAVE_FASE5.md)** | *(novo, extraído de `in-progress/05`)* Cloud Save automatizado (Firebase/Firestore) | medium | high | **Sim** — confirmação de Felipe pendente |
