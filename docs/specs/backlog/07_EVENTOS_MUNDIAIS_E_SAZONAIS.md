@@ -2,7 +2,8 @@
 agent_context: game-designer, backend, product-manager, frontend
 target_module: docs/specs/propostas
 priority: medium
-status: draft
+criticality: medium
+status: backlog
 last_updated: 2026-08-11
 tags: [specs, proposta, world-events, eventos-mundiais, retencao, sazonal]
 ---

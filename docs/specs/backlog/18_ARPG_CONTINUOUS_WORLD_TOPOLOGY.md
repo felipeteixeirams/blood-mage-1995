@@ -1,16 +1,38 @@
 ---
 agent_context: game-designer, game-engine
 target_module: src/game/systems/DungeonGenerator.ts, src/game/systems/WorldManager.ts
-priority: high
-status: active
+priority: low
+criticality: medium
+status: backlog
 implementation_status: not_started
-last_updated: 2026-09-06
+last_updated: 2026-09-08
 tags:
   - specs
   - world-building
   - level-design
   - continuous-world
+  - superseded
 ---
+
+> ⛔ **SUPERADA EM PARTE (atualizado em 2026-09-08):** o conflito original
+> era sobre COMO resolver "mundo parece um quadrado" — esta spec propunha
+> `PathDrivenGenerator`, `backlog/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`
+> propunha chunk streaming sobre o gerador atual. Felipe decidiu e mandou
+> implementar a abordagem da spec 25 (PR #92, 2026-09-08: bounds dinâmicos
+> + porta física), que resolve o problema de conectividade entre biomas
+> sem trocar o algoritmo de geração interno de nenhum bioma. Isso resolve
+> o impedimento de escopo original desta spec.
+>
+> **O que ainda pode ser uma pergunta separada e menor:** o código deixou
+> um comentário em `DungeonGenerator.ts` dizendo que a escolha entre
+> `PathDrivenGenerator` (esta spec) e `ProceduralForestGenerator` (já em
+> produção) especificamente para `gloomy_woods` segue em aberto — mas essa
+> é uma questão de qualidade/variedade do terreno interno de UM bioma, não
+> mais um bloqueio de arquitetura para o resto do mundo. Rebaixada de
+> `critical` pra `medium`/prioridade `low`: só vale a pena revisitar se
+> Felipe especificamente quiser mais variedade orgânica na floresta:
+> `PathDrivenGenerator` já existe instanciado (dormente, não usado em
+> `generate()`) caso a decisão seja adotá-lo.
 
 # Spec 18 — Topologia de Mundo Contínuo e Variedade Orgânica (Padrão Dungeon Siege)
 

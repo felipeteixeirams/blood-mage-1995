@@ -2,7 +2,8 @@
 agent_context: product-manager, game-designer, all agents
 target_module: docs/specs
 priority: high
-status: proposta
+criticality: low
+status: backlog
 last_updated: 2026-08-14
 tags: [specs, proposta, commercial, mobile-first, architecture, roadmap]
 ---

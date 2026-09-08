@@ -1,8 +1,10 @@
 ---
-agent_context: technical_specification_progression_and_contracts
-target_module: docs/specs/backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md
+agent_context: backend, game-designer, frontend
+target_module: src/store/gameStore.ts, src/data
 priority: medium
-status: partial
+criticality: medium
+status: backlog
+progress: partial
 last_updated: "2026-09-02"
 tags:
   - progression

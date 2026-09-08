@@ -103,8 +103,8 @@ export class DungeonGenerator {
     const usableH = mapH - 140;
 
     if (isSafeHouse) {
-      const roomW = 800;
-      const roomH = 600;
+      const roomW = 550; // Reduzido de 800 (41% menor)
+      const roomH = 420; // Reduzido de 600 (30% menor)
       const rx = offsetX + (mapW - roomW) / 2;
       const ry = offsetY + (mapH - roomH) / 2;
 
@@ -174,7 +174,15 @@ export class DungeonGenerator {
       const wx = gx * 48;
       const wy = gy * 24;
       if (isSafeHouse) {
-        return wx >= (mapW - 800) / 2 && wx <= (mapW + 800) / 2 && wy >= (mapH - 600) / 2 && wy <= (mapH + 600) / 2;
+        // Mesma janela usada para posicionar a sala (rx/ry acima) — precisa do
+        // offsetX/offsetY do chunk contíguo, senão a checagem de piso desalinha
+        // da sala real assim que a safe_house deixar de estar sempre no offset 0.
+        return (
+          wx >= offsetX + (mapW - 550) / 2 &&
+          wx <= offsetX + (mapW + 550) / 2 &&
+          wy >= offsetY + (mapH - 420) / 2 &&
+          wy <= offsetY + (mapH + 420) / 2
+        );
       }
       return rooms.some((r) => wx >= r.x - 24 && wx <= r.x + r.width + 24 && wy >= r.y - 24 && wy <= r.y + r.height + 24);
     };
@@ -254,14 +262,14 @@ export class DungeonGenerator {
     }
 
     if (isSafeHouse) {
-      const roomW = 800;
-      const roomH = 600;
+      const roomW = 550;
+      const roomH = 420;
       const rx = offsetX + (mapW - roomW) / 2;
       const ry = offsetY + (mapH - roomH) / 2;
 
       const safeHouseWallGrid = new Set<string>();
 
-      // Build safe house specific walls
+      // Build safe house specific walls with thickness for cozy atmosphere
       this.buildWallLine(rx, ry, rx + roomW, ry, 0xffffff, 'tile_wood_wall', true, safeHouseWallGrid); // Top
       this.buildWallLine(rx, ry + roomH, rx + roomW, ry + roomH, 0xffffff, 'tile_wood_wall', true, safeHouseWallGrid); // Bottom
       this.buildWallLine(rx, ry, rx, ry + roomH, 0xffffff, 'tile_wood_wall', true, safeHouseWallGrid); // Left

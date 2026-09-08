@@ -9,6 +9,7 @@ import { telemetry } from '../../utils/telemetry';
 import { worldManager } from '../systems/WorldManager';
 import { ContractSystem } from './ContractSystem';
 import { ChunkStreamer, ChunkSpec } from './ChunkStreamer';
+import { SafeHouseAnimationController } from './SafeHouseAnimationController';
 import type { GameScene } from '../scenes/GameScene';
 
 /**
@@ -74,6 +75,8 @@ export class DungeonFlowController {
       this.unloadChunkBiome(biome, chunk.index);
     },
   });
+
+  private safeHouseAnimationController: SafeHouseAnimationController | null = null;
 
   public updateChunkStream(playerWorldX: number) {
     this.zoneStreamer.update(playerWorldX);
@@ -211,6 +214,13 @@ export class DungeonFlowController {
    */
   public buildDungeonMap(mapW: number, mapH: number, floorDepth: number) {
     const scene = this.scene;
+
+    // Limpar animações da Safe House anterior (se existirem)
+    if (this.safeHouseAnimationController) {
+      this.safeHouseAnimationController.destroy();
+      this.safeHouseAnimationController = null;
+    }
+
     this.builtChunkIndices.clear();
     // Clear pending spawns
     scene.pendingEnemySpawns = [];
@@ -314,31 +324,34 @@ export class DungeonFlowController {
     scene.clearNpcMarkers();
 
     if (biome === 'safe_house') {
-      // Safe House Environment Props
-      const hearth = scene.wallsGroup.create(spawnRoom.centerX, spawnRoom.y + 60, 'spr_hearth_fireplace');
-      hearth.setDepth(spawnRoom.y + 60);
+      // Safe House Environment Props — dimensões reduzidas (550x420), layout compacto e aconchegante
+
+      // Lareira central (coração do refúgio)
+      const hearth = scene.wallsGroup.create(spawnRoom.centerX, spawnRoom.y + 50, 'spr_hearth_fireplace');
+      hearth.setDepth(spawnRoom.y + 50);
       hearth.setSize(48, 48);
 
-      const bed = scene.wallsGroup.create(spawnRoom.x + 80, spawnRoom.y + 120, 'spr_straw_bed');
-      bed.setDepth(spawnRoom.y + 120);
+      // Cama no canto (sem animação de balanceio, apenas estática com detalhes)
+      const bed = scene.wallsGroup.create(spawnRoom.x + 60, spawnRoom.y + 90, 'spr_straw_bed');
+      bed.setDepth(spawnRoom.y + 90);
 
       // Frente 1/2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: baú inicial
       // de suprimentos — abrir dá a Adaga de Aço garantida e avança o objetivo
       // obj_loot_chest de quest_ch1_first_steps (ver CollisionHandlers.ts).
       const suppliesChest = scene.chestsGroup.create(
-        spawnRoom.centerX - 90,
-        spawnRoom.y + 90,
+        spawnRoom.centerX - 70,
+        spawnRoom.y + 80,
         scene.dungeonGenerator.getChestTextureKey('south')
       );
       suppliesChest.setData('questChest', 'starter_dagger');
-      suppliesChest.setDepth(spawnRoom.y + 90);
+      suppliesChest.setDepth(spawnRoom.y + 80);
       if (scene.lightingSystem) scene.lightingSystem.applyLightPipeline(suppliesChest);
 
-      // Maelen NPC
-      const maelen = scene.npcsGroup.create(spawnRoom.centerX + 100, spawnRoom.centerY, 'spr_npc_maelen');
+      // Maelen NPC — posicionado à direita, voltado para o centro
+      const maelen = scene.npcsGroup.create(spawnRoom.centerX + 80, spawnRoom.centerY - 20, 'spr_npc_maelen');
       maelen.setData('npcType', 'maelen');
       scene.depthGroup.add(maelen);
-      scene.createNpcMarker(spawnRoom.centerX + 100, spawnRoom.centerY - 20, 'maelen', 0xf59e0b);
+      scene.createNpcMarker(spawnRoom.centerX + 80, spawnRoom.centerY - 40, 'maelen', 0xf59e0b);
 
       // No enemies in Safe House
       scene.totalFloorMonsters = 0;
@@ -346,6 +359,12 @@ export class DungeonFlowController {
 
       // Create physical exit door to the next zone at the back of the safe house room
       this.revealDescentDoor(spawnRoom.centerX, spawnRoom.y + 160);
+
+      // ===== Inicializar SafeHouseAnimationController com tweens e efeitos Phaser 4 =====
+      if (!this.safeHouseAnimationController) {
+        this.safeHouseAnimationController = new SafeHouseAnimationController(scene);
+      }
+      this.safeHouseAnimationController.initialize();
     } else {
       if (gameMode === 'arcade') {
         // Spawn Safe Village NPCs in Spawn Room (Room 0)
@@ -726,5 +745,16 @@ export class DungeonFlowController {
 
     // Rebuild Dungeon Map for Next Floor Depth!
     this.buildDungeonMap(1920, 1440, scene.currentFloorDepth);
+  }
+
+  /**
+   * Limpa recursos do DungeonFlowController (animações, tweens, emissores).
+   * Chamado ao destruir a cena.
+   */
+  public cleanup(): void {
+    if (this.safeHouseAnimationController) {
+      this.safeHouseAnimationController.destroy();
+      this.safeHouseAnimationController = null;
+    }
   }
 }

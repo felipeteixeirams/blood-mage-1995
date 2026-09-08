@@ -1,11 +1,20 @@
 ---
 agent_context: game-engine, frontend, game-designer, product-manager
 target_module: artifacts/bloodmage/src/game
-priority: alta
-status: parcialmente_implementado
+priority: high
+criticality: high
+status: backlog
+progress: parcialmente_implementado
 last_updated: 2026-09-02
 tags: [specs, proposta, ui, assets-externos, pixel-art, hybrid-system, performance, audio]
 ---
+
+> ⛔ **IMPEDIMENTO (sinalizado em 2026-09-07):** o núcleo desta proposta
+> (transição de sprites/UI para assets físicos externos) depende do mesmo
+> bloqueio de orçamento/direção de arte de `backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`
+> e `backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md` — pendente de decisão de
+> Felipe. As partes de áudio/telemetria já implementadas (`bgmSynthesizer.ts`,
+> `telemetry.ts`) não são afetadas e continuam válidas.
 
 # Proposta de Discovery — Evolução de UI e Assets Externos Góticos (Pixel Art)
 

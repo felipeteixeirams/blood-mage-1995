@@ -1,11 +1,16 @@
 ---
-status: PARCIALMENTE IMPLEMENTADO
+agent_context: game-engine, pixel-artist, product-manager
+target_module: src/assets, src/game/scenes/BootScene.ts
+priority: medium
+criticality: medium
+status: backlog
+progress: PARCIALMENTE IMPLEMENTADO
 phase: Pós-Fase 5
-priority: MÉDIA
 target_date: Q4 2026 (após decisão de arte externa)
 responsible: "TBD (quando orçamento de arte for aprovado)"
 estimated_effort: "5-7 dias (após aprovação de sprites)"
 dependencies: ["Fase 5 completa", "Orçamento de arte aprovado", "Direção artística definida"]
+last_updated: 2026-09-02
 tags: [specs, discovery, assets, pipeline, performance, procedural-replacement]
 ---
 

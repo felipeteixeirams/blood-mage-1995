@@ -42,10 +42,26 @@ vi.mock('phaser', () => {
         return false;
       }),
     };
+    time = {
+      // SpikeTrap's constructor and cycleState() schedule via delayedCall();
+      // its destroy() override calls the returned event's .destroy().
+      delayedCall: vi.fn().mockReturnValue({ destroy: vi.fn() }),
+    };
     physics = {
       add: {
         staticGroup: vi.fn().mockReturnValue(new MockStaticGroup()),
-        existing: vi.fn().mockImplementation((obj: any) => obj),
+        existing: vi.fn().mockImplementation((obj: any) => {
+          // Traps.ts (SpikeTrap/ExplosiveBarrel) reads `this.body` right after
+          // `physics.add.existing()` to call setSize/setOffset/setCircle —
+          // without a mock body here, a full dungeon generation that spawns
+          // any trap/barrel throws "Cannot read properties of undefined".
+          obj.body = {
+            setSize: vi.fn().mockReturnThis(),
+            setOffset: vi.fn().mockReturnThis(),
+            setCircle: vi.fn().mockReturnThis(),
+          };
+          return obj;
+        }),
       },
     };
     spikeTrapsGroup = { add: vi.fn() };
