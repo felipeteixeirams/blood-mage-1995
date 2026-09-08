@@ -86,11 +86,14 @@ export class ProceduralForestGenerator {
    * (dividindo pelo tamanho do tile, mesmo padrão de
    * `DungeonGenerator.generate()` linhas 80-84) resolve isso.
    */
-  public generate(mapW: number, mapH: number): RoomData[] {
+  public generate(mapW: number, mapH: number, offsetX: number = 0, offsetY: number = 0): RoomData[] {
     const gridW = Math.max(1, Math.floor(mapW / this.TILE_WIDTH));
     const gridH = Math.max(1, Math.floor(mapH / this.TILE_HEIGHT));
 
-    logger.info('ProceduralForestGenerator.generate', 'Starting forest generation', { mapW, mapH, gridW, gridH });
+    const cameraOffsetX = this.CAMERA_OFFSET_X + offsetX;
+    const cameraOffsetY = this.CAMERA_OFFSET_Y + offsetY;
+
+    logger.info('ProceduralForestGenerator.generate', 'Starting forest generation', { mapW, mapH, gridW, gridH, offsetX, offsetY });
     try {
       // Gerar heightmap procedural
       this.heightGenerator.generateHeightmap(gridW, gridH);
@@ -102,12 +105,12 @@ export class ProceduralForestGenerator {
 
       // Renderizar piso de grama (com luz solar filtrada pela copa e relevo)
       logger.info('ProceduralForestGenerator.generate', 'Rendering forest floor');
-      this.renderForestFloor(gridW, gridH);
+      this.renderForestFloor(gridW, gridH, cameraOffsetX, cameraOffsetY);
       logger.info('ProceduralForestGenerator.generate', 'Forest floor rendered successfully');
 
       // Gerar e renderizar árvores
       logger.info('ProceduralForestGenerator.generate', 'Rendering trees');
-      this.generateAndRenderTrees(gridW, gridH);
+      this.generateAndRenderTrees(gridW, gridH, cameraOffsetX, cameraOffsetY);
       logger.info('ProceduralForestGenerator.generate', 'Trees rendered successfully');
 
       // Iniciar partículas ambientes de poeira/pólen flutuante da floresta
@@ -123,8 +126,8 @@ export class ProceduralForestGenerator {
       const centerGridX = gridW / 2;
       const centerGridY = gridH / 2;
       const centerZ = this.heightGenerator.getHeightAt(Math.floor(centerGridX), Math.floor(centerGridY));
-      const centerIsoX = this.CAMERA_OFFSET_X + (centerGridX - centerGridY) * (this.TILE_WIDTH / 2);
-      const centerIsoY = this.CAMERA_OFFSET_Y + (centerGridX + centerGridY) * (this.TILE_HEIGHT / 2) - (centerZ * 2);
+      const centerIsoX = cameraOffsetX + (centerGridX - centerGridY) * (this.TILE_WIDTH / 2);
+      const centerIsoY = cameraOffsetY + (centerGridX + centerGridY) * (this.TILE_HEIGHT / 2) - (centerZ * 2);
 
       const rooms: RoomData[] = [
         {
@@ -465,34 +468,22 @@ export class ProceduralForestGenerator {
    * `gridW`/`gridH` são células de grid (já convertidas de pixels em
    * `generate()`), NÃO dimensões de mundo em pixels.
    */
-  private renderForestFloor(gridW: number, gridH: number): void {
+  private renderForestFloor(gridW: number, gridH: number, cameraOffsetX: number = this.CAMERA_OFFSET_X, cameraOffsetY: number = this.CAMERA_OFFSET_Y): void {
     const gameScene = this.scene as GameScene;
-    logger.info('ProceduralForestGenerator.renderForestFloor', 'Starting floor rendering', { gridW, gridH, totalTiles: gridW * gridH });
+    logger.info('ProceduralForestGenerator.renderForestFloor', 'Starting floor rendering', { gridW, gridH, totalTiles: gridW * gridH, cameraOffsetX, cameraOffsetY });
 
     if (!gameScene.depthGroup) {
       logger.error('ProceduralForestGenerator.renderForestFloor', 'depthGroup is not available', {});
       throw new Error('GameScene.depthGroup is required for forest rendering');
     }
 
-    // IMPORTANTE: o piso (grama + manchas de luz) NÃO entra no `depthGroup`.
-    // `depthGroup` alimenta o ISO Y-SORTING DEPTH SYSTEM (GameScene.update(),
-    // `gameObject.setDepth(gameObject.y)` a cada frame) — correto para
-    // objetos VERTICAIS (personagem, inimigos, árvores) que devem se
-    // ocluir mutuamente conforme a posição. `forest_grass` é um retângulo
-    // 64x32 OPACO sem recorte de silhueta isométrica (losango); colocá-lo
-    // no Y-sort fazia sua metade superior invadir visualmente o espaço do
-    // personagem (reportado: "grama cobrindo até a cabeça do personagem").
-    // O piso é plano — deve ficar sempre atrás de tudo, com depth FIXO,
-    // fora do Y-sort. Detalhe vertical real (tufos de grama) é
-    // responsabilidade do TerrainDetailFactory, que sim participa do
-    // Y-sort corretamente (silhueta fina, origem na base).
     let tilesAdded = 0;
     for (let y = 0; y < gridH; y++) {
       for (let x = 0; x < gridW; x++) {
         try {
           const zElevation = this.heightGenerator.getHeightAt(x, y);
-          const isoX = this.CAMERA_OFFSET_X + (x - y) * (this.TILE_WIDTH / 2);
-          const isoY = this.CAMERA_OFFSET_Y + (x + y) * (this.TILE_HEIGHT / 2);
+          const isoX = cameraOffsetX + (x - y) * (this.TILE_WIDTH / 2);
+          const isoY = cameraOffsetY + (x + y) * (this.TILE_HEIGHT / 2);
           // `renderY` desloca a base das falésias (abaixo) proporcionalmente à
           // elevação — mas o SPRITE do piso em si fica em `isoY` (grid plano).
           // Verificado rodando o jogo: mesmo com o recorte em losango, cada
@@ -566,8 +557,8 @@ export class ProceduralForestGenerator {
       try {
         const px = this.noise(i * 7, 500) * gridW;
         const py = this.noise(i * 7, 501) * gridH;
-        const isoX = this.CAMERA_OFFSET_X + (px - py) * (this.TILE_WIDTH / 2);
-        const isoY = this.CAMERA_OFFSET_Y + (px + py) * (this.TILE_HEIGHT / 2);
+        const isoX = cameraOffsetX + (px - py) * (this.TILE_WIDTH / 2);
+        const isoY = cameraOffsetY + (px + py) * (this.TILE_HEIGHT / 2);
 
         const patch = gameScene.add.image(isoX, isoY, 'forest_light_patch');
         patch.setBlendMode(Phaser.BlendModes.ADD);
@@ -588,16 +579,16 @@ export class ProceduralForestGenerator {
     // Vegetação rica e variada (tufos, arbustos, cogumelos, rochas e troncos Y-sorted)
     const terrainDetailFactory = new TerrainDetailFactory(this.scene);
 
-    const minIsoX = this.CAMERA_OFFSET_X - gridH * (this.TILE_WIDTH / 2);
-    const maxIsoX = this.CAMERA_OFFSET_X + gridW * (this.TILE_WIDTH / 2);
-    const maxIsoY = this.CAMERA_OFFSET_Y + (gridW + gridH) * (this.TILE_HEIGHT / 2);
+    const minIsoX = cameraOffsetX - gridH * (this.TILE_WIDTH / 2);
+    const maxIsoX = cameraOffsetX + gridW * (this.TILE_WIDTH / 2);
+    const maxIsoY = cameraOffsetY + (gridW + gridH) * (this.TILE_HEIGHT / 2);
 
     const tufts = terrainDetailFactory.scatterRichFlora({
       count: Math.min(240, Math.max(30, Math.floor((gridW * gridH) / 5))),
       originX: minIsoX,
-      originY: this.CAMERA_OFFSET_Y,
+      originY: cameraOffsetY,
       areaWidth: maxIsoX - minIsoX,
-      areaHeight: maxIsoY - this.CAMERA_OFFSET_Y,
+      areaHeight: maxIsoY - cameraOffsetY,
       seed: 4242,
       heightGenerator: this.heightGenerator,
     });
@@ -814,7 +805,7 @@ export class ProceduralForestGenerator {
    * Instancia árvores procedurais como Sprites de alta performance usando as texturas dinâmicas assadas (Phaser 4 WebGL2).
    * Inclui camada de paralaxe no plano de fundo (silhuetas menores, mais escuras/dessaturadas com scrollFactor diferenciado).
    */
-  private generateAndRenderTrees(gridW: number, gridH: number): void {
+  private generateAndRenderTrees(gridW: number, gridH: number, cameraOffsetX: number = this.CAMERA_OFFSET_X, cameraOffsetY: number = this.CAMERA_OFFSET_Y): void {
     const gameScene = this.scene as GameScene;
     logger.info('ProceduralForestGenerator.generateAndRenderTrees', 'Starting procedural fractal tree sprite instantiation');
 
@@ -839,8 +830,8 @@ export class ProceduralForestGenerator {
     bgTrees.forEach(bgTree => {
       try {
         bgTreeIndex++;
-        const isoX = this.CAMERA_OFFSET_X + (bgTree.x - bgTree.y) * (this.TILE_WIDTH / 2);
-        const isoY = this.CAMERA_OFFSET_Y + (bgTree.x + bgTree.y) * (this.TILE_HEIGHT / 2) - 30;
+        const isoX = cameraOffsetX + (bgTree.x - bgTree.y) * (this.TILE_WIDTH / 2);
+        const isoY = cameraOffsetY + (bgTree.x + bgTree.y) * (this.TILE_HEIGHT / 2) - 30;
 
         const variant = bgTree.variant % 3;
         const texKey = `procedural_tree_${variant}`;
@@ -916,8 +907,8 @@ export class ProceduralForestGenerator {
       try {
         treeIndex++;
         const zElevation = this.heightGenerator.getHeightAt(tree.x, tree.y);
-        const isoX = this.CAMERA_OFFSET_X + (tree.x - tree.y) * (this.TILE_WIDTH / 2);
-        const isoY = this.CAMERA_OFFSET_Y + (tree.x + tree.y) * (this.TILE_HEIGHT / 2);
+        const isoX = cameraOffsetX + (tree.x - tree.y) * (this.TILE_WIDTH / 2);
+        const isoY = cameraOffsetY + (tree.x + tree.y) * (this.TILE_HEIGHT / 2);
         const renderY = isoY - zElevation * 2;
 
         const variant = tree.variant % 3;

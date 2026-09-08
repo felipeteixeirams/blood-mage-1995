@@ -22,12 +22,15 @@ import type { GameScene } from '../scenes/GameScene';
  * fixos, carga/descarga real de conteúdo via streamer é uma fase futura
  * (precisa de bounds dinâmicos primeiro).
  */
+const CHUNK_WIDTH = 1920;
+const CHUNK_HEIGHT = 1440;
+
 const CAMPAIGN_ZONE_CHUNKS: ChunkSpec[] = [
-  { id: 'safe_house', index: 0, width: 1, biome: 'safe_house' },
-  { id: 'gloomy_woods', index: 1, width: 1, biome: 'gloomy_woods' },
-  { id: 'fosso_chagas', index: 2, width: 1, biome: 'fosso_chagas' },
-  { id: 'catacumbas_martires', index: 3, width: 1, biome: 'catacumbas_martires' },
-  { id: 'santuario_sangue', index: 4, width: 1, biome: 'santuario_sangue' },
+  { id: 'safe_house', index: 0, width: CHUNK_WIDTH, biome: 'safe_house' },
+  { id: 'gloomy_woods', index: 1, width: CHUNK_WIDTH, biome: 'gloomy_woods' },
+  { id: 'fosso_chagas', index: 2, width: CHUNK_WIDTH, biome: 'fosso_chagas' },
+  { id: 'catacumbas_martires', index: 3, width: CHUNK_WIDTH, biome: 'catacumbas_martires' },
+  { id: 'santuario_sangue', index: 4, width: CHUNK_WIDTH, biome: 'santuario_sangue' },
 ];
 
 /**
@@ -57,11 +60,86 @@ export class DungeonFlowController {
   // `getLoadedIndices()` sincronizados com a progressão real da
   // campanha — base pronta pra quando os world bounds virarem dinâmicos
   // (Fase B.2/C) e o streamer passar a dirigir carga/descarga de verdade.
+  private builtChunkIndices: Set<number> = new Set();
+
   private zoneStreamer = new ChunkStreamer<BiomeType>(CAMPAIGN_ZONE_CHUNKS, {
-    loadRadius: 0,
-    onLoad: (chunk) => chunk.biome as BiomeType,
-    onUnload: () => {},
+    loadRadius: 1,
+    onLoad: (chunk) => {
+      const biome = chunk.biome as BiomeType;
+      this.loadChunkBiome(biome, chunk.index);
+      return biome;
+    },
+    onUnload: (chunk) => {
+      const biome = chunk.biome as BiomeType;
+      this.unloadChunkBiome(biome, chunk.index);
+    },
   });
+
+  public updateChunkStream(playerWorldX: number) {
+    this.zoneStreamer.update(playerWorldX);
+    this.syncWorldBoundsWithStreamer();
+  }
+
+  public syncWorldBoundsWithStreamer() {
+    const loadedIndices = this.zoneStreamer.getLoadedIndices();
+    if (loadedIndices.length === 0) return;
+
+    const minIdx = loadedIndices[0];
+    const maxIdx = loadedIndices[loadedIndices.length - 1];
+
+    const minX = minIdx * CHUNK_WIDTH;
+    const totalW = (maxIdx - minIdx + 1) * CHUNK_WIDTH;
+
+    this.scene.updateWorldAndCameraBounds(minX, 0, totalW, CHUNK_HEIGHT);
+  }
+
+  private loadChunkBiome(biome: BiomeType, chunkIndex: number) {
+    if (this.builtChunkIndices.has(chunkIndex)) return;
+    this.builtChunkIndices.add(chunkIndex);
+
+    if (!this.scene || !this.scene.dungeonGenerator) return;
+
+    const offsetX = chunkIndex * CHUNK_WIDTH;
+    const newRooms = this.scene.dungeonGenerator.generate(CHUNK_WIDTH, CHUNK_HEIGHT, biome, offsetX, 0);
+
+    this.scene.rooms = [...(this.scene.rooms || []), ...newRooms];
+
+    useGameStore.getState().setCurrentBiome(biome);
+    worldManager.setBiome(biome);
+
+    if (this.scene.postFX) this.scene.postFX.setBiome(biome);
+    if (this.scene.atmosphereSystem) this.scene.atmosphereSystem.setBiome(biome);
+    if (this.scene.lightingSystem) this.scene.lightingSystem.enable(biome, this.scene.currentFloorDepth);
+
+    telemetry.trackEvent('chunk_load', { chunkIndex, biome, offsetX });
+  }
+
+  private unloadChunkBiome(biome: BiomeType, chunkIndex: number) {
+    if (!this.builtChunkIndices.has(chunkIndex)) return;
+    this.builtChunkIndices.delete(chunkIndex);
+
+    const minX = chunkIndex * CHUNK_WIDTH;
+    const maxX = minX + CHUNK_WIDTH;
+
+    if (this.scene.rooms) {
+      this.scene.rooms = this.scene.rooms.filter(r => r.x < minX || r.x >= maxX);
+    }
+
+    const cleanGroup = (group: any) => {
+      if (!group || typeof group.getChildren !== 'function') return;
+      group.getChildren().forEach((child: any) => {
+        if (child && typeof child.x === 'number' && child.x >= minX && child.x < maxX) {
+          child.destroy();
+        }
+      });
+    };
+
+    cleanGroup(this.scene.wallsGroup);
+    cleanGroup(this.scene.chestsGroup);
+    cleanGroup(this.scene.scavengeablesGroup);
+
+    telemetry.trackEvent('chunk_unload', { chunkIndex, biome, minX, maxX });
+  }
 
   constructor(private scene: GameScene) {}
 
@@ -133,6 +211,7 @@ export class DungeonFlowController {
    */
   public buildDungeonMap(mapW: number, mapH: number, floorDepth: number) {
     const scene = this.scene;
+    this.builtChunkIndices.clear();
     // Clear pending spawns
     scene.pendingEnemySpawns = [];
     // Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: descarta marcos
@@ -265,8 +344,8 @@ export class DungeonFlowController {
       scene.totalFloorMonsters = 0;
       scene.floorMonstersKilled = 0;
 
-      // Create a portal to the next zone at the back of the room
-      this.revealDescentPortal(spawnRoom.centerX, spawnRoom.y + 160);
+      // Create physical exit door to the next zone at the back of the safe house room
+      this.revealDescentDoor(spawnRoom.centerX, spawnRoom.y + 160);
     } else {
       if (gameMode === 'arcade') {
         // Spawn Safe Village NPCs in Spawn Room (Room 0)
@@ -516,6 +595,43 @@ export class DungeonFlowController {
       y: text.y - 30,
       alpha: 0,
       duration: 3200,
+      onComplete: () => text.destroy(),
+    });
+  }
+
+  public revealDescentDoor(x: number, y: number) {
+    const scene = this.scene;
+    scene.isPortalActive = true;
+
+    // Usar a estrutura física de porta em vez de portal mágico giratório
+    const doorTextureKey = scene.textures.exists('tile_door') ? 'tile_door' : 'tile_wood_wall';
+    scene.portalSprite = scene.add.sprite(x, y, doorTextureKey).setDepth(y + 16).setScale(1.5);
+
+    if (scene.lightingSystem) {
+      scene.lightingSystem.applyLightPipeline(scene.portalSprite);
+      // Suave brilho rúnico/dourado na soleira da porta de saída
+      scene.lightingSystem.addTorchLights([{ x, y, kind: 'torch' }]);
+    }
+
+    // Banner de Saída da Vila
+    const text = scene.add.text(
+      scene.player.x,
+      scene.player.y - 100,
+      '🚪 A PORTA PARA A MATA SOMBRIA ESTÁ ABERTA! 🚪',
+      {
+        fontSize: '20px',
+        color: '#f59e0b',
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 5,
+      }
+    ).setOrigin(0.5).setDepth(2200);
+
+    scene.tweens.add({
+      targets: text,
+      y: text.y - 40,
+      alpha: 0,
+      duration: 3500,
       onComplete: () => text.destroy(),
     });
   }
