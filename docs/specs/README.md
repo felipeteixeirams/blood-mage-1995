@@ -4,7 +4,7 @@ target_module: docs/specs
 priority: high
 criticality: high
 status: active
-last_updated: 2026-09-07
+last_updated: 2026-09-08
 tags: [specs, index, workflow, in-progress, delivered, backlog, discovery, rejected]
 ---
 
@@ -40,27 +40,28 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, discovery, rejec
 
 | # | Spec | Pasta | Prioridade | Criticidade | Progresso |
 |---|---|---|---|---|---|
-| 1 | [`in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md`](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md) | in-progress | 🔴 high | ⚠️ high | 75% — próximo passo destravado: cura via NPC Clérigo |
-| 2 | [`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md) | in-progress | 🔴 high | 🟡 medium | 90% — resta só i18n (Cloud Save extraído, ver bloqueados) |
-| 3 | [`backlog/08_GUIA_EVOLUCAO_COMERCIAL.md`](./backlog/08_GUIA_EVOLUCAO_COMERCIAL.md) | backlog | 🔴 high | 🟢 low | Checklist de requisitos comerciais (Steam/Play Store/itch.io) |
-| 4 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟡 medium | 🟡 medium | Tier A completo — Tiers B/C pendentes |
-| 5 | [`backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md) | backlog | 🟡 medium | 🟡 medium | draft |
-| 6 | [`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
-| 7 | [`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) | backlog | 🟡 medium | 🟡 medium | partial |
-| 8 | [`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
-| 9 | [`backlog/30_DETERMINISMO_SEED_POISSON_DISK.md`](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) | backlog | 🟡 medium | 🟢 low | Jules-ready — pronto pra execução sem esclarecimento |
-| 10 | [`backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) | backlog | 🟡 medium | 🟢 low | Falta só o modal React de UI (~90% já entregue em `delivered/18`) |
-| 11 | [`backlog/31_NORMAL_MAP_TILE_DOOR.md`](./backlog/31_NORMAL_MAP_TILE_DOOR.md) | backlog | 🟢 low | 🟢 low | Jules-ready — pronto pra execução sem esclarecimento |
+| 1 | [`in-progress/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`](./in-progress/25_MUNDO_CONTINUO_CHUNK_STREAMING.md) | in-progress | 🔴 high | ⚠️ critical | Fases A/B/B.2/D entregues (PR #92) — resta só Fase C (transições sem corte) |
+| 2 | [`in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md`](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md) | in-progress | 🔴 high | ⚠️ high | 75% — próximo passo destravado: cura via NPC Clérigo |
+| 3 | [`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md) | in-progress | 🔴 high | 🟡 medium | 90% — resta só i18n (Cloud Save extraído, ver bloqueados) |
+| 4 | [`backlog/08_GUIA_EVOLUCAO_COMERCIAL.md`](./backlog/08_GUIA_EVOLUCAO_COMERCIAL.md) | backlog | 🔴 high | 🟢 low | Checklist de requisitos comerciais (Steam/Play Store/itch.io) |
+| 5 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟡 medium | 🟡 medium | Tier A completo — Tiers B/C pendentes |
+| 6 | [`backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md) | backlog | 🟡 medium | 🟡 medium | draft |
+| 7 | [`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
+| 8 | [`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) | backlog | 🟡 medium | 🟡 medium | partial |
+| 9 | [`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
+| 10 | [`backlog/30_DETERMINISMO_SEED_POISSON_DISK.md`](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) | backlog | 🟡 medium | 🟢 low | Jules-ready — pronto pra execução sem esclarecimento |
+| 11 | [`backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) | backlog | 🟡 medium | 🟢 low | Falta só o modal React de UI (~90% já entregue em `delivered/18`) |
+| 12 | [`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md) | backlog | 🟢 low | 🟡 medium | Superada em parte — só resta a pergunta menor de variedade interna em `gloomy_woods` |
+| 13 | [`backlog/31_NORMAL_MAP_TILE_DOOR.md`](./backlog/31_NORMAL_MAP_TILE_DOOR.md) | backlog | 🟢 low | 🟢 low | Jules-ready — pronto pra execução sem esclarecimento |
 
 ### 🚧 Bloqueados (aguardando decisão/insumo externo — fora da fila acima)
 
-> Triagem de 2026-09-07: nada aqui tem próximo passo executável por um agente
-> IA agora. Cada um lista o que falta para destravar.
+> Triagem de 2026-09-07 (atualizada em 2026-09-08 — spec 25 destravada,
+> ver Fila de Prioridade acima): nada aqui tem próximo passo executável
+> por um agente IA agora. Cada um lista o que falta para destravar.
 
 | Spec | Pasta | Impedimento | O que destrava |
 |---|---|---|---|
-| [`backlog/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`](./backlog/25_MUNDO_CONTINUO_CHUNK_STREAMING.md) | backlog *(era in-progress)* | Fases A/B entregues; Fase B.2 tem decisão explicitamente adiada por Felipe | Felipe decidir o rumo da Fase B.2 (1 chunk largo por bioma vs. N chunks menores) |
-| [`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md) | backlog *(era in-progress)* | Sobrepõe/conflita com a abordagem de #25 (chunk streaming vs. `PathDrivenGenerator`), nunca reconciliadas | Mesma decisão de Felipe acima, que também resolve qual abordagem seguir |
 | [`backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md) | backlog *(era in-progress)* | Fase 0 (arquitetura) concluída; todo o resto exige sprites físicos que não existem | Orçamento/direção de arte aprovado (mesmo gate de #14) |
 | [`backlog/09_PIXEL_LAB_PROMPT_GUIDE.md`](./backlog/09_PIXEL_LAB_PROMPT_GUIDE.md) | backlog *(era in-progress)* | Guia só tem uso ativo quando há produção de sprites em andamento | Mesmo gate de #08/#14 |
 | [`backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md`](./backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md) | backlog | Núcleo (sprites/UI externos) depende do mesmo gate de #08/#14; áudio/telemetria já entregues não são afetados | Mesmo gate de #08/#14 |
@@ -86,18 +87,22 @@ docs/specs/
 ## 🟡 In-Progress (Desenvolvimento Iniciado — Fases Pendentes, Sem Impedimento)
 
 > Triagem de 2026-09-07: 4 specs saíram desta pasta por terem impedimento
-> ativo (nenhum próximo passo executável agora) — ver "🚧 Bloqueados" na
-> Fila de Prioridade acima para onde foram e por quê:
-> `08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST`, `09_PIXEL_LAB_PROMPT_GUIDE`,
-> `18_ARPG_CONTINUOUS_WORLD_TOPOLOGY`, `25_MUNDO_CONTINUO_CHUNK_STREAMING`
-> (todas movidas para `backlog/`, mesmo conteúdo/progresso preservado). Em
-> `05_FASE5`, o item Cloud Save (bloqueado) foi extraído para
-> `backlog/29_CLOUD_SAVE_FASE5.md`; a spec ficou com escopo restrito a i18n.
+> ativo — ver "🚧 Bloqueados" na Fila de Prioridade acima para onde foram
+> e por quê: `08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST`,
+> `09_PIXEL_LAB_PROMPT_GUIDE` seguem lá. Em `05_FASE5`, o item Cloud Save
+> (bloqueado) foi extraído para `backlog/29_CLOUD_SAVE_FASE5.md`; a spec
+> ficou com escopo restrito a i18n. **Atualização 2026-09-08:**
+> `25_MUNDO_CONTINUO_CHUNK_STREAMING` voltou pra cá — Felipe decidiu e
+> mandou implementar a Fase B.2 (PR #92), destravando o resto; só falta a
+> Fase C. `18_ARPG_CONTINUOUS_WORLD_TOPOLOGY` segue em `backlog/` (não
+> mais bloqueada, mas rebaixada de prioridade — seu escopo original foi
+> superado pela abordagem escolhida para #25).
 
 | Spec / Documento | Fases / Escopo Concluído | Fases / Itens Pendentes (destravados) |
 |---|---|---|
 | **[`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md)** | • PWA Offline-First (Spec 15)<br>• Scripts de build Electron (`scripts/build-steam.sh`) | • Localização multilíngue (i18n) |
 | **[`in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md`](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md)** | • Gameplay loop completo (Sangramento/Veneno/Infecção aplicados por monstro, dreno de HP, cura via consumível comprável no Alquimista) | • Cura via NPC Clérigo (sprite existe, sem interação)<br>• *(QA manual, ícones sprite e tuning de dreno seguem pendentes, mas dependem de Felipe/arte — não bloqueiam este item)* |
+| **[`in-progress/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`](./in-progress/25_MUNDO_CONTINUO_CHUNK_STREAMING.md)** | • Fases A, B, B.2 e D entregues (chunk streaming, bounds dinâmicos, porta física no Safe House — PR #92) | • Fase C: transições sem corte entre biomas (overlap de luz/névoa/áudio na fronteira do chunk) |
 
 > *Nota (2026-09-06):* `in-progress/06_EIXO_A_GRAFICOS_AVANCADOS.md` e
 > `in-progress/10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md` foram
@@ -151,8 +156,7 @@ docs/specs/
 | **[`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** | Toggle de Intensidade de Conteúdo — mitigação de classificação indicativa (gore visual configurável) | medium | medium | Não |
 | **[`backlog/30_DETERMINISMO_SEED_POISSON_DISK.md`](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md)** | Determinismo por seed no espalhamento de vegetação/props (Poisson Disk) — Jules-ready | medium | low | Não |
 | **[`backlog/31_NORMAL_MAP_TILE_DOOR.md`](./backlog/31_NORMAL_MAP_TILE_DOOR.md)** | Normal map ausente na textura `tile_door` — Jules-ready | low | low | Não |
-| **[`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md)** | *(era in-progress)* Topologia de mundo contínuo via `PathDrivenGenerator` (padrão Dungeon Siege) | high | critical | **Sim** — conflito de escopo com #25 |
-| **[`backlog/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`](./backlog/25_MUNDO_CONTINUO_CHUNK_STREAMING.md)** | *(era in-progress)* Mundo contínuo via Chunk Streaming — Fases A/B entregues | high | critical | **Sim** — decisão de Felipe pendente (Fase B.2) |
+| **[`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md)** | *(superada em parte, 2026-09-08)* `PathDrivenGenerator` pra `gloomy_woods` — escopo de conectividade entre biomas já resolvido pela abordagem escolhida em #25; resta só decidir se vale mais variedade interna na floresta | low | medium | Não |
 | **[`backlog/29_CLOUD_SAVE_FASE5.md`](./backlog/29_CLOUD_SAVE_FASE5.md)** | *(novo, extraído de `in-progress/05`)* Cloud Save automatizado (Firebase/Firestore) | medium | high | **Sim** — confirmação de Felipe pendente |
 
 ---

@@ -3,21 +3,22 @@ agent_context: backend, game-engine, game designer
 target_module: src/game/systems/ChunkStreamer.ts, src/game/systems/DungeonGenerator.ts, src/game/systems/DungeonFlowController.ts, src/game/scenes/GameScene.ts
 priority: high
 criticality: critical
-status: backlog
-progress: Fases A e B (encanamento interno) entregues — Fases B.2/C/D bloqueadas por decisão pendente de Felipe
-last_updated: 2026-09-07
-tags: [design, world-structure, continuous-world, dungeon-siege, chunk-streaming, discovery]
+status: in-progress
+progress: Fases A, B, B.2 e D entregues (PR #92, 2026-09-08) — só falta Fase C (transições sem corte)
+last_updated: 2026-09-08
+tags: [design, world-structure, continuous-world, dungeon-siege, chunk-streaming]
 ---
 
-> ⛔ **IMPEDIMENTO (movido de `in-progress/` em 2026-09-07):** Fases A e B
-> estão entregues (mantidas documentadas abaixo). Mas o próximo passo,
-> Fase B.2, tem uma **decisão explicitamente adiada pelo próprio Felipe**
-> (ver Seção 4, Fase B.2 abaixo: "decisão explícita de Felipe foi adiar
-> isso"), e as Fases C/D dependem dela. Não há próximo passo executável
-> sem essa decisão. Ver também `backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`
-> — mesma decisão pendente também resolve a sobreposição de escopo entre
-> as duas specs. Volta a `in-progress/` assim que Felipe decidir o rumo
-> da Fase B.2.
+> ✅ **Destravado em 2026-09-08:** Felipe decidiu o rumo da Fase B.2 (cada
+> bioma = 1 chunk largo, `CHUNK_WIDTH = CHUNK_HEIGHT = 1920×1440`, igual ao
+> tamanho de mapa já existente — a opção mais simples das duas cogitadas) e
+> mandou o Jules implementar. PR #92 mesclado direto no `main` por ele
+> mesmo: bounds dinâmicos (`GameScene.updateWorldAndCameraBounds`), gatilho
+> por posição via `DungeonFlowController.updateChunkStream()` chamado a
+> cada frame, e a Fase D (porta física `revealDescentDoor()` no lugar do
+> portal giratório) junto. Volta a `backlog/` (só Fase C, sem urgência) se
+> ninguém pegar tão cedo — por ora fica em `in-progress/` porque a Fase C é
+> trabalho real e destravado.
 
 # 🌍 Mundo Contínuo Estilo Dungeon Siege — Chunk Streaming
 
@@ -155,17 +156,28 @@ isso pra Fase B.2/C** e entregar agora só a parte 100% sem risco:
   `safe_house → gloomy_woods → fosso_chagas → catacumbas_martires →
   santuario_sangue → santuario_sangue`).
 
-### 🔍 Fase B.2 — Bounds dinâmicos + integração real com `DungeonGenerator` (discovery, decisão pendente)
-- Decisão em aberto: cada bioma vira 1 chunk largo (como hoje, só
-  encadeado fisicamente) ou N chunks menores dentro do mesmo bioma?
-- Como mapear `ChunkStreamer.onLoad` pra `DungeonGenerator.generate()` —
-  hoje essa função assume que É o mundo inteiro (paredes de perímetro,
-  câmera, `rooms[0]` como spawn); precisa gerar só a fatia do chunk.
-- Câmera/física do Phaser usam `world.setBounds()` fixo — precisa virar
-  dinâmico (o mundo cresce conforme chunks são adicionados à frente).
-- **Esta é a fase que muda o gatilho** de "colidir com portal" pra
-  "posição cruzar fronteira" — decisão explícita de Felipe foi adiar
-  isso, então só avançar aqui com validação prévia.
+### ✅ Fase B.2 — Bounds dinâmicos + integração real com `DungeonGenerator` (ENTREGUE, PR #92, 2026-09-08)
+- **Decisão tomada:** cada bioma continua sendo 1 chunk largo (`CHUNK_WIDTH
+  = CHUNK_HEIGHT = 1920×1440`, o mesmo tamanho de mapa que já existia) —
+  não a opção de N chunks menores por bioma.
+- `DungeonGenerator.generate()` e `ProceduralForestGenerator` ganharam
+  parâmetros `offsetX`/`offsetY` para posicionar cada chunk contiguamente
+  no eixo X, em vez de sempre desenhar a partir de (0,0).
+- `GameScene.updateWorldAndCameraBounds(x, y, w, h)`: novo wrapper público
+  que seta `physics.world.setBounds` **e** `cameras.main.setBounds` juntos
+  — substitui a chamada fixa em `create()` e é reusado por
+  `DungeonFlowController.syncWorldBoundsWithStreamer()` a cada expansão.
+- **O gatilho mudou** de "colidir com portal" pra "posição do jogador cruza
+  fronteira de chunk": `GameScene.update()` chama
+  `dungeonFlow.updateChunkStream(player.x)` a cada frame, que atualiza o
+  `ChunkStreamer` e expande os bounds dinamicamente.
+- `DungeonFlowController.loadChunkBiome()`/`unloadChunkBiome()`: geram e
+  destroem o conteúdo real do chunk (antes eram no-ops da Fase B),
+  incluindo limpeza seletiva de `wallsGroup`/`chestsGroup`/`scavengeablesGroup`
+  por posição X ao descarregar.
+- Validado: `DungeonFlowController.test.ts` (chunk streaming, door exit,
+  cálculo de bounds) + `pnpm verify` + verificação ao vivo (Playwright,
+  `spec10-validation.spec.ts`) sem regressão visual.
 
 ### 🔍 Fase C — Transições sem corte (indoor↔outdoor, bioma↔bioma)
 - Portar a lógica de luz/névoa/áudio do `WorldManager` pra reagir à
@@ -173,14 +185,23 @@ isso pra Fase B.2/C** e entregar agora só a parte 100% sem risco:
 - Overlap visual na fronteira: os últimos tiles de um chunk e os primeiros
   do próximo compartilham paleta/textura de transição (equivalente ao
   "floresta se funde na cripta" do DS1).
+- Única fase que resta neste spec. Destravada (a Fase B.2 já entrega a
+  infraestrutura de bounds dinâmicos que esta fase precisa) — sem
+  impedimento conhecido, só ainda não foi pega.
 
-### 🔍 Fase D — Porta em vez de portal na saída do Safe House
-- Troca só de encenação (sprite de porta em vez de `spr_portal`
-  giratório) na saída específica do `safe_house` — **não muda o
-  mecanismo de transição em si**, só a "casca" visual. Adiado (junto com
-  o redesenho do Safe House em vila/acampamento e NPCs vendedores) até
-  as Fases B/C estarem resolvidas — não faz sentido trocar a casca visual
-  de um mecanismo que ainda vai mudar por baixo.
+### ✅ Fase D — Porta em vez de portal na saída do Safe House (ENTREGUE, PR #92, 2026-09-08)
+- `DungeonFlowController.revealDescentDoor()`: porta física
+  (`tile_door`/`tile_wood_wall`) com tocha quente própria
+  (`lightingSystem.addTorchLights`), substituindo `revealDescentPortal()`
+  (portal giratório roxo) na saída do Safe House.
+- `SafeHouseAnimationController.setupPortalShimmer()` foi ajustado nesta
+  mesma rodada (revisão do merge) para combinar com a porta física: o
+  scale-pulse + glow roxo etéreo do portal antigo foi trocado por um alpha
+  shimmer sutil, sem luz adicional (a tocha da porta já cobre isso) —
+  senão o efeito de portal mágico ficaria incoerente numa porta de
+  madeira estática.
+- Redesenho do Safe House em vila/acampamento (Diablo Immortal-style)
+  continua fora de escopo — não fazia parte desta fase.
 
 ---
 
@@ -209,3 +230,4 @@ isso pra Fase B.2/C** e entregar agora só a parte 100% sem risco:
 | Data | O que mudou | Autor |
 |------|-------------|-------|
 | 2026-09-06 | Criação: pesquisa sobre Dungeon Siege 1, diagnóstico da estrutura atual ("cada bioma é um quadrado"), proposta de adaptação via chunk streaming, plano em 4 fases. Fase A entregue: `ChunkStreamer.ts` isolado e testado (13 testes), zero mudança no jogo real. | Claude |
+| 2026-09-08 | Felipe decidiu o rumo da Fase B.2 (1 chunk largo por bioma) e mandou o Jules implementar — PR #92 mesclado direto no `main`, entregando Fases B.2 e D juntas. Puxado pra esta branch, conflitos resolvidos (tamanho da Safe House 550x420 desta branch + offsetX/offsetY do PR coexistindo), `setupPortalShimmer` ajustado pra porta física. Só falta a Fase C. | Claude |
