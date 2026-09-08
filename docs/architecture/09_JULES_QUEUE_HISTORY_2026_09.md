@@ -1,12 +1,13 @@
----
-agent_context: all agents
-target_module: root
-priority: low
-criticality: low
-status: archived
-last_updated: 2026-09-07
-tags: [automacao, jules, archived, superseded]
----
+# 🗂️ Histórico: Fila de Automação Jules (2026-09)
+
+> **Movido de `docs/specs/backlog/_ARCHIVED_16_FILA_AUTOMACAO_JULES.md` em
+> 2026-09-08** durante a padronização das specs (ver Seção 6 de
+> `05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md`). Isto é história de
+> **governança/processo** ("como decidimos trabalhar"), não uma spec de
+> feature — não pertence a `docs/specs/`. Referenciado por
+> `docs/specs/backlog/30_DETERMINISMO_SEED_POISSON_DISK.md` e
+> `docs/specs/backlog/31_NORMAL_MAP_TILE_DOOR.md` (os 2 itens que
+> sobreviveram desta fila como specs próprias).
 
 # ⛔ ARCHIVED — Fila de Automação Jules (consolidada na Fila de Prioridade única)
 

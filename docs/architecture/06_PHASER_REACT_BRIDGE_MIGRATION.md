@@ -10,7 +10,7 @@ tags: [architecture, phaser, react, zustand, event-bus, migration, tracker]
 # 🌉 Migração da Ponte Phaser↔React: `window.dispatchEvent`/`CustomEvent` → Zustand tipado
 
 > Este é o "item 9" do backlog de melhorias identificado a partir do Pilar 2 de
-> `docs/specs/backlog/08_GUIA_EVOLUCAO_COMERCIAL.md`. Documento vivo:
+> `docs/product/COMMERCIAL_READINESS_GUIDE.md`. Documento vivo:
 > registra o estado real do código (auditoria), a arquitetura-alvo, o plano de
 > corte incremental e os testes que dão segurança para cada etapa — seguindo o
 > mesmo padrão de tracker já usado em `05_GAMESCENE_REFACTOR.md`.
@@ -230,7 +230,7 @@ Ordem sugerida — da mais simples/baixo risco para a mais delicada:
 
 - [[05_GAMESCENE_REFACTOR.md]] — mesmo padrão de tracker e mesma filosofia de corte incremental
 - [[04_STATE_MANAGEMENT.md]] — visão geral do Zustand como camada de sincronização
-- [[../specs/backlog/08_GUIA_EVOLUCAO_COMERCIAL.md]] — Pilar 2, origem deste item
+- [[../product/COMMERCIAL_READINESS_GUIDE.md]] — Pilar 2, origem deste item
 
 ## Registro de mudanças
 

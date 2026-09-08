@@ -1,14 +1,17 @@
----
-agent_context: product-manager, game-designer, all agents
-target_module: docs/specs
-priority: high
-criticality: low
-status: backlog
-last_updated: 2026-08-14
-tags: [specs, proposta, commercial, mobile-first, architecture, roadmap]
----
+# GUIA DE EVOLUÇÃO E PREPARAÇÃO COMERCIAL
+*Bloodmage 1995*
 
-# 📜 Guia de Evolução e Preparação Comercial: Bloodmage 1995
+> **Movido de `docs/specs/backlog/08_GUIA_EVOLUCAO_COMERCIAL.md` em
+> 2026-09-08** durante a padronização das specs (ver Seção 6 de
+> `docs/architecture/05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md`). Este é um
+> guia estratégico/roteiro de produto — não tem critério de aceite técnico
+> nem arquivos-alvo isolados, então não é uma "spec" no sentido do
+> Blueprint (não pertence a `docs/specs/`). Pertence à mesma família de
+> `ROADMAP.md` e `RELEASE_STRATEGY.md`: quando um dos 4 pilares abaixo virar
+> trabalho concreto, ele deve ser desmembrado em uma spec própria (Blueprint
+> completo) em `docs/specs/backlog/`.
+
+---
 
 Este documento serve como especificação técnica e de design para guiar os próximos passos de evolução do projeto **Bloodmage 1995** a fim de atingir um nível de polimento visual e técnico comparável a marcos como *Dungeon Siege 1* e *Diablo 2*, preparando o jogo para um lançamento comercial de sucesso em plataformas móveis (smartphones) e desktop.
 

@@ -4,14 +4,14 @@ target_module: artifacts/bloodmage/src/assets, src/game
 priority: high
 criticality: low
 status: backlog
-last_updated: 2026-09-07
+last_updated: 2026-09-08
 tags: [pixel-art, pixel-lab, prompts, prompt-engineering, sprites, assets, grimdark, ui-mapping]
 ---
 
 > ⛔ **IMPEDIMENTO (movido de `in-progress/` em 2026-09-07):** este guia só
 > tem uso ativo quando há geração de sprites físicos em andamento — o que
 > hoje está parado pelo mesmo bloqueio de `backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`
-> e `backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md` (orçamento/direção de arte
+> e `discovery/07_EIXO_B_PIPELINE_ASSETS_EXTERNOS.md` (orçamento/direção de arte
 > pendente de Felipe). Volta a `in-progress/` junto com o 08, quando a
 > produção de sprites for retomada.
 

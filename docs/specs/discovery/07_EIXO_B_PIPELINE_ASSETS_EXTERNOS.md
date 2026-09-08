@@ -3,16 +3,18 @@ agent_context: game-engine, pixel-artist, product-manager
 target_module: src/assets, src/game/scenes/BootScene.ts
 priority: medium
 criticality: medium
-status: backlog
-progress: PARCIALMENTE IMPLEMENTADO
-phase: Pós-Fase 5
-target_date: Q4 2026 (após decisão de arte externa)
-responsible: "TBD (quando orçamento de arte for aprovado)"
-estimated_effort: "5-7 dias (após aprovação de sprites)"
-dependencies: ["Fase 5 completa", "Orçamento de arte aprovado", "Direção artística definida"]
-last_updated: 2026-09-02
+status: discovery
+last_updated: 2026-09-08
 tags: [specs, discovery, assets, pipeline, performance, procedural-replacement]
 ---
+
+> **Movido de `docs/specs/backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md` para
+> `discovery/07` em 2026-09-08** — o próprio documento já se autodeclarava
+> "Status: Discovery Completo" no rodapé; o `status: backlog` no frontmatter
+> estava desalinhado com o conteúdo real (não tem critério de aceite
+> executável, é uma proposta de arquitetura para quando o orçamento de arte
+> for aprovado). Ver `backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`
+> para o checklist real de integração, hoje bloqueado pelo mesmo motivo.
 
 # 🎨 Discovery: Eixo B — Pipeline de Integração de Assets Externos
 

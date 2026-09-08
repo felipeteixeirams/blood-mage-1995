@@ -10,7 +10,7 @@ tags: [specs, procedural-generation, determinism, seed, poisson-disk, jules-read
 
 # Determinismo por Seed no Espalhamento de Vegetação/Props (Poisson Disk)
 
-> Extraído de `_ARCHIVED_16_FILA_AUTOMACAO_JULES.md` (item 1) em 2026-09-07
+> Extraído de `docs/architecture/09_JULES_QUEUE_HISTORY_2026_09.md` (item 1, então em `_ARCHIVED_16_FILA_AUTOMACAO_JULES.md`) em 2026-09-07
 > durante a consolidação da fila de automação na Fila de Prioridade única
 > (`docs/specs/README.md`). Conteúdo técnico preservado sem alteração —
 > pronto para execução sem esclarecimento adicional (padrão da Seção 6 de

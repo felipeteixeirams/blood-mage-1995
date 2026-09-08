@@ -3,10 +3,29 @@ agent_context: game-designer, backend, product-manager, frontend
 target_module: docs/specs/propostas
 priority: medium
 criticality: medium
-status: backlog
-last_updated: 2026-08-11
-tags: [specs, proposta, world-events, eventos-mundiais, retencao, sazonal]
+status: scope-definition
+last_updated: 2026-09-08
+tags: [specs, proposta, world-events, eventos-mundiais, retencao, sazonal, scope-definition]
 ---
+
+> ⛔ **ESCOPO EM DEFINIÇÃO (movido de `backlog/` em 2026-09-08):** este
+> documento propõe **3 sistemas de evento globais + 2 eventos sazonais +
+> uma arquitetura de sincronização de calendário** — um domínio inteiro, não
+> uma spec única (viola a regra "Escopo por Arquivo" de
+> `05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md`: cada spec cobre dias a uma
+> semana de trabalho). Nenhuma seção tem critério de aceite testável, e
+> partes-chave (schema Zod de `worldEvents.json`, pontos de hook exatos em
+> `GameScene.ts`, testes) não estão especificadas. **Antes de virar
+> `backlog/`, precisa:**
+> 1. Decisão de produto: qual dos 3 eventos + 2 sazonais entra primeiro
+>    (não faz sentido implementar os 5 de uma vez).
+> 2. Virar um Índice Mestre (esta spec, resumida) + 1 satélite por evento
+>    escolhido, cada satélite com Blueprint completo (Contexto, Objetivo,
+>    Escopo In/Out, Requisitos Técnicos com API exata, Arquivos-Alvo,
+>    Testes) — mesmo padrão de `delivered/11_VISUAL_POLISH_FRONTS.md`.
+> 3. Especificar o schema Zod de `worldEvents.json` e o contrato do estado
+>    Zustand `activeWorldEvent` antes de qualquer satélite poder ser
+>    `backlog`-ready.
 
 # 🌍 GDD & Especificação: Eventos Mundiais e Sazonais (Atmosphere & Retention)
 

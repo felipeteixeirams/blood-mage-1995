@@ -54,5 +54,5 @@
 ## ⚫ FASE 5 — Release & Cloud (Pós-Validação)
 **Objetivo:** Publicação real e infraestrutura de nuvem.
 - Se o jogo provar valor (Cenário B/C): Google Sign-in, Supabase, Cloud Save.
-- Store Release Readiness (Privacy Policy, Data Safety, TWA/Play Store assets - Ver `docs/specs/backlog/08_GUIA_EVOLUCAO_COMERCIAL.md`).
+- Store Release Readiness (Privacy Policy, Data Safety, TWA/Play Store assets - Ver `docs/product/COMMERCIAL_READINESS_GUIDE.md`).
 - Monetização (IAP).

@@ -5,7 +5,7 @@
 > 
 > **NUNCA INICIE CÓDIGO** sem ler a documentação pertinente ao domínio solicitado.
 >
-> **Estado real do projeto (atualizado em 2026-09-06):** a Fase 1
+> **Estado real do projeto (atualizado em 2026-09-08):** a Fase 1
 > (Descoberta) já está **concluída** — o jogo tem hoje uma campanha de 4
 > capítulos, sistema de habilidades, loot procedural, prestígio,
 > relíquias, conquistas, PWA instalável e mais de 24 specs formalmente
@@ -41,6 +41,8 @@ Como o sistema funciona *hoje*. Leitura obrigatória antes de refatorar sistemas
 * `docs/architecture/05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md` - Metodologia de engenharia com IA (quando/como consultar specs antes de codificar).
 * `docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md` - Histórico da migração 100% Zustand (zero `CustomEvent` de gameplay).
 * `docs/architecture/07_DECISION_LOG.md` - Registro de decisões arquiteturais (ADR-lite): contexto, decisão e consequências das mudanças grandes.
+* `docs/architecture/08_JULES_SESSION_PROMPT.md` - Prompt padrão de sessão manual do Jules (fonte única do texto colado em jules.google.com).
+* `docs/architecture/09_JULES_QUEUE_HISTORY_2026_09.md` - Histórico da antiga fila dedicada de automação Jules (aposentada, consolidada na Fila de Prioridade de `docs/specs/README.md`).
 * `docs/architecture/SEAMLESS_OPEN_WORLD_FEASIBILITY.md` - Viabilidade de mundo contínuo sem costuras (roadmap de streaming de chunks).
 * `docs/critical/00_ANTI_REGRESSION_GUIDE.md` - Regras de ouro anti-regressão.
 * `docs/critical/01_CRITICAL_FILES.md` - **CRÍTICO:** Arquivos que quebram o jogo se mexidos sem cuidado (Player.ts, Enemy.ts, GameScene.ts, DungeonGenerator.ts, gameStore.ts, localStorage.ts).
@@ -59,10 +61,9 @@ O que testamos e estamos validando. Hipóteses orientadas a *Game Feel* e reten�
 Index mestre: `docs/specs/README.md`
 
 #### 🟡 Em Andamento (`docs/specs/in-progress/`)
-* `docs/specs/in-progress/04_FASE4_MUNDO_CONTINUO.md` - **Fase 4:** Mundo Contínuo, Safe Town (Room 0) e Iluminação Adaptativa.
-* `docs/specs/in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md` - **Fase 5:** Polimento de Produção, PWA e Builds Electron/Steam.
-* `docs/specs/in-progress/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md` - Mapeamento completo de Sprites e Checklist de integração.
-* `docs/specs/in-progress/09_PIXEL_LAB_PROMPT_GUIDE.md` - Guia de Prompts e parâmetros PixelLab para Sprites.
+* `docs/specs/in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md` - **Fase 3:** Status de Sobrevivência (sangramento/veneno/infecção) — só falta QA manual.
+* `docs/specs/in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md` - **Fase 5:** Polimento de Produção, PWA e Builds Electron/Steam — só falta i18n.
+* `docs/specs/in-progress/25_MUNDO_CONTINUO_CHUNK_STREAMING.md` - Mundo Contínuo via Chunk Streaming — só falta Fase C (transições sem corte).
 
 #### 🟢 Entregues / Concluídas (`docs/specs/delivered/`)
 * `docs/specs/delivered/28_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md` - **Spec 28:** Padronização de Modais Secundários, Navegação Gamepad & Retratos Rúnicos.
@@ -82,10 +83,13 @@ Index mestre: `docs/specs/README.md`
 * `docs/specs/delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md` - **Spec 24:** Índice Mestre de Evolução Gráfica e Áudio (Satélites 24.01 a 24.03: QuickWins, Ragdolls, Fear Distortion e Threat Tinnitus).
 
 #### 🔵 Propostas & Backlog (`docs/specs/backlog/`)
-* `docs/specs/backlog/` - Propostas formais de novas mecânicas e expansões (Eventos Mundiais, Guia Comercial, Referências HUD Diablo/Dungeon Siege, Polimento Procedural, Atmosfera & Tensão, Contratos & Quests, UI Framework e Sprites Tiers).
+* `docs/specs/backlog/` - Especificações prontas para implementação imediata (escopo 100% definido): Prestígio (modal de UI), Mapeamento de Sprites, Guia PixelLab, Atmosfera & Tensão, Contratos & Quests, Toggle de Conteúdo, Poisson Disk, Normal Map de Porta, Cloud Save, HUD residual.
+
+#### 🟠 Escopo em Definição (`docs/specs/scope-definition/`)
+* `docs/specs/scope-definition/` - Propostas reais que ainda não batem a barra técnica mínima de `backlog/` (Eventos Mundiais e Sazonais, Topologia de Mundo Contínuo/`gloomy_woods`).
 
 #### 💡 Discoveries & Spikes (`docs/specs/discovery/`)
-* `docs/specs/discovery/` - Pesquisas exploratórias, avaliações arquiteturais (Phaser 4.2.1, UI externa, P2P WebRTC, AI art pipeline e Store wrappers).
+* `docs/specs/discovery/` - Pesquisas exploratórias, avaliações arquiteturais (Phaser 4.2.1, UI externa, pipeline de assets externos, P2P WebRTC, AI art pipeline e Store wrappers).
 
 #### ⛔ Arquivadas / Rejeitadas (`docs/specs/rejected/`)
 * `docs/specs/rejected/` - Propostas rejeitadas para proteção dos guardrails técnicos do projeto.
@@ -96,6 +100,7 @@ As regras de produto, onde estamos, diretrizes de retenção mobile e para onde 
 * `docs/product/ROADMAP.md` - Fases do projeto (0 a 5).
 * `docs/product/ACCOUNT_AND_DATA.md` - Estratégia de Salvamento e Autenticação (Local Only).
 * `docs/product/RELEASE_STRATEGY.md` - Requisitos para quando formos para a Play Store.
+* `docs/product/COMMERCIAL_READINESS_GUIDE.md` - Guia estratégico de evolução e preparação comercial (4 pilares: Assets Retrô, Ponte de Dados, UI Retrátil, Mundo Nômade).
 
 ### 5. 🔍 Auditorias e Qualidade de Código (Reviews & Quality)
 Relatórios de auditoria técnica, cobertura de testes e análise de segurança.

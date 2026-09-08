@@ -4,7 +4,7 @@ target_module: Metodologia de Desenvolvimento, Governança de Código e IA
 priority: high
 criticality: high
 status: active
-last_updated: 2026-09-07
+last_updated: 2026-09-08
 tags: [spec-driven, context-driven, architecture, ai-guidelines, workflow]
 ---
 
@@ -161,7 +161,7 @@ Toda tarefa concluída deve passar pelo checklist:
 
 ## 🏷️ 6. Padrão de Cabeçalho de Specs (Frontmatter Standard)
 
-Toda spec nova (`in-progress/`, `backlog/`, `discovery/`) **DEVE** abrir com este frontmatter YAML, com valores restritos aos enums abaixo (nunca livre, nunca em português misturado com inglês — isso já causou inconsistência real: `priority: P1`, `priority: alta`, `priority: MÉDIA` coexistindo no mesmo índice):
+Toda spec nova (`in-progress/`, `backlog/`, `scope-definition/`, `discovery/`) **DEVE** abrir com este frontmatter YAML, com valores restritos aos enums abaixo (nunca livre, nunca em português misturado com inglês — isso já causou inconsistência real: `priority: P1`, `priority: alta`, `priority: MÉDIA` coexistindo no mesmo índice):
 
 ```yaml
 ---
@@ -169,11 +169,44 @@ agent_context: [backend|frontend|game-engine|game-designer|pixel-artist|product-
 target_module: src/... (arquivos/pastas exatos impactados)
 priority: high | medium | low          # Valor de produto/roadmap (impacto no jogador)
 criticality: critical | high | medium | low   # Risco técnico/regressão (ver definição abaixo)
-status: in-progress | delivered | backlog | discovery | rejected
+status: in-progress | delivered | backlog | scope-definition | discovery | rejected
 last_updated: YYYY-MM-DD               # Sem aspas, sem timestamp de hora
 tags: [categoria, subcategoria, ...]
 ---
 ```
+
+### `backlog` vs `scope-definition` — não são a mesma coisa (padronizado em 2026-09-08)
+
+Uma pasta só existe para um `status` que **espelha exatamente** o nome da pasta —
+é assim que `docs/specs/README.md` consegue listar tudo por pasta sem
+divergir do frontmatter. Isso significa que **`backlog/` passou a ter um
+critério de entrada estrito**:
+
+* **`backlog`** — a spec está **pronta para ser puxada e implementada agora**
+  por qualquer agente IA razoável, sem precisar voltar a perguntar nada a
+  ninguém. Isso exige que ela já cite, de forma explícita e testável, tudo
+  que a seção "Profundidade Técnica Mínima" abaixo pede (métodos/APIs
+  exatos, arquivos-alvo, critério de aceite). Uma spec `backlog` **pode**
+  estar bloqueada por um fator **não-técnico** externo (orçamento de arte,
+  confirmação de produto pendente do Felipe) — isso não a torna
+  "mal-escopada", só a mantém fora da Fila de Prioridade até o bloqueio
+  cair (ver seção "🚧 Bloqueados" em `docs/specs/README.md`). Continua tendo
+  status `backlog` porque, no dia em que o bloqueio cair, ela é executável
+  **sem retrabalho de escopo**.
+* **`scope-definition`** — existe uma proposta real e vale a pena persegui-la,
+  mas ela **ainda não bate** a barra de "Profundidade Técnica Mínima": falta
+  uma decisão de produto que muda a implementação (não só "onde clicar", mas
+  algo que se decidido diferente exige código diferente), falta critério de
+  aceite/teste, ou o escopo é grande demais para uma única spec (viola
+  "Escopo por Arquivo" abaixo) e precisa antes virar um Índice Mestre +
+  Satélites. Uma spec aqui **não deve** ser puxada para implementação como
+  está — o próximo passo é uma conversa/decisão de design, não código. Um
+  agente que tentar implementar uma `scope-definition` "no palpite" é
+  exatamente o risco de regressão que este padrão existe para prevenir.
+
+Nenhuma spec migra de `scope-definition` para `backlog` só por reescrita —
+ela migra quando a lacuna real (decisão de produto, critério de aceite,
+ou quebra em satélites) for resolvida.
 
 ### `priority` vs `criticality` — são eixos diferentes, não sinônimos
 * **`priority`** responde: *"o quanto isso importa para o jogador/roadmap agora?"* — mesma régua de `docs/product/00_MOBILE_FIRST_SUCCESS_BIBLE.md`.
@@ -192,13 +225,122 @@ Uma spec só está "pronta para implementação por qualquer agente IA" (inclusi
 3. **Arquivos/linhas alvo** (ou pelo menos classe/método) e o padrão Extract/Delegate quando aplicável (`03_PHASER_PATTERNS.md`).
 4. **Critério de aceite testável** (o que rodar — `pnpm test`, `pnpm e2e`, cena específica — para considerar concluído).
 
-Specs que não atingem esse nível de detalhe ficam em `discovery/` (pesquisa/rascunho), não em `in-progress/`.
+Specs que não atingem esse nível de detalhe ficam em `scope-definition/`
+(proposta real, mas não pronta para implementação) ou `discovery/`
+(pesquisa/spike, sem compromisso de entrega ainda) — nunca em `backlog/`
+ou `in-progress/`.
+
+### 📐 O Blueprint — Estrutura Obrigatória de Toda Spec
+
+Toda spec em `backlog/`, `in-progress/` ou `scope-definition/` segue este
+esqueleto de seções, nesta ordem. Uma spec que pula uma seção obrigatória
+(marcada ✅) não está pronta para `backlog/` — no máximo `scope-definition/`.
+Copie o modelo abaixo ao criar uma spec nova:
+
+```markdown
+---
+agent_context: ...
+target_module: ...
+priority: ...
+criticality: ...
+status: backlog   # ou in-progress / scope-definition
+last_updated: YYYY-MM-DD
+tags: [...]
+---
+
+# <Nome da Spec>
+
+## 1. Contexto ✅
+O que existe hoje (cite arquivos/métodos reais, não descrições vagas) e por
+que esta mudança é necessária. Se builda sobre trabalho já entregue, linke
+a spec `delivered/` correspondente em vez de reexplicar.
+
+## 2. Objetivo ✅
+Uma frase: o que será construído e o benefício. Se não cabe em uma frase,
+a spec é grande demais — considere quebrar em Índice Mestre + Satélites
+(ver "Escopo por Arquivo" abaixo).
+
+## 3. Escopo
+### 3.1 Dentro do Escopo (In-Scope) ✅
+Lista exaustiva do que ENTRA nesta entrega.
+### 3.2 Fora do Escopo (Out-of-Scope) ✅
+Lista explícita do que NÃO entra — previne scope creep e decisões
+improvisadas por quem for implementar.
+
+## 4. Requisitos Técnicos ✅
+Métodos/APIs exatos a chamar ou criar (assinatura, não paráfrase — ex:
+`hearth.enableFilters()` → `hearth.filters.internal.addGlow(cor, radius,
+offset, intensity)`, não "adicionar glow no hearth"). Se o domínio tem uma
+skill em `.claude/skills/`, cite-a pelo nome exato.
+
+## 5. Arquivos-Alvo ✅
+Lista de arquivos/classes/métodos que serão tocados ou criados. Aponte o
+padrão Extract/Delegate (`03_PHASER_PATTERNS.md`) quando aplicável.
+
+## 6. Decisões de Produto Necessárias
+Se QUALQUER escolha nesta spec depende de uma decisão de produto que muda a
+implementação (não estética/cosmética, mas comportamento), ela **precisa**
+estar resolvida aqui — com a decisão já tomada, ou com um **default
+explícito e seguro** que um agente pode implementar caso a decisão não
+tenha vindo ainda (ex: "sem confirmação em contrário, o gatilho é o NPC
+Ancião"). Uma spec com decisão de produto genuinamente em aberto (que muda
+o CÓDIGO, não só onde clicar) não pode estar em `backlog/` — vai para
+`scope-definition/`.
+
+## 7. Testes e Critério de Aceite ✅
+O que rodar (`pnpm test`, `pnpm e2e`, cena específica) e o resultado
+determinístico esperado. Sem isso, "concluído" é uma opinião, não um fato.
+
+## 8. Guardrails
+Anti-regressão específico desta spec — o que NÃO tocar, o que NÃO mudar de
+comportamento, referência a `critical/01_CRITICAL_FILES.md` se aplicável.
+
+## 9. Referências
+Links `[[...]]` para specs/docs relacionados (grafo de conhecimento —
+ver `docs/README.md`).
+
+## Registro de Mudanças
+| Data | O que mudou | Autor |
+|------|-------------|-------|
+```
+
+As seções ✅ (Contexto, Objetivo, Escopo In/Out, Requisitos Técnicos,
+Arquivos-Alvo, Testes/Critério de Aceite) são obrigatórias para `backlog/`
+e `in-progress/`. Uma spec em `scope-definition/` pode ter essas seções
+incompletas — é justamente isso que a mantém fora de `backlog/`.
+
+### 🚫 O que NÃO é uma spec (não pertence a `docs/specs/`)
+
+`docs/specs/` é reservado para documentos que seguem o Blueprint acima e
+descrevem uma entrega concreta de código. Os seguintes tipos de conteúdo
+**não são specs** e não devem viver em nenhuma das 6 pastas de
+`docs/specs/`, mesmo que tenham sido criados lá no passado:
+
+* **Guias estratégicos/roadmap de produto** (sem critério de aceite técnico,
+  sem arquivos-alvo) → pertencem a `docs/product/`.
+* **Notas de governança/histórico de processo** (ex: descrição de como uma
+  fila de automação funcionava e foi aposentada) → pertencem a
+  `docs/architecture/` (são história de *como trabalhamos*, não *o que
+  construir*).
+* **Documentos duplicados** (mesmo conteúdo técnico já coberto por outra
+  spec/discovery) → deletar, não manter uma segunda cópia "por via das
+  dúvidas". Se houver conteúdo genuinamente novo em um dos dois, mesclar no
+  documento canônico antes de deletar o duplicado.
+* **Guias de referência sem entrega própria** (prompts, dicionários de
+  valores, listas de repositórios de assets) só pertencem a `docs/specs/`
+  enquanto satélites de uma spec ativa que os consome — do contrário
+  também são `docs/architecture/` ou um anexo do documento que os usa.
+
+Qualquer documento nessas categorias encontrado dentro de `docs/specs/`
+deve ser movido para seu lugar correto e **linkado a partir de
+`docs/README.md`** (o grafo mestre) — nenhum documento pode existir sem
+estar mapeado em algum nó desse grafo.
 
 ### Escopo por Arquivo (Tamanho Máximo)
 Cada spec cobre um trabalho concluível em **dias a uma semana** — nunca uma fase inteira do roadmap em um único arquivo monolítico. Domínios grandes usam o padrão já validado de **Índice Mestre + Satélites** (ver `delivered/11_VISUAL_POLISH_FRONTS.md` e suas 8 satélites `11_01` a `11_08`): o mestre lista escopo e status de cada frente; cada satélite é a spec técnica isolada daquela frente. Um satélite passando de ~500 linhas é sinal de que deveria virar dois.
 
 ### Fila de Prioridade ("Pega a Próxima")
-`docs/specs/README.md` mantém, na sua primeira seção, uma tabela única (`in-progress/` + `backlog/`) ordenada por `criticality` e depois `priority`. Pedir "pega a próxima" resolve para a primeira linha dessa tabela — sem precisar vasculhar as 5 pastas manualmente.
+`docs/specs/README.md` mantém, na sua primeira seção, uma tabela única (`in-progress/` + `backlog/`) ordenada por `criticality` e depois `priority`. Pedir "pega a próxima" resolve para a primeira linha dessa tabela — sem precisar vasculhar as pastas manualmente. `scope-definition/` e `discovery/` **nunca** entram nessa fila — não há "próximo passo executável por agente" até a lacuna de escopo ser resolvida.
 
 ### Retenção de Histórico (`delivered/`)
 O índice principal (`docs/specs/README.md`) lista em `delivered/` apenas o que foi entregue **nos últimos 7 dias**. Tudo mais fica em `docs/specs/delivered/_HISTORY_ARCHIVE.md` (histórico completo, cronológico, nunca apagado — só sai da visão "quente"). Ao marcar uma spec como entregue, mova a linha mais antiga que sair da janela de 7 dias do índice principal para o arquivo.

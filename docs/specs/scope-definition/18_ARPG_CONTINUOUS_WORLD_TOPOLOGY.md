@@ -3,7 +3,7 @@ agent_context: game-designer, game-engine
 target_module: src/game/systems/DungeonGenerator.ts, src/game/systems/WorldManager.ts
 priority: low
 criticality: medium
-status: backlog
+status: scope-definition
 implementation_status: not_started
 last_updated: 2026-09-08
 tags:
@@ -12,7 +12,19 @@ tags:
   - level-design
   - continuous-world
   - superseded
+  - scope-definition
 ---
+
+> ⛔ **ESCOPO EM DEFINIÇÃO (movido de `backlog/` para `scope-definition/`
+> em 2026-09-08):** o que resta desta spec (variedade interna de
+> `gloomy_woods`) é uma pergunta em aberto, não uma spec executável — não
+> tem critério de aceite, não diz o que exatamente mudar em
+> `ProceduralForestGenerator` nem em que medida usar o `PathDrivenGenerator`
+> dormente. Antes de virar `backlog/`, o Felipe precisa decidir SE quer mais
+> variedade orgânica na floresta e, se sim, uma spec nova (não este arquivo
+> por inteiro, que é majoritariamente histórico) precisa listar exatamente
+> quais métodos de `ProceduralForestGenerator`/`PathDrivenGenerator` mudam e
+> qual o critério de aceite visual/de teste.
 
 > ⛔ **SUPERADA EM PARTE (atualizado em 2026-09-08):** o conflito original
 > era sobre COMO resolver "mundo parece um quadrado" — esta spec propunha

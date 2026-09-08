@@ -3,9 +3,17 @@ agent_context: game-engine, frontend, game-designer, product-manager
 target_module: artifacts/bloodmage/src/game
 priority: alta
 status: proposta
-last_updated: 2026-08-11
+last_updated: 2026-09-08
 tags: [specs, proposta, ui, assets-externos, pixel-art, hybrid-system, performance, audio]
 ---
+
+> **Nota (2026-09-08):** uma cópia integral deste documento vivia em
+> `docs/specs/backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md` (mesmo conteúdo,
+> só um banner de impedimento a mais) — deletada por duplicação durante a
+> padronização das specs. O bloqueio que ela sinalizava (orçamento/direção
+> de arte pendente de Felipe) é o mesmo de
+> `backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md` e
+> `backlog/09_PIXEL_LAB_PROMPT_GUIDE.md`.
 
 # Proposta de Discovery — Evolução de UI e Assets Externos Góticos (Pixel Art)
 

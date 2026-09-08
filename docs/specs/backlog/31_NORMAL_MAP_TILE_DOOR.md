@@ -10,7 +10,7 @@ tags: [specs, texture, normal-map, light2d, jules-ready]
 
 # Normal Map Ausente na Textura `tile_door`
 
-> Extraído de `_ARCHIVED_16_FILA_AUTOMACAO_JULES.md` (item 2) em 2026-09-07
+> Extraído de `docs/architecture/09_JULES_QUEUE_HISTORY_2026_09.md` (item 2, então em `_ARCHIVED_16_FILA_AUTOMACAO_JULES.md`) em 2026-09-07
 > durante a consolidação da fila de automação na Fila de Prioridade única
 > (`docs/specs/README.md`). Conteúdo técnico preservado sem alteração —
 > pronto para execução sem esclarecimento adicional (padrão da Seção 6 de

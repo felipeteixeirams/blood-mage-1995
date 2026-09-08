@@ -17,7 +17,8 @@ tags: [jules, automacao, prompt, delegacao-manual, workflow]
 > sessão, para não haver duas versões divergentes circulando.
 >
 > **Por que isso mudou (2026-09-07):** antes existia um arquivo dedicado
-> (`backlog/_ARCHIVED_16_FILA_AUTOMACAO_JULES.md`) só com itens
+> (`backlog/16_FILA_AUTOMACAO_JULES.md`, hoje arquivado em
+> `docs/architecture/09_JULES_QUEUE_HISTORY_2026_09.md`) só com itens
 > prontos-para-Jules. Consolidado na Fila de Prioridade única de
 > `docs/specs/README.md`, que já rankeia por prioridade/criticidade e já
 > exclui o que está bloqueado — não faz mais sentido manter uma fila

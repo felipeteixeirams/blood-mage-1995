@@ -4,7 +4,7 @@ target_module: src/assets, src/game, src/utils, src/game/scenes/BootScene.ts
 priority: high
 criticality: medium
 status: backlog
-last_updated: 2026-09-07
+last_updated: 2026-09-08
 tags: [specs, sprites, pixel-art, assets, mapping, checklist, hybrid-system, maturity, architecture]
 ---
 
@@ -12,7 +12,8 @@ tags: [specs, sprites, pixel-art, assets, mapping, checklist, hybrid-system, mat
 > (adequação de arquitetura) está 100% concluída — isso não está bloqueado.
 > Porém **todo** o trabalho restante (Fase 1.3 em diante: Bestiário, Projéteis,
 > Tilesets) depende de **sprites físicos que ainda não existem**, cuja
-> produção está gated pelo mesmo bloqueio de `backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md`:
+> produção está gated pelo mesmo bloqueio descrito em
+> `discovery/07_EIXO_B_PIPELINE_ASSETS_EXTERNOS.md`:
 > orçamento de arte / decisão de direção artística ainda pendente de Felipe.
 > Sem isso, não há próximo passo executável por um agente IA. Volta a
 > `in-progress/` assim que o primeiro lote de sprites físicos (Tier 1)
@@ -305,6 +306,6 @@ Sempre que um novo pacote ou lote de sprites for fornecido:
 
 ## 🔗 Documentos de Referência
 - `[[docs/specs/discovery/02_EIXO_A_DISCOVERY_UI_ASSETS_EXTERNOS.md]]` — Proposta de Arte e UI Gótica.
-- `[[docs/specs/backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md]]` — Discovery do Pipeline Híbrido de Assets.
+- `[[docs/specs/discovery/07_EIXO_B_PIPELINE_ASSETS_EXTERNOS.md]]` — Discovery do Pipeline Híbrido de Assets.
 - `[[docs/critical/00_ANTI_REGRESSION_GUIDE.md]]` — Guardrails de Estabilidade e Fallback Mandatório.
 - `[[docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md]]` — Solução de Problemas Conhecidos com Assets.

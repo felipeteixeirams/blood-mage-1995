@@ -4,7 +4,7 @@ target_module: src/components
 priority: medium
 criticality: low
 status: backlog
-last_updated: 2026-09-06
+last_updated: 2026-09-08
 tags: [specs, prestige, ui, backlog-real]
 ---
 
@@ -40,9 +40,15 @@ atributos estão 100% implementados e operacionais.
     existentes em `gameStore.ts` — **não reimplemente essa lógica**.
   - Confirmação explícita antes do reset (é uma ação destrutiva de
     progresso de nível).
-- Onde ele é acionado (NPC dedicado na Safe House? item de menu?) é uma
-  decisão de produto que falta tomar — ver `docs/product/ROADMAP.md`
-  antes de começar.
+- **Onde ele é acionado (decisão de produto com default seguro, 2026-09-08):**
+  sem confirmação em contrário do Felipe, o gatilho é o NPC **Ancião do
+  Refúgio** (`npcType: 'elder'` em `DungeonFlowController.ts`) — ele já é
+  o "Mestre de Talentos e Lore" da Safe House (ver
+  `backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`, Categoria 3),
+  encaixe temático natural para uma decisão de progressão permanente. Um
+  agente pode implementar com este default; se Felipe preferir outro
+  gatilho (item de menu, NPC diferente), é uma troca de 1 linha (o
+  `onInteract` do NPC), não uma reestrutura do modal em si.
 
 ## Referências
 
