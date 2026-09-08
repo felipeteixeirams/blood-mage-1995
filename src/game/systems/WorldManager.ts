@@ -120,6 +120,39 @@ export class WorldManager {
     };
   }
 
+  /**
+   * Fase C (Transições Sem Corte): Interpolação contínua de propriedades de ambiente
+   * entre dois biomas vizinhos na fronteira de chunks com base no fator t (0.0 a 1.0).
+   */
+  public blendBiomes(biomeA: BiomeType, biomeB: BiomeType, t: number): { isTransitionIndoorOutdoor: boolean; previousIndoorState: boolean } {
+    const clampedT = Math.max(0, Math.min(1, t));
+    const configA = this.getBiomeConfig(biomeA);
+    const configB = this.getBiomeConfig(biomeB);
+
+    const prevIndoor = this.currentConfig.isIndoor;
+    const targetBiome = clampedT >= 0.5 ? biomeB : biomeA;
+    this.currentBiomeId = targetBiome;
+
+    this.targetLightRadius = configA.lightRadius + (configB.lightRadius - configA.lightRadius) * clampedT;
+    this.currentLightRadius = this.targetLightRadius;
+
+    const activeConfig = clampedT >= 0.5 ? configB : configA;
+    this.currentConfig = {
+      ...activeConfig,
+      lightRadius: this.targetLightRadius,
+      darknessAlpha: configA.darknessAlpha + (configB.darknessAlpha - configA.darknessAlpha) * clampedT,
+      fogAlpha: configA.fogAlpha + (configB.fogAlpha - configA.fogAlpha) * clampedT,
+      reverbLevel: configA.reverbLevel + (configB.reverbLevel - configA.reverbLevel) * clampedT,
+      ambientDroneFreq: configA.ambientDroneFreq + (configB.ambientDroneFreq - configA.ambientDroneFreq) * clampedT,
+    };
+
+    const isTransition = prevIndoor !== this.currentConfig.isIndoor;
+    return {
+      isTransitionIndoorOutdoor: isTransition,
+      previousIndoorState: prevIndoor,
+    };
+  }
+
   public updateLighting(delta: number) {
     // Interpolação suave do raio de luz ao mudar de área
     const lerpSpeed = 0.003 * delta;
