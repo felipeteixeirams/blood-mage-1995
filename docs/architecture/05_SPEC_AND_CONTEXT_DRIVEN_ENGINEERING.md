@@ -208,6 +208,40 @@ Nenhuma spec migra de `scope-definition` para `backlog` só por reescrita —
 ela migra quando a lacuna real (decisão de produto, critério de aceite,
 ou quebra em satélites) for resolvida.
 
+### 🎯 Workflow Paralelo: Fila de Definição ↔ Fila de Desenvolvimento
+
+Specs de **conceito/gameplay** (definição de regras, magias, inimigos, quests,
+história) geralmente precisam de clarificação de CONCEITO antes de ir a
+`backlog/`. Ao invés de bloqueá-las na Fila de Prioridade de Desenvolvimento,
+existe uma **Fila de Definição paralela** (em `docs/specs/README.md`, seção
+"🎯 Fila de Definição"):
+
+```
+┌─────────────────────────────────┐     ┌──────────────────────────────┐
+│   FILA DE DEFINIÇÃO (Felipe)    │     │  FILA DE DESENVOLVIMENTO     │
+│  scope-definition/ → Conceito   │     │  (Claude/Jules executa)      │
+│  • i18n lib choice              │     │ • Bug fixes (🔴 crítica)     │
+│  • Evento priority (qual 1º?)   │     │ • Gameplay constr. (🟡 M-A) │
+│  • Mundo variedade              │     │ • Visual polish (🟡 média)   │
+│                                 │     │                              │
+│  [Definido] → move para backlog │     │ [Pronto] → codifica sem      │
+│              ↓                  │     │            bloqueios          │
+│        Entra em desenvolvimento │     │                              │
+└─────────────────────────────────┘     └──────────────────────────────┘
+```
+
+**Regra:** Enquanto Felipe clarifica conceito numa spec de Definição, Claude/
+Jules **não fica esperando** — atacam specs prontas da Fila de Desenvolvimento.
+Quando a definição termina, a spec entra no topo da próxima Fila de
+Desenvolvimento (pronto pra implementar).
+
+**Critério para entrar em Fila de Definição (vs Bloqueados):**
+- **Fila de Definição:** Decisão de **conceito/gameplay** que muda o CÓDIGO.
+  Exemplo: "qual lib i18n?" (react-i18next vs outro) muda qual import/config.
+- **Bloqueados:** Insumo **não-técnico/não-conceitual** — arte (sprites não
+  existem), comercial (demanda Beta não validada). Spec já tem escopo técnico
+  100% definido, só espera orçamento/aprovação.
+
 ### `priority` vs `criticality` — são eixos diferentes, não sinônimos
 * **`priority`** responde: *"o quanto isso importa para o jogador/roadmap agora?"* — mesma régua de `docs/product/00_MOBILE_FIRST_SUCCESS_BIBLE.md`.
 * **`criticality`** responde: *"o quanto isso pode quebrar o jogo se for mal executado?"* — mesma régua da Matriz de Complexidade (Seção 3):

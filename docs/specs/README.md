@@ -91,35 +91,27 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition
 > *Nota:* `30_DETERMINISMO_SEED_POISSON_DISK` moveu para posição 1 (Fila de Prioridade) e passou a "Em Desenvolvimento" (Kanban) em 2026-09-08
 > — entregue para Jules iniciar a implementação imediatamente (spec está 100% pronta, sem bloqueios ou esclarecimentos pendentes). Determinismo por seed no espalhamento de vegetação via Poisson Disk é crítico para _roguelike replayability_.
 
-### 🟠 Escopo em Definição (proposta real, mas não pronta para implementação)
+### 🎯 Fila de Definição (Conceito & Regras de Gameplay — Workflow Paralelo)
 
-> Introduzido em 2026-09-08 (padronização de specs, Seção 6 de
-> `docs/architecture/05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md`). Diferente
-> de "🚧 Bloqueados": aqui o bloqueio não é externo (arte/confirmação de
-> produto pendente) — é que a spec em si ainda não bate a barra técnica
-> mínima (falta decisão de produto que muda código, falta critério de
-> aceite, ou o escopo é grande demais para uma spec só). Nenhum agente deve
-> implementar a partir destes arquivos como estão.
+> Introduzido em 2026-09-08 (alinhamento de prioridades, workflow paralelo). Diferente de "🚧 Bloqueados": aqui o bloqueio NÃO é externo (arte/confirmação comercial) — é que a spec precisa de **definição de conceito/regras de gameplay** antes de entrar em desenvolvimento.
+>
+> **Workflow paralelo:** Enquanto Felix/Product clarifica conceito aqui → move para `backlog/` → Claude/Jules executa em paralelo. Nenhum agente IA implementa a partir destes como estão. Quando a definição termina, a spec automáticamente sobe na Fila de Prioridade de Desenvolvimento.
 
-| Spec | Pasta | O que falta para virar `backlog/` |
-|---|---|---|
-| [`scope-definition/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./scope-definition/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md) | scope-definition | Escopo de 5 sistemas em 1 arquivo só; precisa virar Índice Mestre + satélites (1 por evento), com schema Zod de `worldEvents.json` e critério de aceite por satélite |
-| [`scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md) | scope-definition | Residual (variedade interna de `gloomy_woods`) é uma pergunta em aberto, não uma spec — falta decisão do Felipe + Blueprint técnico próprio |
+| Spec | Pasta | O que Felipe precisa clarificar | Próximo passo |
+|---|---|---|---|
+| **[`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md)** — i18n | in-progress | Qual biblioteca i18n? (`react-i18next`, `next-i18next`, ou outra?) + Quais strings na Fase 1 (campanha vs HUD vs NPCs)? | Quando definido → extrai para `backlog/05_I18N_LOCALIZACAO.md`, move spec 05 core para delivered |
+| **[`scope-definition/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./scope-definition/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md)** | scope-definition | Qual evento implementar PRIMEIRO? (Eclipse de Sangue / Cerco ao Vilarejo / Rifts / Solstício?) + Escopo: 1 evento por satélite ou agregar? | Quando decidido → divide em Índice Mestre + satélites, move 1º evento para `backlog/` |
+| **[`scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md)** | scope-definition | Variedade interna de `gloomy_woods` é desejo ou escopo? (Spec 25 já resolveu conectividade, só falta diversidade de biomas?) | Quando clarificado → vira Blueprint técnico próprio ou fecha como "resolvido por Spec 25" |
 
-### 🚧 Bloqueados (aguardando decisão/insumo externo — fora da fila acima)
+### 🚧 Bloqueados por Insumo Externo (Arte / Comercial — Não-Conceitual)
 
-> Triagem de 2026-09-07 (atualizada em 2026-09-08 — spec 25 entregue por
-> completo, ver "🟢 Delivered" abaixo). Diferente de "🟠 Escopo em Definição":
-> estas specs **já batem** a barra técnica mínima (`status: backlog`
-> continua válido) — o que falta é um insumo externo não-técnico
-> (orçamento de arte, confirmação de produto). Nada aqui tem próximo passo
-> executável por um agente IA agora.
+> Triagem de 2026-09-07 (atualizada em 2026-09-08 — spec 25 entregue por completo). **Diferente de "🎯 Fila de Definição":** estas specs **já têm escopo técnico 100% definido** — o bloqueio é por insumo externo FORA do escopo técnico/conceitual (orçamento de arte, confirmação de produto de negócio). Nada aqui tem próximo passo executável por agente IA até o insumo chegar.
 
 | Spec | Pasta | Impedimento | O que destrava |
 |---|---|---|---|
 | [`backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md) | backlog *(era in-progress)* | Fase 0 (arquitetura) concluída; todo o resto exige sprites físicos que não existem | Orçamento/direção de arte aprovado |
-| [`backlog/09_PIXEL_LAB_PROMPT_GUIDE.md`](./backlog/09_PIXEL_LAB_PROMPT_GUIDE.md) | backlog *(era in-progress)* | Guia só tem uso ativo quando há produção de sprites em andamento | Mesmo gate de #08 |
-| [`backlog/29_CLOUD_SAVE_FASE5.md`](./backlog/29_CLOUD_SAVE_FASE5.md) | backlog *(novo, extraído de #05)* | Mandato do projeto: nenhuma integração de conta/nuvem sem confirmação prévia de Felipe | Felipe confirmar explicitamente + validação de demanda (Beta) |
+| [`backlog/09_PIXEL_LAB_PROMPT_GUIDE.md`](./backlog/09_PIXEL_LAB_PROMPT_GUIDE.md) | backlog *(era in-progress)* | Guia só tem uso ativo quando há produção de sprites em andamento | Mesmo gate de #08 (orçamento aprovado) |
+| [`backlog/29_CLOUD_SAVE_FASE5.md`](./backlog/29_CLOUD_SAVE_FASE5.md) | backlog *(novo, extraído de #05)* | Mandato do projeto: nenhuma integração de conta/nuvem sem confirmação prévia de Felipe | Felipe confirmar explicitamente a demanda comercial (Beta?) + avaliação de segurança |
 
 ---
 
@@ -149,21 +141,17 @@ docs/specs/
 
 ## 🟡 In-Progress (Desenvolvimento Iniciado — Fases Pendentes, Sem Impedimento)
 
-> Triagem de 2026-09-07: 4 specs saíram desta pasta por terem impedimento
-> ativo — ver "🚧 Bloqueados" acima para onde foram e por quê:
-> `08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST`, `09_PIXEL_LAB_PROMPT_GUIDE`
-> seguem lá. Em `05_FASE5`, o item Cloud Save (bloqueado) foi extraído para
-> `backlog/29_CLOUD_SAVE_FASE5.md`; a spec ficou com escopo restrito a
-> i18n. `18_ARPG_CONTINUOUS_WORLD_TOPOLOGY` foi para `scope-definition/`
-> (residual não é mais uma spec executável, ver seção acima).
-> **Atualização 2026-09-08:** `25_MUNDO_CONTINUO_CHUNK_STREAMING` saiu
-> desta pasta — PR #97 (Jules) entregou a Fase C, última pendência; spec
-> 100% completa, movida para `delivered/25`.
+> Triagem de 2026-09-07 (atualizada 2026-09-08): Specs com bloqueio ativo foram movidas:
+> - `08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST`, `09_PIXEL_LAB_PROMPT_GUIDE` → "🚧 Bloqueados" (aguardando arte)
+> - `05_FASE5`: item Cloud Save extraído para `backlog/29_CLOUD_SAVE_FASE5.md` ("🚧 Bloqueados"); spec 05 agora tem escopo restrito a i18n → movida para "🎯 Fila de Definição" (Felipe clarifica qual lib i18n)
+> - `18_ARPG_CONTINUOUS_WORLD_TOPOLOGY` → `scope-definition/` (residual não é mais executável como está)
+>
+> **Atualização 2026-09-08:** `25_MUNDO_CONTINUO_CHUNK_STREAMING` entregue (PR #97 Jules, Fase C) → moved to `delivered/25`.
 
-| Spec / Documento | Fases / Escopo Concluído | Fases / Itens Pendentes (destravados) |
+| Spec / Documento | Fases / Escopo Concluído | Fases / Itens Pendentes |
 |---|---|---|
-| **[`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md)** | • PWA Offline-First (Spec 15)<br>• Scripts de build Electron (`scripts/build-steam.sh`) | • Localização multilíngue (i18n) |
-| **[`in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md`](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md)** | • Gameplay loop completo (Sangramento/Veneno/Infecção aplicados por monstro, dreno de HP, cura via consumível comprável no Alquimista)<br>• Cura via NPC Clérigo (PR #93)<br>• Ícones customizados SVG (PR #93) | • *(nenhum item de código — só QA manual e tuning de valores, dependentes do Felipe jogar)* |
+| **[`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md)** | • PWA Offline-First (Spec 15)<br>• Scripts de build Electron (`scripts/build-steam.sh`) | • **🎯 Fila de Definição:** Localização multilíngue (i18n) — Felipe define lib + escopo |
+| **[`in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md`](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md)** | • Gameplay loop completo (Sangramento/Veneno/Infecção aplicados por monstro, dreno de HP, cura via consumível comprável no Alquimista)<br>• Cura via NPC Clérigo (PR #93)<br>• Ícones customizados SVG (PR #93) | • *(nenhum item de código — só QA manual, pronto p/ Felipe jogar)* |
 
 > *Nota (2026-09-06):* `in-progress/06_EIXO_A_GRAFICOS_AVANCADOS.md` e
 > `in-progress/10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md` foram

@@ -29,6 +29,24 @@ pra quem mexer no código depois).
 
 ---
 
+### 2026-09-08 — Workflow Paralelo: Fila de Definição (Conceito) ↔ Fila de Desenvolvimento (Execução)
+
+**Contexto:** Specs que precisam de definição de conceito/gameplay (i18n lib choice, qual evento implementar primeiro, variedade de biomas) ficavam bloqueando toda a Fila de Prioridade enquanto Felipe decidia. Ao mesmo tempo, specs prontas (sem dependências conceituais) ficavam ociosas esperando a definição terminar.
+
+**Decisão:** Criar duas filas PARALELAS (ambas em `docs/specs/README.md`):
+1. **Fila de Definição:** specs em `scope-definition/` que precisam decisão de CONCEITO que muda o código (ex: "qual lib i18n" → import e config diferentes). Felipe/Product clarifica lá.
+2. **Fila de Desenvolvimento:** specs em `backlog/` prontas para execução imediata, sem dependência conceitual. Claude/Jules codifica, sem esperar.
+
+Diferença crítica: **"Bloqueados"** (arte/demanda comercial não aprovada) continuam sendo insumo não-técnico e não entram em nenhuma fila ativa até o insumo chegar.
+
+**Consequências:**
+- Specs nunca trancam desenvolvimento — enquanto Felipe define spec A, Claude/Jules executa spec B.
+- Hierarquia de prioridades por tipo: 🔴 Bugs críticos > 🟡 Média-Alta gameplay > 🟡 Média polish > 🟢 Comercial.
+- Quando definição de conceito termina (ex: i18n lib escolhida), spec entra no topo da próxima Fila de Desenvolvimento.
+- Documentação em `docs/architecture/05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md` seção "Workflow Paralelo: Fila de Definição ↔ Fila de Desenvolvimento".
+
+---
+
 ### 2026-09-06 — Ruído do `HeightmapGenerator` precisa de interpolação, não hash cru
 
 **Contexto:** `pseudoNoise()` aplicava um hash caótico (estilo
