@@ -1742,7 +1742,7 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
     ctx.fill();
     ctx.fillRect(7, 16, 18, 14);
   });
-  addTexture('tile_door', doorCanvas);
+  addTextureWithNormalMap('tile_door', doorCanvas);
 
   // 18. Portal to Next Dungeon Floor (40x40)
   const portalCanvas = createPixelCanvas(40, 40, (ctx) => {
