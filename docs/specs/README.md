@@ -25,6 +25,28 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition
 
 ---
 
+## 🗂️ Board de Fluxo (Kanban)
+
+> **A visão mais rápida do estado real do projeto.** 4 raias, do jeito mais
+> simples possível — atualiza só quando uma spec muda de fase de verdade
+> (não é um processo automático, é uma linha que move de coluna manualmente
+> quando o estado muda). As outras tabelas deste índice (Fila de
+> Prioridade, Backlog, Delivered...) continuam sendo a fonte de detalhe;
+> este board é só o resumo visual de "onde cada coisa está agora".
+>
+> **Regra de quando mover uma linha:**
+> - `Backlog → Em Desenvolvimento`: quando alguém (Claude/Jules/Felipe) começa a codificar de fato.
+> - `Em Desenvolvimento → Em Qualidade`: quando o código está pronto (`pnpm verify` limpo) mas ainda falta alguém *jogar* pra confirmar que funciona/está calibrado — isso pode acontecer com a spec ainda em `in-progress/` (ex: só falta QA) ou já em `delivered/` (código entregue, QA ainda não confirmada — o "pendente QA/verificação ao vivo" que já anotamos nas specs de qualquer forma).
+> - `Em Qualidade → Concluído`: quando alguém confirma em jogo que está tudo certo (aí sim é "delivered" de verdade, sem ressalva).
+
+| 📋 Backlog | 🔨 Em Desenvolvimento | 🔍 Em Qualidade | ✅ Concluído *(7 dias)* |
+|---|---|---|---|
+| [06](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) · 🔒[08](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md) · [09](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) · 🔒[09-PL](./backlog/09_PIXEL_LAB_PROMPT_GUIDE.md) · [11](./backlog/11_ATMOSFERA_E_TENSAO.md) · [12](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) · [15](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) · 🔒[29](./backlog/29_CLOUD_SAVE_FASE5.md) · [30](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) · [31](./backlog/31_NORMAL_MAP_TILE_DOOR.md) | [05 — Fase 5](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md) *(só falta i18n)* | [03 — Fase 3](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md) *(código pronto, falta QA+tuning)*<br>[09 — HUD Tier A](./delivered/09_HUD_TIER_A_REFERENCIAS_VISUAIS.md) *(código pronto, falta QA manual)*<br>[25 — Chunk Streaming](./delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md) *(código pronto, falta cruzar fronteira de chunk em jogo)* | 17 · 28 · 18 · 10 *(ver tabela "🟢 Delivered" abaixo)* |
+
+> 🔒 = bloqueada por insumo externo (ver seção "🚧 Bloqueados" abaixo) — ainda aparece na coluna Backlog porque o escopo já está pronto, só não tem próximo passo executável agora.
+
+---
+
 ## 🎯 Fila de Prioridade — "Pega a Próxima"
 
 > Tabela única (`in-progress/` + `backlog/`), ordenada por **prioridade** (produto) e,
