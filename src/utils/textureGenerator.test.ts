@@ -222,5 +222,9 @@ describe('generateGameTextures', () => {
     const groundVar0 = addedImages.find((img) => img.key === 'tile_ground_var_0');
     expect(groundVar0).toBeDefined();
     expect(groundVar0?.normalMap).toBeDefined();
+
+    const door = addedImages.find((img) => img.key === 'tile_door');
+    expect(door).toBeDefined();
+    expect(door?.normalMap).toBeDefined();
   });
 });
