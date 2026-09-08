@@ -5,6 +5,7 @@ import { useGameStore } from '../store/gameStore';
 import talentsData from '../data/talents.json';
 import { soundEngine } from '../utils/soundEngine';
 import { useGamepadUINavigation } from '../hooks/useGamepadUINavigation';
+import { useTranslation } from '../i18n';
 
 interface ExtendedTalentNode {
   id: string;
@@ -29,6 +30,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 export const TalentsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const { t } = useTranslation();
   const { bloodCrystals, talentLevels, upgradeTalent } = useGameStore();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -101,7 +103,7 @@ export const TalentsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => 
           <div className="flex items-center gap-2.5">
             <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-[#e8c76a] animate-pulse" />
             <div>
-              <h2 className="text-lg sm:text-xl font-cinzel text-[#e8c76a] font-bold uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">ÁRVORE DE TALENTOS</h2>
+              <h2 className="text-lg sm:text-xl font-cinzel text-[#e8c76a] font-bold uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{t('talents.title')}</h2>
               <p className="text-[8px] sm:text-[9px] text-[#e8c76a]/60 font-sans uppercase tracking-wide">Evolução permanente alimentada por Cristais de Sangue</p>
             </div>
           </div>
@@ -204,14 +206,14 @@ export const TalentsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                     }`}
                   >
                     {isMax ? (
-                      'NÍVEL MÁXIMO ALCANÇADO'
+                      t('talents.maxLevel')
                     ) : blocked ? (
                       <span className="flex items-center gap-1 text-gray-500 font-sans text-[8px] uppercase font-bold">
                         <Lock className="w-3 h-3" /> BLOQUEADO POR {getBlockedByName(node)}
                       </span>
                     ) : (
                       <>
-                        <PlusCircle className="w-3.5 h-3.5" /> EVOLUIR ({cost} 💎)
+                        <PlusCircle className="w-3.5 h-3.5" /> {t('talents.upgrade').toUpperCase()} ({cost} 💎)
                       </>
                     )}
                   </button>

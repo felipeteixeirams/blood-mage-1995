@@ -246,7 +246,10 @@ export interface WaveConfig {
   bossMonsterId?: string;
 }
 
+export type Language = 'pt-BR' | 'en-US';
+
 export interface GameSettings {
+  language?: Language;
   minimapVisible: boolean;
   minimapAlpha: number;
   animatedPortrait: boolean;

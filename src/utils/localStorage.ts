@@ -175,6 +175,7 @@ export function savePrestigeData(prestige: PrestigeData): void {
 }
 
 export const defaultSettings: GameSettings = {
+  language: 'pt-BR',
   minimapVisible: true,
   minimapAlpha: 0.65,
   animatedPortrait: true,
@@ -207,6 +208,7 @@ export const defaultSettings: GameSettings = {
 
 // Schema for Settings validation
 const SettingsSchema = z.object({
+  language: z.enum(['pt-BR', 'en-US']).catch('pt-BR').optional(),
   minimapVisible: z.boolean().catch(true),
   minimapAlpha: z.number().min(0).max(1).catch(0.65),
   animatedPortrait: z.boolean().catch(true),
