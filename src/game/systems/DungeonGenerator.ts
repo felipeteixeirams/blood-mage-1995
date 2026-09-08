@@ -73,17 +73,17 @@ export class DungeonGenerator {
     return this.heightGenerator.isTraversable(fromX, fromY, toX, toY, isWorldCoords);
   }
 
-  public generate(mapW: number, mapH: number, biome: BiomeType = 'fosso_chagas'): RoomData[] {
-    // gloomy_woods usa ProceduralForestGenerator (floresta orgânica por ruído,
-    // bugs de sobreposição/ruído "sal-e-pimenta" já corrigidos e validados ao
-    // vivo). Decisão pendente sobre migrar pro PathDrivenGenerator de
-    // origin/main ("Spec 18", mundo contínuo por nós) — ambos coexistem no
-    // código (ver import acima) até essa escolha ser feita; não trocar sem
-    // decidir antes (ver docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md).
+  public generate(
+    mapW: number,
+    mapH: number,
+    biome: BiomeType = 'fosso_chagas',
+    offsetX: number = 0,
+    offsetY: number = 0
+  ): RoomData[] {
     if (biome === 'gloomy_woods') {
       const forestGen = new ProceduralForestGenerator(this.scene);
       this.heightGenerator = forestGen.heightGenerator;
-      return forestGen.generate(mapW, mapH);
+      return forestGen.generate(mapW, mapH, offsetX, offsetY);
     }
 
     const isSafeHouse = biome === 'safe_house';
@@ -97,16 +97,16 @@ export class DungeonGenerator {
     let rooms: RoomData[] = [];
     let orderedCells: Array<{ leaf: BspLeaf; room: RoomData }> = [];
 
-    const originX = 90;
-    const originY = 70;
-    const usableW = mapW - originX - 90;
-    const usableH = mapH - originY - 70;
+    const originX = offsetX + 90;
+    const originY = offsetY + 70;
+    const usableW = mapW - 180;
+    const usableH = mapH - 140;
 
     if (isSafeHouse) {
       const roomW = 550; // Reduzido de 800 (41% menor)
       const roomH = 420; // Reduzido de 600 (30% menor)
-      const rx = (mapW - roomW) / 2;
-      const ry = (mapH - roomH) / 2;
+      const rx = offsetX + (mapW - roomW) / 2;
+      const ry = offsetY + (mapH - roomH) / 2;
 
       rooms.push({
         x: rx,
@@ -174,20 +174,28 @@ export class DungeonGenerator {
       const wx = gx * 48;
       const wy = gy * 24;
       if (isSafeHouse) {
-        return wx >= (mapW - 550) / 2 && wx <= (mapW + 550) / 2 && wy >= (mapH - 420) / 2 && wy <= (mapH + 420) / 2;
+        // Mesma janela usada para posicionar a sala (rx/ry acima) — precisa do
+        // offsetX/offsetY do chunk contíguo, senão a checagem de piso desalinha
+        // da sala real assim que a safe_house deixar de estar sempre no offset 0.
+        return (
+          wx >= offsetX + (mapW - 550) / 2 &&
+          wx <= offsetX + (mapW + 550) / 2 &&
+          wy >= offsetY + (mapH - 420) / 2 &&
+          wy <= offsetY + (mapH + 420) / 2
+        );
       }
       return rooms.some((r) => wx >= r.x - 24 && wx <= r.x + r.width + 24 && wy >= r.y - 24 && wy <= r.y + r.height + 24);
     };
 
     // Fill Isometric Floor Tiles with Autotiling Bitmask & Biome Tinting (Spec 16)
-    for (let x = 0; x < mapW; x += 48) {
-      for (let y = 0; y < mapH; y += 24) {
-        const gridX = Math.floor(x / 48);
-        const gridY = Math.floor(y / 24);
+    for (let x = offsetX; x < offsetX + mapW; x += 48) {
+      for (let y = offsetY; y < offsetY + mapH; y += 24) {
+        const gridX = Math.floor((x - offsetX) / 48);
+        const gridY = Math.floor((y - offsetY) / 24);
         const zElevation = isSafeHouse ? 0 : heightGen.getHeightAt(gridX, gridY);
         // Deslocamento sutil em Y conforme a elevação Z (Spec 16 - heightStep 2px nos tiles 2D)
         const renderY = y - (zElevation * 2);
-        const tileX = x + (y % 48 === 0 ? 0 : 24);
+        const tileX = x + ((y - offsetY) % 48 === 0 ? 0 : 24);
 
         const tileTexKey = this.getGroundTextureKey(gridX, gridY, isSafeHouse, isFloorCell);
         const tile = this.scene.add.image(tileX, renderY, tileTexKey);
@@ -240,8 +248,8 @@ export class DungeonGenerator {
       const points = heightGen.samplePoissonDisk(cols, rows, 4.5);
       points.forEach((pt) => {
         if (pt.height > 0 && Math.random() < 0.35) {
-          const propX = pt.gridX * 48;
-          const propY = pt.gridY * 24 - pt.height * 2;
+          const propX = offsetX + pt.gridX * 48;
+          const propY = offsetY + pt.gridY * 24 - pt.height * 2;
           const prop = this.scene.add.image(propX, propY, 'spr_skeleton_remains');
           prop.setTint(tints.ground);
           const depth = calculateIsometricDepth(pt.gridX, pt.gridY, pt.height, 5);
@@ -256,8 +264,8 @@ export class DungeonGenerator {
     if (isSafeHouse) {
       const roomW = 550;
       const roomH = 420;
-      const rx = (mapW - roomW) / 2;
-      const ry = (mapH - roomH) / 2;
+      const rx = offsetX + (mapW - roomW) / 2;
+      const ry = offsetY + (mapH - roomH) / 2;
 
       const safeHouseWallGrid = new Set<string>();
 
@@ -304,10 +312,10 @@ export class DungeonGenerator {
     };
 
     // Pre-pass: Register outer perimeter wall coordinates
-    registerWallLine(0, 0, mapW, 0);
-    registerWallLine(0, mapH - 32, mapW, mapH - 32);
-    registerWallLine(0, 0, 0, mapH);
-    registerWallLine(mapW - 32, 0, mapW - 32, mapH);
+    registerWallLine(offsetX, offsetY, offsetX + mapW, offsetY);
+    registerWallLine(offsetX, offsetY + mapH - 32, offsetX + mapW, offsetY + mapH - 32);
+    registerWallLine(offsetX, offsetY, offsetX, offsetY + mapH);
+    registerWallLine(offsetX + mapW - 32, offsetY, offsetX + mapW - 32, offsetY + mapH);
 
     // Pre-pass: Register partition wall coordinates
     orderedCells.forEach(({ room, leaf }) => {
@@ -327,10 +335,10 @@ export class DungeonGenerator {
     const renderedWallGrid = new Set<string>();
 
     // Outer Perimeter Walls
-    this.buildWallLine(0, 0, mapW, 0, tints.wall, 'tile_wall_brick', false, masterWallGrid, renderedWallGrid); // Top
-    this.buildWallLine(0, mapH - 32, mapW, mapH - 32, tints.wall, 'tile_wall_brick', false, masterWallGrid, renderedWallGrid); // Bottom
-    this.buildWallLine(0, 0, 0, mapH, tints.wall, 'tile_wall_brick', false, masterWallGrid, renderedWallGrid); // Left
-    this.buildWallLine(mapW - 32, 0, mapW - 32, mapH, tints.wall, 'tile_wall_brick', false, masterWallGrid, renderedWallGrid); // Right
+    this.buildWallLine(offsetX, offsetY, offsetX + mapW, offsetY, tints.wall, 'tile_wall_brick', false, masterWallGrid, renderedWallGrid); // Top
+    this.buildWallLine(offsetX, offsetY + mapH - 32, offsetX + mapW, offsetY + mapH - 32, tints.wall, 'tile_wall_brick', false, masterWallGrid, renderedWallGrid); // Bottom
+    this.buildWallLine(offsetX, offsetY, offsetX, offsetY + mapH, tints.wall, 'tile_wall_brick', false, masterWallGrid, renderedWallGrid); // Left
+    this.buildWallLine(offsetX + mapW - 32, offsetY, offsetX + mapW - 32, offsetY + mapH, tints.wall, 'tile_wall_brick', false, masterWallGrid, renderedWallGrid); // Right
 
     // Build Partition Walls around rooms with door openings
     orderedCells.forEach(({ room, leaf }) => {

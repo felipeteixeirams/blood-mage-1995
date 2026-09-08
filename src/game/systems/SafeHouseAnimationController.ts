@@ -231,48 +231,29 @@ export class SafeHouseAnimationController {
    * Portal de Descida: shimmer + pulse (escala 1.0 → 1.12 → 1.0 @ 0.9s).
    * Alpha também oscila para efeito de brilho etéreo.
    */
+  /**
+   * `scene.portalSprite` deixou de ser um portal mágico giratório — desde a
+   * Fase D de `docs/specs/backlog/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`
+   * (`DungeonFlowController.revealDescentDoor()`) é uma porta física com luz
+   * de tocha quente própria. Um scale-pulse + glow roxo etéreo (tratamento
+   * antigo do portal giratório) ficaria errado numa porta de madeira/pedra
+   * estática — aqui só um alpha shimmer bem sutil, convidando o jogador sem
+   * parecer magia. Sem luz adicional: `revealDescentDoor()` já aplica tocha
+   * quente na soleira, duplicar a fonte de luz aqui só competiria com ela.
+   */
   private setupPortalShimmer(): void {
     if (!this.portal) return;
 
-    // Portal scale pulse
-    const portalPulseTween = this.scene.tweens.add({
+    const doorGlowTween = this.scene.tweens.add({
       targets: this.portal,
-      scaleX: 1.12,
-      scaleY: 1.12,
-      alpha: 1.0,
-      duration: 450,
+      alpha: 0.85,
+      duration: 900,
       yoyo: true,
       ease: 'Sine.InOut',
       repeat: -1,
     });
 
-    this.activeTweens.push(portalPulseTween);
-
-    // ===== PORTAL LIGHT GLOW =====
-    if ((this.scene as any).lightingSystem?.addLightSource) {
-      try {
-        const portalLight = (this.scene as any).lightingSystem.addLightSource({
-          x: this.portal.x,
-          y: this.portal.y,
-          radius: 150,
-          color: 0x8b5cf6, // Purple ethereal
-          intensity: 0.6,
-        });
-
-        const portalLightPulseTween = this.scene.tweens.add({
-          targets: portalLight,
-          intensity: 0.9,
-          duration: 900,
-          yoyo: true,
-          ease: 'Sine.InOut',
-          repeat: -1,
-        });
-
-        this.activeTweens.push(portalLightPulseTween);
-      } catch (e) {
-        logger.warn('SafeHouseAnimationController.setupPortalShimmer', 'Could not add light source', { error: String(e) });
-      }
-    }
+    this.activeTweens.push(doorGlowTween);
   }
 
   /**

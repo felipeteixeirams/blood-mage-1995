@@ -60,4 +60,43 @@ describe('DungeonFlowController.getNextCampaignZone (Fase B — encanamento inte
     ];
     expect(results).toEqual(['gloomy_woods', 'gloomy_woods', 'santuario_sangue']);
   });
+
+  it('revealDescentDoor cria a estrutura física de porta e ativa o portal de saída', () => {
+    const mockSprite = { setDepth: vi.fn().mockReturnThis(), setScale: vi.fn().mockReturnThis() };
+    const mockText = { setOrigin: vi.fn().mockReturnThis(), setDepth: vi.fn().mockReturnThis() };
+    const mockScene: any = {
+      isPortalActive: false,
+      portalSprite: undefined,
+      textures: { exists: vi.fn().mockReturnValue(true) },
+      add: {
+        sprite: vi.fn().mockReturnValue(mockSprite),
+        text: vi.fn().mockReturnValue(mockText),
+      },
+      player: { x: 100, y: 100 },
+      tweens: { add: vi.fn() },
+    };
+
+    const controller = new DungeonFlowController(mockScene);
+    controller.revealDescentDoor(400, 300);
+
+    expect(mockScene.isPortalActive).toBe(true);
+    expect(mockScene.add.sprite).toHaveBeenCalledWith(400, 300, 'tile_door');
+    expect(mockSprite.setScale).toHaveBeenCalledWith(1.5);
+  });
+
+  it('updateChunkStream atualiza os limites de mundo e câmera dinamicamente', () => {
+    const mockScene: any = {
+      updateWorldAndCameraBounds: vi.fn(),
+      dungeonGenerator: { generate: vi.fn().mockReturnValue([]) },
+      rooms: [],
+      postFX: { setBiome: vi.fn() },
+      atmosphereSystem: { setBiome: vi.fn() },
+      lightingSystem: { enable: vi.fn() },
+    };
+
+    const controller = new DungeonFlowController(mockScene);
+    controller.updateChunkStream(500); // chunk index 0 (safe_house)
+
+    expect(mockScene.updateWorldAndCameraBounds).toHaveBeenCalledWith(0, 0, 3840, 1440);
+  });
 });

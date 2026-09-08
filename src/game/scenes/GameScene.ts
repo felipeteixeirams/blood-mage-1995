@@ -226,10 +226,10 @@ export class GameScene extends Phaser.Scene {
   create() {
     (window as any).gameScene = this;
 
-    // 1. Set World Bounds for Dungeon (1920 x 1440)
+    // 1. Set World Bounds for Dungeon (1920 x 1440 base)
     const mapW = 1920;
     const mapH = 1440;
-    this.physics.world.setBounds(0, 0, mapW, mapH);
+    this.updateWorldAndCameraBounds(0, 0, mapW, mapH);
 
     // 2. Physics & Graphics Groups
     this.depthGroup = this.add.group();
@@ -982,6 +982,11 @@ export class GameScene extends Phaser.Scene {
     this.touchAimVector.y = aimY;
   }
 
+  public updateWorldAndCameraBounds(x: number, y: number, width: number, height: number) {
+    this.physics.world.setBounds(x, y, width, height);
+    this.cameras.main.setBounds(x, y, width, height);
+  }
+
   public triggerSkill(skillKey: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam') {
     // Execução movida para PlayerSkillSystem (item 4 do roadmap de
     // refatoração) — mesmo comportamento, agora em systems/PlayerSkillSystem.ts.
@@ -1467,6 +1472,11 @@ export class GameScene extends Phaser.Scene {
         this.bloodSplatterSystem?.addFootprintDecal(this.player.x, this.player.y + 10, moveAngle, this.playerFootSideToggle, fadeRatio);
         this.playerWetFootstepsRemaining--;
       }
+    }
+
+    // Update chunk streaming & dynamic bounds based on player world X position
+    if (this.dungeonFlow && this.player && this.player.active) {
+      this.dungeonFlow.updateChunkStream(this.player.x);
     }
 
     // 2. Update Player
