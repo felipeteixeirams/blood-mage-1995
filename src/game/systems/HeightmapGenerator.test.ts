@@ -118,7 +118,7 @@ describe('HeightmapGenerator & 2.5D Isometric Math (Spec 16)', () => {
     expect(converted.gridY).toBe(5);
   });
 
-  it('garante determinismo para o mesmo seed de HeightmapGenerator', () => {
+  it('garante determinismo para o mesmo seed de HeightmapGenerator no relevo e no Poisson Disk', () => {
     const gen1 = new HeightmapGenerator(1995);
     const gen2 = new HeightmapGenerator(1995);
 
@@ -127,6 +127,21 @@ describe('HeightmapGenerator & 2.5D Isometric Math (Spec 16)', () => {
         expect(gen1.getHeightAt(x, y)).toBe(gen2.getHeightAt(x, y));
       }
     }
+
+    const points1 = gen1.samplePoissonDisk(20, 20, 3.5, 30);
+    const points2 = gen2.samplePoissonDisk(20, 20, 3.5, 30);
+
+    expect(points1).toEqual(points2);
+  });
+
+  it('gera distribuições de Poisson Disk diferentes para seeds diferentes', () => {
+    const gen1 = new HeightmapGenerator(1995);
+    const gen2 = new HeightmapGenerator(2026);
+
+    const points1 = gen1.samplePoissonDisk(20, 20, 3.5, 30);
+    const points2 = gen2.samplePoissonDisk(20, 20, 3.5, 30);
+
+    expect(points1).not.toEqual(points2);
   });
 
   it('identifica corretamente bordas de desnível / falésia viradas para o sul e sudeste (getCliffEdges)', () => {
