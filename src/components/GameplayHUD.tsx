@@ -709,23 +709,33 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                     }}
                     className="w-full text-left p-2 bg-[#171309] border border-[#b8860b] hover:bg-[#282216] uppercase font-bold cursor-pointer text-[#e8c76a]"
                   >
-                    💖 Restaurar HP & Mana (Gratuito)
+                    Restaurar HP & Mana (Gratuito)
                   </button>
                   <button
-                    disabled={!stats.statusConditions?.infection || bloodCrystals < 15}
+                    disabled={
+                      (!stats.statusConditions?.bleeding &&
+                        !stats.statusConditions?.poison &&
+                        !stats.statusConditions?.infection) ||
+                      bloodCrystals < 15
+                    }
                     onClick={() => {
                       soundEngine.playButtonClick();
                       addBloodCrystals(-15);
+                      setStatusCondition('bleeding', false);
+                      setStatusCondition('poison', false);
                       setStatusCondition('infection', false);
                       soundEngine.playNova();
                     }}
                     className={`w-full text-left p-2 border font-bold uppercase transition-colors ${
-                      stats.statusConditions?.infection && bloodCrystals >= 15
+                      (stats.statusConditions?.bleeding ||
+                        stats.statusConditions?.poison ||
+                        stats.statusConditions?.infection) &&
+                      bloodCrystals >= 15
                         ? 'bg-[#1e1713] border-[#b8860b] hover:brightness-125 text-[#e8c76a] cursor-pointer'
                         : 'bg-black/30 border-gray-900 text-gray-500 cursor-not-allowed'
                     }`}
                   >
-                    🧪 Purificar Infecção (Custo: 15 Cristais)
+                    Purificar Todas as Aflições (Custo: 15 Cristais)
                   </button>
                 </>
               )}
