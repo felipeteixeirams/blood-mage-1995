@@ -5,8 +5,9 @@ import {
   createScanlineTexture,
 } from "../../utils/uiTextures";
 import { generateUITextures } from "../../utils/textureGenerator";
-import { GameSettings } from "../../types/game";
+import { GameSettings, Language } from "../../types/game";
 import { logger } from "../../utils/logger";
+import { t } from "../../i18n";
 
 // Hybrid asset architecture (AGENTS.md): try the real physical asset first;
 // create() falls back to the procedural generator only for keys that fail.
@@ -91,6 +92,7 @@ export class SettingsScene extends Phaser.Scene {
     }
 
     const initialSettings = (this.registry.get("settings") as GameSettings) || {
+      language: 'pt-BR',
       minimapVisible: true,
       minimapAlpha: 0.65,
       animatedPortrait: true,
@@ -192,12 +194,14 @@ export class SettingsScene extends Phaser.Scene {
       .setDepth(4);
   }
 
-  private sliderDefs: { key: keyof GameSettings; label: string; min: number; max: number }[] = [
-    { key: "sfxVolume", label: "VOLUME DOS EFEITOS", min: 0, max: 1 },
-    { key: "bgmVolume", label: "VOLUME DA MÚSICA", min: 0, max: 1 },
-    { key: "virtualControlsOpacity", label: "OPACIDADE DOS CONTROLES", min: 0.2, max: 1 },
-    { key: "touchSensitivity", label: "SENSIBILIDADE DE TOQUE", min: 0.5, max: 2.0 },
-  ];
+  private getSliderDefs(): { key: keyof GameSettings; labelKey: string; min: number; max: number }[] {
+    return [
+      { key: "sfxVolume", labelKey: "settings.sfxVolume", min: 0, max: 1 },
+      { key: "bgmVolume", labelKey: "settings.bgmVolume", min: 0, max: 1 },
+      { key: "virtualControlsOpacity", labelKey: "settings.virtualControlsOpacity", min: 0.2, max: 1 },
+      { key: "touchSensitivity", labelKey: "settings.touchSensitivity", min: 0.5, max: 2.0 },
+    ];
+  }
 
   private buildSliders() {
     const cx = BASE_W / 2;
@@ -205,11 +209,12 @@ export class SettingsScene extends Phaser.Scene {
     const startY = 145;
     const gap = 58;
 
-    this.sliderDefs.forEach((def, i) => {
+    const lang = this.settingsState.language || 'pt-BR';
+    this.getSliderDefs().forEach((def, i) => {
       const y = startY + i * gap;
 
       this.add
-        .text(cx, y - 20, def.label, {
+        .text(cx, y - 20, t(def.labelKey, undefined, lang).toUpperCase(), {
           fontFamily: "monospace",
           fontSize: "15px",
           color: "#e6d8ad",
@@ -292,22 +297,25 @@ export class SettingsScene extends Phaser.Scene {
     s.value.setText(`${Math.round(fraction * 100)}%`);
   }
 
-  private toggleDefs: { key: keyof GameSettings; label: string; defaultVal: boolean }[] = [
-    { key: "crtFilter", label: "CRT", defaultVal: true },
-    { key: "fearDistortionEnabled", label: "MEDO", defaultVal: true },
-    { key: "tinnitusEnabled", label: "TINNITUS", defaultVal: true },
-    { key: "leftHandedMode", label: "CANHOTO", defaultVal: false },
-    { key: "floatingStick", label: "FLUTUANTE", defaultVal: true },
-  ];
-
+  private langBox!: Phaser.GameObjects.Graphics;
+  private langText!: Phaser.GameObjects.Text;
   private scaleBox!: Phaser.GameObjects.Graphics;
   private scaleText!: Phaser.GameObjects.Text;
+
+  private toggleDefs: { key: keyof GameSettings; labelKey: string; defaultVal: boolean }[] = [
+    { key: "crtFilter", labelKey: "CRT", defaultVal: true },
+    { key: "fearDistortionEnabled", labelKey: "settings.fearDistortion", defaultVal: true },
+    { key: "tinnitusEnabled", labelKey: "settings.tinnitus", defaultVal: true },
+    { key: "leftHandedMode", labelKey: "settings.leftHandedMode", defaultVal: false },
+    { key: "floatingStick", labelKey: "settings.floatingStick", defaultVal: true },
+  ];
 
   private buildToggles() {
     const row1Y = 370;
     const row2Y = 412;
     const startX = BASE_W / 2 - 220;
     const spacing = 220;
+    const lang = this.settingsState.language || 'pt-BR';
 
     this.toggleDefs.forEach((def, index) => {
       const isRow2 = index >= 3;
@@ -318,34 +326,66 @@ export class SettingsScene extends Phaser.Scene {
       const box = this.add.graphics().setDepth(6);
       const gem = this.add.image(cx - 70, cy, "uiGem").setDisplaySize(20, 20).setDepth(7);
 
+      const labelStr = def.labelKey.startsWith("settings.") ? t(def.labelKey, undefined, lang).toUpperCase() : def.labelKey;
       this.add
-        .text(cx - 52, cy, def.label, {
+        .text(cx - 52, cy, labelStr, {
           fontFamily: "monospace",
-          fontSize: "13px",
+          fontSize: "12px",
           color: "#ccc0a0",
           fontStyle: "bold",
         })
         .setOrigin(0, 0.5)
         .setDepth(7);
 
-      const t: Toggle = { key: def.key, gem, box, x: cx, y: cy };
-      this.toggles.push(t);
-      this.renderToggle(t);
+      const toggleObj: Toggle = { key: def.key, gem, box, x: cx, y: cy };
+      this.toggles.push(toggleObj);
+      this.renderToggle(toggleObj);
 
       this.add
         .zone(cx, cy, 190, 30)
         .setOrigin(0.5)
         .setInteractive({ useHandCursor: true })
         .on("pointerdown", () => {
-          const currentVal = (this.settingsState[t.key] ?? def.defaultVal) as boolean;
-          (this.settingsState[t.key] as boolean) = !currentVal;
-          this.renderToggle(t);
+          const currentVal = (this.settingsState[toggleObj.key] ?? def.defaultVal) as boolean;
+          (this.settingsState[toggleObj.key] as boolean) = !currentVal;
+          this.renderToggle(toggleObj);
           this.applyLive();
 
           const onUpdate = this.registry.get("onUpdateSettings") as ((s: GameSettings) => void) | undefined;
           if (onUpdate) onUpdate(this.settingsState);
         });
     });
+
+    // Language Selector (Col 3, Row 1)
+    const langX = startX + 2 * spacing;
+    const langY = row1Y;
+    this.langBox = this.add.graphics().setDepth(6);
+    this.langText = this.add
+      .text(langX, langY, "", {
+        fontFamily: "monospace",
+        fontSize: "12px",
+        color: "#ccc0a0",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setDepth(7);
+
+    this.renderLanguageSelector(langX, langY);
+
+    this.add
+      .zone(langX, langY, 190, 30)
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => {
+        const curLang = this.settingsState.language || 'pt-BR';
+        const nextLang: Language = curLang === 'pt-BR' ? 'en-US' : 'pt-BR';
+        this.settingsState.language = nextLang;
+        this.renderLanguageSelector(langX, langY);
+        this.applyLive();
+
+        const onUpdate = this.registry.get("onUpdateSettings") as ((s: GameSettings) => void) | undefined;
+        if (onUpdate) onUpdate(this.settingsState);
+      });
 
     // Virtual Stick Scale Selector (Col 3, Row 2)
     const scaleX = startX + 2 * spacing;
@@ -377,6 +417,16 @@ export class SettingsScene extends Phaser.Scene {
         const onUpdate = this.registry.get("onUpdateSettings") as ((s: GameSettings) => void) | undefined;
         if (onUpdate) onUpdate(this.settingsState);
       });
+  }
+
+  private renderLanguageSelector(x: number, y: number) {
+    const curLang = this.settingsState.language || 'pt-BR';
+    const label = curLang === 'pt-BR' ? 'IDIOMA: PT-BR' : 'LANG: EN-US';
+
+    this.langBox.clear();
+    this.langBox.fillStyle(0x0c0d11, 0.85).fillRoundedRect(x - 95, y - 15, 190, 30, 5);
+    this.langBox.lineStyle(2, 0xc9a227, 1).strokeRoundedRect(x - 95, y - 15, 190, 30, 5);
+    this.langText.setText(label);
   }
 
   private renderScaleSelector(x: number, y: number) {

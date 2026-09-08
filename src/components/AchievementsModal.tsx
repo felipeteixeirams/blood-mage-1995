@@ -4,6 +4,7 @@ import { ModalBase } from './ui/ModalBase';
 import { useGameStore } from '../store/gameStore';
 import { soundEngine } from '../utils/soundEngine';
 import achievementsData from '../data/achievements.json';
+import { useTranslation } from '../i18n';
 
 interface AchievementsModalProps {
   onClose: () => void;
@@ -11,6 +12,7 @@ interface AchievementsModalProps {
 
 export const AchievementsModal: React.FC<AchievementsModalProps> = ({ onClose }) => {
   const { achievements, runStats, redeemAchievement } = useGameStore();
+  const { t } = useTranslation();
 
   const handleRedeem = (id: string, rewardAmount: number) => {
     soundEngine.playContractComplete();
@@ -18,7 +20,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ onClose })
   };
 
   return (
-    <ModalBase onClose={onClose} title="TROFÉUS E CONQUISTAS">
+    <ModalBase onClose={onClose} title={t('achievements.title')}>
       <div className="w-full h-full flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
         {achievementsData.map((achievement) => {
           const state = achievements[achievement.id];
@@ -83,20 +85,20 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ onClose })
                     }}
                     className="px-3 py-1.5 bg-[#8c1f22] hover:bg-[#ef4444] text-[#f0d8a8] border border-[#d4af37] font-pixel text-xs cursor-pointer transition-colors whitespace-nowrap active:scale-95"
                   >
-                    RESGATAR
+                    {t('common.claim').toUpperCase()}
                   </button>
                 )}
                 
                 {isRedeemed && (
                   <div className="flex items-center gap-1 px-3 py-1.5 bg-black/60 border border-[#3a2d1d] text-[#a88d5b] font-pixel text-[10px]">
                     <Check className="w-3 h-3 text-[#d4af37]" />
-                    RESGATADO
+                    {t('common.claimed').toUpperCase()}
                   </div>
                 )}
                 
                 {!isUnlocked && (
                   <div className="px-3 py-1.5 bg-black/40 border border-[#1a1410] text-gray-600 font-pixel text-[10px]">
-                    BLOQUEADO
+                    {t('common.locked').toUpperCase()}
                   </div>
                 )}
               </div>

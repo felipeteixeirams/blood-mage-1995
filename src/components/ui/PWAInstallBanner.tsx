@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Download, X, Smartphone, Share2, PlusSquare, ShieldCheck } from 'lucide-react';
 import { soundEngine } from '../../utils/soundEngine';
+import { useTranslation } from '../../i18n';
 
 interface PWAInstallBannerProps {
   hasNativePrompt: boolean;
@@ -20,6 +21,7 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({
   onPromptInstall,
   onDismiss,
 }) => {
+  const { t } = useTranslation();
   const [showIOSModal, setShowIOSModal] = useState(false);
 
   // If already running standalone or dismissed, do not render banner
@@ -70,14 +72,14 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({
             <div className="space-y-1">
               <div className="flex items-center gap-1.5">
                 <span className="font-gothic text-xs md:text-sm text-[#f3e5ab] tracking-wider uppercase">
-                  Instalar Bloodmage 1995
+                  {t('pwa.installTitle')}
                 </span>
                 <span className="bg-[#4a121a] text-[#f87171] text-[9px] font-mono px-1.5 py-0.5 rounded border border-[#8b2635]">
                   OFFLINE
                 </span>
               </div>
               <p className="text-[11px] font-mono text-gray-300 leading-snug">
-                Jogue em tela cheia, sem barra de navegador e 100% offline no seu dispositivo.
+                {t('pwa.installDesc')}
               </p>
             </div>
           </div>
@@ -88,14 +90,14 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({
               className="flex-1 py-1.5 px-3 bg-gradient-to-r from-[#8b2635] via-[#a83244] to-[#7a1c28] hover:from-[#a83244] hover:to-[#8b2635] border border-[#d4af37] text-[#f3e5ab] font-pixel text-[9px] md:text-[10px] rounded uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_12px_rgba(212,175,55,0.3)] transition cursor-pointer"
             >
               <Download size={13} className="text-[#f3e5ab]" />
-              <span>Instalar Aplicativo</span>
+              <span>{t('pwa.installBtn')}</span>
             </button>
 
             <button
               onClick={handleDismiss}
               className="py-1.5 px-3 bg-black/60 hover:bg-[#201015] border border-[#4a3525] text-gray-400 hover:text-gray-200 font-pixel text-[9px] rounded uppercase transition cursor-pointer"
             >
-              Depois
+              {t('pwa.dismissBtn')}
             </button>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { RotateCcw, Home, Skull, Flame, Trophy, Clock } from 'lucide-react';
 import { soundEngine } from '../utils/soundEngine';
 import { useGamepadUINavigation } from '../hooks/useGamepadUINavigation';
 import { useGameStore } from '../store/gameStore';
+import { useTranslation } from '../i18n';
 
 interface GameOverModalProps {
   stats: PlayerStats;
@@ -12,6 +13,7 @@ interface GameOverModalProps {
 }
 
 export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, onGoHome }) => {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const formatTime = (secs: number) => {
@@ -51,10 +53,10 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
             <Skull className="w-8 h-8 text-red-600 animate-pulse" />
           </div>
           <h2 className="text-4xl font-gothic text-red-600 font-bold uppercase tracking-wide">
-            VOCÊ ESTÁ MORTO
+            {t('gameOver.title')}
           </h2>
           <p className="font-retro text-xs text-gray-400">
-            A terra consome seus restos mortais... Olhos carniceiros espreitam seus pertences no cadáver.
+            {t('gameOver.subtitle')}
           </p>
         </div>
 
@@ -78,7 +80,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
           <div className="bg-black/80 border border-red-900/60 p-3 rounded flex flex-col items-center">
             <div className="flex items-center gap-1.5 text-amber-400 font-pixel text-xs mb-1">
               <Trophy className="w-4 h-4 text-amber-500" />
-              <span>PONTUAÇÃO</span>
+              <span>{t('common.score').toUpperCase()}</span>
             </div>
             <span className="text-xl font-bold text-white">{stats.score.toLocaleString()}</span>
           </div>
@@ -86,7 +88,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
           <div className="bg-black/80 border border-red-900/60 p-3 rounded flex flex-col items-center">
             <div className="flex items-center gap-1.5 text-red-400 font-pixel text-xs mb-1">
               <Skull className="w-4 h-4 text-red-500" />
-              <span>ABATES</span>
+              <span>{t('common.kills').toUpperCase()}</span>
             </div>
             <span className="text-xl font-bold text-white">{stats.kills}</span>
           </div>
@@ -94,15 +96,15 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
           <div className="bg-black/80 border border-red-900/60 p-3 rounded flex flex-col items-center">
             <div className="flex items-center gap-1.5 text-amber-500 font-pixel text-xs mb-1">
               <Flame className="w-4 h-4 text-amber-500" />
-              <span>ALCANÇADO</span>
+              <span>{t('common.floor').toUpperCase()}</span>
             </div>
-            <span className="text-base text-white">CALABOUÇO NIVEL {stats.floorDepth || 1} (NV {stats.level})</span>
+            <span className="text-base text-white">{stats.floorDepth || 1} (NV {stats.level})</span>
           </div>
 
           <div className="bg-black/80 border border-red-900/60 p-3 rounded flex flex-col items-center">
             <div className="flex items-center gap-1.5 text-blue-400 font-pixel text-xs mb-1">
               <Clock className="w-4 h-4 text-blue-400" />
-              <span>TEMPO SOBREVIVIDO</span>
+              <span>{t('gameOver.timeSurvived').toUpperCase()}</span>
             </div>
             <span className="text-base text-white">{formatTime(stats.timeSurvivedSeconds)}</span>
           </div>
@@ -142,7 +144,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
             className="w-full py-3 bg-black/80 hover:bg-gray-950 focus:bg-gray-900 border border-gray-800 focus:border-gray-500 rounded-none text-gray-400 font-retro text-sm flex items-center justify-center gap-2 hover:border-gray-600 transition-colors cursor-pointer outline-none"
           >
             <Home className="w-4 h-4" />
-            <span>RETORNAR AO MENU</span>
+            <span>{t('gameOver.mainMenu')}</span>
           </button>
         </div>
       </div>
