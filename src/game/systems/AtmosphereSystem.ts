@@ -282,6 +282,60 @@ export class AtmosphereSystem {
   }
 
   /**
+   * Fase C (Transições Sem Corte): Interpolação contínua da atmosfera (fog, haze, tint e clima)
+   * entre dois biomas na fronteira de chunks.
+   */
+  public blendBiomes(biomeA: BiomeType, biomeB: BiomeType, t: number): void {
+    const clampedT = Math.max(0, Math.min(1, t));
+    const configA = this.biomeAtmosphereConfigs[biomeA] || this.biomeAtmosphereConfigs['fosso_chagas'];
+    const configB = this.biomeAtmosphereConfigs[biomeB] || this.biomeAtmosphereConfigs['fosso_chagas'];
+
+    const newBiome = clampedT >= 0.5 ? biomeB : biomeA;
+    const weatherType = clampedT >= 0.5 ? configB.weatherType : configA.weatherType;
+
+    // Blend RGB Tint
+    const rA = (configA.tintColor >> 16) & 0xff;
+    const gA = (configA.tintColor >> 8) & 0xff;
+    const bA = configA.tintColor & 0xff;
+
+    const rB = (configB.tintColor >> 16) & 0xff;
+    const gB = (configB.tintColor >> 8) & 0xff;
+    const bB = configB.tintColor & 0xff;
+
+    const r = Math.round(rA + (rB - rA) * clampedT);
+    const g = Math.round(gA + (gB - gA) * clampedT);
+    const b = Math.round(bA + (bB - bA) * clampedT);
+    const blendedTint = (r << 16) | (g << 8) | b;
+
+    this.config = {
+      biomeId: newBiome,
+      groundFogAlpha: configA.groundFogAlpha + (configB.groundFogAlpha - configA.groundFogAlpha) * clampedT,
+      upperHazeAlpha: configA.upperHazeAlpha + (configB.upperHazeAlpha - configA.upperHazeAlpha) * clampedT,
+      tintColor: blendedTint,
+      driftSpeedX: configA.driftSpeedX + (configB.driftSpeedX - configA.driftSpeedX) * clampedT,
+      driftSpeedY: configA.driftSpeedY + (configB.driftSpeedY - configA.driftSpeedY) * clampedT,
+      weatherType,
+    };
+
+    if (!this.enabled) return;
+
+    if (this.groundFog && this.groundFog.active) {
+      this.groundFog.setTint(blendedTint);
+      this.groundFog.setAlpha(this.config.groundFogAlpha * this.visibilityGuard);
+    }
+
+    if (this.upperHaze && this.upperHaze.active) {
+      this.upperHaze.setTint(blendedTint);
+      this.upperHaze.setAlpha(this.config.upperHazeAlpha * this.visibilityGuard);
+    }
+
+    if (this.currentBiome !== newBiome) {
+      this.currentBiome = newBiome;
+      this.initWeatherEmitter();
+    }
+  }
+
+  /**
    * Atualização contínua do movimento da névoa e partículas
    */
   public update(delta: number = 16, isCombatIntense: boolean = false): void {

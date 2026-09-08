@@ -81,6 +81,51 @@ export class DungeonFlowController {
   public updateChunkStream(playerWorldX: number) {
     this.zoneStreamer.update(playerWorldX);
     this.syncWorldBoundsWithStreamer();
+    this.updateBoundaryTransitions(playerWorldX);
+  }
+
+  /**
+   * Fase C (Transições Sem Corte): Calcula o fator de fusão blendT (0 a 1) nas
+   * fronteiras entre chunks vizinhos e aciona a interpolação contínua de
+   * iluminação, névoa, pós-processamento e áudio.
+   */
+  public updateBoundaryTransitions(playerWorldX: number) {
+    const TRANSITION_MARGIN = 400; // px de zona de transição ao redor da fronteira
+    const chunkIdx = this.zoneStreamer.getChunkIndexAt(playerWorldX);
+    const chunkStart = chunkIdx * CHUNK_WIDTH;
+    const chunkCenter = chunkStart + CHUNK_WIDTH * 0.5;
+
+    let biomeA: BiomeType = (CAMPAIGN_ZONE_CHUNKS[chunkIdx]?.biome as BiomeType) || 'fosso_chagas';
+    let biomeB: BiomeType = biomeA;
+    let blendT = -1;
+
+    if (playerWorldX > chunkCenter && chunkIdx + 1 < CAMPAIGN_ZONE_CHUNKS.length) {
+      const boundaryX = (chunkIdx + 1) * CHUNK_WIDTH;
+      if (playerWorldX >= boundaryX - TRANSITION_MARGIN) {
+        biomeA = CAMPAIGN_ZONE_CHUNKS[chunkIdx].biome as BiomeType;
+        biomeB = CAMPAIGN_ZONE_CHUNKS[chunkIdx + 1].biome as BiomeType;
+        blendT = Math.min(1, Math.max(0, (playerWorldX - (boundaryX - TRANSITION_MARGIN)) / (2 * TRANSITION_MARGIN)));
+      }
+    } else if (playerWorldX < chunkCenter && chunkIdx - 1 >= 0) {
+      const boundaryX = chunkIdx * CHUNK_WIDTH;
+      if (playerWorldX <= boundaryX + TRANSITION_MARGIN) {
+        biomeA = CAMPAIGN_ZONE_CHUNKS[chunkIdx - 1].biome as BiomeType;
+        biomeB = CAMPAIGN_ZONE_CHUNKS[chunkIdx].biome as BiomeType;
+        blendT = Math.min(1, Math.max(0, (playerWorldX - (boundaryX - TRANSITION_MARGIN)) / (2 * TRANSITION_MARGIN)));
+      }
+    }
+
+    if (blendT >= 0 && blendT <= 1) {
+      worldManager.blendBiomes(biomeA, biomeB, blendT);
+      if (this.scene.atmosphereSystem) {
+        this.scene.atmosphereSystem.blendBiomes(biomeA, biomeB, blendT);
+      }
+      if (this.scene.postFX) {
+        this.scene.postFX.blendBiomes(biomeA, biomeB, blendT, this.scene.currentFloorDepth);
+      }
+      const envConfig = worldManager.getCurrentConfig();
+      soundEngine.updateEnvironmentAudio(envConfig.isIndoor, envConfig.reverbLevel);
+    }
   }
 
   public syncWorldBoundsWithStreamer() {

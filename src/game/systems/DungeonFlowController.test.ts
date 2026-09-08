@@ -99,4 +99,33 @@ describe('DungeonFlowController.getNextCampaignZone (Fase B — encanamento inte
 
     expect(mockScene.updateWorldAndCameraBounds).toHaveBeenCalledWith(0, 0, 3840, 1440);
   });
+
+  it('updateBoundaryTransitions (Fase C) calcula blendT e invoca blendBiomes ao aproximar da fronteira entre chunks', () => {
+    const mockAtmosphere = { blendBiomes: vi.fn(), setBiome: vi.fn() };
+    const mockPostFX = { blendBiomes: vi.fn(), setBiome: vi.fn() };
+    const mockScene: any = {
+      updateWorldAndCameraBounds: vi.fn(),
+      dungeonGenerator: { generate: vi.fn().mockReturnValue([]) },
+      rooms: [],
+      atmosphereSystem: mockAtmosphere,
+      postFX: mockPostFX,
+      lightingSystem: { enable: vi.fn() },
+      currentFloorDepth: 1,
+    };
+
+    const controller = new DungeonFlowController(mockScene);
+
+    // 1. No centro do chunk 0 (safe_house, x=960) -> fora do MARGIN de 400px antes da borda 1920
+    controller.updateChunkStream(960);
+    expect(mockAtmosphere.blendBiomes).not.toHaveBeenCalled();
+
+    // 2. A 200px da borda (x=1720) -> dentro da margem [1520, 2320], blendT = (1720 - 1520) / 800 = 0.25
+    controller.updateChunkStream(1720);
+    expect(mockAtmosphere.blendBiomes).toHaveBeenCalledWith('safe_house', 'gloomy_woods', 0.25);
+    expect(mockPostFX.blendBiomes).toHaveBeenCalledWith('safe_house', 'gloomy_woods', 0.25, 1);
+
+    // 3. Exatamente na borda (x=1920) -> blendT = (1920 - 1520) / 800 = 0.5
+    controller.updateChunkStream(1920);
+    expect(mockAtmosphere.blendBiomes).toHaveBeenCalledWith('safe_house', 'gloomy_woods', 0.5);
+  });
 });

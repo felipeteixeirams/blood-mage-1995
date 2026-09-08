@@ -104,6 +104,46 @@ export class PostFXSystem {
     }
   }
 
+  /**
+   * Fase C (Transições Sem Corte): Interpolação contínua da matriz de cor GPU
+   * entre dois biomas com base no fator t (0.0 a 1.0).
+   */
+  public blendBiomes(biomeA: BiomeType, biomeB: BiomeType, t: number, floorDepth: number = 1): void {
+    const clampedT = Math.max(0, Math.min(1, t));
+    this.activeBiome = clampedT >= 0.5 ? biomeB : biomeA;
+    this.activeFloorDepth = floorDepth;
+
+    if (!this.colorMatrix) return;
+
+    const configA = this.biomeColor[biomeA] || this.biomeColor.fosso_chagas;
+    const configB = this.biomeColor[biomeB] || this.biomeColor.fosso_chagas;
+
+    const saturate = configA.saturate + (configB.saturate - configA.saturate) * clampedT;
+    const hue = configA.hue + (configB.hue - configA.hue) * clampedT;
+    const brightness = configA.brightness + (configB.brightness - configA.brightness) * clampedT;
+
+    try {
+      this.colorMatrix.colorMatrix.reset();
+
+      const depthProgress = Math.min(1.0, Math.max(0, (floorDepth - 1) / 8));
+      const cascadedHue = hue + (depthProgress * -30);
+      const cascadedSaturate = saturate + (depthProgress * 0.2);
+
+      this.colorMatrix.colorMatrix.saturate(cascadedSaturate);
+      this.colorMatrix.colorMatrix.hue(cascadedHue);
+      this.colorMatrix.colorMatrix.brightness(brightness);
+    } catch (e) {
+      // Ignorar falhas de matrix
+    }
+
+    if (biomeA === 'gloomy_woods' || biomeB === 'gloomy_woods') {
+      const vignetteA = biomeA === 'gloomy_woods' ? 0.40 : 0.0;
+      const vignetteB = biomeB === 'gloomy_woods' ? 0.40 : 0.0;
+      const targetVignette = vignetteA + (vignetteB - vignetteA) * clampedT;
+      this.setVignette(targetVignette, 100);
+    }
+  }
+
   private applyBiomeMatrix(floorDepth: number = this.activeFloorDepth): void {
     const config = this.biomeColor[this.activeBiome] || this.biomeColor.fosso_chagas;
     if (!this.colorMatrix) return;

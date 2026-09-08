@@ -46,21 +46,25 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition
 
 | # | Spec | Pasta | Prioridade | Criticidade | Progresso |
 |---|---|---|---|---|---|
-| 1 | [`in-progress/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`](./in-progress/25_MUNDO_CONTINUO_CHUNK_STREAMING.md) | in-progress | 🔴 high | ⚠️ critical | Fases A/B/B.2/D entregues (PR #92) — resta só Fase C (transições sem corte) |
-| 2 | [`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md) | in-progress | 🔴 high | 🟡 medium | 90% — resta só i18n (Cloud Save extraído, ver bloqueados) |
-| 3 | [`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
-| 4 | [`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) | backlog | 🟡 medium | 🟡 medium | partial |
-| 5 | [`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
-| 6 | [`backlog/30_DETERMINISMO_SEED_POISSON_DISK.md`](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) | backlog | 🟡 medium | 🟢 low | Jules-ready — pronto pra execução sem esclarecimento |
-| 7 | [`backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) | backlog | 🟡 medium | 🟢 low | Falta só o modal React de UI (~90% já entregue em `delivered/18`); default de gatilho (NPC Ancião) já definido |
-| 8 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟢 low | 🟢 low | Reduzido ao residual Tier B.6 (menu contextual de mouse) — Tier A entregue em `delivered/09` |
-| 9 | [`backlog/31_NORMAL_MAP_TILE_DOOR.md`](./backlog/31_NORMAL_MAP_TILE_DOOR.md) | backlog | 🟢 low | 🟢 low | Jules-ready — pronto pra execução sem esclarecimento |
+| 1 | [`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md) | in-progress | 🔴 high | 🟡 medium | 90% — resta só i18n (Cloud Save extraído, ver bloqueados) |
+| 2 | [`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
+| 3 | [`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) | backlog | 🟡 medium | 🟡 medium | partial |
+| 4 | [`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
+| 5 | [`backlog/30_DETERMINISMO_SEED_POISSON_DISK.md`](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) | backlog | 🟡 medium | 🟢 low | Jules-ready — pronto pra execução sem esclarecimento |
+| 6 | [`backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) | backlog | 🟡 medium | 🟢 low | Falta só o modal React de UI (~90% já entregue em `delivered/18`); default de gatilho (NPC Ancião) já definido |
+| 7 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟢 low | 🟢 low | Reduzido ao residual Tier B.6 (menu contextual de mouse) — Tier A entregue em `delivered/09` |
+| 8 | [`backlog/31_NORMAL_MAP_TILE_DOOR.md`](./backlog/31_NORMAL_MAP_TILE_DOOR.md) | backlog | 🟢 low | 🟢 low | Jules-ready — pronto pra execução sem esclarecimento |
 
 > *Nota:* `in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md` saiu desta fila em
 > 2026-09-08 — PR #93 entregou os 2 itens de código que faltavam (cura via
 > Clérigo + ícones customizados). Só resta QA manual e tuning de valores,
 > ambos dependentes do Felipe jogar; nada executável por agente. Continua
 > em `in-progress/` (não é "delivered" até a validação humana acontecer).
+>
+> *Nota:* `25_MUNDO_CONTINUO_CHUNK_STREAMING` saiu desta fila em 2026-09-08
+> — PR #97 (Jules) entregou a Fase C (transições sem corte entre biomas),
+> última fase pendente. Spec movida para `delivered/25` (ver tabela
+> "🟢 Delivered" abaixo).
 
 ### 🟠 Escopo em Definição (proposta real, mas não pronta para implementação)
 
@@ -79,8 +83,8 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition
 
 ### 🚧 Bloqueados (aguardando decisão/insumo externo — fora da fila acima)
 
-> Triagem de 2026-09-07 (atualizada em 2026-09-08 — spec 25 destravada,
-> ver Fila de Prioridade acima). Diferente de "🟠 Escopo em Definição":
+> Triagem de 2026-09-07 (atualizada em 2026-09-08 — spec 25 entregue por
+> completo, ver "🟢 Delivered" abaixo). Diferente de "🟠 Escopo em Definição":
 > estas specs **já batem** a barra técnica mínima (`status: backlog`
 > continua válido) — o que falta é um insumo externo não-técnico
 > (orçamento de arte, confirmação de produto). Nada aqui tem próximo passo
@@ -125,17 +129,16 @@ docs/specs/
 > `08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST`, `09_PIXEL_LAB_PROMPT_GUIDE`
 > seguem lá. Em `05_FASE5`, o item Cloud Save (bloqueado) foi extraído para
 > `backlog/29_CLOUD_SAVE_FASE5.md`; a spec ficou com escopo restrito a
-> i18n. **Atualização 2026-09-08:** `25_MUNDO_CONTINUO_CHUNK_STREAMING`
-> voltou pra cá — Felipe decidiu e mandou implementar a Fase B.2 (PR #92),
-> destravando o resto; só falta a Fase C. `18_ARPG_CONTINUOUS_WORLD_TOPOLOGY`
-> foi para `scope-definition/` (residual não é mais uma spec executável,
-> ver seção acima).
+> i18n. `18_ARPG_CONTINUOUS_WORLD_TOPOLOGY` foi para `scope-definition/`
+> (residual não é mais uma spec executável, ver seção acima).
+> **Atualização 2026-09-08:** `25_MUNDO_CONTINUO_CHUNK_STREAMING` saiu
+> desta pasta — PR #97 (Jules) entregou a Fase C, última pendência; spec
+> 100% completa, movida para `delivered/25`.
 
 | Spec / Documento | Fases / Escopo Concluído | Fases / Itens Pendentes (destravados) |
 |---|---|---|
 | **[`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md)** | • PWA Offline-First (Spec 15)<br>• Scripts de build Electron (`scripts/build-steam.sh`) | • Localização multilíngue (i18n) |
 | **[`in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md`](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md)** | • Gameplay loop completo (Sangramento/Veneno/Infecção aplicados por monstro, dreno de HP, cura via consumível comprável no Alquimista)<br>• Cura via NPC Clérigo (PR #93)<br>• Ícones customizados SVG (PR #93) | • *(nenhum item de código — só QA manual e tuning de valores, dependentes do Felipe jogar)* |
-| **[`in-progress/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`](./in-progress/25_MUNDO_CONTINUO_CHUNK_STREAMING.md)** | • Fases A, B, B.2 e D entregues (chunk streaming, bounds dinâmicos, porta física no Safe House — PR #92) | • Fase C: transições sem corte entre biomas (overlap de luz/névoa/áudio na fronteira do chunk) |
 
 > *Nota (2026-09-06):* `in-progress/06_EIXO_A_GRAFICOS_AVANCADOS.md` e
 > `in-progress/10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md` foram
@@ -159,6 +162,7 @@ docs/specs/
 
 | Spec | Escopo Concluído | Entregue em | Verificação / Testes |
 |---|---|---|---|
+| **[`delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`](./delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md)** | **Mundo Contínuo Estilo Dungeon Siege — Chunk Streaming:** Fases A, B, B.2, C e D entregues (streaming de chunks, bounds dinâmicos, transições sem corte de iluminação/névoa/áudio/FX e porta de saída física) | 2026-09-08 (Fase C via PR #97, Jules) | Vitest + E2E (`pnpm verify`) — pendente verificação ao vivo |
 | **[`delivered/09_HUD_TIER_A_REFERENCIAS_VISUAIS.md`](./delivered/09_HUD_TIER_A_REFERENCIAS_VISUAIS.md)** | **HUD Tier A (Diablo II / Dungeon Siege 1):** Marcador "!" sobre NPCs, minimap mínimo, acabamento entalhado de HP/MP e cinturão de curativos | 2026-08-25 (separado do backlog em 2026-09-08) | Vitest + `tsc`/`vite build`; pendente QA manual |
 | **[`delivered/17_POLIMENTO_GRAFICO_CALIBRACAO_SISTEMAS_EXISTENTES.md`](./delivered/17_POLIMENTO_GRAFICO_CALIBRACAO_SISTEMAS_EXISTENTES.md)** | **Polimento Gráfico por Calibração dos Sistemas Existentes:** Calibração completa das 9 Frentes (Glow, PostFX, Lighting, Atmosphere, Shadows, Reflections, Particles, Tree Shader & Terrain), tokens de sequência de FX e profundidades relativas | 2026-09-07 | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/28_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md`](./delivered/28_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md)** | **Padronização de Modais Secundários, Navegação Gamepad & Retratos Rúnicos:** UI consistente entre modais secundários, navegação completa via gamepad e retratos temáticos | 2026-09-06 | Vitest + E2E (`pnpm verify`) |
