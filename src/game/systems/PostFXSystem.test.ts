@@ -113,6 +113,29 @@ describe('PostFXSystem', () => {
     system.setLowHpTension(false);
   });
 
+  it('setDangerTension ajusta vinheta e pulso por nível de perigo (baixo, médio e alto/boss/lowHp)', () => {
+    const { scene } = makeScene({ isWebGL: true });
+    const system = new PostFXSystem(scene as any);
+
+    // Perigo baixo (1-3 inimigos, HP alto, sem boss)
+    system.setDangerTension(1.0, 2, false);
+    system.update(100);
+
+    // Perigo médio (4-10 inimigos) -> pulsação de médio perigo
+    system.setDangerTension(0.8, 5, false);
+    system.update(100);
+    expect(system.isFilterActive()).toBe(true);
+
+    // Perigo alto (>10 inimigos ou boss ou HP <= 25%) -> pulsação rápida + tint avermelhado
+    system.setDangerTension(0.2, 2, false);
+    system.update(100);
+    expect(system.isFilterActive()).toBe(true);
+
+    // Retorno ao perigo baixo reseta a vinheta de tensão
+    system.setDangerTension(1.0, 0, false);
+    system.update(100);
+  });
+
   it('triggerBossImpactFX e triggerLevelUpFX agendam efeitos', () => {
     const { scene } = makeScene({ isWebGL: true });
     const system = new PostFXSystem(scene as any);

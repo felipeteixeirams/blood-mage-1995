@@ -3,8 +3,8 @@ agent_context: game-engine, frontend, audio
 target_module: src/game/systems, src/utils/soundEngine.ts
 priority: medium
 criticality: medium
-status: backlog
-last_updated: "2026-09-01"
+status: in-progress
+last_updated: "2026-09-10"
 tags:
   - atmosphere
   - threat_indicator
@@ -16,7 +16,7 @@ tags:
 
 # 📜 Spec 11: Atmosfera, Tensão e Indicadores de Ameaça
 
-> **Status:** 🟡 PARCIALMENTE IMPLEMENTADO (Quick Wins de Tensão & Efeitos de Pânico Ativos no Código)
+> **Status:** 🟢 IMPLEMENTADO (Indicadores Fora de Tela, Vinheta Pulsante e Reforços `flee`)
 > **Data:** Setembro de 2026
 > **Domínio:** Atmosfera Gótica, Indicadores Telegrafados, Áudio Espacial e Efeitos Visuais de Tensão.
 
@@ -67,15 +67,15 @@ Embora o indicador de ameaça no mapa de borda direcional seja um item de backlo
 ---
 
 ## 4. 🧪 Critérios de Aceite
-- [ ] Indicador direcional na borda da tela visível para ameaças ativas fora do FOV da câmera.
-- [ ] Indicador oculta-se imediatamente quando o inimigo é eliminado ou entra na tela.
-- [ ] Vinheta ajusta frequência de pulsação e tonalidade em tempo real conforme a contagem de inimigos em combate.
-- [ ] Iluminação dinâmica opera sem impacto na taxa de quadros (garantindo 60 FPS estáveis).
-- [ ] Criaturas no estado `flee` acionam o chamado de reforços de forma consistente após 5 segundos.
-- [ ] Opção nas Configurações permite desativar ou suprimir os efeitos visuais de tensão para acessibilidade.
+- [x] Indicador direcional na borda da tela visível para ameaças ativas fora do FOV da câmera.
+- [x] Indicador oculta-se imediatamente quando o inimigo é eliminado ou entra na tela.
+- [x] Vinheta ajusta frequência de pulsação e tonalidade em tempo real conforme a contagem de inimigos em combate.
+- [x] Iluminação dinâmica opera sem impacto na taxa de quadros (garantindo 60 FPS estáveis).
+- [x] Criaturas no estado `flee` acionam o chamado de reforços de forma consistente após 5 segundos.
+- [x] Opção nas Configurações permite desativar ou suprimir os efeitos visuais de tensão para acessibilidade.
 
 ---
 
 ## 📊 Status & Esforço Estimado
-- **Status:** 🔵 BACKLOG (0% implementado)
-- **Esforço Estimado:** 4–6 dias de desenvolvimento.
+- **Status:** 🟢 IMPLEMENTADO / AGUARDANDO PR
+- **Esforço Estimado:** Entregue.
