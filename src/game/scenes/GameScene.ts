@@ -1722,8 +1722,7 @@ export class GameScene extends Phaser.Scene {
 
     const atmosphereEnabled = useGameStore.getState().settings.atmosphereEffectsEnabled !== false;
     if (atmosphereEnabled) {
-      let closestOffscreenEnemy: Enemy | null = null;
-      let minOffscreenDistance = Infinity;
+      const offscreenThreats: { enemy: Enemy; dist: number }[] = [];
 
       this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
         const enemy = enemyObj as Enemy;
@@ -1741,17 +1740,17 @@ export class GameScene extends Phaser.Scene {
 
             if (isOffscreen) {
               const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
-              if (dist < minOffscreenDistance) {
-                minOffscreenDistance = dist;
-                closestOffscreenEnemy = enemy;
-              }
+              offscreenThreats.push({ enemy, dist });
             }
           }
         }
       });
 
-      if (closestOffscreenEnemy) {
-        const enemy = closestOffscreenEnemy as Enemy;
+      // Sort offscreen threats by distance and cap at top 8
+      offscreenThreats.sort((a, b) => a.dist - b.dist);
+      const visibleThreats = offscreenThreats.slice(0, 8);
+
+      visibleThreats.forEach(({ enemy }) => {
         const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, enemy.x, enemy.y);
 
         // Project onto border
@@ -1781,7 +1780,12 @@ export class GameScene extends Phaser.Scene {
         this.threatIndicatorGraphics.closePath();
         this.threatIndicatorGraphics.fillPath();
         this.threatIndicatorGraphics.strokePath();
+      });
 
+      const closestOffscreenEnemy = visibleThreats.length > 0 ? visibleThreats[0].enemy : null;
+
+      if (closestOffscreenEnemy) {
+        const enemy = closestOffscreenEnemy;
         // 4.2 — Distorção de Áudio Direcional & 4.4 Tinnitus de Ameaça
         const dx = enemy.x - this.player.x;
         const dy = enemy.y - this.player.y;
