@@ -45,7 +45,6 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, discovery, rejec
 | 5 | [`backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md) | backlog | 🟡 medium | 🟡 medium | draft |
 | 6 | [`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
 | 7 | [`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) | backlog | 🟡 medium | 🟡 medium | partial |
-| 8 | [`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
 | 11 | [`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md) | backlog | 🟢 low | 🟡 medium | Superada em parte — só resta a pergunta menor de variedade interna em `gloomy_woods` |
 
 > *Nota:* `in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md` saiu desta fila em
@@ -101,6 +100,7 @@ docs/specs/
 | Spec / Documento | Fases / Escopo Concluído | Fases / Itens Pendentes (destravados) |
 |---|---|---|
 | **[`in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md`](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md)** | • Gameplay loop completo (Sangramento/Veneno/Infecção aplicados por monstro, dreno de HP, cura via consumível comprável no Alquimista)<br>• Cura via NPC Clérigo (PR #93)<br>• Ícones customizados SVG (PR #93) | • *(nenhum item de código — só QA manual e tuning de valores, dependentes do Felipe jogar)* |
+| **[`in-progress/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./in-progress/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** | • Alternância de intensidade de conteúdo visual (gore e desmembramento) | • Implementação de toggle de configuração e integração no sistema de gore |
 
 > *Nota (2026-09-06):* `in-progress/06_EIXO_A_GRAFICOS_AVANCADOS.md` e
 > `in-progress/10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md` foram
@@ -155,7 +155,6 @@ docs/specs/
 | **[`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md)** | Progressão, Micro-Quests e Evolução de Habilidades (Contratos, Modificadores e Talentos) *(Parcialmente Implementado)* | medium | medium | Não |
 | **[`backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md`](./backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md)** | Framework de Evolução de UI e Assets Externos Góticos (Híbrido 9-slice React & Web Audio) | high | high | **Sim** — mesmo gate acima (áudio/telemetria já entregues à parte) |
 | **[`backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md`](./backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md)** | Discovery Eixo B — Pipeline de Integração de Assets Externos e Spritesheets por Tiers | medium | medium | **Sim** — orçamento de arte |
-| **[`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** | Toggle de Intensidade de Conteúdo — mitigação de classificação indicativa (gore visual configurável) | medium | medium | Não |
 | **[`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md)** | *(superada em parte, 2026-09-08)* `PathDrivenGenerator` pra `gloomy_woods` — escopo de conectividade entre biomas já resolvido pela abordagem escolhida em #25; resta só decidir se vale mais variedade interna na floresta | low | medium | Não |
 | **[`backlog/29_CLOUD_SAVE_FASE5.md`](./backlog/29_CLOUD_SAVE_FASE5.md)** | *(novo, extraído de `in-progress/05`)* Cloud Save automatizado (Firebase/Firestore) | medium | high | **Sim** — confirmação de Felipe pendente |
 

@@ -301,27 +301,26 @@ export class SettingsScene extends Phaser.Scene {
   private langText!: Phaser.GameObjects.Text;
   private scaleBox!: Phaser.GameObjects.Graphics;
   private scaleText!: Phaser.GameObjects.Text;
+  private contentBox!: Phaser.GameObjects.Graphics;
+  private contentText!: Phaser.GameObjects.Text;
 
-  private toggleDefs: { key: keyof GameSettings; labelKey: string; defaultVal: boolean }[] = [
-    { key: "crtFilter", labelKey: "CRT", defaultVal: true },
-    { key: "fearDistortionEnabled", labelKey: "settings.fearDistortion", defaultVal: true },
-    { key: "tinnitusEnabled", labelKey: "settings.tinnitus", defaultVal: true },
-    { key: "leftHandedMode", labelKey: "settings.leftHandedMode", defaultVal: false },
-    { key: "floatingStick", labelKey: "settings.floatingStick", defaultVal: true },
+  private toggleDefs: { key: keyof GameSettings; labelKey: string; defaultVal: boolean; row: number; col: number }[] = [
+    { key: "crtFilter", labelKey: "CRT", defaultVal: true, row: 0, col: 0 },
+    { key: "fearDistortionEnabled", labelKey: "settings.fearDistortion", defaultVal: true, row: 0, col: 1 },
+    { key: "tinnitusEnabled", labelKey: "settings.tinnitus", defaultVal: true, row: 1, col: 0 },
+    { key: "leftHandedMode", labelKey: "settings.leftHandedMode", defaultVal: false, row: 1, col: 1 },
+    { key: "floatingStick", labelKey: "settings.floatingStick", defaultVal: true, row: 2, col: 0 },
   ];
 
   private buildToggles() {
-    const row1Y = 370;
-    const row2Y = 412;
+    const rowsY = [348, 384, 420];
     const startX = BASE_W / 2 - 220;
     const spacing = 220;
     const lang = this.settingsState.language || 'pt-BR';
 
-    this.toggleDefs.forEach((def, index) => {
-      const isRow2 = index >= 3;
-      const colIndex = isRow2 ? index - 3 : index;
-      const cx = startX + colIndex * spacing;
-      const cy = isRow2 ? row2Y : row1Y;
+    this.toggleDefs.forEach((def) => {
+      const cx = startX + def.col * spacing;
+      const cy = rowsY[def.row];
 
       const box = this.add.graphics().setDepth(6);
       const gem = this.add.image(cx - 70, cy, "uiGem").setDisplaySize(20, 20).setDepth(7);
@@ -358,7 +357,7 @@ export class SettingsScene extends Phaser.Scene {
 
     // Language Selector (Col 3, Row 1)
     const langX = startX + 2 * spacing;
-    const langY = row1Y;
+    const langY = rowsY[0];
     this.langBox = this.add.graphics().setDepth(6);
     this.langText = this.add
       .text(langX, langY, "", {
@@ -389,7 +388,7 @@ export class SettingsScene extends Phaser.Scene {
 
     // Virtual Stick Scale Selector (Col 3, Row 2)
     const scaleX = startX + 2 * spacing;
-    const scaleY = row2Y;
+    const scaleY = rowsY[1];
     this.scaleBox = this.add.graphics().setDepth(6);
     this.scaleText = this.add
       .text(scaleX, scaleY, "", {
@@ -412,6 +411,37 @@ export class SettingsScene extends Phaser.Scene {
         const nextScale = curScale === 'small' ? 'medium' : curScale === 'medium' ? 'large' : 'small';
         this.settingsState.virtualStickScale = nextScale;
         this.renderScaleSelector(scaleX, scaleY);
+        this.applyLive();
+
+        const onUpdate = this.registry.get("onUpdateSettings") as ((s: GameSettings) => void) | undefined;
+        if (onUpdate) onUpdate(this.settingsState);
+      });
+
+    // Content Intensity Selector (Col 2, Row 3)
+    const contentX = startX + 1 * spacing;
+    const contentY = rowsY[2];
+    this.contentBox = this.add.graphics().setDepth(6);
+    this.contentText = this.add
+      .text(contentX, contentY, "", {
+        fontFamily: "monospace",
+        fontSize: "12px",
+        color: "#ccc0a0",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setDepth(7);
+
+    this.renderContentIntensitySelector(contentX, contentY);
+
+    this.add
+      .zone(contentX, contentY, 190, 30)
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => {
+        const curIntensity = this.settingsState.contentIntensity || 'full';
+        const nextIntensity = curIntensity === 'full' ? 'reduced' : 'full';
+        this.settingsState.contentIntensity = nextIntensity;
+        this.renderContentIntensitySelector(contentX, contentY);
         this.applyLive();
 
         const onUpdate = this.registry.get("onUpdateSettings") as ((s: GameSettings) => void) | undefined;
@@ -441,6 +471,19 @@ export class SettingsScene extends Phaser.Scene {
     this.scaleBox.fillStyle(0x0c0d11, 0.85).fillRoundedRect(x - 95, y - 15, 190, 30, 5);
     this.scaleBox.lineStyle(2, 0xc9a227, 1).strokeRoundedRect(x - 95, y - 15, 190, 30, 5);
     this.scaleText.setText(labelMap[scale]);
+  }
+
+  private renderContentIntensitySelector(x: number, y: number) {
+    const intensity = this.settingsState.contentIntensity || 'full';
+    const lang = this.settingsState.language || 'pt-BR';
+    const label = intensity === 'reduced'
+      ? t('settings.contentIntensityReduced', undefined, lang)
+      : t('settings.contentIntensityFull', undefined, lang);
+
+    this.contentBox.clear();
+    this.contentBox.fillStyle(0x0c0d11, 0.85).fillRoundedRect(x - 95, y - 15, 190, 30, 5);
+    this.contentBox.lineStyle(2, 0xc9a227, 1).strokeRoundedRect(x - 95, y - 15, 190, 30, 5);
+    this.contentText.setText(label);
   }
 
   private renderToggle(t: Toggle) {
@@ -493,7 +536,10 @@ export class SettingsScene extends Phaser.Scene {
           if (this.scaleBox) {
             const startX = BASE_W / 2 - 220;
             const spacing = 220;
-            this.renderScaleSelector(startX + 2 * spacing, 412);
+            this.renderScaleSelector(startX + 2 * spacing, 384);
+            if (this.contentBox) {
+              this.renderContentIntensitySelector(startX + 1 * spacing, 420);
+            }
           }
           this.applyLive();
 

@@ -85,6 +85,9 @@ export const ptBR = {
     virtualStickScaleLarge: 'Grande',
     floatingStick: 'Joystick Flutuante',
     leftHandedMode: 'Modo Canhoto',
+    contentIntensity: 'Intensidade de Conteúdo',
+    contentIntensityFull: 'GORE: COMPLETO',
+    contentIntensityReduced: 'GORE: REDUZIDO',
     resetDefaults: 'RESTAURAR PADRÕES',
   },
 

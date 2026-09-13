@@ -6,6 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { DismembermentSystem } from './DismembermentSystem';
 import monstersData from '../../data/monsters.json';
 import { MonsterConfig } from '../../types/game';
+import { useGameStore } from '../../store/gameStore';
 
 const typedMonsters = monstersData as Record<string, MonsterConfig>;
 
@@ -89,5 +90,55 @@ describe('DismembermentSystem - 3-Factor Gore Logic', () => {
 
     expect(result.type).toBe('total_destruction');
     expect(result.isExecution).toBe(true);
+  });
+
+  it('safely handles executeDismemberment in reduced content intensity mode', () => {
+    useGameStore.getState().updateSettings({
+      ...useGameStore.getState().settings,
+      contentIntensity: 'reduced',
+    });
+
+    const zombie = typedMonsters['zombie_shambler'];
+    const result = DismembermentSystem.calculateDismemberment({
+      monsterConfig: zombie,
+      damageAmount: 200,
+      enemyMaxHp: 100,
+      enemyCurrentHp: 0,
+      isExecution: true,
+    });
+
+    const mockScene: any = {
+      add: {
+        image: () => ({
+          setScale: () => {},
+          setDepth: () => {},
+          setAlpha: () => {},
+          setRotation: () => {},
+          setPosition: () => {},
+          active: true,
+        }),
+      },
+      time: { now: 1000 },
+      tweens: { add: () => {} },
+    };
+
+    const mockEnemy: any = {
+      x: 100,
+      y: 100,
+      texture: { key: 'spr_zombie' },
+      scaleX: 1,
+      scaleY: 1,
+      config: zombie,
+    };
+
+    expect(() => {
+      DismembermentSystem.executeDismemberment(mockScene, mockEnemy, result);
+    }).not.toThrow();
+
+    // Reset settings
+    useGameStore.getState().updateSettings({
+      ...useGameStore.getState().settings,
+      contentIntensity: 'full',
+    });
   });
 });

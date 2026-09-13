@@ -3,8 +3,8 @@ agent_context: frontend, game-designer
 target_module: src/game/systems, src/components/SettingsModal.tsx
 priority: medium
 criticality: medium
-status: backlog
-last_updated: "2026-09-02"
+status: in-progress
+last_updated: "2026-09-09"
 tags:
   - accessibility
   - content_rating
@@ -15,7 +15,7 @@ tags:
 
 # 📜 Spec 15: Toggle de Intensidade de Conteúdo (Classificação Indicativa)
 
-> **Status:** 🔵 BACKLOG (0% implementado)
+> **Status:** 🟡 EM DESENVOLVIMENTO
 > **Data:** Setembro de 2026
 > **Domínio:** Configurações de Acessibilidade/Conteúdo, Compliance de Lojas (Play Store/IARC).
 
