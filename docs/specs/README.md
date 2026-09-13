@@ -43,7 +43,6 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, discovery, rejec
 | 1 | [`backlog/08_GUIA_EVOLUCAO_COMERCIAL.md`](./backlog/08_GUIA_EVOLUCAO_COMERCIAL.md) | backlog | 🔴 high | 🟢 low | Checklist de requisitos comerciais (Steam/Play Store/itch.io) |
 | 4 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟡 medium | 🟡 medium | Tier A completo — Tiers B/C pendentes |
 | 5 | [`backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md) | backlog | 🟡 medium | 🟡 medium | draft |
-| 6 | [`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
 | 7 | [`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) | backlog | 🟡 medium | 🟡 medium | partial |
 | 8 | [`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
 | 11 | [`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md) | backlog | 🟢 low | 🟡 medium | Superada em parte — só resta a pergunta menor de variedade interna em `gloomy_woods` |
@@ -101,6 +100,7 @@ docs/specs/
 | Spec / Documento | Fases / Escopo Concluído | Fases / Itens Pendentes (destravados) |
 |---|---|---|
 | **[`in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md`](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md)** | • Gameplay loop completo (Sangramento/Veneno/Infecção aplicados por monstro, dreno de HP, cura via consumível comprável no Alquimista)<br>• Cura via NPC Clérigo (PR #93)<br>• Ícones customizados SVG (PR #93) | • *(nenhum item de código — só QA manual e tuning de valores, dependentes do Felipe jogar)* |
+| **[`in-progress/11_ATMOSFERA_E_TENSAO.md`](./in-progress/11_ATMOSFERA_E_TENSAO.md)** | • Indicadores de ameaça fora de tela (chevrons direcionais por estado de IA)<br>• Vinheta pulsante dinâmica por nível de perigo (baixo, médio, alto/boss)<br>• Chamado de reforços no estado flee | • *(aguardando revisão do PR)* |
 
 > *Nota (2026-09-06):* `in-progress/06_EIXO_A_GRAFICOS_AVANCADOS.md` e
 > `in-progress/10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md` foram
@@ -151,7 +151,7 @@ docs/specs/
 | **[`backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md)** | *(era in-progress)* Living Tracking Spec de integração de sprites físicos — Fase 0 concluída | high | medium | **Sim** — orçamento de arte |
 | **[`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md)** | Referências estéticas e proposta de HUD estilo ARPG clássico (Tier A completo, Tiers B/C pendentes) | medium | medium | Não |
 | **[`backlog/09_PIXEL_LAB_PROMPT_GUIDE.md`](./backlog/09_PIXEL_LAB_PROMPT_GUIDE.md)** | *(era in-progress)* Guia de prompts PixelLab, usado durante produção de sprites | high | low | **Sim** — mesmo gate acima |
-| **[`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md)** | Atmosfera, Tensão e Indicadores de Ameaça (Indicadores fora de tela, áudio espacial e iluminação) | medium | medium | Não |
+| **[`in-progress/11_ATMOSFERA_E_TENSAO.md`](./in-progress/11_ATMOSFERA_E_TENSAO.md)** | *(era backlog)* Atmosfera, Tensão e Indicadores de Ameaça (Indicadores fora de tela, áudio espacial e vinheta de perigo) | medium | medium | Não |
 | **[`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md)** | Progressão, Micro-Quests e Evolução de Habilidades (Contratos, Modificadores e Talentos) *(Parcialmente Implementado)* | medium | medium | Não |
 | **[`backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md`](./backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md)** | Framework de Evolução de UI e Assets Externos Góticos (Híbrido 9-slice React & Web Audio) | high | high | **Sim** — mesmo gate acima (áudio/telemetria já entregues à parte) |
 | **[`backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md`](./backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md)** | Discovery Eixo B — Pipeline de Integração de Assets Externos e Spritesheets por Tiers | medium | medium | **Sim** — orçamento de arte |

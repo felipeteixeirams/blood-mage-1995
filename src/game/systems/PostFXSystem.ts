@@ -178,9 +178,11 @@ export class PostFXSystem {
     this.startEase(duration);
   }
 
-  private isLowHpTensionActive = false;
+  private isTensionActive = false;
   private tensionPulseTimer = 0;
   private tensionPulsePeriod = 1200; // ms per pulse
+  private tensionMinVignette = 0.45;
+  private tensionMaxVignette = 0.80;
   private effectSequenceCounter = 0;
 
   private nextSeq(): number {
@@ -207,11 +209,54 @@ export class PostFXSystem {
   }
 
   public setLowHpTension(active: boolean, pulsePeriod: number = 1200): void {
-    this.isLowHpTensionActive = active;
-    this.tensionPulsePeriod = pulsePeriod;
-    if (!active && this.targetTint === 0x880000) {
-      this.setTint('transparent', 400);
-      this.setVignette(0, 400);
+    if (active) {
+      this.isTensionActive = true;
+      this.tensionPulsePeriod = pulsePeriod;
+      this.tensionMinVignette = 0.45;
+      this.tensionMaxVignette = 0.80;
+    } else if (!this.isTensionActive) {
+      if (this.targetTint === 0x880000 || this.targetTint === 0xef4444) {
+        this.setTint('transparent', 400);
+        this.setVignette(0, 400);
+      }
+    }
+  }
+
+  /**
+   * Spec 11 §3.3: Vinheta Pulsante por Nível de Perigo
+   * - Perigo Baixo (1-3 inimigos): Vinheta estática padrão.
+   * - Perigo Médio (4-10 inimigos): Pulsação lenta (2000ms / 2s).
+   * - Perigo Alto (>10 inimigos ou Chefe ativo / HP <= 25%): Pulsação rápida (800ms) com tom avermelhado.
+   */
+  public setDangerTension(hpRatio: number, alertCount: number, isBossActive: boolean): void {
+    const isLowHp = hpRatio <= 0.25;
+    const isHighDanger = isBossActive || alertCount > 10 || isLowHp;
+    const isMediumDanger = alertCount >= 4;
+
+    if (isHighDanger) {
+      this.isTensionActive = true;
+      this.tensionPulsePeriod = isLowHp ? 1200 : 800;
+      this.tensionMinVignette = 0.45;
+      this.tensionMaxVignette = 0.85;
+      if (this.targetTint === null) {
+        this.setTint('#ef4444', 300);
+      }
+    } else if (isMediumDanger) {
+      this.isTensionActive = true;
+      this.tensionPulsePeriod = 2000;
+      this.tensionMinVignette = 0.35;
+      this.tensionMaxVignette = 0.65;
+      if (this.targetTint === 0xef4444) {
+        this.setTint('transparent', 300);
+      }
+    } else {
+      if (this.isTensionActive) {
+        this.isTensionActive = false;
+        if (this.targetTint === 0xef4444 || this.targetTint === 0x880000) {
+          this.setTint('transparent', 400);
+        }
+        this.setVignette(0, 400);
+      }
     }
   }
 
@@ -304,7 +349,7 @@ export class PostFXSystem {
     this.currentVignette = 0;
     this.currentDisplacement = 0;
     this.currentTint = null;
-    this.isLowHpTensionActive = false;
+    this.isTensionActive = false;
 
     if (this.vignette) this.vignette.strength = 0;
     if (this.displacement) {
@@ -321,11 +366,11 @@ export class PostFXSystem {
   public update(delta: number): void {
     if (!this.enabled || !this.isWebGL) return;
 
-    // Pulso dinâmico de baixa vida (Low HP Tension Pulse)
-    if (this.isLowHpTensionActive) {
+    // Pulso dinâmico de perigo / baixa vida (Danger Tension Pulse)
+    if (this.isTensionActive) {
       this.tensionPulseTimer += delta;
       const wave = (Math.sin((this.tensionPulseTimer / this.tensionPulsePeriod) * Math.PI * 2) + 1) * 0.5;
-      const baseVignette = 0.45 + wave * 0.35; // pulsa entre 0.45 e 0.80
+      const baseVignette = this.tensionMinVignette + wave * (this.tensionMaxVignette - this.tensionMinVignette);
       if (this.easeDuration === 0) {
         this.currentVignette = baseVignette;
       }
