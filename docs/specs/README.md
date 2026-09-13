@@ -41,9 +41,11 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition
 
 | 📋 Backlog | 🔨 Em Desenvolvimento | 🔍 Em Qualidade | ✅ Concluído *(7 dias)* |
 |---|---|---|---|
-| [06](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) · 🔒[08](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md) · [09](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) · 🔒[09-PL](./backlog/09_PIXEL_LAB_PROMPT_GUIDE.md) · [11](./backlog/11_ATMOSFERA_E_TENSAO.md) · [12](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) · [15](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) · 🔒[29](./backlog/29_CLOUD_SAVE_FASE5.md) · [31](./backlog/31_NORMAL_MAP_TILE_DOOR.md) | [30 — Poisson Disk](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) *(Jules, determinismo por seed)*<br>[05 — Fase 5](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md) *(só falta i18n)* | [03 — Fase 3](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md) *(código pronto, falta QA+tuning)*<br>[09 — HUD Tier A](./delivered/09_HUD_TIER_A_REFERENCIAS_VISUAIS.md) *(código pronto, falta QA manual)*<br>[25 — Chunk Streaming](./delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md) *(código pronto, falta cruzar fronteira de chunk em jogo)* | 17 · 28 · 18 · 10 *(ver tabela "🟢 Delivered" abaixo)* |
+| [06](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) · 🔒[08](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md) · [09](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) · 🔒[32](./backlog/32_PIXEL_LAB_SPRITE_PRODUCTION_GUIDE.md) · [11](./backlog/11_ATMOSFERA_E_TENSAO.md) · [12](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) · [15](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) · 🔒[29](./backlog/29_CLOUD_SAVE_FASE5.md) · [31](./backlog/31_NORMAL_MAP_TILE_DOOR.md) | [30 — Poisson Disk](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) *(Jules, determinismo por seed)* | [03 — Fase 3](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md) *(código pronto, falta QA+tuning)*<br>[09 — HUD Tier A](./delivered/09_HUD_TIER_A_REFERENCIAS_VISUAIS.md) *(código pronto, falta QA manual)*<br>[25 — Chunk Streaming](./delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md) *(código pronto, falta cruzar fronteira de chunk em jogo)* | 17 · 28 · 18 · 10 *(ver tabela "🟢 Delivered" abaixo)* |
 
 > 🔒 = bloqueada por insumo externo (ver seção "🚧 Bloqueados" abaixo) — ainda aparece na coluna Backlog porque o escopo já está pronto, só não tem próximo passo executável agora.
+>
+> **Nota (2026-09-13):** Spec 05 removida de "Em Desenvolvimento" → agora só em "🎯 Fila de Definição" (workflow paralelo: conceito e desenvolvimento são filas separadas).
 
 ---
 
@@ -69,14 +71,16 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition
 | # | Spec | Pasta | Prioridade | Criticidade | Progresso |
 |---|---|---|---|---|---|
 | 1 | [`backlog/30_DETERMINISMO_SEED_POISSON_DISK.md`](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) | backlog | 🟡 medium | 🟢 low | **→ Jules (2026-09-08)** — Determinismo por seed no Poisson Disk (`Math.random()` → hashLattice PRNG dentro de `samplePoissonDisk`) |
-| 2 | [`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md) | in-progress | 🔴 high | 🟡 medium | 90% — resta só i18n (Cloud Save extraído, ver bloqueados) |
-| 3 | [`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
-| 4 | [`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) | backlog | 🟡 medium | 🟡 medium | partial |
-| 5 | [`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
-| 6 | [`backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) | backlog | 🟡 medium | 🟢 low | Falta só o modal React de UI (~90% já entregue em `delivered/18`); default de gatilho (NPC Ancião) já definido |
-| 7 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟢 low | 🟢 low | Reduzido ao residual Tier B.6 (menu contextual de mouse) — Tier A entregue em `delivered/09` |
-| 8 | [`backlog/31_NORMAL_MAP_TILE_DOOR.md`](./backlog/31_NORMAL_MAP_TILE_DOOR.md) | backlog | 🟢 low | 🟢 low | Jules-ready — pronto pra execução sem esclarecimento |
+| 2 | [`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
+| 3 | [`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) | backlog | 🟡 medium | 🟡 medium | 📐 Skeleton Ready (Contratos têm modelos, falta UI Modal) |
+| 4 | [`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
+| 5 | [`backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) | backlog | 🟡 medium | 🟢 low | Falta só o modal React de UI (~90% já entregue em `delivered/18`); default de gatilho (NPC Ancião) já definido |
+| 6 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟢 low | 🟢 low | Reduzido ao residual Tier B.6 (menu contextual de mouse) — Tier A entregue em `delivered/09` |
+| 7 | [`backlog/31_NORMAL_MAP_TILE_DOOR.md`](./backlog/31_NORMAL_MAP_TILE_DOOR.md) | backlog | 🟢 low | 🟢 low | Jules-ready — pronto pra execução sem esclarecimento |
 
+> *Nota (2026-09-13):* `05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md` removida desta fila (linha 2 anterior)
+> → movida exclusivamente para "🎯 Fila de Definição" conforme workflow paralelo. Spec aguarda decisão de Felipe sobre biblioteca i18n; nenhum trabalho de código pra executar até lá. Quando i18n é definida, spec volta pro topo da Fila de Prioridade.
+>
 > *Nota:* `in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md` saiu desta fila em
 > 2026-09-08 — PR #93 entregou os 2 itens de código que faltavam (cura via
 > Clérigo + ícones customizados). Só resta QA manual e tuning de valores,
@@ -88,8 +92,8 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition
 > última fase pendente. Spec movida para `delivered/25` (ver tabela
 > "🟢 Delivered" abaixo).
 >
-> *Nota:* `30_DETERMINISMO_SEED_POISSON_DISK` moveu para posição 1 (Fila de Prioridade) e passou a "Em Desenvolvimento" (Kanban) em 2026-09-08
-> — entregue para Jules iniciar a implementação imediatamente (spec está 100% pronta, sem bloqueios ou esclarecimentos pendentes). Determinismo por seed no espalhamento de vegetação via Poisson Disk é crítico para _roguelike replayability_.
+> *Nota:* `30_DETERMINISMO_SEED_POISSON_DISK` está na posição 1 (Fila de Prioridade) desde 2026-09-08
+> — atribuída para Jules iniciar a implementação imediatamente (spec está 100% pronta, sem bloqueios ou esclarecimentos pendentes). Determinismo por seed no espalhamento de vegetação via Poisson Disk é crítico para _roguelike replayability_.
 
 ### 🎯 Fila de Definição (Conceito & Regras de Gameplay — Workflow Paralelo)
 
@@ -99,19 +103,38 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition
 
 | Spec | Pasta | O que Felipe precisa clarificar | Próximo passo |
 |---|---|---|---|
-| **[`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md)** — i18n | in-progress | Qual biblioteca i18n? (`react-i18next`, `next-i18next`, ou outra?) + Quais strings na Fase 1 (campanha vs HUD vs NPCs)? | Quando definido → extrai para `backlog/05_I18N_LOCALIZACAO.md`, move spec 05 core para delivered |
+| **[`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md)** — i18n | in-progress | Qual biblioteca i18n? (`react-i18next`, `next-i18next`, ou outra?) + Quais strings na Fase 1 (campanha vs HUD vs NPCs)? | Quando definido → extrai `backlog/05_I18N_LOCALIZACAO.md` como spec satélite separada; spec 05 core volta pro topo de Fila de Prioridade |
 | **[`scope-definition/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./scope-definition/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md)** | scope-definition | Qual evento implementar PRIMEIRO? (Eclipse de Sangue / Cerco ao Vilarejo / Rifts / Solstício?) + Escopo: 1 evento por satélite ou agregar? | Quando decidido → divide em Índice Mestre + satélites, move 1º evento para `backlog/` |
-| **[`scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md)** | scope-definition | Variedade interna de `gloomy_woods` é desejo ou escopo? (Spec 25 já resolveu conectividade, só falta diversidade de biomas?) | Quando clarificado → vira Blueprint técnico próprio ou fecha como "resolvido por Spec 25" |
+| **[`scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md)** | scope-definition | Variedade interna de `gloomy_woods` é desejo ou escopo? (Spec 25 já resolveu conectividade, só falta diversidade de biomas?) | Quando clarificado → vira Blueprint técnico próprio ou fecha como "🔄 Partially Superseded (por #25)" |
 
 ### 🚧 Bloqueados por Insumo Externo (Arte / Comercial — Não-Conceitual)
 
-> Triagem de 2026-09-07 (atualizada em 2026-09-08 — spec 25 entregue por completo). **Diferente de "🎯 Fila de Definição":** estas specs **já têm escopo técnico 100% definido** — o bloqueio é por insumo externo FORA do escopo técnico/conceitual (orçamento de arte, confirmação de produto de negócio). Nada aqui tem próximo passo executável por agente IA até o insumo chegar.
+> Triagem de 2026-09-07 (atualizada em 2026-09-08 — spec 25 entregue por completo; 2026-09-13 — agrupamento por bloqueador). **Diferente de "🎯 Fila de Definição":** estas specs **já têm escopo técnico 100% definido** — o bloqueio é por insumo externo FORA do escopo técnico/conceitual (orçamento de arte, confirmação de produto de negócio). Nada aqui tem próximo passo executável por agente IA até o insumo chegar.
 
-| Spec | Pasta | Impedimento | O que destrava |
+#### 🎨 **Grupo 1: Produção de Sprites (PixelLab / Arte Terceirizada)**
+
+**Status Bloqueador:** Aguardando aprovação de orçamento + direção de arte
+
+| Spec | Pasta | Contexto | Escopo |
 |---|---|---|---|
-| [`backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md) | backlog *(era in-progress)* | Fase 0 (arquitetura) concluída; todo o resto exige sprites físicos que não existem | Orçamento/direção de arte aprovado |
-| [`backlog/09_PIXEL_LAB_PROMPT_GUIDE.md`](./backlog/09_PIXEL_LAB_PROMPT_GUIDE.md) | backlog *(era in-progress)* | Guia só tem uso ativo quando há produção de sprites em andamento | Mesmo gate de #08 (orçamento aprovado) |
-| [`backlog/29_CLOUD_SAVE_FASE5.md`](./backlog/29_CLOUD_SAVE_FASE5.md) | backlog *(novo, extraído de #05)* | Mandato do projeto: nenhuma integração de conta/nuvem sem confirmação prévia de Felipe | Felipe confirmar explicitamente a demanda comercial (Beta?) + avaliação de segurança |
+| [`backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md) | backlog | Fase 0 (arquitetura) concluída; Fases 1+ exigem sprites físicos dos personagens que ainda não existem | Rastreamento de integração de assets PixelLab + checklist de cobertura de 8-direções/animações |
+| [`backlog/32_PIXEL_LAB_SPRITE_PRODUCTION_GUIDE.md`](./backlog/32_PIXEL_LAB_SPRITE_PRODUCTION_GUIDE.md) | backlog | Guia operacional de prompts para geração de sprites; máximo valor quando produção PixelLab estiver ativa | Framework de prompts, estilos, paletas e casos de refinamento |
+
+**Desbloqueador:** Orçamento de arte aprovado + cronograma de produção PixelLab iniciado
+
+**Ação ao Desbloquear:** Ambas specs sobem juntas para Fila de Prioridade (coordenar execução: 08 depende de assets que 32 ajuda a gerar).
+
+---
+
+#### 💳 **Grupo 2: Confirmação Comercial (Cloud Save / Integração de Conta)**
+
+| Spec | Pasta | Contexto | Escopo |
+|---|---|---|---|
+| [`backlog/29_CLOUD_SAVE_FASE5.md`](./backlog/29_CLOUD_SAVE_FASE5.md) | backlog | Extraído de `in-progress/05` em 2026-09-13; mandato do projeto: nenhuma integração de conta/nuvem sem aprovação prévia do Felix | Firebase/Firestore automatizado + sincronização cross-device |
+
+**Desbloqueador:** Felipe confirmar explicitamente demanda comercial (Beta ou release?) + avaliação de segurança/LGPD
+
+**Ação ao Desbloquear:** Move para Fila de Prioridade com estimativa técnica re-validada.
 
 ---
 
@@ -196,11 +219,11 @@ docs/specs/
 | Spec / Proposta | Domínio / Resumo | Prioridade | Criticidade | Bloqueado? |
 |---|---|---|---|---|
 | **[`backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md)** | Gap real do sistema de Prestígio já ~90% entregue (`delivered/18`): falta só o modal React de UI (gatilho default: NPC Ancião) | medium | low | Não |
-| **[`backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md)** | *(era in-progress)* Living Tracking Spec de integração de sprites físicos — Fase 0 concluída | high | medium | **Sim** — orçamento de arte |
+| **[`backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md)** | *(era in-progress)* Living Tracking Spec de integração de sprites físicos — Fase 0 concluída | high | medium | **Sim** — orçamento de arte (grupo com #32) |
 | **[`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md)** | Residual Tier B.6: menu contextual de mouse ao passar sobre alvo (desktop) — Tier A entregue em `delivered/09` | low | low | Não |
-| **[`backlog/09_PIXEL_LAB_PROMPT_GUIDE.md`](./backlog/09_PIXEL_LAB_PROMPT_GUIDE.md)** | *(era in-progress)* Guia de prompts PixelLab, usado durante produção de sprites | high | low | **Sim** — mesmo gate acima |
+| **[`backlog/32_PIXEL_LAB_SPRITE_PRODUCTION_GUIDE.md`](./backlog/32_PIXEL_LAB_SPRITE_PRODUCTION_GUIDE.md)** | *(renumerado de 09-PL em 2026-09-13)* Guia de prompts PixelLab, usado durante produção de sprites | high | low | **Sim** — orçamento de arte (grupo com #08) |
 | **[`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md)** | Atmosfera, Tensão e Indicadores de Ameaça (Indicadores fora de tela, áudio espacial e iluminação) | medium | medium | Não |
-| **[`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md)** | Progressão, Micro-Quests e Evolução de Habilidades (Contratos, Modificadores e Talentos) *(Parcialmente Implementado)* | medium | medium | Não |
+| **[`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md)** | Progressão, Micro-Quests e Evolução de Habilidades (Contratos, Modificadores e Talentos) | medium | medium | Não |
 | **[`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** | Toggle de Intensidade de Conteúdo — mitigação de classificação indicativa (gore visual configurável) | medium | medium | Não |
 | **[`backlog/30_DETERMINISMO_SEED_POISSON_DISK.md`](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md)** | Determinismo por seed no espalhamento de vegetação/props (Poisson Disk) — Jules-ready | medium | low | Não |
 | **[`backlog/31_NORMAL_MAP_TILE_DOOR.md`](./backlog/31_NORMAL_MAP_TILE_DOOR.md)** | Normal map ausente na textura `tile_door` — Jules-ready | low | low | Não |
@@ -210,10 +233,10 @@ docs/specs/
 
 ## 🟠 Escopo em Definição (Proposta Real, Ainda Não Pronta Para Implementação)
 
-| Spec / Proposta | Domínio / Resumo | Prioridade | Criticidade | O que falta |
+| Spec / Proposta | Domínio / Resumo | Prioridade | Criticidade | Status / Próximo Passo |
 |---|---|---|---|---|
-| **[`scope-definition/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./scope-definition/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md)** | Eventos dinâmicos sazonais (Eclipse de Sangue, Cerco ao Vilarejo, Rifts de Infecção, Solstícios) | medium | medium | Virar Índice Mestre + satélites, 1 por evento escolhido |
-| **[`scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md)** | *(superada em parte, 2026-09-08)* Variedade orgânica interna de `gloomy_woods` — conectividade entre biomas já resolvida pela abordagem escolhida em #25 | low | medium | Decisão do Felipe + Blueprint técnico próprio |
+| **[`scope-definition/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./scope-definition/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md)** | Eventos dinâmicos sazonais (Eclipse de Sangue, Cerco ao Vilarejo, Rifts de Infecção, Solstícios) | medium | medium | Aguardando decisão: qual evento implementar PRIMEIRO? Vira Índice Mestre + satélites, 1 evento por spec |
+| **[`scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md)** | 🔄 **Partially Superseded (2026-09-08)**: Conectividade entre biomas resolvida por `delivered/25` (Chunk Streaming). Residual: variedade orgânica interna de `gloomy_woods` — é escopo ou refinamento desejado? | low | medium | Decisão do Felipe: fechar como "completo via #25" ou abrir novo Blueprint técnico pra variedade |
 
 ---
 
