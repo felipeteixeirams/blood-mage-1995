@@ -86,6 +86,17 @@ describe('gameStore', () => {
       expect(useGameStore.getState().bloodCrystals).toBe(60);
       expect(useGameStore.getState().talentLevels.hemomancy_power).toBe(1);
     });
+
+    it('upgradeTalent blocks purchasing mutually exclusive talent nodes', () => {
+      useGameStore.getState().addBloodCrystals(200);
+      const ok1 = useGameStore.getState().upgradeTalent('vampirismo_profundo', 35);
+      expect(ok1).toBe(true);
+      expect(useGameStore.getState().talentLevels.vampirismo_profundo).toBe(1);
+
+      const ok2 = useGameStore.getState().upgradeTalent('execucoes_em_area', 35);
+      expect(ok2).toBe(false);
+      expect(useGameStore.getState().talentLevels.execucoes_em_area || 0).toBe(0);
+    });
   });
 
   describe('contracts', () => {

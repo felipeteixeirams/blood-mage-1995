@@ -3,9 +3,9 @@ agent_context: backend, game-designer, frontend
 target_module: src/store/gameStore.ts, src/data
 priority: medium
 criticality: medium
-status: backlog
-progress: partial
-last_updated: "2026-09-02"
+status: in-progress
+progress: complete
+last_updated: "2026-09-13"
 tags:
   - progression
   - contracts
@@ -62,8 +62,8 @@ Diferente da especificação inicial do projeto, uma parte significativa desta f
 ## 4. 🧪 Critérios de Aceite
 - [x] 3 Contratos gerados aleatoriamente por run com acompanhamento dinâmico na HUD e entrega instantânea de recompensas (`ContractSystem.ts`).
 - [x] Modificadores de corrida funcionais na tela de seleção antes do início da partida (`RunModifiersModal.tsx`).
-- [ ] Árvore de talentos bloqueia caminhos mutuamente exclusivos quando um nó com `"exclusive_with"` é selecionado.
-- [ ] Popup de evolução de feitiço é engajado corretamente ao atingir nível 5 e 10 de qualquer habilidade.
+- [x] Árvore de talentos bloqueia caminhos mutuamente exclusivos quando um nó com `"exclusive_with"` é selecionado.
+- [x] Popup de evolução de feitiço é engajado corretamente ao atingir nível 5 e 10 de qualquer habilidade.
 
 ---
 
