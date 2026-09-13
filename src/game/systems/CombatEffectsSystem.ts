@@ -267,9 +267,14 @@ export class CombatEffectsSystem {
 
     // Just store pending data — player distributes later via talent tree (T key)
     if (scene.callbacks?.onLevelUp) {
-      const shuffled = [...upgradesData].sort(() => 0.5 - Math.random());
+      const currentLvl = scene.player.stats.level;
+      let pool = [...upgradesData];
+      if (currentLvl === 5 || currentLvl === 10) {
+        pool = upgradesData.filter((u: any) => u.isSpellEvolution || u.rarity === 'legendary' || u.category === 'spell');
+      }
+      const shuffled = [...pool].sort(() => 0.5 - Math.random());
       const selectedOptions = shuffled.slice(0, 3) as UpgradeOption[];
-      scene.callbacks.onLevelUp(scene.player.stats.level, selectedOptions);
+      scene.callbacks.onLevelUp(currentLvl, selectedOptions);
     }
   }
 
