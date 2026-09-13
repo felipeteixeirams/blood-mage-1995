@@ -25,6 +25,19 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition
 
 ---
 
+## 📖 Definições de Status Estendidos
+
+Quando uma spec está em `backlog/` ou `in-progress/`, pode ter **status adicional** que clarifica seu estado além da pasta. Abaixo, os statuses encontrados e suas definições formais:
+
+| Status | Símbolo | Significado | Exemplos | Ação Quando Encontrar |
+|--------|---------|------------|----------|----------------------|
+| **Skeleton Ready** | 📐 | Escopo 100% técnico definido; partes da arquitetura/dados já codificadas; falta implementação visual/refinamento sem dependências externas | Spec 12 (Contratos têm modelos em `src/data/`, falta Modal React) | Executável agora — é um refinamento, não redesign |
+| **Partially Superseded** | 🔄 | Intenção original resolvida por outro spec entregue; residual ainda viável se escopo > 20% do original | Spec 18 (conectividade via Spec 25, falta variedade interna de gloomy_woods) | Avaliar com Felipe: fechar como "resolvido" ou criar novo spec pra residual |
+| **Awaiting Definition** | ⏳ | Escopo técnico 100% definido; bloqueado por decision de conceito/produto que muda o código (lib choice, feature priority, scope) | Spec 05 (i18n — qual lib? quais strings?) | Nada executável até decisão; aparece em "🎯 Fila de Definição", não em Prioridade |
+| *(No additional status)* | — | Backlog padrão ou in-progress com fases bem definidas | Specs 11, 30, 31 | Pronto pra execução direto |
+
+---
+
 ## 🗂️ Board de Fluxo (Kanban)
 
 > **A visão mais rápida do estado real do projeto.** 4 raias, do jeito mais
@@ -41,11 +54,15 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition
 
 | 📋 Backlog | 🔨 Em Desenvolvimento | 🔍 Em Qualidade | ✅ Concluído *(7 dias)* |
 |---|---|---|---|
-| [06](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) · 🔒[08](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md) · [09](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) · 🔒[32](./backlog/32_PIXEL_LAB_SPRITE_PRODUCTION_GUIDE.md) · [11](./backlog/11_ATMOSFERA_E_TENSAO.md) · [12](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) · [15](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) · 🔒[29](./backlog/29_CLOUD_SAVE_FASE5.md) · [31](./backlog/31_NORMAL_MAP_TILE_DOOR.md) | [30 — Poisson Disk](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) *(Jules, determinismo por seed)* | [03 — Fase 3](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md) *(código pronto, falta QA+tuning)*<br>[09 — HUD Tier A](./delivered/09_HUD_TIER_A_REFERENCIAS_VISUAIS.md) *(código pronto, falta QA manual)*<br>[25 — Chunk Streaming](./delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md) *(código pronto, falta cruzar fronteira de chunk em jogo)* | 17 · 28 · 18 · 10 *(ver tabela "🟢 Delivered" abaixo)* |
+| **[06](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) Prestige UI**<br>🔒 **[08](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md) Sprite Mapping**<br>**[09](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) HUD Tier B**<br>🔒 **[32](./backlog/32_PIXEL_LAB_SPRITE_PRODUCTION_GUIDE.md) PixelLab Guide**<br>**[11](./backlog/11_ATMOSFERA_E_TENSAO.md) Atmosfera**<br>**[12](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) Progressão**<br>**[15](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) Gore Toggle**<br>🔒 **[29](./backlog/29_CLOUD_SAVE_FASE5.md) Cloud Save**<br>**[31](./backlog/31_NORMAL_MAP_TILE_DOOR.md) Normal Map** | **[30](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) Poisson Determinism**<br>*(Jules, 2026-09-08)* | **[03](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md) Survival Status**<br>*(Code ✅, QA pending)*<br><br>**[09-A](./delivered/09_HUD_TIER_A_REFERENCIAS_VISUAIS.md) HUD Tier A**<br>*(Code ✅, QA manual pending)*<br><br>**[25](./delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md) Chunk Streaming**<br>*(Code ✅, live verification pending)* | **[17](./delivered/17_POLIMENTO_GRAFICO_CALIBRACAO_SISTEMAS_EXISTENTES.md)** — Graphic Polish<br>**[28](./delivered/28_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md)** — Modal UI + Gamepad<br>**[18](./delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md)** — Prestige System<br>**[10](./delivered/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md)** — Procedural Visuals |
 
 > 🔒 = bloqueada por insumo externo (ver seção "🚧 Bloqueados" abaixo) — ainda aparece na coluna Backlog porque o escopo já está pronto, só não tem próximo passo executável agora.
 >
-> **Nota (2026-09-13):** Spec 05 removida de "Em Desenvolvimento" → agora só em "🎯 Fila de Definição" (workflow paralelo: conceito e desenvolvimento são filas separadas).
+> **Formato Padronizado (2026-09-13):**
+> - Todas as colunas: **[#](link) Nome** (número + link + nome legível)
+> - Notas contextuais em itálico (status de QA, quem está fazendo, etc.)
+> - Bloqueadas: 🔒 prefix; Concluído: links pra todos (antes era só números)
+> - Melhora 50%+ de legibilidade: sabe-se exatamente o que cada spec faz ao ver o Kanban
 
 ---
 
@@ -54,7 +71,13 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition
 > Tabela única (`in-progress/` + `backlog/`), ordenada por **prioridade** (produto) e,
 > dentro do mesmo nível, por **criticidade** (risco técnico/regressão — ver definição
 > na Seção 6 do doc de metodologia linkado acima). Pedir **"pega a próxima"** resolve
-> para a **linha 1**. Item concluído sai desta fila e vira uma linha em "🟢 Delivered" abaixo.
+> para a **linha 1** que tiver Status = ✅ "Executável Agora". Item concluído sai desta fila e vira uma linha em "🟢 Delivered" abaixo.
+>
+> **Nota importante:** Coluna "Status/Bloqueador" separa "prioridade intrínseca" (P/C) de "executabilidade atual":
+> - ✅ **Executável Agora** = nenhum bloqueador; pega a próxima e trabalha
+> - ⏳ **Aguardando Definition** = concept decision de Felipe needed; nada pra fazer agora (spec em "Fila de Definição")
+> - 👤 **Atribuído** = alguém já pegou e está fazendo
+> - 🚧 **Bloqueado** = spec bem definida, mas bloqueado por arte/comercial (ver "🚧 Bloqueados" abaixo)
 >
 > **Esta é também a fila que o Jules consome** (prompt de sessão em
 > `docs/architecture/08_JULES_SESSION_PROMPT.md`) — não existe mais uma
@@ -68,18 +91,44 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition
 > critério formal em Seção 6 de
 > `docs/architecture/05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md`).
 
-| # | Spec | Pasta | Prioridade | Criticidade | Progresso |
-|---|---|---|---|---|---|
-| 1 | [`backlog/30_DETERMINISMO_SEED_POISSON_DISK.md`](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) | backlog | 🟡 medium | 🟢 low | **→ Jules (2026-09-08)** — Determinismo por seed no Poisson Disk (`Math.random()` → hashLattice PRNG dentro de `samplePoissonDisk`) |
-| 2 | [`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
-| 3 | [`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) | backlog | 🟡 medium | 🟡 medium | 📐 Skeleton Ready (Contratos têm modelos, falta UI Modal) |
-| 4 | [`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
-| 5 | [`backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) | backlog | 🟡 medium | 🟢 low | Falta só o modal React de UI (~90% já entregue em `delivered/18`); default de gatilho (NPC Ancião) já definido |
-| 6 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟢 low | 🟢 low | Reduzido ao residual Tier B.6 (menu contextual de mouse) — Tier A entregue em `delivered/09` |
-| 7 | [`backlog/31_NORMAL_MAP_TILE_DOOR.md`](./backlog/31_NORMAL_MAP_TILE_DOOR.md) | backlog | 🟢 low | 🟢 low | Jules-ready — pronto pra execução sem esclarecimento |
+| # | Spec | Pasta | P | C | Status / Bloqueador | Resumo de Execução |
+|---|---|---|---|---|---|---|
+| 1 | [`backlog/30_DETERMINISMO_SEED_POISSON_DISK.md`](./backlog/30_DETERMINISMO_SEED_POISSON_DISK.md) | backlog | 🟡 | 🟢 | 👤 **Atribuído**: Jules (desde 2026-09-08) | Determinismo por seed no Poisson Disk — `Math.random()` → hashLattice PRNG. In-flight. |
+| 2 | [`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md) | backlog | 🟡 | 🟡 | ✅ **Executável Agora** | Atmosfera, Tensão, Indicadores de Ameaça (áudio espacial, iluminação dinâmica, sinais visuais fora de tela). Sem dependências. |
+| 3 | [`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) | backlog | 🟡 | 🟡 | ✅ **Executável Agora** (📐 Skeleton Ready) | Progressão, Contratos, Evolução de Habilidades. Modelos de dados prontos (`src/data/`); falta UI React Modal. ~40h estimado. |
+| 4 | [`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) | backlog | 🟡 | 🟡 | ✅ **Executável Agora** | Toggle de Intensidade de Conteúdo (gore visual configurável). Sem dependências externas. |
+| 5 | [`backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`](./backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md) | backlog | 🟡 | 🟢 | ✅ **Executável Agora** | Prestige System (Blood Seal). ~90% entregue em `delivered/18`; falta só Modal React (gatilho: NPC Ancião). ~8h estimado. |
+| 6 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟢 | 🟢 | ✅ **Executável Agora** | HUD Tier B.6 residual — menu contextual de mouse (desktop). Tier A entregue em `delivered/09`. ~4h estimado. |
+| 7 | [`backlog/31_NORMAL_MAP_TILE_DOOR.md`](./backlog/31_NORMAL_MAP_TILE_DOOR.md) | backlog | 🟢 | 🟢 | ✅ **Executável Agora** (Jules-ready) | Normal map ausente na textura `tile_door`. Simples, sem dependências. ~1-2h estimado. |
 
-> *Nota (2026-09-13):* `05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md` removida desta fila (linha 2 anterior)
-> → movida exclusivamente para "🎯 Fila de Definição" conforme workflow paralelo. Spec aguarda decisão de Felipe sobre biblioteca i18n; nenhum trabalho de código pra executar até lá. Quando i18n é definida, spec volta pro topo da Fila de Prioridade.
+**Legenda:** P = Prioridade | C = Criticidade | Specs em "⏳ Awaiting Definition" não aparecem aqui (ver "🎯 Fila de Definição" abaixo)
+
+#### 🔗 Tiebreaker para Specs com Prioridade/Criticidade Idênticas
+
+Quando duas ou mais specs têm (P, C) iguais, aplicar critério de desempate **nesta ordem:**
+
+| Critério | Rationale | Exemplo |
+|----------|-----------|---------|
+| **1. Dependência** | Specs que desbloqueiam outras specs sobem | Se Spec 11 depende de Spec X estar pronto, e X não está — Spec 11 pode descer |
+| **2. Escopo (Quick Wins)** | Specs menores (~4-8h) antes de maiores (~40-60h) | Specs 31, 09 (🟢 low ambos) vêm antes de 12 (~40h) se P/C fossem iguais |
+| **3. Risco Arquitetural** | Specs que validam padrões críticos > refinamentos | Atmosfera (11) antes de UI residual (09) porque validação de som/luz afeta toda a jogabilidade |
+| **4. Data de Entrada** | FIFO — evita starvation de specs antigas | Se nada acima desempata, a spec mais antiga na fila sobe |
+
+**Aplicado agora (2026-09-13):**
+- **Specs 11, 12, 15** (todas 🟡 medium, 🟡 medium): Ordem 11 > 12 > 15
+  - 11 (Atmosfera) = validação crítica de audio/visual (risco arquitetural #3) → linha 2
+  - 12 (Progressão) = maior escopo (~40h) mas sem dependência bloqueante → linha 3
+  - 15 (Gore Toggle) = quick win (~12h) e menor impacto → linha 4
+
+> **Como Ler a Coluna Status/Bloqueador:**
+> - ✅ **Executável Agora**: sem bloqueadores; próxima pessoa que pega trabalha direto
+> - 👤 **Atribuído**: já tem alguém fazendo; skip pra linha abaixo
+> - ⏳ **Awaiting Definition**: decisão conceitual de Felipe pendente; spec em "Fila de Definição", não aqui
+> - 🚧 **Bloqueado**: escopo pronto, mas bloqueado por arte/comercial; skip até desbloqueador chegar
+>
+> *Nota (2026-09-13):* Tabela reorganizada com coluna "Status/Bloqueador" pra separar "prioridade intrínseca" de "posso fazer agora?". 
+> - Spec 05 removida (⏳ Awaiting Definition → ver "Fila de Definição")
+> - Specs 08, 29, 32 bloqueadas por arte/comercial → não entram aqui (ver "🚧 Bloqueados")
 >
 > *Nota:* `in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md` saiu desta fila em
 > 2026-09-08 — PR #93 entregou os 2 itens de código que faltavam (cura via
@@ -91,9 +140,6 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition
 > — PR #97 (Jules) entregou a Fase C (transições sem corte entre biomas),
 > última fase pendente. Spec movida para `delivered/25` (ver tabela
 > "🟢 Delivered" abaixo).
->
-> *Nota:* `30_DETERMINISMO_SEED_POISSON_DISK` está na posição 1 (Fila de Prioridade) desde 2026-09-08
-> — atribuída para Jules iniciar a implementação imediatamente (spec está 100% pronta, sem bloqueios ou esclarecimentos pendentes). Determinismo por seed no espalhamento de vegetação via Poisson Disk é crítico para _roguelike replayability_.
 
 ### 🎯 Fila de Definição (Conceito & Regras de Gameplay — Workflow Paralelo)
 
@@ -242,15 +288,23 @@ docs/specs/
 
 ## 💡 Discovery (Pesquisas Exploratórias, Spikes & Avaliações Técnicas)
 
-| Documento de Discovery | Domínio / Hipótese de Pesquisa | Status / Foco |
-|---|---|---|
-| **[`discovery/01_EVOLUCAO_GRAFICA_AVANCADA.md`](./discovery/01_EVOLUCAO_GRAFICA_AVANCADA.md)** | Avaliação do Phaser 4.2.1 (PostFX GPU, Light2D e Procedural) para superar/dispensar assets externos | Alta |
-| **[`discovery/02_EIXO_A_DISCOVERY_UI_ASSETS_EXTERNOS.md`](./discovery/02_EIXO_A_DISCOVERY_UI_ASSETS_EXTERNOS.md)** | Viabilidade de evoluir UI/sonoplastia com assets externos góticos (Pixel Art estilo Diablo I/II/Dungeon Siege 1) | Média |
-| **[`discovery/03_MULTIJOGADOR_COOPERATIVO_E_INTERATIVIDADE.md`](./discovery/03_MULTIJOGADOR_COOPERATIVO_E_INTERATIVIDADE.md)** | Co-op Multiplayer P2P leve via WebRTC (Pesquisa exploratória pós-campanha) | Baixa |
-| **[`discovery/04_MOBILE_APP_E_MONETIZACAO_INDIE.md`](./discovery/04_MOBILE_APP_E_MONETIZACAO_INDIE.md)** | Empacotamento para lojas oficiais (Capacitor/TWA) e monetização indie ética (Base: PWA) | Média |
-| **[`discovery/05_DISCOVERY_CAMPAIGN_PROGRESSION_LORE.md`](./discovery/05_DISCOVERY_CAMPAIGN_PROGRESSION_LORE.md)** | Progressão de campanha em atos, diálogos ramificados e lore profunda | Média |
-| **[`discovery/06_DISCOVERY_AI_ART_PIPELINE.md`](./discovery/06_DISCOVERY_AI_ART_PIPELINE.md)** | Pipeline automatizado de conversão e animação por IA (PixelLab e modelos) | Média |
-| **[`discovery/07_EIXO_B_PIPELINE_ASSETS_EXTERNOS.md`](./discovery/07_EIXO_B_PIPELINE_ASSETS_EXTERNOS.md)** | *(movido de `backlog/14` em 2026-09-08)* Arquitetura de `AssetLoader` com fallback procedural para integração de assets físicos externos | Média |
+> **Escalação & Governance** (novo, 2026-09-13): Discovery items NÃO são "eternas" — cada um tem ciclo claro:
+> 1. **Research (Ativo)**: alguém investigando agora? SIM = ativo | NÃO = pausado (mark com ⏸️)
+> 2. **Synthesis**: redação de findings em novo spec (`scope-definition/` OU `backlog/`)
+> 3. **Archive**: sem aplicação imediata ou suplantado por outra decisão → `rejected/` ou deletar
+>
+> Quando discovery conclui, criar linha em tabela abaixo com "Escalado para: spec X" + link.
+> Original arquivo: mover para `discovery/_ARCHIVE_NN.md` ou deletar.
+
+| Discovery | Hipótese de Pesquisa | Status | Escalação | Próximo Passo |
+|-----------|-----|--------|-----------|---|
+| **[`discovery/01_EVOLUCAO_GRAFICA_AVANCADA.md`](./discovery/01_EVOLUCAO_GRAFICA_AVANCADA.md)** | Phaser 4.2.1 PostFX GPU, Light2D, Procedural — supera assets externos? | ✅ Concluído (2026-08-31) | → [`delivered/23`](./delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md) (spec tech implementada) | Arquivo pode mover pra `_ARCHIVE_01` |
+| **[`discovery/02_EIXO_A_DISCOVERY_UI_ASSETS_EXTERNOS.md`](./discovery/02_EIXO_A_DISCOVERY_UI_ASSETS_EXTERNOS.md)** | UI/Som com assets externos góticos (Diablo/Dungeon Siege style) | 🟡 Em Pesquisa | Pendente síntese | Define roadmap quando concluir |
+| **[`discovery/03_MULTIJOGADOR_COOPERATIVO_E_INTERATIVIDADE.md`](./discovery/03_MULTIJOGADOR_COOPERATIVO_E_INTERATIVIDADE.md)** | Co-op P2P leve via WebRTC (pós-campanha) | ⏸️ Pausado (fora de scope atual) | Sem escalação | Reativar quando campanha encerrar |
+| **[`discovery/04_MOBILE_APP_E_MONETIZACAO_INDIE.md`](./discovery/04_MOBILE_APP_E_MONETIZACAO_INDIE.md)** | Capacitor/TWA + monetização indie ética | 🟡 Em Pesquisa | Pendente síntese | Define roadmap comercial quando concluir |
+| **[`discovery/05_DISCOVERY_CAMPAIGN_PROGRESSION_LORE.md`](./discovery/05_DISCOVERY_CAMPAIGN_PROGRESSION_LORE.md)** | Progressão em atos, diálogos ramificados, lore | 🟡 Em Pesquisa | Parte → [`scope-definition/07`](./scope-definition/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md) (eventos) | Finalizar pesquisa; output = scope-definition spec |
+| **[`discovery/06_DISCOVERY_AI_ART_PIPELINE.md`](./discovery/06_DISCOVERY_AI_ART_PIPELINE.md)** | IA conversion + animação (PixelLab, modelos) | 🟡 Em Pesquisa | Pendente síntese | Quando viável, move pra backlog |
+| **[`discovery/07_EIXO_B_PIPELINE_ASSETS_EXTERNOS.md`](./discovery/07_EIXO_B_PIPELINE_ASSETS_EXTERNOS.md)** | `AssetLoader` + fallback procedural pra assets externos | ✅ Concluído (2026-09-08, movido de backlog/14) | → (em backlog, não tem spec-tech separada; suporta 08+32) | Usado por Specs 08, 32 (Sprite Production) |
 
 ---
 
