@@ -43,7 +43,6 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, discovery, rejec
 | 1 | [`backlog/08_GUIA_EVOLUCAO_COMERCIAL.md`](./backlog/08_GUIA_EVOLUCAO_COMERCIAL.md) | backlog | 🔴 high | 🟢 low | Checklist de requisitos comerciais (Steam/Play Store/itch.io) |
 | 4 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟡 medium | 🟡 medium | Tier A completo — Tiers B/C pendentes |
 | 5 | [`backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md) | backlog | 🟡 medium | 🟡 medium | draft |
-| 8 | [`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
 | 11 | [`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md) | backlog | 🟢 low | 🟡 medium | Superada em parte — só resta a pergunta menor de variedade interna em `gloomy_woods` |
 
 > *Nota:* `in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md` saiu desta fila em
@@ -101,6 +100,7 @@ docs/specs/
 | **[`in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md`](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md)** | • Gameplay loop completo (Sangramento/Veneno/Infecção aplicados por monstro, dreno de HP, cura via consumível comprável no Alquimista)<br>• Cura via NPC Clérigo (PR #93)<br>• Ícones customizados SVG (PR #93) | • *(nenhum item de código — só QA manual e tuning de valores, dependentes do Felipe jogar)* |
 | **[`in-progress/11_ATMOSFERA_E_TENSAO.md`](./in-progress/11_ATMOSFERA_E_TENSAO.md)** | • Indicadores de ameaça fora de tela (chevrons direcionais por estado de IA)<br>• Vinheta pulsante dinâmica por nível de perigo (baixo, médio, alto/boss)<br>• Chamado de reforços no estado flee | • *(aguardando revisão do PR)* |
 | **[`in-progress/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./in-progress/12_PROGRESSAO_E_QUESTS_CONTRATOS.md)** | • Contratos (micro-quests) em tempo real, Modificadores de Run e Quests de Campanha<br>• Ramificação Mutuamente Exclusiva na Árvore de Talentos<br>• Evolução de Feitiço / Skill Mutation (Nível 5 e 10) | • *(aguardando revisão do PR)* |
+| **[`in-progress/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./in-progress/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** | • Toggle de intensidade de conteúdo (`contentIntensity`: `'full'` \| `'reduced'`) em `localStorage.ts`, `SettingsScene.ts` e i18n<br>• Modos de desacoplamento e mitigação de gore visual em `DismembermentSystem.ts` e `BloodSplatterSystem.ts` | • *(aguardando revisão do PR)* |
 
 > *Nota (2026-09-06):* `in-progress/06_EIXO_A_GRAFICOS_AVANCADOS.md` e
 > `in-progress/10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md` foram

@@ -272,6 +272,7 @@ export interface GameSettings {
   lowPerformanceParticles?: boolean;
   highContrastDamageTexts?: boolean;
   postProcessingEnabled?: boolean;
+  contentIntensity?: 'full' | 'reduced';
   hudLayout?: Record<string, { x: number, y: number, size: 'small' | 'medium' | 'large' }>;
   activePaletteId?: string;
 }

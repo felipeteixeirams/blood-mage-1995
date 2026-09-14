@@ -6,6 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { DismembermentSystem } from './DismembermentSystem';
 import monstersData from '../../data/monsters.json';
 import { MonsterConfig } from '../../types/game';
+import { useGameStore } from '../../store/gameStore';
 
 const typedMonsters = monstersData as Record<string, MonsterConfig>;
 
@@ -89,5 +90,71 @@ describe('DismembermentSystem - 3-Factor Gore Logic', () => {
 
     expect(result.type).toBe('total_destruction');
     expect(result.isExecution).toBe(true);
+  });
+
+  it('converts total_destruction to normal_collapse during executeDismemberment when contentIntensity is reduced', () => {
+    useGameStore.setState({
+      settings: {
+        ...useGameStore.getState().settings,
+        contentIntensity: 'reduced',
+      },
+    });
+
+    const createdImages: any[] = [];
+    const mockScene: any = {
+      add: {
+        image: (x: number, y: number, key: string) => {
+          const img = {
+            setDepth: () => img,
+            setScale: () => img,
+            setAlpha: () => img,
+            setAngle: () => img,
+            setTint: () => img,
+            active: true,
+          };
+          createdImages.push(img);
+          return img;
+        },
+      },
+      time: { now: 1000 },
+      bloodSplatterSystem: {
+        addDeathBlood: (params: any) => {
+          expect(params.dismembermentType).toBe('normal_collapse');
+        },
+        addCorpseDecal: (params: any) => {
+          expect(params.isMutilated).toBe(false);
+        },
+      },
+    };
+
+    const enemy: any = {
+      x: 100,
+      y: 100,
+      texture: { key: 'spr_zombie' },
+      scaleX: 1,
+      scaleY: 1,
+      config: typedMonsters['zombie_shambler'],
+    };
+
+    DismembermentSystem.executeDismemberment(
+      mockScene,
+      enemy,
+      {
+        type: 'total_destruction',
+        gibScore: 0.9,
+        fragility: 0.85,
+        spellGibMultiplier: 2.0,
+        overkillRatio: 1.0,
+        isCrit: false,
+        isExecution: false,
+      }
+    );
+
+    useGameStore.setState({
+      settings: {
+        ...useGameStore.getState().settings,
+        contentIntensity: 'full',
+      },
+    });
   });
 });

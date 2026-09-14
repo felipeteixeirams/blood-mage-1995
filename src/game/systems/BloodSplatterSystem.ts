@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { useGameStore } from '../../store/gameStore';
 
 export type DecalType =
   | 'blood_pool'
@@ -242,6 +243,36 @@ export class BloodSplatterSystem {
           tint: bloodTint,
           dryTint,
           depth: 2,
+        });
+      }
+      return;
+    }
+
+    const contentIntensity = useGameStore.getState().settings.contentIntensity ?? 'full';
+    if (contentIntensity === 'reduced') {
+      const poolScale = (0.7 + Math.random() * 0.2) * scaleMultiplier;
+      this.addDecal({
+        x,
+        y: y + 2,
+        textureKey: 'blood_pool_stain',
+        type: 'blood_pool',
+        scaleX: poolScale,
+        scaleY: poolScale * 0.7,
+        rotation: Math.random() * Math.PI * 2,
+        alpha: 0.6,
+        tint: bloodTint,
+        dryTint,
+        depth: 2,
+        persistDurationMs: 30000,
+      });
+
+      const anyScene = this.scene as any;
+      if (anyScene.reflectionSystem && anyScene.reflectionSystem.addLiquidZone) {
+        anyScene.reflectionSystem.addLiquidZone({
+          x,
+          y: y + 2,
+          radius: 16 * poolScale,
+          type: isAbomination ? 'poison' : 'blood',
         });
       }
       return;
