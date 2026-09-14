@@ -33,7 +33,7 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, discovery, rejec
 > **Esta é também a fila que o Jules consome** (prompt de sessão em
 > `docs/architecture/08_JULES_SESSION_PROMPT.md`) — não existe mais uma
 > fila separada só pra ele; o antigo `backlog/16_FILA_AUTOMACAO_JULES.md`
-> foi aposentado em 2026-09-07 (ver `backlog/_ARCHIVED_16_FILA_AUTOMACAO_JULES.md`).
+> foi aposentado em 2026-09-07 (ver [`backlog/_ARCHIVED_16_FILA_AUTOMACAO_JULES.md`](./backlog/_ARCHIVED_16_FILA_AUTOMACAO_JULES.md)).
 >
 > **Só entram aqui specs sem impedimento ativo** (triagem em 2026-09-07 — ver
 > "🚧 Bloqueados" logo abaixo para o que foi removido e por quê).
@@ -136,6 +136,51 @@ docs/specs/
 | **[`delivered/04_FASE4_MUNDO_CONTINUO.md`](./delivered/04_FASE4_MUNDO_CONTINUO.md)** | **Fase 4: Mundo Contínuo:** Safe Town (Room 0), iluminação adaptativa, NPCs interativos, áudio e clima por bioma | 2026-08-31 | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md`](./delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md)** | **ÍNDICE MESTRE — Eixo A: Gráficos Avançados:** Iluminação GPU real (Light2D), pós-processamento WebGL (PostFXSystem) e normal maps procedurais | 2026-08-31 | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md`](./delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md)** | **ÍNDICE MESTRE — Evolução Gráfica & Auditiva:** Quick wins (Medo, Cascata de Luz, Tinnitus), animações 8-direcionais, ragdoll/gibs e shaders de status/sombra/reflexo | 2026-08-31 | Vitest + E2E (`pnpm verify`) |
+
+### 📜 Catálogo Geral de Specs Entregues (Histórico de Produção)
+
+> Índice de referência direta para todas as especificações e satélites entregues em `delivered/`:
+
+- **Sistemas Base & Fases:**
+  - [`delivered/01_FASE1_INCONSCIENCIA.md`](./delivered/01_FASE1_INCONSCIENCIA.md) — Sistema de Inconsciência
+  - [`delivered/02_FASE2_TELA_DE_MORTE_E_GORE.md`](./delivered/02_FASE2_TELA_DE_MORTE_E_GORE.md) — Tela de Morte, Resgate de Cadáver e Gore
+  - [`delivered/05_FASE5_POLIMENTO_PRODUCAO_COMPLETO.md`](./delivered/05_FASE5_POLIMENTO_PRODUCAO_COMPLETO.md) — Polimento de Produção Completo
+- **Visual Polish & VFX (Eixo Spec 11):**
+  - [`delivered/11_VISUAL_POLISH_FRONTS.md`](./delivered/11_VISUAL_POLISH_FRONTS.md) — ÍNDICE MESTRE: Visual Polish & VFX
+  - [`delivered/11_01_VISUAL_DUNGEON_GENERATION.md`](./delivered/11_01_VISUAL_DUNGEON_GENERATION.md) — Geração Orgânica de Dungeon
+  - [`delivered/11_02_VISUAL_ATMOSFERA_NEBLINA.md`](./delivered/11_02_VISUAL_ATMOSFERA_NEBLINA.md) — Atmosfera e Névoa Volumétrica
+  - [`delivered/11_03_VISUAL_DECALS_SANGUE.md`](./delivered/11_03_VISUAL_DECALS_SANGUE.md) — Decals de Sangue e Reações de Mundo
+  - [`delivered/11_04_VISUAL_GORE_HIT_STOP.md`](./delivered/11_04_VISUAL_GORE_HIT_STOP.md) — Gore, Hit-Stop e Character FX
+  - [`delivered/11_05_VISUAL_ILUMINACAO_BLOOM.md`](./delivered/11_05_VISUAL_ILUMINACAO_BLOOM.md) — Iluminação 2D e Bloom FX
+  - [`delivered/11_06_VISUAL_AUDIO_PITCH_DRONES.md`](./delivered/11_06_VISUAL_AUDIO_PITCH_DRONES.md) — Pitch Shifting e Drones de Áudio
+  - [`delivered/11_07_VISUAL_PALETTE_SWAP.md`](./delivered/11_07_VISUAL_PALETTE_SWAP.md) — Palette Swap Procedural e Cosméticos
+  - [`delivered/11_08_VISUAL_NPCS_INTERATIVIDADE.md`](./delivered/11_08_VISUAL_NPCS_INTERATIVIDADE.md) — NPCs e Interatividade de Mundo
+- **Expansão de Gameplay & Rejogabilidade (Eixo Spec 12):**
+  - [`delivered/12_EXPANSION_FRONTS.md`](./delivered/12_EXPANSION_FRONTS.md) — ÍNDICE MESTRE: Expansion & Replayability
+  - [`delivered/12_01_EXPANSION_TRAPS_INTERACTIONS.md`](./delivered/12_01_EXPANSION_TRAPS_INTERACTIONS.md) — Armadilhas e Interações Ambientais
+  - [`delivered/12_02_EXPANSION_AI_ELITE_MOBS.md`](./delivered/12_02_EXPANSION_AI_ELITE_MOBS.md) — IA de Mobs Elites e Afixos
+  - [`delivered/12_03_EXPANSION_META_PROGRESSION.md`](./delivered/12_03_EXPANSION_META_PROGRESSION.md) — Meta-Progressão e Economia
+  - [`delivered/12_04_EXPANSION_UX_POLISH.md`](./delivered/12_04_EXPANSION_UX_POLISH.md) — UX Polish e Comparativo de Equipamentos
+  - [`delivered/12_05_EXPANSION_AUDIO_SOUNDTRACK.md`](./delivered/12_05_EXPANSION_AUDIO_SOUNDTRACK.md) — Trilha Sonora Procedural 16-Bit
+- **Imersão, Campanha & Plataformas (Specs 13-17, 19-22):**
+  - [`delivered/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md`](./delivered/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md) — Safe House & Campanha ARPG
+  - [`delivered/14_IMMERSION_AND_GAME_FEEL.md`](./delivered/14_IMMERSION_AND_GAME_FEEL.md) — Imersão & Game Feel
+  - [`delivered/15_PWA_AND_OFFLINE_READY.md`](./delivered/15_PWA_AND_OFFLINE_READY.md) — PWA & Offline Engine
+  - [`delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md`](./delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md) — Evolução Gráfica, Terreno 2.5D & UI Adaptativa
+  - [`delivered/17_IN_MEDIA_RES_ONBOARDING_AND_COMBAT_FLOW.md`](./delivered/17_IN_MEDIA_RES_ONBOARDING_AND_COMBAT_FLOW.md) — Onboarding In Media Res
+  - [`delivered/19_RELICS_AND_ARTIFACTS_SYSTEM.md`](./delivered/19_RELICS_AND_ARTIFACTS_SYSTEM.md) — Sistema de Relíquias e Artefatos Passivos
+  - [`delivered/20_ADVANCED_PARTICLES_SYSTEM.md`](./delivered/20_ADVANCED_PARTICLES_SYSTEM.md) — Sistema de Partículas Avançadas
+  - [`delivered/21_ACHIEVEMENTS_SYSTEM.md`](./delivered/21_ACHIEVEMENTS_SYSTEM.md) — Sistema de Conquistas Góticas
+  - [`delivered/22_DASH_EVASION_MECHANIC.md`](./delivered/22_DASH_EVASION_MECHANIC.md) — Mecânica de Dash/Esquiva
+- **Gráficos Avançados & Áudio (Eixos Spec 23, 24 & Controles 26, 27):**
+  - [`delivered/23_01_POSTFX_GPU_SHADERS.md`](./delivered/23_01_POSTFX_GPU_SHADERS.md) — Pós-Processamento GPU
+  - [`delivered/23_02_PROCEDURAL_NORMAL_MAPS.md`](./delivered/23_02_PROCEDURAL_NORMAL_MAPS.md) — Normal Maps Procedurais
+  - [`delivered/23_03_LIGHT2D_DYNAMIC_LIGHTING.md`](./delivered/23_03_LIGHT2D_DYNAMIC_LIGHTING.md) — Iluminação Dinâmica 2D Light2D
+  - [`delivered/24_01_GRAPHICS_AUDIO_QUICKWINS.md`](./delivered/24_01_GRAPHICS_AUDIO_QUICKWINS.md) — Quick Wins Visuais & Auditivos
+  - [`delivered/24_02_PROCEDURAL_ANIMATIONS_RAGDOLL_GIBS.md`](./delivered/24_02_PROCEDURAL_ANIMATIONS_RAGDOLL_GIBS.md) — Animações 8-Direcionais & Ragdoll Gibs
+  - [`delivered/24_03_STATUS_EFFECTS_SHADOWS_REFLECTIONS.md`](./delivered/24_03_STATUS_EFFECTS_SHADOWS_REFLECTIONS.md) — Shaders de Status, Sombras 2.5D e Reflexos
+  - [`delivered/26_RECORDS_DISPLAY.md`](./delivered/26_RECORDS_DISPLAY.md) — Exibição de Recordes
+  - [`delivered/27_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md`](./delivered/27_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md) — Joystick Virtual Nativo Phaser
 
 ---
 
