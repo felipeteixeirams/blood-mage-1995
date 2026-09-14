@@ -92,6 +92,7 @@ describe('localStorage persistence', () => {
         virtualStickScale: 'large' as const,
         leftHandedMode: true,
         floatingStick: true,
+        contentIntensity: 'reduced' as const,
       };
       saveSettings(custom);
       expect(loadSettings()).toEqual(custom);

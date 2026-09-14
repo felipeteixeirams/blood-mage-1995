@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BloodSplatterSystem, DecalConfig } from './BloodSplatterSystem';
+import { useGameStore } from '../../store/gameStore';
 
 describe('BloodSplatterSystem', () => {
   let mockScene: any;
@@ -153,6 +154,35 @@ describe('BloodSplatterSystem', () => {
     expect(createdImages.length).toBeGreaterThanOrEqual(6);
     expect(reflectionZones.length).toBe(1);
     expect(reflectionZones[0].type).toBe('blood');
+  });
+
+  it('creates simplified reduced blood pool without gib chunks or arterial spray when contentIntensity is reduced', () => {
+    useGameStore.setState({
+      settings: {
+        ...useGameStore.getState().settings,
+        contentIntensity: 'reduced',
+      },
+    });
+
+    const system = new BloodSplatterSystem(mockScene);
+    system.addDeathBlood({
+      x: 300,
+      y: 400,
+      monsterId: 'cultist_zealot',
+      dismembermentType: 'total_destruction',
+      impactAngle: 0,
+    });
+
+    // Only 1 simple blood pool stain created in reduced mode
+    expect(createdImages.length).toBe(1);
+    expect(createdImages[0].alpha).toBe(0.6);
+
+    useGameStore.setState({
+      settings: {
+        ...useGameStore.getState().settings,
+        contentIntensity: 'full',
+      },
+    });
   });
 
   it('creates partial_dismemberment death blood with medium pool and arterial spray', () => {

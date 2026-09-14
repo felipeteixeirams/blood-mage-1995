@@ -3,6 +3,7 @@ import { MonsterConfig, SpellConfig, DismembermentResult, DismembermentType } fr
 import spellsData from '../../data/spells.json';
 import { soundEngine } from '../../utils/soundEngine';
 import { CombatFeel } from './CombatFeel';
+import { useGameStore } from '../../store/gameStore';
 
 const typedSpellsData = spellsData as Record<string, SpellConfig>;
 
@@ -117,6 +118,11 @@ export class DismembermentSystem {
 
     const { x, y, texture, scaleX, scaleY, config, bloodEmitter } = enemy;
     const isBoss = config.bodyType === 'boss' || config.behavior === 'boss';
+
+    const contentIntensity = useGameStore.getState().settings.contentIntensity ?? 'full';
+    if (contentIntensity === 'reduced' && (result.type === 'total_destruction' || result.type === 'partial_dismemberment')) {
+      result = { ...result, type: 'normal_collapse' };
+    }
 
     if (result.type === 'total_destruction') {
       // 1. Audio & Haptics

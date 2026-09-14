@@ -204,6 +204,7 @@ export const defaultSettings: GameSettings = {
   lowPerformanceParticles: false,
   highContrastDamageTexts: false,
   postProcessingEnabled: true,
+  contentIntensity: 'full',
 };
 
 // Schema for Settings validation
@@ -231,6 +232,7 @@ const SettingsSchema = z.object({
   lowPerformanceParticles: z.boolean().catch(false),
   highContrastDamageTexts: z.boolean().catch(false),
   postProcessingEnabled: z.boolean().catch(true),
+  contentIntensity: z.enum(['full', 'reduced']).catch('full').optional(),
   hudLayout: z.record(z.object({
     x: z.number(),
     y: z.number(),
