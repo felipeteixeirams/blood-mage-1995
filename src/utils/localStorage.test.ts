@@ -8,6 +8,9 @@ import {
   saveBloodCrystals,
   loadTalentLevels,
   saveTalentLevels,
+  loadPrestigeData,
+  savePrestigeData,
+  defaultPrestigeData,
   loadOnboarding,
   saveOnboarding,
   loadDeathState,
@@ -22,8 +25,13 @@ import {
   saveAchievements,
   loadCodexState,
   saveCodexState,
+  defaultCodexState,
+  loadRunStats,
+  saveRunStats,
   loadCampaignState,
   saveCampaignState,
+  loadAchievementProgress,
+  saveAchievementProgress,
   defaultSettings,
   defaultHighScores,
   defaultCampaignState,
@@ -314,6 +322,97 @@ describe('localStorage persistence', () => {
       const raw = localStorage.getItem('bloodmage_1995_campaign_state');
       expect(raw).not.toContain('activeDialogueTree');
       expect(raw).not.toContain('activeDialogueNodeId');
+    });
+  });
+
+  describe('Prestige Persistence', () => {
+    it('returns default prestige data when nothing is stored', () => {
+      expect(loadPrestigeData()).toEqual(defaultPrestigeData);
+    });
+
+    it('round-trips prestige data', () => {
+      const data = {
+        ...defaultPrestigeData,
+        level: 2,
+        unspentSealPoints: 1,
+        seals: { ...defaultPrestigeData.seals, carnage: 1 },
+      };
+      savePrestigeData(data);
+      expect(loadPrestigeData()).toEqual(data);
+    });
+
+    it('falls back to default on corrupted JSON', () => {
+      localStorage.setItem('bloodmage_1995_prestige', '{invalid_json}');
+      expect(loadPrestigeData()).toEqual(defaultPrestigeData);
+    });
+  });
+
+  describe('Codex State Persistence', () => {
+    it('returns default codex state when nothing is stored', () => {
+      expect(loadCodexState()).toEqual(defaultCodexState);
+    });
+
+    it('round-trips codex state', () => {
+      const state = {
+        enemyKills: { skeleton_warrior: 10 },
+        unlockedEntries: ['lore_origem_hemomancia', 'enemy_skeleton_warrior'],
+        claimedMilestones: { skeleton_warrior: [10] },
+      };
+      saveCodexState(state);
+      expect(loadCodexState()).toEqual(state);
+    });
+  });
+
+  describe('Run Stats Persistence', () => {
+    it('returns empty run stats when nothing is stored', () => {
+      const loaded = loadRunStats();
+      expect(loaded.kills_total).toBe(0);
+      expect(loaded.floor_depth_max).toBe(0);
+    });
+
+    it('round-trips run stats', () => {
+      const stats = {
+        bloodless_floor: 1,
+        kills_total: 50,
+        kills_gargoyle: 2,
+        speedrun_f3: 120,
+        deaths_total: 5,
+        hp_healed_magic: 300,
+        dismemberments_total: 12,
+        mana_orbs_run: 25,
+        crystals_hoarded: 100,
+        survival_time_run: 600,
+        floor_depth_max: 3,
+        spells_unlocked_total: 4,
+        knockouts_total: 0,
+      };
+      saveRunStats(stats);
+      expect(loadRunStats()).toEqual(stats);
+    });
+  });
+
+  describe('Achievement Progress Persistence (AchievementSystem)', () => {
+    it('returns empty object when nothing is stored', () => {
+      expect(loadAchievementProgress()).toEqual({});
+    });
+
+    it('round-trips achievement progress records', () => {
+      const progress = {
+        first_blood: { id: 'first_blood', unlockedAt: 1000, progress: 100, complete: true },
+      };
+      saveAchievementProgress(progress);
+      expect(loadAchievementProgress()).toEqual(progress);
+    });
+
+    it('migrates legacy achievement progress key if present', () => {
+      const legacyData = {
+        first_blood: { id: 'first_blood', unlockedAt: 1000, progress: 100, complete: true },
+      };
+      localStorage.setItem('achievements_progress', JSON.stringify(legacyData));
+      const loaded = loadAchievementProgress();
+      expect(loaded).toEqual(legacyData);
+      expect(localStorage.getItem('achievements_progress')).toBeNull();
+      expect(localStorage.getItem('bloodmage_1995_achievements_progress')).not.toBeNull();
     });
   });
 });
