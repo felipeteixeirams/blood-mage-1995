@@ -20,6 +20,10 @@ import {
   saveEquippedRelicIds,
   loadAchievements,
   saveAchievements,
+  loadAchievementProgress,
+  saveAchievementProgress,
+  loadRunStats,
+  saveRunStats,
   loadCodexState,
   saveCodexState,
   loadCampaignState,
@@ -256,6 +260,71 @@ describe('localStorage persistence', () => {
       saveEquippedRelicIds(['selo_hemorragico', 'olho_de_carmim']);
       const loaded = loadEquippedRelicIds();
       expect(loaded).toEqual(['selo_hemorragico', 'olho_de_carmim']);
+    });
+  });
+
+  describe('Achievement Progress & Legacy Migration', () => {
+    it('returns empty object when nothing is stored', () => {
+      expect(loadAchievementProgress()).toEqual({});
+    });
+
+    it('round-trips achievement progress records', () => {
+      const records = {
+        slayer_1: { id: 'slayer_1', unlockedAt: 12345678, progress: 100, complete: true },
+      };
+      saveAchievementProgress(records);
+      expect(loadAchievementProgress()).toEqual(records);
+    });
+
+    it('migrates legacy "achievements_progress" key when new key is absent', () => {
+      const legacyRecords = {
+        legacy_1: { id: 'legacy_1', unlockedAt: null, progress: 50, complete: false },
+      };
+      localStorage.setItem('achievements_progress', JSON.stringify(legacyRecords));
+
+      const loaded = loadAchievementProgress();
+      expect(loaded).toEqual(legacyRecords);
+      expect(localStorage.getItem('achievements_progress')).toBeNull();
+      expect(localStorage.getItem('bloodmage_1995_achievements_progress')).not.toBeNull();
+    });
+
+    it('handles corrupted JSON gracefully in achievement progress', () => {
+      localStorage.setItem('bloodmage_1995_achievements_progress', '{corrupted');
+      expect(loadAchievementProgress()).toEqual({});
+    });
+  });
+
+  describe('Run Stats Persistence', () => {
+    it('returns default zeroed run stats when nothing is stored', () => {
+      const stats = loadRunStats();
+      expect(stats.kills_total).toBe(0);
+      expect(stats.dismemberments_total).toBe(0);
+    });
+
+    it('round-trips valid run stats', () => {
+      const customStats = {
+        bloodless_floor: 1,
+        kills_total: 42,
+        kills_gargoyle: 3,
+        speedrun_f3: 120,
+        deaths_total: 2,
+        hp_healed_magic: 500,
+        dismemberments_total: 15,
+        mana_orbs_run: 8,
+        crystals_hoarded: 250,
+        survival_time_run: 600,
+        floor_depth_max: 4,
+        spells_unlocked_total: 3,
+        knockouts_total: 0,
+      };
+      saveRunStats(customStats);
+      expect(loadRunStats()).toEqual(customStats);
+    });
+
+    it('heals corrupted run stats JSON back to defaults', () => {
+      localStorage.setItem('bloodmage_1995_run_stats', 'invalid-json');
+      const stats = loadRunStats();
+      expect(stats.kills_total).toBe(0);
     });
   });
 
