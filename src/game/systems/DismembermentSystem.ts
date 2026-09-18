@@ -391,11 +391,12 @@ export class DismembermentSystem {
     if (!scene || !scene.add) return;
 
     const corpse = scene.add.image(x, y + 6, textureKey);
-    corpse.setDepth(2);
-    corpse.setScale(scaleX * 0.9, scaleY * 0.7);
-    corpse.setAngle(90 + (Math.random() - 0.5) * 30);
-    corpse.setTint(0x551111); // Dark coagulated gore tint
-    corpse.setAlpha(0.85);
+    if (!corpse) return;
+    if (typeof corpse.setDepth === 'function') corpse.setDepth(2);
+    if (typeof corpse.setScale === 'function') corpse.setScale(scaleX * 0.9, scaleY * 0.7);
+    if (typeof corpse.setAngle === 'function') corpse.setAngle(90 + (Math.random() - 0.5) * 30);
+    if (typeof corpse.setTint === 'function') corpse.setTint(0x551111); // Dark coagulated gore tint
+    if (typeof corpse.setAlpha === 'function') corpse.setAlpha(0.85);
 
     if (scene.tweens) {
       scene.tweens.add({
@@ -424,11 +425,12 @@ export class DismembermentSystem {
     if (!scene || !scene.add) return;
 
     const corpse = scene.add.image(x, y + 6, textureKey);
-    corpse.setDepth(2);
-    corpse.setScale(scaleX, scaleY);
-    corpse.setAngle(90);
-    corpse.setTint(0x444444);
-    corpse.setAlpha(0.7);
+    if (!corpse) return;
+    if (typeof corpse.setDepth === 'function') corpse.setDepth(2);
+    if (typeof corpse.setScale === 'function') corpse.setScale(scaleX, scaleY);
+    if (typeof corpse.setAngle === 'function') corpse.setAngle(90);
+    if (typeof corpse.setTint === 'function') corpse.setTint(0x444444);
+    if (typeof corpse.setAlpha === 'function') corpse.setAlpha(0.7);
 
     if (scene.tweens) {
       scene.tweens.add({

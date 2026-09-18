@@ -115,6 +115,8 @@ describe('DismembermentSystem - 3-Factor Gore Logic', () => {
           setAlpha: () => {},
           setRotation: () => {},
           setPosition: () => {},
+          setAngle: () => {},
+          setTint: () => {},
           active: true,
         }),
       },

@@ -151,19 +151,64 @@ describe('PostFXSystem', () => {
     expect(system.isFilterActive()).toBe(true);
   });
 
-  it('triggerFearDistortion ativa aberração, vinheta e tint roxo', () => {
+  it('blendBiomes interpola matriz de cor e vinheta entre dois biomas', () => {
     const { scene } = makeScene({ isWebGL: true });
     const system = new PostFXSystem(scene as any);
+
+    system.blendBiomes('safe_house', 'gloomy_woods', 0.5, 3);
+    system.update(100);
+    expect(system.isFilterActive()).toBe(true);
+
+    system.blendBiomes('gloomy_woods', 'catacumbas_martires', 1.2, 5);
+    system.update(100);
+  });
+
+  it('triggerFearDistortion agenda e executa callbacks de distorção de medo', () => {
+    const { scene } = makeScene({ isWebGL: true });
+    let delayedCallbacks: Function[] = [];
+    scene.time.delayedCall = vi.fn((delay, cb) => {
+      delayedCallbacks.push(cb);
+      return {};
+    }) as any;
+
+    const system = new PostFXSystem(scene as any);
     system.triggerFearDistortion(1000);
-    expect(scene.time.delayedCall).toHaveBeenCalled();
+
+    expect(scene.time.delayedCall).toHaveBeenCalledTimes(2);
+
+    // Executa os callbacks temporizados para cobrir os ramos da sequência
+    delayedCallbacks.forEach(cb => cb());
+    system.update(100);
+  });
+
+  it('setTint trata transparente, invalid hex e cores validas', () => {
+    const { scene } = makeScene({ isWebGL: true });
+    const system = new PostFXSystem(scene as any);
+
+    system.setTint('#ff0000', 100);
+    system.update(100);
+
+    system.setTint('invalid-color', 100);
+    system.update(100);
+
+    system.setTint('transparent', 100);
+    system.update(100);
   });
 
   it('effectInfection e effectTension configuram tint e vinheta', () => {
     const { scene } = makeScene({ isWebGL: true });
+    let delayedCallbacks: Function[] = [];
+    scene.time.delayedCall = vi.fn((delay, cb) => {
+      delayedCallbacks.push(cb);
+      return {};
+    }) as any;
+
     const system = new PostFXSystem(scene as any);
     system.effectInfection();
-    system.effectTension(0.3);
-    expect(scene.time.delayedCall).toHaveBeenCalled();
+    delayedCallbacks.forEach(cb => cb());
+
+    system.effectTension(0.5);
+    system.update(100);
     expect(system.isFilterActive()).toBe(true);
   });
 

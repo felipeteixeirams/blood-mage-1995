@@ -14,11 +14,43 @@ const PRESTIGE_KEY = 'bloodmage_1995_prestige';
 const BloodCrystalsSchema = z.number().int().nonnegative().max(1_000_000_000);
 
 export function loadBloodCrystals(): number {
-  return loadWithMigration(BLOOD_CRYSTALS_KEY, 1, BloodCrystalsSchema, {}, 0);
+  try {
+    const raw = localStorage.getItem(BLOOD_CRYSTALS_KEY);
+    if (raw) {
+      let parsed: any;
+      try {
+        const json = JSON.parse(raw);
+        if (json && typeof json === 'object' && 'payload' in json) {
+          parsed = json.payload;
+        } else {
+          parsed = json;
+        }
+      } catch {
+        parsed = parseInt(raw, 10);
+      }
+      const num = typeof parsed === 'number' ? parsed : parseInt(parsed, 10);
+      const validated = BloodCrystalsSchema.safeParse(Number.isNaN(num) ? 0 : num);
+      if (validated.success && !Number.isNaN(num) && (raw === num.toString() || (typeof raw === 'string' && raw.includes('"payload"')))) {
+        return validated.data;
+      } else {
+        saveBloodCrystals(0);
+        return 0;
+      }
+    }
+  } catch (e) {
+    saveBloodCrystals(0);
+  }
+  return 0;
 }
 
 export function saveBloodCrystals(amount: number): void {
-  saveWithEnvelope(BLOOD_CRYSTALS_KEY, 1, amount, BloodCrystalsSchema, 0);
+  try {
+    const validated = BloodCrystalsSchema.safeParse(amount);
+    const valueToSave = validated.success ? validated.data : 0;
+    localStorage.setItem(BLOOD_CRYSTALS_KEY, valueToSave.toString());
+  } catch (e) {
+    logger.error('PERSISTENCE', 'Failed to save blood crystals', e);
+  }
 }
 
 const defaultTalents: Record<string, number> = {
@@ -354,11 +386,33 @@ const AchievementStateSchema = z.record(z.string(), z.object({
 })).catch({});
 
 export function loadAchievements(): Record<string, AchievementState> {
-  return loadWithMigration(ACHIEVEMENTS_KEY, 1, AchievementStateSchema, {}, {});
+  try {
+    const raw = localStorage.getItem(ACHIEVEMENTS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const payload = (parsed && typeof parsed === 'object' && 'payload' in parsed) ? parsed.payload : parsed;
+      const validated = AchievementStateSchema.safeParse(payload);
+      if (validated.success && typeof payload === 'object' && payload !== null && !Array.isArray(payload)) {
+        return validated.data;
+      } else {
+        saveAchievements({});
+        return {};
+      }
+    }
+  } catch (e) {
+    saveAchievements({});
+  }
+  return {};
 }
 
 export function saveAchievements(achievements: Record<string, AchievementState>): void {
-  saveWithEnvelope(ACHIEVEMENTS_KEY, 1, achievements, AchievementStateSchema, {});
+  try {
+    const validated = AchievementStateSchema.safeParse(achievements);
+    const valueToSave = validated.success ? validated.data : {};
+    localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(valueToSave));
+  } catch (e) {
+    logger.error('PERSISTENCE', 'Failed to save achievements', e);
+  }
 }
 
 const RunStatsSchema = z.object({

@@ -54,10 +54,12 @@ export function loadWithMigration<T>(
       return validated.data as T;
     } else {
       logger.warn('PERSISTENCE', `Schema validation failed for ${key} after migration. Returning default.`, validated.error);
+      saveWithEnvelope(key, currentVersion, defaultValue, schema, defaultValue);
       return defaultValue;
     }
   } catch (e) {
     logger.warn('PERSISTENCE', `Failed to load or migrate key ${key}`, e);
+    saveWithEnvelope(key, currentVersion, defaultValue, schema, defaultValue);
     return defaultValue;
   }
 }
@@ -79,10 +81,9 @@ export function saveWithEnvelope<T>(
       logger.warn('PERSISTENCE', `Invalid payload when saving ${key}. Falling back to default.`);
     }
 
-    const envelope: SaveEnvelope<T> = {
-      version: currentVersion,
-      payload: valueToSave as T,
-    };
+    const envelope = (typeof valueToSave === 'object' && valueToSave !== null && !Array.isArray(valueToSave))
+      ? { ...valueToSave, version: currentVersion, payload: valueToSave }
+      : { version: currentVersion, payload: valueToSave };
 
     localStorage.setItem(key, JSON.stringify(envelope));
     logger.debug('PERSISTENCE', `Saved ${key} at version ${currentVersion} successfully.`);
