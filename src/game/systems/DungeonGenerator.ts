@@ -73,7 +73,7 @@ export class DungeonGenerator {
     return this.heightGenerator.isTraversable(fromX, fromY, toX, toY, isWorldCoords);
   }
 
-  public generate(mapW: number, mapH: number, biome: BiomeType = 'fosso_chagas'): RoomData[] {
+  public generate(mapW: number, mapH: number, biome: BiomeType = 'fosso_chagas', _offsetX: number = 0, _offsetY: number = 0): RoomData[] {
     // gloomy_woods usa ProceduralForestGenerator (floresta orgânica por ruído,
     // bugs de sobreposição/ruído "sal-e-pimenta" já corrigidos e validados ao
     // vivo). Decisão pendente sobre migrar pro PathDrivenGenerator de
