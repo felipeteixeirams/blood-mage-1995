@@ -88,8 +88,8 @@ export const enUS: TranslationDictionary = {
     floatingStick: 'Floating Joystick',
     leftHandedMode: 'Left-Handed Mode',
     contentIntensity: 'Content Intensity',
-    contentFull: 'Full',
-    contentReduced: 'Reduced',
+    contentIntensityFull: 'GORE: FULL',
+    contentIntensityReduced: 'GORE: REDUCED',
     resetDefaults: 'RESET DEFAULTS',
   },
 

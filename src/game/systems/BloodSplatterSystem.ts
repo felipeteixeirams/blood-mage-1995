@@ -210,6 +210,8 @@ export class BloodSplatterSystem {
     const isAbomination = monsterId === 'gore_abomination';
     const isSpecter = monsterId.includes('specter') || monsterId.includes('wraith');
 
+    const isReduced = useGameStore.getState().settings?.contentIntensity === 'reduced';
+
     // Paleta de cores do decal
     let bloodTint: number | undefined;
     let dryTint: number | undefined;
@@ -223,6 +225,9 @@ export class BloodSplatterSystem {
     } else if (isAbomination) {
       bloodTint = 0x15803d;
       dryTint = 0x052e16;
+    } else if (isReduced) {
+      bloodTint = 0x2b0808;
+      dryTint = 0x140404;
     }
 
     if (isBone) {
@@ -319,24 +324,26 @@ export class BloodSplatterSystem {
         });
       }
 
-      // 3. Pedaços de vísceras / gore no chão
-      const goreCount = 3 + Math.floor(Math.random() * 3);
-      for (let i = 0; i < goreCount; i++) {
-        const gx = x + (Math.random() - 0.5) * 40;
-        const gy = y + (Math.random() - 0.5) * 32;
-        this.addDecal({
-          x: gx,
-          y: gy,
-          textureKey: 'gore_chunk_decal',
-          type: 'gore_chunk',
-          scaleX: (0.8 + Math.random() * 0.5) * scaleMultiplier,
-          scaleY: (0.8 + Math.random() * 0.5) * scaleMultiplier,
-          rotation: Math.random() * Math.PI * 2,
-          alpha: 0.9,
-          tint: bloodTint,
-          dryTint,
-          depth: 3,
-        });
+      // 3. Pedaços de vísceras / gore no chão (pulados no modo reduzido)
+      if (!isReduced) {
+        const goreCount = 3 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < goreCount; i++) {
+          const gx = x + (Math.random() - 0.5) * 40;
+          const gy = y + (Math.random() - 0.5) * 32;
+          this.addDecal({
+            x: gx,
+            y: gy,
+            textureKey: 'gore_chunk_decal',
+            type: 'gore_chunk',
+            scaleX: (0.8 + Math.random() * 0.5) * scaleMultiplier,
+            scaleY: (0.8 + Math.random() * 0.5) * scaleMultiplier,
+            rotation: Math.random() * Math.PI * 2,
+            alpha: 0.9,
+            tint: bloodTint,
+            dryTint,
+            depth: 3,
+          });
+        }
       }
 
       // 4. Registra zona líquida reflexiva se ReflectionSystem estiver ativo
@@ -384,20 +391,22 @@ export class BloodSplatterSystem {
         depth: 2,
       });
 
-      // 1 pedaço de gore
-      this.addDecal({
-        x: x + (Math.random() - 0.5) * 20,
-        y: y + (Math.random() - 0.5) * 16,
-        textureKey: 'gore_chunk_decal',
-        type: 'gore_chunk',
-        scaleX: 0.85 * scaleMultiplier,
-        scaleY: 0.85 * scaleMultiplier,
-        rotation: Math.random() * Math.PI * 2,
-        alpha: 0.85,
-        tint: bloodTint,
-        dryTint,
-        depth: 3,
-      });
+      // 1 pedaço de gore (pulado no modo reduzido)
+      if (!isReduced) {
+        this.addDecal({
+          x: x + (Math.random() - 0.5) * 20,
+          y: y + (Math.random() - 0.5) * 16,
+          textureKey: 'gore_chunk_decal',
+          type: 'gore_chunk',
+          scaleX: 0.85 * scaleMultiplier,
+          scaleY: 0.85 * scaleMultiplier,
+          rotation: Math.random() * Math.PI * 2,
+          alpha: 0.85,
+          tint: bloodTint,
+          dryTint,
+          depth: 3,
+        });
+      }
 
       const anyScene = this.scene as any;
       if (anyScene.reflectionSystem && anyScene.reflectionSystem.addLiquidZone) {
@@ -464,16 +473,18 @@ export class BloodSplatterSystem {
     if (!this.enabled) return null;
 
     const { x, y, textureKey, scaleX, scaleY, isAbomination, isMutilated } = params;
+    const isReduced = useGameStore.getState().settings?.contentIntensity === 'reduced';
+    const finalMutilated = isReduced ? false : isMutilated;
 
-    const corpseTint = isAbomination ? 0x1a4a1a : isMutilated ? 0x4a0a0a : 0x3a0a0a;
+    const corpseTint = isAbomination ? 0x1a4a1a : finalMutilated ? 0x4a0a0a : 0x3a0a0a;
 
     return this.addDecal({
       x,
       y: y + 4,
       textureKey,
       type: 'corpse',
-      scaleX: scaleX * (isMutilated ? 0.95 : 1.05),
-      scaleY: scaleY * (isMutilated ? 0.45 : 0.55),
+      scaleX: scaleX * (finalMutilated ? 0.95 : 1.05),
+      scaleY: scaleY * (finalMutilated ? 0.45 : 0.55),
       rotation: Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2,
       alpha: 0.9,
       tint: corpseTint,

@@ -91,7 +91,7 @@ describe('localStorage persistence', () => {
       expect(loadSettings()).toEqual(defaultSettings);
     });
 
-    it('round-trips settings including ergonomic options', () => {
+    it('round-trips settings including ergonomic options and content intensity', () => {
       const custom = {
         ...defaultSettings,
         sfxVolume: 0.2,
@@ -104,6 +104,12 @@ describe('localStorage persistence', () => {
       };
       saveSettings(custom);
       expect(loadSettings()).toEqual(custom);
+    });
+
+    it('sanitizes invalid contentIntensity value to full', () => {
+      localStorage.setItem('bloodmage_1995_settings', JSON.stringify({ ...defaultSettings, contentIntensity: 'extreme' }));
+      const loaded = loadSettings();
+      expect(loaded.contentIntensity).toBe('full');
     });
 
     it('sanitizes out-of-range volume to its default', () => {

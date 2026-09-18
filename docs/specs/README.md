@@ -33,7 +33,7 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, discovery, rejec
 > **Esta é também a fila que o Jules consome** (prompt de sessão em
 > `docs/architecture/08_JULES_SESSION_PROMPT.md`) — não existe mais uma
 > fila separada só pra ele; o antigo `backlog/16_FILA_AUTOMACAO_JULES.md`
-> foi aposentado em 2026-09-07 (ver [`backlog/_ARCHIVED_16_FILA_AUTOMACAO_JULES.md`](./backlog/_ARCHIVED_16_FILA_AUTOMACAO_JULES.md)).
+> foi aposentado em 2026-09-07 (ver `backlog/_ARCHIVED_16_FILA_AUTOMACAO_JULES.md`).
 >
 > **Só entram aqui specs sem impedimento ativo** (triagem em 2026-09-07 — ver
 > "🚧 Bloqueados" logo abaixo para o que foi removido e por quê).
@@ -43,6 +43,8 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, discovery, rejec
 | 1 | [`backlog/08_GUIA_EVOLUCAO_COMERCIAL.md`](./backlog/08_GUIA_EVOLUCAO_COMERCIAL.md) | backlog | 🔴 high | 🟢 low | Checklist de requisitos comerciais (Steam/Play Store/itch.io) |
 | 4 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟡 medium | 🟡 medium | Tier A completo — Tiers B/C pendentes |
 | 5 | [`backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md) | backlog | 🟡 medium | 🟡 medium | draft |
+| 6 | [`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md) | backlog | 🟡 medium | 🟡 medium | backlog |
+| 7 | [`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) | backlog | 🟡 medium | 🟡 medium | partial |
 | 11 | [`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md) | backlog | 🟢 low | 🟡 medium | Superada em parte — só resta a pergunta menor de variedade interna em `gloomy_woods` |
 
 > *Nota:* `in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md` saiu desta fila em
@@ -98,9 +100,7 @@ docs/specs/
 | Spec / Documento | Fases / Escopo Concluído | Fases / Itens Pendentes (destravados) |
 |---|---|---|
 | **[`in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md`](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md)** | • Gameplay loop completo (Sangramento/Veneno/Infecção aplicados por monstro, dreno de HP, cura via consumível comprável no Alquimista)<br>• Cura via NPC Clérigo (PR #93)<br>• Ícones customizados SVG (PR #93) | • *(nenhum item de código — só QA manual e tuning de valores, dependentes do Felipe jogar)* |
-| **[`in-progress/11_ATMOSFERA_E_TENSAO.md`](./in-progress/11_ATMOSFERA_E_TENSAO.md)** | • Indicadores de ameaça fora de tela (chevrons direcionais por estado de IA)<br>• Vinheta pulsante dinâmica por nível de perigo (baixo, médio, alto/boss)<br>• Chamado de reforços no estado flee | • *(aguardando revisão do PR)* |
-| **[`in-progress/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./in-progress/12_PROGRESSAO_E_QUESTS_CONTRATOS.md)** | • Contratos (micro-quests) em tempo real, Modificadores de Run e Quests de Campanha<br>• Ramificação Mutuamente Exclusiva na Árvore de Talentos<br>• Evolução de Feitiço / Skill Mutation (Nível 5 e 10) | • *(aguardando revisão do PR)* |
-| **[`in-progress/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./in-progress/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** | • Toggle de intensidade de conteúdo (`contentIntensity`: `'full'` \| `'reduced'`) em `localStorage.ts`, `SettingsScene.ts` e i18n<br>• Modos de desacoplamento e mitigação de gore visual em `DismembermentSystem.ts` e `BloodSplatterSystem.ts` | • *(aguardando revisão do PR)* |
+| **[`in-progress/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./in-progress/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** | • Alternância de intensidade de conteúdo visual (gore e desmembramento) | • Implementação de toggle de configuração e integração no sistema de gore |
 
 > *Nota (2026-09-06):* `in-progress/06_EIXO_A_GRAFICOS_AVANCADOS.md` e
 > `in-progress/10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md` foram
@@ -137,51 +137,6 @@ docs/specs/
 | **[`delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md`](./delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md)** | **ÍNDICE MESTRE — Eixo A: Gráficos Avançados:** Iluminação GPU real (Light2D), pós-processamento WebGL (PostFXSystem) e normal maps procedurais | 2026-08-31 | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md`](./delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md)** | **ÍNDICE MESTRE — Evolução Gráfica & Auditiva:** Quick wins (Medo, Cascata de Luz, Tinnitus), animações 8-direcionais, ragdoll/gibs e shaders de status/sombra/reflexo | 2026-08-31 | Vitest + E2E (`pnpm verify`) |
 
-### 📜 Catálogo Geral de Specs Entregues (Histórico de Produção)
-
-> Índice de referência direta para todas as especificações e satélites entregues em `delivered/`:
-
-- **Sistemas Base & Fases:**
-  - [`delivered/01_FASE1_INCONSCIENCIA.md`](./delivered/01_FASE1_INCONSCIENCIA.md) — Sistema de Inconsciência
-  - [`delivered/02_FASE2_TELA_DE_MORTE_E_GORE.md`](./delivered/02_FASE2_TELA_DE_MORTE_E_GORE.md) — Tela de Morte, Resgate de Cadáver e Gore
-  - [`delivered/05_FASE5_POLIMENTO_PRODUCAO_COMPLETO.md`](./delivered/05_FASE5_POLIMENTO_PRODUCAO_COMPLETO.md) — Polimento de Produção Completo
-- **Visual Polish & VFX (Eixo Spec 11):**
-  - [`delivered/11_VISUAL_POLISH_FRONTS.md`](./delivered/11_VISUAL_POLISH_FRONTS.md) — ÍNDICE MESTRE: Visual Polish & VFX
-  - [`delivered/11_01_VISUAL_DUNGEON_GENERATION.md`](./delivered/11_01_VISUAL_DUNGEON_GENERATION.md) — Geração Orgânica de Dungeon
-  - [`delivered/11_02_VISUAL_ATMOSFERA_NEBLINA.md`](./delivered/11_02_VISUAL_ATMOSFERA_NEBLINA.md) — Atmosfera e Névoa Volumétrica
-  - [`delivered/11_03_VISUAL_DECALS_SANGUE.md`](./delivered/11_03_VISUAL_DECALS_SANGUE.md) — Decals de Sangue e Reações de Mundo
-  - [`delivered/11_04_VISUAL_GORE_HIT_STOP.md`](./delivered/11_04_VISUAL_GORE_HIT_STOP.md) — Gore, Hit-Stop e Character FX
-  - [`delivered/11_05_VISUAL_ILUMINACAO_BLOOM.md`](./delivered/11_05_VISUAL_ILUMINACAO_BLOOM.md) — Iluminação 2D e Bloom FX
-  - [`delivered/11_06_VISUAL_AUDIO_PITCH_DRONES.md`](./delivered/11_06_VISUAL_AUDIO_PITCH_DRONES.md) — Pitch Shifting e Drones de Áudio
-  - [`delivered/11_07_VISUAL_PALETTE_SWAP.md`](./delivered/11_07_VISUAL_PALETTE_SWAP.md) — Palette Swap Procedural e Cosméticos
-  - [`delivered/11_08_VISUAL_NPCS_INTERATIVIDADE.md`](./delivered/11_08_VISUAL_NPCS_INTERATIVIDADE.md) — NPCs e Interatividade de Mundo
-- **Expansão de Gameplay & Rejogabilidade (Eixo Spec 12):**
-  - [`delivered/12_EXPANSION_FRONTS.md`](./delivered/12_EXPANSION_FRONTS.md) — ÍNDICE MESTRE: Expansion & Replayability
-  - [`delivered/12_01_EXPANSION_TRAPS_INTERACTIONS.md`](./delivered/12_01_EXPANSION_TRAPS_INTERACTIONS.md) — Armadilhas e Interações Ambientais
-  - [`delivered/12_02_EXPANSION_AI_ELITE_MOBS.md`](./delivered/12_02_EXPANSION_AI_ELITE_MOBS.md) — IA de Mobs Elites e Afixos
-  - [`delivered/12_03_EXPANSION_META_PROGRESSION.md`](./delivered/12_03_EXPANSION_META_PROGRESSION.md) — Meta-Progressão e Economia
-  - [`delivered/12_04_EXPANSION_UX_POLISH.md`](./delivered/12_04_EXPANSION_UX_POLISH.md) — UX Polish e Comparativo de Equipamentos
-  - [`delivered/12_05_EXPANSION_AUDIO_SOUNDTRACK.md`](./delivered/12_05_EXPANSION_AUDIO_SOUNDTRACK.md) — Trilha Sonora Procedural 16-Bit
-- **Imersão, Campanha & Plataformas (Specs 13-17, 19-22):**
-  - [`delivered/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md`](./delivered/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md) — Safe House & Campanha ARPG
-  - [`delivered/14_IMMERSION_AND_GAME_FEEL.md`](./delivered/14_IMMERSION_AND_GAME_FEEL.md) — Imersão & Game Feel
-  - [`delivered/15_PWA_AND_OFFLINE_READY.md`](./delivered/15_PWA_AND_OFFLINE_READY.md) — PWA & Offline Engine
-  - [`delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md`](./delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md) — Evolução Gráfica, Terreno 2.5D & UI Adaptativa
-  - [`delivered/17_IN_MEDIA_RES_ONBOARDING_AND_COMBAT_FLOW.md`](./delivered/17_IN_MEDIA_RES_ONBOARDING_AND_COMBAT_FLOW.md) — Onboarding In Media Res
-  - [`delivered/19_RELICS_AND_ARTIFACTS_SYSTEM.md`](./delivered/19_RELICS_AND_ARTIFACTS_SYSTEM.md) — Sistema de Relíquias e Artefatos Passivos
-  - [`delivered/20_ADVANCED_PARTICLES_SYSTEM.md`](./delivered/20_ADVANCED_PARTICLES_SYSTEM.md) — Sistema de Partículas Avançadas
-  - [`delivered/21_ACHIEVEMENTS_SYSTEM.md`](./delivered/21_ACHIEVEMENTS_SYSTEM.md) — Sistema de Conquistas Góticas
-  - [`delivered/22_DASH_EVASION_MECHANIC.md`](./delivered/22_DASH_EVASION_MECHANIC.md) — Mecânica de Dash/Esquiva
-- **Gráficos Avançados & Áudio (Eixos Spec 23, 24 & Controles 26, 27):**
-  - [`delivered/23_01_POSTFX_GPU_SHADERS.md`](./delivered/23_01_POSTFX_GPU_SHADERS.md) — Pós-Processamento GPU
-  - [`delivered/23_02_PROCEDURAL_NORMAL_MAPS.md`](./delivered/23_02_PROCEDURAL_NORMAL_MAPS.md) — Normal Maps Procedurais
-  - [`delivered/23_03_LIGHT2D_DYNAMIC_LIGHTING.md`](./delivered/23_03_LIGHT2D_DYNAMIC_LIGHTING.md) — Iluminação Dinâmica 2D Light2D
-  - [`delivered/24_01_GRAPHICS_AUDIO_QUICKWINS.md`](./delivered/24_01_GRAPHICS_AUDIO_QUICKWINS.md) — Quick Wins Visuais & Auditivos
-  - [`delivered/24_02_PROCEDURAL_ANIMATIONS_RAGDOLL_GIBS.md`](./delivered/24_02_PROCEDURAL_ANIMATIONS_RAGDOLL_GIBS.md) — Animações 8-Direcionais & Ragdoll Gibs
-  - [`delivered/24_03_STATUS_EFFECTS_SHADOWS_REFLECTIONS.md`](./delivered/24_03_STATUS_EFFECTS_SHADOWS_REFLECTIONS.md) — Shaders de Status, Sombras 2.5D e Reflexos
-  - [`delivered/26_RECORDS_DISPLAY.md`](./delivered/26_RECORDS_DISPLAY.md) — Exibição de Recordes
-  - [`delivered/27_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md`](./delivered/27_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md) — Joystick Virtual Nativo Phaser
-
 ---
 
 ## 🔵 Backlog (Propostas de Features Formais — 0% Desenvolvimento Iniciado)
@@ -196,10 +151,10 @@ docs/specs/
 | **[`backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md)** | *(era in-progress)* Living Tracking Spec de integração de sprites físicos — Fase 0 concluída | high | medium | **Sim** — orçamento de arte |
 | **[`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md)** | Referências estéticas e proposta de HUD estilo ARPG clássico (Tier A completo, Tiers B/C pendentes) | medium | medium | Não |
 | **[`backlog/09_PIXEL_LAB_PROMPT_GUIDE.md`](./backlog/09_PIXEL_LAB_PROMPT_GUIDE.md)** | *(era in-progress)* Guia de prompts PixelLab, usado durante produção de sprites | high | low | **Sim** — mesmo gate acima |
-| **[`in-progress/11_ATMOSFERA_E_TENSAO.md`](./in-progress/11_ATMOSFERA_E_TENSAO.md)** | *(era backlog)* Atmosfera, Tensão e Indicadores de Ameaça (Indicadores fora de tela, áudio espacial e vinheta de perigo) | medium | medium | Não |
+| **[`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md)** | Atmosfera, Tensão e Indicadores de Ameaça (Indicadores fora de tela, áudio espacial e iluminação) | medium | medium | Não |
+| **[`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md)** | Progressão, Micro-Quests e Evolução de Habilidades (Contratos, Modificadores e Talentos) *(Parcialmente Implementado)* | medium | medium | Não |
 | **[`backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md`](./backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md)** | Framework de Evolução de UI e Assets Externos Góticos (Híbrido 9-slice React & Web Audio) | high | high | **Sim** — mesmo gate acima (áudio/telemetria já entregues à parte) |
 | **[`backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md`](./backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md)** | Discovery Eixo B — Pipeline de Integração de Assets Externos e Spritesheets por Tiers | medium | medium | **Sim** — orçamento de arte |
-| **[`backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** | Toggle de Intensidade de Conteúdo — mitigação de classificação indicativa (gore visual configurável) | medium | medium | Não |
 | **[`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md)** | *(superada em parte, 2026-09-08)* `PathDrivenGenerator` pra `gloomy_woods` — escopo de conectividade entre biomas já resolvido pela abordagem escolhida em #25; resta só decidir se vale mais variedade interna na floresta | low | medium | Não |
 | **[`backlog/29_CLOUD_SAVE_FASE5.md`](./backlog/29_CLOUD_SAVE_FASE5.md)** | *(novo, extraído de `in-progress/05`)* Cloud Save automatizado (Firebase/Firestore) | medium | high | **Sim** — confirmação de Felipe pendente |
 

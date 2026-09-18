@@ -86,8 +86,8 @@ export const ptBR = {
     floatingStick: 'Joystick Flutuante',
     leftHandedMode: 'Modo Canhoto',
     contentIntensity: 'Intensidade de Conteúdo',
-    contentFull: 'Completo',
-    contentReduced: 'Reduzido',
+    contentIntensityFull: 'GORE: COMPLETO',
+    contentIntensityReduced: 'GORE: REDUZIDO',
     resetDefaults: 'RESTAURAR PADRÕES',
   },
 
