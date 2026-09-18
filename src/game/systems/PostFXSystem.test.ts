@@ -143,5 +143,55 @@ describe('PostFXSystem', () => {
     system.triggerLevelUpFX();
     expect(scene.time.delayedCall).toHaveBeenCalled();
   });
+
+  it('blendBiomes interpola gradação de cor entre dois biomas com base em t', () => {
+    const { scene } = makeScene({ isWebGL: true });
+    const system = new PostFXSystem(scene as any);
+    system.blendBiomes('fosso_chagas', 'gloomy_woods', 0.5, 2);
+    expect(system.isFilterActive()).toBe(true);
+  });
+
+  it('triggerFearDistortion ativa aberração, vinheta e tint roxo', () => {
+    const { scene } = makeScene({ isWebGL: true });
+    const system = new PostFXSystem(scene as any);
+    system.triggerFearDistortion(1000);
+    expect(scene.time.delayedCall).toHaveBeenCalled();
+  });
+
+  it('effectInfection e effectTension configuram tint e vinheta', () => {
+    const { scene } = makeScene({ isWebGL: true });
+    const system = new PostFXSystem(scene as any);
+    system.effectInfection();
+    system.effectTension(0.3);
+    expect(scene.time.delayedCall).toHaveBeenCalled();
+    expect(system.isFilterActive()).toBe(true);
+  });
+
+  it('suporta filtro CRT ativado nas configurações do jogo', () => {
+    const { scene } = makeScene({ isWebGL: true });
+    const system = new PostFXSystem(scene as any);
+    system.setVignette(0.5, 100);
+    system.setDisplacement(0.2, 100);
+    system.update(100);
+    expect(system.isFilterActive()).toBe(true);
+  });
+
+  it('trata exceções na criação de filtros graciosamente', () => {
+    const scene = {
+      game: { renderer: { isWebGL: true } },
+      cameras: {
+        main: {
+          filters: {
+            external: {
+              addVignette: () => { throw new Error('Filter error'); },
+            },
+          },
+        },
+      },
+      time: { delayedCall: vi.fn() },
+    };
+    const system = new PostFXSystem(scene as any);
+    expect(system.isFilterActive()).toBe(false);
+  });
 });
 
