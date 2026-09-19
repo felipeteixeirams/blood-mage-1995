@@ -43,7 +43,6 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, discovery, rejec
 | 1 | [`backlog/08_GUIA_EVOLUCAO_COMERCIAL.md`](./backlog/08_GUIA_EVOLUCAO_COMERCIAL.md) | backlog | 🔴 high | 🟢 low | Checklist de requisitos comerciais (Steam/Play Store/itch.io) |
 | 4 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟡 medium | 🟡 medium | Tier A completo — Tiers B/C pendentes |
 | 5 | [`backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md) | backlog | 🟡 medium | 🟡 medium | draft |
-| 7 | [`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md) | backlog | 🟡 medium | 🟡 medium | partial |
 | 11 | [`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md) | backlog | 🟢 low | 🟡 medium | Superada em parte — só resta a pergunta menor de variedade interna em `gloomy_woods` |
 
 > *Nota:* `in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md` saiu desta fila em
@@ -124,6 +123,7 @@ docs/specs/
 
 | Spec | Escopo Concluído | Entregue em | Verificação / Testes |
 |---|---|---|---|
+| **[`delivered/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./delivered/12_PROGRESSAO_E_QUESTS_CONTRATOS.md)** | **Progressão, Micro-Quests (Contratos) e Evolução de Habilidades:** Contratos dinâmicos, modificadores de desafio, ramificação mutuamente exclusiva de talentos e evolução de habilidades níveis 5/10 | 2026-09-19 | Vitest (`gameStore.test.ts`) |
 | **[`in-progress/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`](./in-progress/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md)** | **Modal UI de Prestígio (Blood Seal):** Componente React `PrestigeModal.tsx`, alocação de selos, seleção de dificuldade, confirmação de sacrifício rúnico e navegação gamepad | 2026-09-09 | Vitest (`PrestigeModal.test.tsx`) |
 | **[`delivered/31_NORMAL_MAP_TILE_DOOR.md`](./delivered/31_NORMAL_MAP_TILE_DOOR.md)** | **Normal Map Ausente na Textura `tile_door`:** Gerar e registrar normal map para `tile_door` via `addTextureWithNormalMap` permitindo iluminação Light2D nas portas | 2026-09-08 | Vitest (`textureGenerator.test.ts`) |
 | **[`delivered/30_DETERMINISMO_SEED_POISSON_DISK.md`](./delivered/30_DETERMINISMO_SEED_POISSON_DISK.md)** | **Determinismo por Seed no Espalhamento Poisson Disk:** Amostragem de vegetação e props 100% determinística por seed da instância de `HeightmapGenerator` | 2026-09-08 | Vitest (`HeightmapGenerator.test.ts`) |
@@ -152,7 +152,6 @@ docs/specs/
 | **[`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md)** | Referências estéticas e proposta de HUD estilo ARPG clássico (Tier A completo, Tiers B/C pendentes) | medium | medium | Não |
 | **[`backlog/09_PIXEL_LAB_PROMPT_GUIDE.md`](./backlog/09_PIXEL_LAB_PROMPT_GUIDE.md)** | *(era in-progress)* Guia de prompts PixelLab, usado durante produção de sprites | high | low | **Sim** — mesmo gate acima |
 | **[`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md)** | Atmosfera, Tensão e Indicadores de Ameaça (Indicadores fora de tela, áudio espacial e iluminação) | medium | medium | Não |
-| **[`backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md)** | Progressão, Micro-Quests e Evolução de Habilidades (Contratos, Modificadores e Talentos) *(Parcialmente Implementado)* | medium | medium | Não |
 | **[`backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md`](./backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md)** | Framework de Evolução de UI e Assets Externos Góticos (Híbrido 9-slice React & Web Audio) | high | high | **Sim** — mesmo gate acima (áudio/telemetria já entregues à parte) |
 | **[`backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md`](./backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md)** | Discovery Eixo B — Pipeline de Integração de Assets Externos e Spritesheets por Tiers | medium | medium | **Sim** — orçamento de arte |
 | **[`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md)** | *(superada em parte, 2026-09-08)* `PathDrivenGenerator` pra `gloomy_woods` — escopo de conectividade entre biomas já resolvido pela abordagem escolhida em #25; resta só decidir se vale mais variedade interna na floresta | low | medium | Não |

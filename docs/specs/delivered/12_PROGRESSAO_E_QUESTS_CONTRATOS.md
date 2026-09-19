@@ -3,9 +3,9 @@ agent_context: backend, game-designer, frontend
 target_module: src/store/gameStore.ts, src/data
 priority: medium
 criticality: medium
-status: in-progress
+status: delivered
 progress: complete
-last_updated: "2026-09-13"
+last_updated: "2026-09-19"
 tags:
   - progression
   - contracts
@@ -17,7 +17,7 @@ tags:
 
 # 📜 Spec 12: Progressão, Micro-Quests (Contratos) e Evolução de Habilidades
 
-> **Status:** 🟡 PARCIALMENTE IMPLEMENTADO
+> **Status:** 🟢 CONCLUÍDO E INTEGRADO (DELIVERED)
 > **Data:** Setembro de 2026
 > **Domínio:** Progressão Roguelite, Contratos por Run, Modificadores de Desafio e Árvore de Talentos.
 
@@ -68,5 +68,5 @@ Diferente da especificação inicial do projeto, uma parte significativa desta f
 ---
 
 ## 📊 Status & Esforço Estimado
-- **Status:** 🟡 PARCIALMENTE IMPLEMENTADO (Contratos e Modificadores 100% funcionais; Ramificação de Talentos e Evolução de Skills em Backlog)
-- **Esforço Estimado para Conclusão:** 2–3 dias de desenvolvimento.
+- **Status:** 🟢 100% IMPLEMENTADO (Contratos, Modificadores, Ramificação Mutuamente Exclusiva de Talentos e Evolução de Habilidades 100% integrados e testados)
+- **Esforço Estimado para Conclusão:** Concluído.

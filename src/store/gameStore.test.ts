@@ -87,8 +87,10 @@ describe('gameStore', () => {
       expect(useGameStore.getState().talentLevels.hemomancy_power).toBe(1);
     });
 
-    it('upgradeTalent blocks purchasing mutually exclusive talent nodes', () => {
-      useGameStore.getState().addBloodCrystals(200);
+    it('upgradeTalent blocks purchasing mutually exclusive talent nodes across all pairs', () => {
+      useGameStore.getState().addBloodCrystals(500);
+
+      // Pair 1: vampirismo_profundo vs execucoes_em_area
       const ok1 = useGameStore.getState().upgradeTalent('vampirismo_profundo', 35);
       expect(ok1).toBe(true);
       expect(useGameStore.getState().talentLevels.vampirismo_profundo).toBe(1);
@@ -96,6 +98,24 @@ describe('gameStore', () => {
       const ok2 = useGameStore.getState().upgradeTalent('execucoes_em_area', 35);
       expect(ok2).toBe(false);
       expect(useGameStore.getState().talentLevels.execucoes_em_area || 0).toBe(0);
+
+      // Pair 2: escudo_ossos_aprimorado vs aura_de_medo
+      const ok3 = useGameStore.getState().upgradeTalent('escudo_ossos_aprimorado', 40);
+      expect(ok3).toBe(true);
+      expect(useGameStore.getState().talentLevels.escudo_ossos_aprimorado).toBe(1);
+
+      const ok4 = useGameStore.getState().upgradeTalent('aura_de_medo', 40);
+      expect(ok4).toBe(false);
+      expect(useGameStore.getState().talentLevels.aura_de_medo || 0).toBe(0);
+
+      // Pair 3: sobrecarga_runica vs tempestade_continua
+      const ok5 = useGameStore.getState().upgradeTalent('sobrecarga_runica', 35);
+      expect(ok5).toBe(true);
+      expect(useGameStore.getState().talentLevels.sobrecarga_runica).toBe(1);
+
+      const ok6 = useGameStore.getState().upgradeTalent('tempestade_continua', 35);
+      expect(ok6).toBe(false);
+      expect(useGameStore.getState().talentLevels.tempestade_continua || 0).toBe(0);
     });
   });
 
