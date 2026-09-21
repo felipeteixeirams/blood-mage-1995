@@ -3,8 +3,8 @@ agent_context: product-manager, game-designer, all agents
 target_module: docs/specs
 priority: high
 criticality: low
-status: backlog
-last_updated: 2026-08-14
+status: in-progress
+last_updated: 2026-09-21
 tags: [specs, proposta, commercial, mobile-first, architecture, roadmap]
 ---
 
@@ -80,5 +80,5 @@ Para se parecer com o fluxo contínuo de Dungeon Siege 1:
 ---
 
 **Mantido por:** Felipe + IA Agents
-**Última revisão:** 11 de Agosto de 2026
-**Status de Lançamento Comercial:** Em preparação visual profunda.
+**Última revisão:** 21 de Setembro de 2026
+**Status de Lançamento Comercial:** Em preparação visual e de sistemas.
