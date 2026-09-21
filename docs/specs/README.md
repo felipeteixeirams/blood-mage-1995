@@ -4,7 +4,7 @@ target_module: docs/specs
 priority: high
 criticality: high
 status: active
-last_updated: 2026-09-09
+last_updated: 2026-09-21
 tags: [specs, index, workflow, in-progress, delivered, backlog, discovery, rejected]
 ---
 
@@ -40,10 +40,9 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, discovery, rejec
 
 | # | Spec | Pasta | Prioridade | Criticidade | Progresso |
 |---|---|---|---|---|---|
-| 1 | [`backlog/08_GUIA_EVOLUCAO_COMERCIAL.md`](./backlog/08_GUIA_EVOLUCAO_COMERCIAL.md) | backlog | 🔴 high | 🟢 low | Checklist de requisitos comerciais (Steam/Play Store/itch.io) |
-| 4 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟡 medium | 🟡 medium | Tier A completo — Tiers B/C pendentes |
-| 5 | [`backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md) | backlog | 🟡 medium | 🟡 medium | draft |
-| 11 | [`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md) | backlog | 🟢 low | 🟡 medium | Superada em parte — só resta a pergunta menor de variedade interna em `gloomy_woods` |
+| 1 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟡 medium | 🟡 medium | Tier A completo — Tiers B/C pendentes |
+| 2 | [`backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md) | backlog | 🟡 medium | 🟡 medium | draft |
+| 3 | [`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md) | backlog | 🟢 low | 🟡 medium | Superada em parte — só resta a pergunta menor de variedade interna em `gloomy_woods` |
 
 > *Nota:* `in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md` saiu desta fila em
 > 2026-09-08 — PR #93 entregou os 2 itens de código que faltavam (cura via
@@ -83,35 +82,11 @@ docs/specs/
 
 ## 🟡 In-Progress (Desenvolvimento Iniciado — Fases Pendentes, Sem Impedimento)
 
-> Triagem de 2026-09-07: 4 specs saíram desta pasta por terem impedimento
-> ativo — ver "🚧 Bloqueados" na Fila de Prioridade acima para onde foram
-> e por quê: `08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST`,
-> `09_PIXEL_LAB_PROMPT_GUIDE` seguem lá. Em `05_FASE5`, o item Cloud Save
-> (bloqueado) foi extraído para `backlog/29_CLOUD_SAVE_FASE5.md`; a spec
-> ficou com escopo restrito a i18n. **Atualização 2026-09-08:**
-> `25_MUNDO_CONTINUO_CHUNK_STREAMING` voltou pra cá — Felipe decidiu e
-> mandou implementar a Fase B.2 (PR #92), destravando o resto; só falta a
-> Fase C. `18_ARPG_CONTINUOUS_WORLD_TOPOLOGY` segue em `backlog/` (não
-> mais bloqueada, mas rebaixada de prioridade — seu escopo original foi
-> superado pela abordagem escolhida para #25).
-
 | Spec / Documento | Fases / Escopo Concluído | Fases / Itens Pendentes (destravados) |
 |---|---|---|
+| **[`in-progress/08_GUIA_EVOLUCAO_COMERCIAL.md`](./in-progress/08_GUIA_EVOLUCAO_COMERCIAL.md)** | • Checklist de requisitos comerciais e arquiteturais para lançamento (Steam/Play Store/itch.io) | • Implementações visuais e de infraestrutura |
 | **[`in-progress/11_ATMOSFERA_E_TENSAO.md`](./in-progress/11_ATMOSFERA_E_TENSAO.md)** | • Threat Tinnitus, Fear Distortion e Toggles de Acessibilidade<br>• Chevrons direcionais offscreen de ameaça ativas | • *(Restante dos itens de atmosfera e áudio espacial)* |
 | **[`in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md`](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md)** | • Gameplay loop completo (Sangramento/Veneno/Infecção aplicados por monstro, dreno de HP, cura via consumível comprável no Alquimista)<br>• Cura via NPC Clérigo (PR #93)<br>• Ícones customizados SVG (PR #93) | • *(nenhum item de código — só QA manual e tuning de valores, dependentes do Felipe jogar)* |
-| **[`in-progress/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./in-progress/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** | • Alternância de intensidade de conteúdo visual (gore e desmembramento) | • Implementação de toggle de configuração e integração no sistema de gore |
-
-> *Nota (2026-09-06):* `in-progress/06_EIXO_A_GRAFICOS_AVANCADOS.md` e
-> `in-progress/10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md` foram
-> removidos — ambos se autodeclaravam 100% concluídos e duplicavam,
-> palavra por palavra, o que já existia (e estava correto) em
-> `delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md` e
-> `delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md` — este
-> índice chegou a listá-los como se ainda faltasse trabalho que já estava
-> pronto há semanas. Ver auditoria em
-> [`docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md`](../reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md).
-
-> *Nota:* O arquivo histórico consolidado de acompanhamento (`SPECS_EVOLUCAO.md`) foi arquivado para [`in-progress/_ARCHIVED_SPECS_EVOLUCAO_2026_09_REFACTOR.md`](./in-progress/_ARCHIVED_SPECS_EVOLUCAO_2026_09_REFACTOR.md) durante a refatoração hierárquica por satélites.
 
 ---
 
@@ -124,14 +99,13 @@ docs/specs/
 | Spec | Escopo Concluído | Entregue em | Verificação / Testes |
 |---|---|---|---|
 | **[`delivered/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./delivered/12_PROGRESSAO_E_QUESTS_CONTRATOS.md)** | **Progressão, Micro-Quests (Contratos) e Evolução de Habilidades:** Contratos dinâmicos, modificadores de desafio, ramificação mutuamente exclusiva de talentos e evolução de habilidades níveis 5/10 | 2026-09-19 | Vitest (`gameStore.test.ts`) |
-| **[`in-progress/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`](./in-progress/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md)** | **Modal UI de Prestígio (Blood Seal):** Componente React `PrestigeModal.tsx`, alocação de selos, seleção de dificuldade, confirmação de sacrifício rúnico e navegação gamepad | 2026-09-09 | Vitest (`PrestigeModal.test.tsx`) |
+| **[`delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md`](./delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md)** | **Modal UI de Prestígio (Blood Seal):** Componente React `PrestigeModal.tsx`, alocação de selos, seleção de dificuldade, confirmação de sacrifício rúnico e navegação gamepad | 2026-09-09 | Vitest (`PrestigeModal.test.tsx`) |
 | **[`delivered/31_NORMAL_MAP_TILE_DOOR.md`](./delivered/31_NORMAL_MAP_TILE_DOOR.md)** | **Normal Map Ausente na Textura `tile_door`:** Gerar e registrar normal map para `tile_door` via `addTextureWithNormalMap` permitindo iluminação Light2D nas portas | 2026-09-08 | Vitest (`textureGenerator.test.ts`) |
 | **[`delivered/30_DETERMINISMO_SEED_POISSON_DISK.md`](./delivered/30_DETERMINISMO_SEED_POISSON_DISK.md)** | **Determinismo por Seed no Espalhamento Poisson Disk:** Amostragem de vegetação e props 100% determinística por seed da instância de `HeightmapGenerator` | 2026-09-08 | Vitest (`HeightmapGenerator.test.ts`) |
 | **[`delivered/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./delivered/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md)** | **Fase 5: Polimento de Produção, Empacotamento Nativo & i18n:** Performance zero-GC, Gamepad API, Haptics, PWA/TWA/Steam builds, Advanced Particles, Achievements e internacionalização (PT-BR / EN-US) | 2026-09-08 | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`](./delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md)** | **Mundo Contínuo Estilo Dungeon Siege — Chunk Streaming:** Fases A, B, B.2, C e D entregues (streaming de chunks, bounds dinâmicos, transições sem corte de iluminação/névoa/áudio/FX e porta de saída física) | 2026-09-08 | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/17_POLIMENTO_GRAFICO_CALIBRACAO_SISTEMAS_EXISTENTES.md`](./delivered/17_POLIMENTO_GRAFICO_CALIBRACAO_SISTEMAS_EXISTENTES.md)** | **Polimento Gráfico por Calibração dos Sistemas Existentes:** Calibração completa das 9 Frentes (Glow, PostFX, Lighting, Atmosphere, Shadows, Reflections, Particles, Tree Shader & Terrain), tokens de sequência de FX e profundidades relativas | 2026-09-07 | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/28_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md`](./delivered/28_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md)** | **Padronização de Modais Secundários, Navegação Gamepad & Retratos Rúnicos:** UI consistente entre modais secundários, navegação completa via gamepad e retratos temáticos | 2026-09-06 | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md`](./delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md)** | **Sistema de Prestígio 'Blood Seal':** Sacrifício voluntário de nível por Selos de Sangue permanentes e New Game+ | 2026-09-06 | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md`](./delivered/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md)** | **Polimento Visual Procedural:** 8 inimigos com silhuetas curvas e normal maps, sombras elípticas radiais, partículas com degradê, tochas alinhadas e tijolos com musgo orgânico | 2026-09-05 | Vitest + E2E (`spec10-validation.spec.ts`) |
 | **[`delivered/04_FASE4_MUNDO_CONTINUO.md`](./delivered/04_FASE4_MUNDO_CONTINUO.md)** | **Fase 4: Mundo Contínuo:** Safe Town (Room 0), iluminação adaptativa, NPCs interativos, áudio e clima por bioma | 2026-08-31 | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md`](./delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md)** | **ÍNDICE MESTRE — Eixo A: Gráficos Avançados:** Iluminação GPU real (Light2D), pós-processamento WebGL (PostFXSystem) e normal maps procedurais | 2026-08-31 | Vitest + E2E (`pnpm verify`) |
@@ -147,11 +121,10 @@ docs/specs/
 | Spec / Proposta | Domínio / Resumo | Prioridade | Criticidade | Bloqueado? |
 |---|---|---|---|---|
 | **[`backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md)** | Eventos dinâmicos sazonais (Lua de Sangue, Eclipse, Solstício Negro) | medium | medium | Não |
-| **[`backlog/08_GUIA_EVOLUCAO_COMERCIAL.md`](./backlog/08_GUIA_EVOLUCAO_COMERCIAL.md)** | Checklist comercial e requisitos para Steam, Play Store e itch.io | high | low | Não |
 | **[`backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md)** | *(era in-progress)* Living Tracking Spec de integração de sprites físicos — Fase 0 concluída | high | medium | **Sim** — orçamento de arte |
 | **[`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md)** | Referências estéticas e proposta de HUD estilo ARPG clássico (Tier A completo, Tiers B/C pendentes) | medium | medium | Não |
 | **[`backlog/09_PIXEL_LAB_PROMPT_GUIDE.md`](./backlog/09_PIXEL_LAB_PROMPT_GUIDE.md)** | *(era in-progress)* Guia de prompts PixelLab, usado durante produção de sprites | high | low | **Sim** — mesmo gate acima |
-| **[`backlog/11_ATMOSFERA_E_TENSAO.md`](./backlog/11_ATMOSFERA_E_TENSAO.md)** | Atmosfera, Tensão e Indicadores de Ameaça (Indicadores fora de tela, áudio espacial e iluminação) | medium | medium | Não |
+| **[`in-progress/11_ATMOSFERA_E_TENSAO.md`](./in-progress/11_ATMOSFERA_E_TENSAO.md)** | Atmosfera, Tensão e Indicadores de Ameaça (Indicadores fora de tela, áudio espacial e iluminação) | medium | medium | Não |
 | **[`backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md`](./backlog/13_UI_ASSETS_EXTERNOS_FRAMEWORK.md)** | Framework de Evolução de UI e Assets Externos Góticos (Híbrido 9-slice React & Web Audio) | high | high | **Sim** — mesmo gate acima (áudio/telemetria já entregues à parte) |
 | **[`backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md`](./backlog/14_SPRITES_ASSETS_EXTERNOS_TIERS.md)** | Discovery Eixo B — Pipeline de Integração de Assets Externos e Spritesheets por Tiers | medium | medium | **Sim** — orçamento de arte |
 | **[`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md)** | *(superada em parte, 2026-09-08)* `PathDrivenGenerator` pra `gloomy_woods` — escopo de conectividade entre biomas já resolvido pela abordagem escolhida em #25; resta só decidir se vale mais variedade interna na floresta | low | medium | Não |
@@ -168,7 +141,6 @@ docs/specs/
 | **[`discovery/03_MULTIJOGADOR_COOPERATIVO_E_INTERATIVIDADE.md`](./discovery/03_MULTIJOGADOR_COOPERATIVO_E_INTERATIVIDADE.md)** | Co-op Multiplayer P2P leve via WebRTC (Pesquisa exploratória pós-campanha) | Baixa |
 | **[`discovery/04_MOBILE_APP_E_MONETIZACAO_INDIE.md`](./discovery/04_MOBILE_APP_E_MONETIZACAO_INDIE.md)** | Empacotamento para lojas oficiais (Capacitor/TWA) e monetização indie ética (Base: PWA) | Média |
 | **[`discovery/05_DISCOVERY_CAMPAIGN_PROGRESSION_LORE.md`](./discovery/05_DISCOVERY_CAMPAIGN_PROGRESSION_LORE.md)** | Progressão de campanha em atos, diálogos ramificados e lore profunda | Média |
-| **[`discovery/06_DISCOVERY_AI_ART_PIPELINE.md`](./discovery/06_DISCOVERY_AI_ART_PIPELINE.md)** | Pipeline automatizado de conversão e animação por IA (PixelLab e modelos) | Média |
 
 ---
 
