@@ -98,6 +98,7 @@ docs/specs/
 
 | Spec | Escopo Concluído | Entregue em | Verificação / Testes |
 |---|---|---|---|
+| **[`delivered/32_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./delivered/32_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** | **Toggle de Intensidade de Conteúdo (Classificação Indicativa):** Seletor de intensidade em Configurações (Gore Completo/Reduzido), persistência Zod e adaptação nos sistemas de desmembramento e poças de sangue | 2026-09-21 | Vitest (`DismembermentSystem.test.ts`, `BloodSplatterSystem.test.ts`, `localStorage.test.ts`) |
 | **[`delivered/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./delivered/12_PROGRESSAO_E_QUESTS_CONTRATOS.md)** | **Progressão, Micro-Quests (Contratos) e Evolução de Habilidades:** Contratos dinâmicos, modificadores de desafio, ramificação mutuamente exclusiva de talentos e evolução de habilidades níveis 5/10 | 2026-09-19 | Vitest (`gameStore.test.ts`) |
 | **[`delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md`](./delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md)** | **Modal UI de Prestígio (Blood Seal):** Componente React `PrestigeModal.tsx`, alocação de selos, seleção de dificuldade, confirmação de sacrifício rúnico e navegação gamepad | 2026-09-09 | Vitest (`PrestigeModal.test.tsx`) |
 | **[`delivered/31_NORMAL_MAP_TILE_DOOR.md`](./delivered/31_NORMAL_MAP_TILE_DOOR.md)** | **Normal Map Ausente na Textura `tile_door`:** Gerar e registrar normal map para `tile_door` via `addTextureWithNormalMap` permitindo iluminação Light2D nas portas | 2026-09-08 | Vitest (`textureGenerator.test.ts`) |
