@@ -94,7 +94,6 @@ const CURATIVE_SLOTS: {
 export const PlayerStatus: React.FC<PlayerStatusProps> = ({ stats }) => {
   const { settings } = useGameStore();
   const hpPercent = Math.max(0, Math.min(100, (stats.hp / stats.maxHp) * 100));
-  const manaPercent = Math.max(0, Math.min(100, (stats.mana / stats.maxMana) * 100));
   const xpPercent = Math.max(0, Math.min(100, (stats.currentXp / stats.nextLevelXp) * 100));
   const isCriticalHp = hpPercent > 0 && hpPercent <= 25;
 
@@ -145,59 +144,43 @@ export const PlayerStatus: React.FC<PlayerStatusProps> = ({ stats }) => {
           </div>
         </div>
 
-        {/* HP / MP Solid Bars & XP Hairline */}
+        {/* Blood Resource & XP Progression */}
         <div className="flex flex-col flex-1 w-[140px] sm:w-[160px]">
-          {/* Health Solid Bar (HP) with Embedded Label & Numbers */}
+          {/* Blood Resource Bar (Primary Casting Resource) */}
           <div
-            className={`w-full h-3 bg-black border border-[#2a221d] relative overflow-hidden transition-shadow duration-300 ${
+            className={`w-full h-4 bg-black border border-[#2a221d] relative overflow-hidden transition-shadow duration-300 ${
               isCriticalHp
-                ? 'shadow-[inset_1px_1px_2px_rgba(0,0,0,0.9),0_0_8px_rgba(239,68,68,0.85)] animate-pulse'
-                : 'shadow-[inset_1px_1px_2px_rgba(0,0,0,0.9)]'
+                ? 'shadow-[inset_1px_1px_2px_rgba(0,0,0,0.9),0_0_12px_rgba(239,68,68,1),0_0_20px_rgba(153,0,0,0.6)] animate-pulse'
+                : 'shadow-[inset_1px_1px_2px_rgba(0,0,0,0.9),0_0_6px_rgba(220,38,38,0.4)]'
             }`}
             style={FORGED_METAL_TEXTURE}
+            title="Blood Pool: Primary casting resource. Manage carefully—low blood prevents spell casting!"
           >
-            {/* Liquid crimson blood fill */}
+            {/* Liquid crimson blood fill with pulsing animation */}
             <div
-              className="h-full bg-gradient-to-r from-[#880000] via-[#dc2626] to-[#ef4444] shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)] transition-all duration-150"
+              className={`h-full bg-gradient-to-r from-[#880000] via-[#dc2626] to-[#ef4444] shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)] transition-all duration-150 ${
+                isCriticalHp ? 'animate-pulse' : ''
+              }`}
               style={{ width: `${hpPercent}%` }}
             />
             {/* Inner chiseled highlight */}
-            <div className="absolute inset-0 border border-[#b8860b]/20 pointer-events-none" />
-            <div className="absolute inset-x-0 top-0 h-px bg-white/15 pointer-events-none" />
+            <div className="absolute inset-0 border border-[#b8860b]/25 pointer-events-none" />
+            <div className="absolute inset-x-0 top-0 h-px bg-white/20 pointer-events-none" />
             <BarRivet className="-top-[1px] -left-[1px]" />
             <BarRivet className="-top-[1px] -right-[1px]" />
             <BarRivet className="-bottom-[1px] -left-[1px]" />
             <BarRivet className="-bottom-[1px] -right-[1px]" />
 
-            {/* In-bar text: HP label left, values right */}
-            <div className="absolute inset-0 flex items-center justify-between px-1 pointer-events-none [text-shadow:0_1px_2px_#000,0_0_3px_#000]">
-              <span className="text-[7px] font-pixel text-[#e8c76a] font-bold tracking-wider">HP</span>
+            {/* In-bar text: BLOOD label left, values right */}
+            <div className="absolute inset-0 flex items-center justify-between px-1 pointer-events-none [text-shadow:0_1px_3px_#000,0_0_4px_#000]">
+              <span className="text-[7.5px] font-pixel text-[#fcd34d] font-bold tracking-wider">SANGUE</span>
               <span className="text-[7px] font-pixel text-[#fee2e2] font-bold">
                 {Math.ceil(stats.hp)}<span className="text-[#fca5a5]/70 text-[6px]">/{stats.maxHp}</span>
               </span>
             </div>
           </div>
 
-          {/* Mana Solid Bar (MP) with Embedded Label & Numbers */}
-          <div
-            className="w-full h-2 bg-black border-x border-b border-[#2a221d] relative overflow-hidden shadow-[inset_1px_1px_2px_rgba(0,0,0,0.9)]"
-            style={FORGED_METAL_TEXTURE}
-          >
-            {/* Liquid cobalt blue fill */}
-            <div
-              className="h-full bg-gradient-to-r from-[#1e3a8a] via-[#2563eb] to-[#3b82f6] shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)] transition-all duration-150"
-              style={{ width: `${manaPercent}%` }}
-            />
-            <div className="absolute inset-0 border border-[#b8860b]/15 pointer-events-none" />
-            <div className="absolute inset-0 flex items-center justify-between px-1 pointer-events-none [text-shadow:0_1px_2px_#000,0_0_3px_#000]">
-              <span className="text-[6.5px] font-pixel text-[#93c5fd] font-bold tracking-wider">MP</span>
-              <span className="text-[6.5px] font-pixel text-[#dbeafe] font-bold">
-                {Math.ceil(stats.mana)}<span className="text-[#93c5fd]/70 text-[6px]">/{stats.maxMana}</span>
-              </span>
-            </div>
-          </div>
-
-          {/* Micro XP Channel (2px flush hairline bar under MP) */}
+          {/* Micro XP Channel (hairline bar under Blood) */}
           <div
             className="w-full h-[2px] bg-[#0c0a09] border-x border-b border-[#2a221d] relative overflow-hidden"
             title={`XP: ${Math.floor(stats.currentXp)} / ${stats.nextLevelXp} (${Math.floor(xpPercent)}%)`}
