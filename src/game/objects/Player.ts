@@ -67,6 +67,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private currentLockedTarget: any = null;
   private targetLockGraphics?: Phaser.GameObjects.Graphics;
 
+  // Player Visibility Enhancement (Fase 2: Legibilidade)
+  private glowGraphics?: Phaser.GameObjects.Graphics;
+  private glowTint: number = 0xff3333; // Blood red glow
+
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'spr_bloodmage');
     if ((scene as any).lightingSystem) { (scene as any).lightingSystem.applyLightPipeline(this); }
@@ -76,6 +80,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(true);
     this.setSize(22, 28);
     this.setOffset(13, 14);
+
+    // Create glow effect: Graphics circle as pulsing aura around player (only in real scenes)
+    if (scene.add && scene.add.graphics) {
+      this.glowGraphics = scene.add.graphics();
+      this.glowGraphics.setDepth(this.depth - 1); // Behind player sprite
+      this.createGlowEffect();
+    }
 
     const typedSpellsData = spellsData as Record<string, SpellConfig>;
 
@@ -605,6 +616,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Directional indicator rendering
     this.renderDirectionReticle();
     this.renderTargetLockReticle(time);
+    this.updateGlowPosition(time);
   }
 
   /**
@@ -698,6 +710,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.targetLockGraphics) {
       this.targetLockGraphics.destroy();
       this.targetLockGraphics = undefined;
+    }
+    if (this.glowGraphics) {
+      this.glowGraphics.destroy();
+      this.glowGraphics = undefined;
     }
     super.destroy(fromScene);
   }
@@ -1302,5 +1318,70 @@ this.stats.hp = Math.max(0, this.stats.hp - amount);
     // Notify React UI — comando tipado via store, ver
     // docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
     useGameStore.getState().notifyLootPickup(item);
+  }
+
+  private createGlowEffect(): void {
+    if (!this.glowGraphics) return;
+
+    const g = this.glowGraphics;
+    g.clear();
+
+    // Concentric circles with blood-red color and transparency gradient
+    const glowRadius = 24;
+    const pulseIntensity = 0.7;
+
+    // Outer glow (most transparent, fades out)
+    g.fillStyle(this.glowTint, 0.15 * pulseIntensity);
+    g.fillCircle(0, 0, glowRadius);
+
+    // Mid glow (semi-transparent)
+    g.fillStyle(this.glowTint, 0.25 * pulseIntensity);
+    g.fillCircle(0, 0, glowRadius * 0.65);
+
+    // Inner glow (more opaque)
+    g.fillStyle(this.glowTint, 0.4 * pulseIntensity);
+    g.fillCircle(0, 0, glowRadius * 0.35);
+
+    // Set up pulsing animation using tweens
+    if (this.scene && this.scene.tweens) {
+      this.scene.tweens.add({
+        targets: this,
+        glowTint: [0xff3333, 0xff6b6b, 0xff3333],
+        duration: 1500,
+        repeat: -1,
+        ease: 'Sine.InOut'
+      });
+    }
+  }
+
+  private updateGlowPosition(time: number): void {
+    if (!this.glowGraphics || this.stats.isUnconscious || this.stats.isDefinitivelyDead) {
+      if (this.glowGraphics) {
+        this.glowGraphics.clear();
+      }
+      return;
+    }
+
+    // Update glow position to follow player sprite
+    this.glowGraphics.setPosition(this.x, this.y);
+
+    // Recalculate glow with pulsing effect based on time
+    const g = this.glowGraphics;
+    g.clear();
+
+    const glowRadius = 24;
+    const pulse = Math.sin(time / 300) * 0.3 + 0.7; // Oscillates between 0.4 and 1.0
+
+    // Outer glow (most transparent, fades out)
+    g.fillStyle(this.glowTint, 0.15 * pulse);
+    g.fillCircle(0, 0, glowRadius);
+
+    // Mid glow (semi-transparent)
+    g.fillStyle(this.glowTint, 0.25 * pulse);
+    g.fillCircle(0, 0, glowRadius * 0.65);
+
+    // Inner glow (more opaque)
+    g.fillStyle(this.glowTint, 0.4 * pulse);
+    g.fillCircle(0, 0, glowRadius * 0.35);
   }
 }
