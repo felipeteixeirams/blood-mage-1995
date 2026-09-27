@@ -525,17 +525,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
       }
 
-      // Visual Status Tints
-      if (!this.isInvulnerable) {
-        if (this.stats.statusConditions?.poison) {
-          this.setTint(0x4ade80); // Green
-        } else if (this.stats.statusConditions?.infection) {
-          this.setTint(0xc084fc); // Purple
-        } else if (this.stats.statusConditions?.bleeding) {
-          this.setTint(0xf87171); // Deep Red
-        } else {
-          this.applyCosmeticTint();
-        }
+      // Visual Status Tints — now handled by subtle screen veil in GameScene instead of opaque sprite tint
+      // The StatusConditionVeil system renders a 12% opacity overlay for status conditions,
+      // which is much less intrusive than the previous full-saturation tint approach.
+      if (!this.isInvulnerable && !this.stats.statusConditions?.bleeding && !this.stats.statusConditions?.poison && !this.stats.statusConditions?.infection) {
+        this.applyCosmeticTint();
+      } else if (!this.isInvulnerable) {
+        this.clearTint();
       }
 
       this.updateLegendarySparks();

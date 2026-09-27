@@ -21,6 +21,7 @@ import AdvancedParticles from '../systems/AdvancedParticles';
 import ScreenShake from '../systems/ScreenShake';
 import LightingPolish from '../systems/LightingPolish';
 import { StatusEffectSystem } from '../systems/StatusEffectSystem';
+import { StatusConditionVeil } from '../systems/StatusConditionVeil';
 import { ShadowSystem, LightSource } from '../systems/ShadowSystem';
 import { ReflectionSystem } from '../systems/ReflectionSystem';
 import { AtmosphereSystem } from '../systems/AtmosphereSystem';
@@ -83,6 +84,7 @@ export class GameScene extends Phaser.Scene {
   public screenShake: ScreenShake | null = null; // público: usado por CollisionHandlers
   public lightingPolish: LightingPolish | null = null; // público: usado por PlayerSkillSystem
   public statusEffectSystem: StatusEffectSystem | null = null;
+  public statusConditionVeil: StatusConditionVeil | null = null;
   public shadowSystem: ShadowSystem | null = null;
   public reflectionSystem: ReflectionSystem | null = null;
   public virtualJoystick: VirtualJoystickSystem | null = null;
@@ -325,7 +327,9 @@ export class GameScene extends Phaser.Scene {
     this.dragAimGraphics = this.add.graphics().setDepth(2050);
     this.threatIndicatorGraphics = this.add.graphics().setDepth(2100).setScrollFactor(0);
     this.darknessOverlay = this.add.graphics().setDepth(1990).setScrollFactor(0);
-    this.darknessOverlay.fillStyle(0x050510, 0.12);
+    // Phase 2: Increased darkness overlay for better background contrast (0.12 → 0.32)
+    // Darkens the environment, making the player character pop visually
+    this.darknessOverlay.fillStyle(0x050510, 0.32);
     this.darknessOverlay.fillRect(0, 0, mapW, mapH);
 
     // Fase 3.2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
@@ -463,6 +467,7 @@ export class GameScene extends Phaser.Scene {
 
     // Spec 10 (Parte 3): Shaders & Efeitos de Status, Sombras Direcionais e Reflexos Líquidos
     this.statusEffectSystem = new StatusEffectSystem(this);
+    this.statusConditionVeil = new StatusConditionVeil(this);
     this.shadowSystem = new ShadowSystem(this);
     this.reflectionSystem = new ReflectionSystem(this);
     if (this.player) {
@@ -1482,6 +1487,11 @@ export class GameScene extends Phaser.Scene {
     // 2. Update Player
     const lastMana = this.player.stats.mana;
     this.player.updatePlayer(time, delta);
+
+    // Update status condition veil based on player status
+    if (this.player && this.statusConditionVeil) {
+      this.statusConditionVeil.update(this.player.stats.statusConditions, this.scale.width, this.scale.height);
+    }
 
     // If Blood Bolt fired in player update, create projectile & emit weapon noise
     if (this.player.stats.mana < lastMana - 1) {
