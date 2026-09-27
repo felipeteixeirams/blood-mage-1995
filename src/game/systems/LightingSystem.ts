@@ -128,11 +128,21 @@ export class LightingSystem {
     }
   }
 
-  /** Cria a luz que segue o player, com raio por HP. */
+  /**
+   * Cria a luz que segue o player, com raio por HP.
+   * Chamado a cada troca de andar (DungeonFlowController) — sem remover a
+   * luz anterior antes de criar uma nova, cada troca de andar vazava uma
+   * luz Light2D órfã (spec 17, Frente C: "sem acúmulo de luzes após trocar
+   * de andar"). Idempotente: remove a luz existente antes de recriar.
+   */
   public createPlayerLight(): void {
     if (!this.enabled || !this.scene.player) return;
     try {
       const lights = this.scene.lights as any;
+      if (this.playerLight) {
+        lights.removeLight(this.playerLight);
+        this.playerLight = null;
+      }
       const config = BIOME_LIGHTING[this.activeBiome] || BIOME_LIGHTING.fosso_chagas;
       this.playerLight = lights.addLight(
         this.scene.player.x,
