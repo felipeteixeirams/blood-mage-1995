@@ -210,6 +210,54 @@ describe('PostFXSystem', () => {
     expect(scene.time.delayedCall).toHaveBeenCalled();
   });
 
+  it('não deixa o callback tardio de effectCriticalDamage apagar o tint de effectDeath (spec 17, Frente B)', () => {
+    const { scene } = makeScene({ isWebGL: true });
+    let delayedCallbacks: Function[] = [];
+    scene.time.delayedCall = vi.fn((delay, cb) => {
+      delayedCallbacks.push(cb);
+      return {};
+    }) as any;
+
+    const system = new PostFXSystem(scene as any);
+
+    // Jogador toma um crítico (agenda remoção de tint em 100ms)...
+    system.effectCriticalDamage();
+    // ...e morre antes desse callback disparar (tint vermelho de morte).
+    system.effectDeath();
+
+    // O callback tardio do crítico dispara DEPOIS da morte já ter setado
+    // o tint. Sem o guard de sequência, ele reintroduziria 'transparent'
+    // por cima do vermelho de morte.
+    delayedCallbacks.forEach(cb => cb());
+
+    system.update(1000); // deixa o ease terminar
+    expect((system as any).currentTint).toBe(0x8b0000);
+  });
+
+  it('não deixa o callback tardio de effectInfection apagar o tint de um effectCriticalDamage mais novo (spec 17, Frente B)', () => {
+    const { scene } = makeScene({ isWebGL: true });
+    let delayedCallbacks: Function[] = [];
+    scene.time.delayedCall = vi.fn((delay, cb) => {
+      delayedCallbacks.push(cb);
+      return {};
+    }) as any;
+
+    const system = new PostFXSystem(scene as any);
+
+    // Jogador é infectado (agenda restauração para 'transparent' em 300ms)...
+    system.effectInfection();
+    // ...e antes disso leva um crítico (agenda a própria restauração em 100ms,
+    // com tint branco momentâneo primeiro).
+    system.effectCriticalDamage();
+
+    // Ambos os callbacks disparam (ordem de agendamento); o de infecção é
+    // o mais antigo e não pode reintroduzir estado por cima do crítico.
+    delayedCallbacks.forEach(cb => cb());
+    system.update(1000);
+
+    expect((system as any).currentTint).toBe(null);
+  });
+
   it('blendBiomes interpola gradação de cor entre dois biomas com base em t', () => {
     const { scene } = makeScene({ isWebGL: true });
     const system = new PostFXSystem(scene as any);

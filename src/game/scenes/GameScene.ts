@@ -638,6 +638,24 @@ export class GameScene extends Phaser.Scene {
     // update-cosmetic-tint agora chega via store (cosmeticTintVersion) — ver
     // public applyCosmeticTint() abaixo e docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
 
+    // Spec 17 (Polimento Gráfico por Calibração), Frente I: luzes, glow, névoa,
+    // sombras e reflexos tinham GameObjects/tweens próprios (Lights, TileSprite,
+    // emissores de partículas, sprites de sombra/reflexo) sem passar pela
+    // limpeza explícita destes sistemas no shutdown/destroy da cena — só
+    // confiar na destruição implícita do Phaser deixa de invalidar timers e
+    // referências internas que esses sistemas guardam (torchLights, glowLights,
+    // bloomTargets, shadowSprites/reflectionSprites), então limpa-se
+    // explicitamente aqui, como os demais sistemas já fazem.
+    const cleanupGraphicsSystems = () => {
+      if (this.postFX) this.postFX.reset();
+      if (this.lightingSystem) this.lightingSystem.shutdown();
+      if (this.lightingPolish) this.lightingPolish.cleanup();
+      if (this.atmosphereSystem) this.atmosphereSystem.cleanup();
+      if (this.shadowSystem) this.shadowSystem.destroy();
+      if (this.reflectionSystem) this.reflectionSystem.destroy();
+      if (this.advancedParticles) this.advancedParticles.stopAll();
+    };
+
     this.events.once('shutdown', () => {
       if ((window as any).gameScene === this) {
         (window as any).gameScene = null;
@@ -659,6 +677,7 @@ export class GameScene extends Phaser.Scene {
         this.bloodSplatterSystem = null;
       }
       if (this.flickerTimer) this.flickerTimer.destroy();
+      cleanupGraphicsSystems();
     });
     this.events.once('destroy', () => {
       if ((window as any).gameScene === this) {
@@ -681,6 +700,7 @@ export class GameScene extends Phaser.Scene {
         this.bloodSplatterSystem = null;
       }
       if (this.flickerTimer) this.flickerTimer.destroy();
+      cleanupGraphicsSystems();
     });
 
     this.physics.add.overlap(

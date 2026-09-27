@@ -216,6 +216,11 @@ export class PostFXSystem {
       this.tensionMaxVignette = 0.80;
     } else if (!this.isTensionActive) {
       if (this.targetTint === 0x880000 || this.targetTint === 0xef4444) {
+        // Invalida restauração pendente de um efeito anterior (ex: o
+        // callback de effectCriticalDamage/effectInfection ainda não
+        // disparado) antes de assumir o controle do tint aqui — spec 17,
+        // Frente B.
+        this.nextSeq();
         this.setTint('transparent', 400);
         this.setVignette(0, 400);
       }
@@ -319,24 +324,39 @@ export class PostFXSystem {
   }
 
   public effectDeath(): void {
+    // Invalida qualquer restauração pendente de um efeito anterior (ex: o
+    // callback de `effectCriticalDamage` que ainda não disparou) — sem isso,
+    // ele dispararia depois da morte e apagaria o tint vermelho definitivo.
+    this.nextSeq();
     this.setTint('#8b0000', 500);
     this.setVignette(0.9, 500);
     this.setDisplacement(0.15, 500);
   }
 
   public effectCriticalDamage(): void {
+    const seq = this.nextSeq();
     this.setDisplacement(0.2, 150);
     this.setTint('#ffffff', 100);
-    this.scene.time.delayedCall(100, () => this.setTint('transparent', 200));
+    this.scene.time.delayedCall(100, () => {
+      if (this.effectSequenceCounter === seq) {
+        this.setTint('transparent', 200);
+      }
+    });
   }
 
   public effectInfection(): void {
+    const seq = this.nextSeq();
     this.setTint('#00ff00', 300);
     this.setDisplacement(0.1, 300);
-    this.scene.time.delayedCall(300, () => this.setTint('transparent', 200));
+    this.scene.time.delayedCall(300, () => {
+      if (this.effectSequenceCounter === seq) {
+        this.setTint('transparent', 200);
+      }
+    });
   }
 
   public effectTension(level: number = 0.2): void {
+    this.nextSeq();
     this.setVignette(level, 1000);
   }
 

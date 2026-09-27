@@ -76,7 +76,12 @@ export class LightingPolish {
     if (!sprite || !this.isBloomEnabled(sprite)) return;
 
     try {
-      if (typeof (sprite as any).enableFilters === 'function') {
+      // Idempotente: enableFilters() cria um filterCamera interno no objeto.
+      // Sprites de ObjectPool passam por applyBloomFilter em todo respawn —
+      // chamar enableFilters() de novo a cada vez vazaria uma filterCamera
+      // por spawn (nunca destruída por clear()/reset do Glow). Só habilita
+      // filtros na primeira vez que o sprite recebe Bloom.
+      if (!(sprite as any).filters && typeof (sprite as any).enableFilters === 'function') {
         (sprite as any).enableFilters();
       }
       const filters = (sprite as any).filters;
