@@ -327,7 +327,9 @@ export class GameScene extends Phaser.Scene {
     this.dragAimGraphics = this.add.graphics().setDepth(2050);
     this.threatIndicatorGraphics = this.add.graphics().setDepth(2100).setScrollFactor(0);
     this.darknessOverlay = this.add.graphics().setDepth(1990).setScrollFactor(0);
-    this.darknessOverlay.fillStyle(0x050510, 0.12);
+    // Phase 2: Increased darkness overlay for better background contrast (0.12 → 0.32)
+    // Darkens the environment, making the player character pop visually
+    this.darknessOverlay.fillStyle(0x050510, 0.32);
     this.darknessOverlay.fillRect(0, 0, mapW, mapH);
 
     // Fase 3.2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
