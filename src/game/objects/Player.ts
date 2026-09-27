@@ -921,10 +921,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || spell.manaCost) * 2 : (spell.bloodCost || spell.manaCost)) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
+    this.stats.hp -= bloodCost;
     this.lastAutoShootTime = time;
     // Dispara a pose de conjuração UMA vez, com direção e duração fixas
     // (600ms = 6 frames @ 10fps), em vez de recalcular a cada frame — assim o
@@ -967,10 +967,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || spell.manaCost) * 2 : (spell.bloodCost || spell.manaCost)) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
+    this.stats.hp -= bloodCost;
     // Fase de merge com origin/main (24/08): outras skills também disparam a
     // pose de conjuração, não só o blood bolt — mesma trava fixa de 600ms.
     this.castAnimTimer = 600;
@@ -988,10 +988,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || spell.manaCost) * 2 : (spell.bloodCost || spell.manaCost)) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
+    this.stats.hp -= bloodCost;
     this.castAnimTimer = 600;
     this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
@@ -1007,10 +1007,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || spell.manaCost) * 2 : (spell.bloodCost || spell.manaCost)) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
+    this.stats.hp -= bloodCost;
     this.castAnimTimer = 600;
     this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
@@ -1026,13 +1026,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    const hpCost = Math.max(0, Math.round((spell.hpCost || 0) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
-    if (this.stats.hp <= hpCost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0))) * 2 : (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0)))) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
-    this.stats.hp -= hpCost;
+    this.stats.hp -= bloodCost;
     this.castAnimTimer = 600;
     this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
@@ -1048,13 +1045,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    const hpCost = Math.max(0, Math.round((spell.hpCost || 0) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
-    if (this.stats.hp <= hpCost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0))) * 2 : (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0)))) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
-    this.stats.hp -= hpCost;
+    this.stats.hp -= bloodCost;
     this.castAnimTimer = 600;
     this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
@@ -1070,13 +1064,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    const hpCost = Math.max(0, Math.round((spell.hpCost || 0) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
-    if (this.stats.hp <= hpCost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0))) * 2 : (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0)))) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
-    this.stats.hp -= hpCost;
+    this.stats.hp -= bloodCost;
     this.castAnimTimer = 600;
     this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
@@ -1092,13 +1083,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    const hpCost = Math.max(0, Math.round((spell.hpCost || 0) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
-    if (this.stats.hp <= hpCost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0))) * 2 : (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0)))) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
-    this.stats.hp -= hpCost;
+    this.stats.hp -= bloodCost;
     this.castAnimTimer = 600;
     this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
@@ -1114,13 +1102,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    const hpCost = Math.max(0, Math.round((spell.hpCost || 0) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
-    if (this.stats.hp <= hpCost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0))) * 2 : (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0)))) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
-    this.stats.hp -= hpCost;
+    this.stats.hp -= bloodCost;
     this.castAnimTimer = 600;
     this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
