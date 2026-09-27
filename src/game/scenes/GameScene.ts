@@ -653,6 +653,7 @@ export class GameScene extends Phaser.Scene {
       if (this.atmosphereSystem) this.atmosphereSystem.cleanup();
       if (this.shadowSystem) this.shadowSystem.destroy();
       if (this.reflectionSystem) this.reflectionSystem.destroy();
+      if (this.advancedParticles) this.advancedParticles.stopAll();
     };
 
     this.events.once('shutdown', () => {
