@@ -29,6 +29,35 @@ pra quem mexer no código depois).
 
 ---
 
+### 2026-09-28 — Conceitos de Design Portados de Protótipo Externo (Godot) Nunca Copiam Código
+
+**Contexto:** Felipe trabalhou por engano em `felipeteixeirams/bloodmage1995`
+(repo separado, nome quase idêntico ao correto) achando que era este
+projeto — um protótipo em Godot 4.3/GDScript com sistemas de Boss
+multi-fase, Equipment Sets, Skill Tree por atributos e Prestige com
+escalada infinita. Pediu para trazer o que agregasse.
+
+**Decisão:** Analisar cada sistema do protótipo contra o estado REAL do
+projeto principal (grep/leitura direta de código, não suposição) antes de
+decidir o que portar. Dois sistemas eram gap real confirmado (Boss
+multi-fase — só existe 1 boss sem fases; Equipment Sets — zero menção no
+código): viraram specs formais (33, 34) reimplementando o CONCEITO em
+Phaser 4/TypeScript, reaproveitando infraestrutura já existente
+(`speedMultiplier`, `EnemyTelegraphSystem`, `RelicEffect`) — nenhuma linha
+de GDScript foi copiada. Os demais sistemas do protótipo (Spell System,
+Skill Tree, Prestige loot scaling) eram redundantes ou inferiores ao que
+já existe entregue (specs 12, 18, 19, `spells.json`) — não portados.
+
+**Consequências:** Ao encontrar um repositório/protótipo externo com
+conceitos de jogo sobrepostos, o padrão é: (1) confirmar gap real por
+leitura de código, nunca por suposição de que "não deve existir"; (2)
+nunca copiar código de outra engine/linguagem — reimplementar o conceito
+nos padrões e guardrails deste projeto (Extract/Delegate, campos aditivos
+em vez de tocar FSM crítica); (3) documentar a origem na spec resultante
+para rastreabilidade.
+
+---
+
 ### 2026-09-08 — Workflow Paralelo: Fila de Definição (Conceito) ↔ Fila de Desenvolvimento (Execução)
 
 **Contexto:** Specs que precisam de definição de conceito/gameplay (i18n lib choice, qual evento implementar primeiro, variedade de biomas) ficavam bloqueando toda a Fila de Prioridade enquanto Felipe decidia. Ao mesmo tempo, specs prontas (sem dependências conceituais) ficavam ociosas esperando a definição terminar.
