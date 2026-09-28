@@ -4,7 +4,7 @@ import { useGameStore } from '../../store/gameStore';
 export interface TelegraphRenderData {
   phase: 'windup' | 'strike';
   progress: number;
-  shape: 'cone' | 'line' | 'circle' | 'boss_slam';
+  shape: 'cone' | 'line' | 'circle' | 'boss_slam' | 'wave';
   originX: number;
   originY: number;
   targetX: number;
@@ -142,6 +142,11 @@ export class EnemyTelegraphSystem {
 
       case 'boss_slam': {
         this.renderBossSlamTelegraph(originX, originY, range, progress, color, strokeAlpha, fillAlpha, isStrike, time);
+        break;
+      }
+
+      case 'wave': {
+        this.renderWaveTelegraph(originX, originY, range, progress, color, strokeAlpha, fillAlpha, isStrike, time);
         break;
       }
     }
@@ -334,6 +339,62 @@ export class EnemyTelegraphSystem {
       const ry = y + Math.sin(curAngle) * (radius - 8);
       this.graphics.fillStyle(0xffffff, strokeAlpha * 0.6);
       this.graphics.fillCircle(rx, ry, 2.5);
+    }
+  }
+
+  /**
+   * Telégrafo em formato de Onda de Choque Expansiva (Wave)
+   *
+   * Spec 33 (Boss Multi-Fase): exclusivo da fase final de bosses com
+   * `unlocksWaveTelegraph: true`. Diferente do `boss_slam` (disco de impacto
+   * que preenche a partir do centro), a `wave` é um anel FINO que se expande
+   * do centro do boss até `range`, com anéis-eco atrás da frente de onda —
+   * reaproveita `strokeCircle` em incrementos, no mesmo estilo de
+   * `renderCircleTelegraph`/`renderBossSlamTelegraph` acima.
+   */
+  private renderWaveTelegraph(
+    x: number,
+    y: number,
+    radius: number,
+    progress: number,
+    color: number,
+    strokeAlpha: number,
+    fillAlpha: number,
+    isStrike: boolean,
+    time: number
+  ): void {
+    if (!this.graphics) return;
+
+    // 1. Frente de onda principal: anel fino que cresce do centro até `radius`.
+    const waveRadius = isStrike ? radius : Math.max(4, radius * progress);
+    this.graphics.lineStyle(isStrike ? 3 : 2, isStrike ? 0xffffff : color, strokeAlpha);
+    this.graphics.strokeCircle(x, y, waveRadius);
+
+    // 2. Anéis-eco em incrementos fixos, atrás da frente de onda (efeito de
+    // ondas concêntricas se propagando), com alpha decrescente.
+    const echoCount = 2;
+    const echoSpacing = Math.max(6, radius * 0.18);
+    for (let i = 1; i <= echoCount; i++) {
+      const echoRadius = waveRadius - i * echoSpacing;
+      if (echoRadius <= 2) continue;
+      this.graphics.lineStyle(1, color, strokeAlpha * (0.5 - i * 0.15));
+      this.graphics.strokeCircle(x, y, echoRadius);
+    }
+
+    // 3. Núcleo central sutil (origem do boss), sempre visível durante o windup.
+    this.graphics.fillStyle(color, fillAlpha * 0.5);
+    this.graphics.fillCircle(x, y, Math.max(4, radius * 0.08));
+
+    // 4. Marcadores no raio máximo de alcance, indicando onde a onda vai parar.
+    if (!isStrike) {
+      const tickCount = 8;
+      for (let t = 0; t < tickCount; t++) {
+        const a = (t / tickCount) * Math.PI * 2 + time * 0.0012;
+        const tx = x + Math.cos(a) * radius;
+        const ty = y + Math.sin(a) * radius;
+        this.graphics.fillStyle(0xffffff, strokeAlpha * 0.5);
+        this.graphics.fillCircle(tx, ty, 1.5);
+      }
     }
   }
 

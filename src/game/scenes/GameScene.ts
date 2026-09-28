@@ -42,6 +42,7 @@ import { CollisionHandlers } from '../systems/CollisionHandlers';
 import { DungeonFlowController } from '../systems/DungeonFlowController';
 import { ScavengingSystem } from '../systems/ScavengingSystem';
 import { CombatEffectsSystem } from '../systems/CombatEffectsSystem';
+import { BossPhaseController } from '../systems/BossPhaseController';
 
 export interface GameSceneCallbacks {
   onStatsUpdate: (stats: PlayerStats) => void;
@@ -99,6 +100,7 @@ export class GameScene extends Phaser.Scene {
   private lightSprites: Phaser.GameObjects.Image[] = [];
   public atmosphereSystem: AtmosphereSystem | null = null;
   public enemyTelegraphSystem: EnemyTelegraphSystem | null = null;
+  public bossPhaseController: BossPhaseController | null = null; // público: consultado por Enemy.ts (getTelegraphInfo, spec 33)
   public bloodSplatterSystem: BloodSplatterSystem | null = null;
   public bloodBurstEmitter!: Phaser.GameObjects.Particles.ParticleEmitter; // público: usado por CombatEffectsSystem
   private flickerTimer?: Phaser.Time.TimerEvent;
@@ -425,6 +427,9 @@ export class GameScene extends Phaser.Scene {
     // --- VISUAL: Enemy Attack Telegraphing System (Frente 3) ---
     this.enemyTelegraphSystem = new EnemyTelegraphSystem(this);
     this.enemyTelegraphSystem.initialize();
+
+    // --- Boss Multi-Fase com Telégrafo Evolutivo (Spec 33) ---
+    this.bossPhaseController = new BossPhaseController(this);
 
     // --- VISUAL: Persistent Floor Blood & Gore Splatter System (Frente 4) ---
     this.bloodSplatterSystem = new BloodSplatterSystem(this);
@@ -1358,6 +1363,19 @@ export class GameScene extends Phaser.Scene {
     // --- Enemy Attack Telegraphing System update (Frente 3) ---
     if (this.enemyTelegraphSystem) {
       this.enemyTelegraphSystem.update(time, this.enemiesGroup, this.cameras.main);
+    }
+
+    // --- Boss Multi-Fase com Telégrafo Evolutivo update (Spec 33) ---
+    // Aditivo: não reordena colliders existentes, não muda a assinatura deste
+    // update(time, delta). Filtra bosses (config.behavior === 'boss') do
+    // enemiesGroup já existente — nenhum grupo/collider novo é criado.
+    if (this.bossPhaseController && this.enemiesGroup) {
+      const activeBosses = this.enemiesGroup.getChildren().filter((enemyObj: any) => {
+        return enemyObj?.active && enemyObj.config?.behavior === 'boss' && enemyObj.config?.bossPhases?.length;
+      }) as Enemy[];
+      if (activeBosses.length > 0) {
+        this.bossPhaseController.update(activeBosses);
+      }
     }
 
     // --- Blood & Gore Decal System update (Frente 4) ---

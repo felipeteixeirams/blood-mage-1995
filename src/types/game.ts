@@ -114,6 +114,19 @@ export type MonsterBodyType =
   | 'spectral_entity'
   | 'boss';
 
+/**
+ * Spec 33 — Sistema de Boss Multi-Fase com Telégrafo Evolutivo.
+ * Configuração de UMA fase de encontro de boss, disparada por threshold de HP.
+ * Aplicada de forma ADITIVA/multiplicativa por `BossPhaseController` (extract/
+ * delegate) — não substitui stats base do monstro em `monsters.json`.
+ */
+export interface BossPhaseConfig {
+  hpThreshold: number; // 0.0-1.0, fração do maxHp que dispara a fase
+  speedMultiplier: number; // aplicado multiplicativamente a Enemy.speedMultiplier (ex: 1.3 = +30%)
+  attackIntervalMultiplier: number; // < 1.0 = ataca mais rápido (ex: 0.75)
+  unlocksWaveTelegraph?: boolean; // true só na fase que desbloqueia o telégrafo 'wave' exclusivo
+}
+
 export type DismembermentType = 'total_destruction' | 'partial_dismemberment' | 'normal_collapse';
 
 export interface DismembermentResult {
@@ -161,6 +174,9 @@ export interface MonsterConfig {
     type: 'bleeding' | 'poison' | 'infection';
     chance: number; // 0.0 to 1.0
   };
+  // Spec 33: opcional, ausente em todo monstro não-boss (backward-compatible).
+  // Ordem no array não importa — BossPhaseController ordena por hpThreshold.
+  bossPhases?: BossPhaseConfig[];
 }
 
 export interface SpellConfig {

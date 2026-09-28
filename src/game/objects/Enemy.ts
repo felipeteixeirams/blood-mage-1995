@@ -55,7 +55,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private lastDamagedParticleTime: number = 0;
 
   // Individual AI Personality & Movement Enhancements
-  private speedMultiplier: number = 1.0;
+  public speedMultiplier: number = 1.0; // public: usado por BossPhaseController (spec 33, multiplicativo aditivo)
   private personalPhase: number = 0;
   private baseScale: number = 1.0;
   private hasTriggeredHowl: boolean = false;
@@ -1243,11 +1243,17 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     else if (this.config.id === 'cultist_acolyte' || this.config.id === 'specter_wraith') color = 0x8b5cf6;
     else if (this.config.id === 'flesh_golem' || this.config.id === 'gore_abomination') color = 0xdc2626;
 
-    if (this.config.id === 'blood_lord_boss') {
+    if (this.config.id === 'necro_lord_boss') {
+      // Spec 33: na fase final (unlocksWaveTelegraph), o BossPhaseController
+      // (extract/delegate, ver src/game/systems/BossPhaseController.ts) troca
+      // o telégrafo de 'boss_slam' para 'wave' (anel expansivo). Consultado
+      // via wrapper fino no scene — NÃO adiciona estado de fase em Enemy.ts.
+      const isFinalPhase = (this.scene as any)?.bossPhaseController?.isFinalPhase?.(this) === true;
+      const shape: 'wave' | 'boss_slam' = isFinalPhase ? 'wave' : 'boss_slam';
       return {
         phase: this.attackPhase,
         progress,
-        shape: 'boss_slam' as const,
+        shape,
         originX: this.x,
         originY: this.y,
         targetX: this.attackTargetPos.x,
