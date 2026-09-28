@@ -21,6 +21,7 @@ import AdvancedParticles from '../systems/AdvancedParticles';
 import ScreenShake from '../systems/ScreenShake';
 import LightingPolish from '../systems/LightingPolish';
 import { StatusEffectSystem } from '../systems/StatusEffectSystem';
+import { StatusConditionVeil } from '../systems/StatusConditionVeil';
 import { ShadowSystem, LightSource } from '../systems/ShadowSystem';
 import { ReflectionSystem } from '../systems/ReflectionSystem';
 import { AtmosphereSystem } from '../systems/AtmosphereSystem';
@@ -83,6 +84,7 @@ export class GameScene extends Phaser.Scene {
   public screenShake: ScreenShake | null = null; // público: usado por CollisionHandlers
   public lightingPolish: LightingPolish | null = null; // público: usado por PlayerSkillSystem
   public statusEffectSystem: StatusEffectSystem | null = null;
+  public statusConditionVeil: StatusConditionVeil | null = null;
   public shadowSystem: ShadowSystem | null = null;
   public reflectionSystem: ReflectionSystem | null = null;
   public virtualJoystick: VirtualJoystickSystem | null = null;
@@ -325,7 +327,9 @@ export class GameScene extends Phaser.Scene {
     this.dragAimGraphics = this.add.graphics().setDepth(2050);
     this.threatIndicatorGraphics = this.add.graphics().setDepth(2100).setScrollFactor(0);
     this.darknessOverlay = this.add.graphics().setDepth(1990).setScrollFactor(0);
-    this.darknessOverlay.fillStyle(0x050510, 0.12);
+    // Phase 2: Increased darkness overlay for better background contrast (0.12 → 0.32)
+    // Darkens the environment, making the player character pop visually
+    this.darknessOverlay.fillStyle(0x050510, 0.32);
     this.darknessOverlay.fillRect(0, 0, mapW, mapH);
 
     // Fase 3.2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
@@ -463,6 +467,7 @@ export class GameScene extends Phaser.Scene {
 
     // Spec 10 (Parte 3): Shaders & Efeitos de Status, Sombras Direcionais e Reflexos Líquidos
     this.statusEffectSystem = new StatusEffectSystem(this);
+    this.statusConditionVeil = new StatusConditionVeil(this);
     this.shadowSystem = new ShadowSystem(this);
     this.reflectionSystem = new ReflectionSystem(this);
     if (this.player) {
@@ -633,6 +638,24 @@ export class GameScene extends Phaser.Scene {
     // update-cosmetic-tint agora chega via store (cosmeticTintVersion) — ver
     // public applyCosmeticTint() abaixo e docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
 
+    // Spec 17 (Polimento Gráfico por Calibração), Frente I: luzes, glow, névoa,
+    // sombras e reflexos tinham GameObjects/tweens próprios (Lights, TileSprite,
+    // emissores de partículas, sprites de sombra/reflexo) sem passar pela
+    // limpeza explícita destes sistemas no shutdown/destroy da cena — só
+    // confiar na destruição implícita do Phaser deixa de invalidar timers e
+    // referências internas que esses sistemas guardam (torchLights, glowLights,
+    // bloomTargets, shadowSprites/reflectionSprites), então limpa-se
+    // explicitamente aqui, como os demais sistemas já fazem.
+    const cleanupGraphicsSystems = () => {
+      if (this.postFX) this.postFX.reset();
+      if (this.lightingSystem) this.lightingSystem.shutdown();
+      if (this.lightingPolish) this.lightingPolish.cleanup();
+      if (this.atmosphereSystem) this.atmosphereSystem.cleanup();
+      if (this.shadowSystem) this.shadowSystem.destroy();
+      if (this.reflectionSystem) this.reflectionSystem.destroy();
+      if (this.advancedParticles) this.advancedParticles.stopAll();
+    };
+
     this.events.once('shutdown', () => {
       if ((window as any).gameScene === this) {
         (window as any).gameScene = null;
@@ -654,6 +677,7 @@ export class GameScene extends Phaser.Scene {
         this.bloodSplatterSystem = null;
       }
       if (this.flickerTimer) this.flickerTimer.destroy();
+      cleanupGraphicsSystems();
     });
     this.events.once('destroy', () => {
       if ((window as any).gameScene === this) {
@@ -676,6 +700,7 @@ export class GameScene extends Phaser.Scene {
         this.bloodSplatterSystem = null;
       }
       if (this.flickerTimer) this.flickerTimer.destroy();
+      cleanupGraphicsSystems();
     });
 
     this.physics.add.overlap(
@@ -1483,6 +1508,11 @@ export class GameScene extends Phaser.Scene {
     const lastMana = this.player.stats.mana;
     this.player.updatePlayer(time, delta);
 
+    // Update status condition veil based on player status
+    if (this.player && this.statusConditionVeil) {
+      this.statusConditionVeil.update(this.player.stats.statusConditions, this.scale.width, this.scale.height);
+    }
+
     // If Blood Bolt fired in player update, create projectile & emit weapon noise
     if (this.player.stats.mana < lastMana - 1) {
       this.firePlayerBloodBolt();
@@ -1722,8 +1752,7 @@ export class GameScene extends Phaser.Scene {
 
     const atmosphereEnabled = useGameStore.getState().settings.atmosphereEffectsEnabled !== false;
     if (atmosphereEnabled) {
-      let closestOffscreenEnemy: Enemy | null = null;
-      let minOffscreenDistance = Infinity;
+      const offscreenThreats: { enemy: Enemy; dist: number }[] = [];
 
       this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
         const enemy = enemyObj as Enemy;
@@ -1741,62 +1770,62 @@ export class GameScene extends Phaser.Scene {
 
             if (isOffscreen) {
               const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
-              if (dist < minOffscreenDistance) {
-                minOffscreenDistance = dist;
-                closestOffscreenEnemy = enemy;
-              }
+              offscreenThreats.push({ enemy, dist });
             }
           }
         }
       });
 
-      if (closestOffscreenEnemy) {
-        const enemy = closestOffscreenEnemy as Enemy;
-        const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, enemy.x, enemy.y);
+      if (offscreenThreats.length > 0) {
+        offscreenThreats.sort((a, b) => a.dist - b.dist);
+        // Draw edge indicators for up to 8 closest offscreen threats
+        const topThreats = offscreenThreats.slice(0, 8);
 
-        // Project onto border
-        const edgeX = cx + Math.cos(angle) * (cx - 25);
-        const edgeY = cy + Math.sin(angle) * (cy - 25);
+        topThreats.forEach(({ enemy }) => {
+          const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, enemy.x, enemy.y);
 
-        const indicatorX = Phaser.Math.Clamp(edgeX, 25, viewW - 25);
-        const indicatorY = Phaser.Math.Clamp(edgeY, 25, viewH - 25);
+          // Project onto border
+          const edgeX = cx + Math.cos(angle) * (cx - 25);
+          const edgeY = cy + Math.sin(angle) * (cy - 25);
 
-        const pulse = 0.4 + 0.3 * Math.sin(time * 0.008);
-        const finalAlpha = Phaser.Math.Clamp(pulse + (alertCount * 0.03), 0.3, 0.95);
-        const color = (enemy.aiState === 'combat' || enemy.aiState === 'frenzy') ? 0xef4444 : 0xf59e0b;
+          const indicatorX = Phaser.Math.Clamp(edgeX, 25, viewW - 25);
+          const indicatorY = Phaser.Math.Clamp(edgeY, 25, viewH - 25);
 
-        this.threatIndicatorGraphics.lineStyle(2, color, finalAlpha);
-        this.threatIndicatorGraphics.fillStyle(color, finalAlpha * 0.4);
+          const pulse = 0.4 + 0.3 * Math.sin(time * 0.008);
+          const finalAlpha = Phaser.Math.Clamp(pulse + (alertCount * 0.03), 0.3, 0.95);
+          const color = (enemy.aiState === 'combat' || enemy.aiState === 'frenzy') ? 0xef4444 : 0xf59e0b;
 
-        const size = 16;
-        const px = Math.cos(angle) * size;
-        const py = Math.sin(angle) * size;
-        const tx = -Math.sin(angle) * (size * 0.6);
-        const ty = Math.cos(angle) * (size * 0.6);
+          this.threatIndicatorGraphics.lineStyle(2, color, finalAlpha);
+          this.threatIndicatorGraphics.fillStyle(color, finalAlpha * 0.4);
 
-        this.threatIndicatorGraphics.beginPath();
-        this.threatIndicatorGraphics.moveTo(indicatorX + px, indicatorY + py);
-        this.threatIndicatorGraphics.lineTo(indicatorX - px + tx, indicatorY - py + ty);
-        this.threatIndicatorGraphics.lineTo(indicatorX - px - tx, indicatorY - py - ty);
-        this.threatIndicatorGraphics.closePath();
-        this.threatIndicatorGraphics.fillPath();
-        this.threatIndicatorGraphics.strokePath();
+          const size = 16;
+          const px = Math.cos(angle) * size;
+          const py = Math.sin(angle) * size;
+          const tx = -Math.sin(angle) * (size * 0.6);
+          const ty = Math.cos(angle) * (size * 0.6);
 
-        // 4.2 — Distorção de Áudio Direcional & 4.4 Tinnitus de Ameaça
-        const dx = enemy.x - this.player.x;
-        const dy = enemy.y - this.player.y;
+          this.threatIndicatorGraphics.beginPath();
+          this.threatIndicatorGraphics.moveTo(indicatorX + px, indicatorY + py);
+          this.threatIndicatorGraphics.lineTo(indicatorX - px + tx, indicatorY - py + ty);
+          this.threatIndicatorGraphics.lineTo(indicatorX - px - tx, indicatorY - py - ty);
+          this.threatIndicatorGraphics.closePath();
+          this.threatIndicatorGraphics.fillPath();
+          this.threatIndicatorGraphics.strokePath();
+        });
+
+        // Spatial Audio & Tinnitus for closest offscreen threat
+        const closestEnemy = offscreenThreats[0].enemy;
+        const dx = closestEnemy.x - this.player.x;
+        const dy = closestEnemy.y - this.player.y;
         const dist = Math.hypot(dx, dy);
         const relativeX = dist > 0 ? dx / dist : 0;
-        const isCombatThreat = enemy.aiState === 'combat' || enemy.aiState === 'frenzy';
+        const isCombatThreat = closestEnemy.aiState === 'combat' || closestEnemy.aiState === 'frenzy';
         soundEngine.updateSpatialThreat(relativeX, 0, isCombatThreat);
 
-        const isEliteOrBoss = enemy.config.behavior === 'boss' || enemy.eliteAffix !== 'none';
+        const isEliteOrBoss = closestEnemy.config.behavior === 'boss' || closestEnemy.eliteAffix !== 'none';
         const hpRatio = this.player.stats.maxHp > 0 ? this.player.stats.hp / this.player.stats.maxHp : 1.0;
         const isEliteThreatClose = isEliteOrBoss && dist < 220;
         soundEngine.updateTinnitusState(hpRatio, isEliteThreatClose);
-        // Frente 6 (spec 11) — Drone de tensão: reaproveita o `alertCount`
-        // (nº de inimigos em combate/frenzy) já calculado acima nesta mesma
-        // função, sem nova iteração sobre os inimigos.
         soundEngine.updateTensionDrone(alertCount, hpRatio);
       } else {
         soundEngine.updateSpatialThreat(0, 0, false);
@@ -1813,12 +1842,11 @@ export class GameScene extends Phaser.Scene {
     // 4.3 & 4.4 — Vinheta Pulsante & Iluminação Dinâmica (WorldManager)
     const playerHpRatio = this.player.stats.hp / this.player.stats.maxHp;
 
-    // Spec 6 (Eixos A & B): luz real do player + pulso de tensão
     if (this.lightingSystem) {
       this.lightingSystem.updatePlayerLight(playerHpRatio);
     }
     if (this.postFX) {
-      this.postFX.setLowHpTension(playerHpRatio <= 0.25);
+      this.postFX.setDangerTension(playerHpRatio, alertCount, this.isBossActive());
     }
 
     if (this.darknessOverlay) {

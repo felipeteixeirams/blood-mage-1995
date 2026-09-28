@@ -100,5 +100,53 @@
     "effect": {
       "damageMultiplierPercent": 35
     }
+  },
+  {
+    "id": "evo_crimson_scythe_range",
+    "title": "Foice Devastadora",
+    "description": "+50% no alcance e +30% no dano da Foice Sacrificial.",
+    "category": "spell",
+    "rarity": "legendary",
+    "icon": "sword",
+    "isSpellEvolution": true,
+    "effect": {
+      "damageMultiplierPercent": 30
+    }
+  },
+  {
+    "id": "evo_crimson_scythe_bleed",
+    "title": "Lâmina Sangrenta",
+    "description": "Foice Sacrificial aplica sangramento contínuo por 3s e confere vampirismo.",
+    "category": "spell",
+    "rarity": "legendary",
+    "icon": "sword",
+    "isSpellEvolution": true,
+    "effect": {
+      "vampirismPercent": 15
+    }
+  },
+  {
+    "id": "evo_hellfire_nova_shards",
+    "title": "Fragmentos de Ossos",
+    "description": "Explosão Necromântica arremessa fragmentos de ossos como projéteis adicionais.",
+    "category": "spell",
+    "rarity": "legendary",
+    "icon": "sparkles",
+    "isSpellEvolution": true,
+    "effect": {
+      "projectileAdd": 2
+    }
+  },
+  {
+    "id": "evo_hellfire_nova_vamp",
+    "title": "Necrose Vampírica",
+    "description": "Explosão Necromântica rouba 10% da vida de todo o dano causado.",
+    "category": "spell",
+    "rarity": "legendary",
+    "icon": "heart",
+    "isSpellEvolution": true,
+    "effect": {
+      "vampirismPercent": 10
+    }
   }
 ]

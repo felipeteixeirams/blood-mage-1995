@@ -83,5 +83,5 @@ Para se parecer com o fluxo contínuo de Dungeon Siege 1:
 ---
 
 **Mantido por:** Felipe + IA Agents
-**Última revisão:** 11 de Agosto de 2026
-**Status de Lançamento Comercial:** Em preparação visual profunda.
+**Última revisão:** 21 de Setembro de 2026
+**Status de Lançamento Comercial:** Em preparação visual e de sistemas.

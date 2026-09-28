@@ -22,6 +22,7 @@ const HighScoresModal = lazy(() => import('./components/HighScoresModal').then((
 const GameOverModal = lazy(() => import('./components/GameOverModal').then((m) => ({ default: m.GameOverModal })));
 const InventoryModal = lazy(() => import('./components/InventoryModal').then((m) => ({ default: m.InventoryModal })));
 const TalentsModal = lazy(() => import('./components/TalentsModal').then((m) => ({ default: m.TalentsModal })));
+const PrestigeModal = lazy(() => import('./components/PrestigeModal').then((m) => ({ default: m.PrestigeModal })));
 const AchievementsModal = lazy(() => import('./components/AchievementsModal').then((m) => ({ default: m.AchievementsModal })));
 const ObservabilityModal = lazy(() => import('./components/ObservabilityModal').then((m) => ({ default: m.ObservabilityModal })));
 const SoundTestModal = lazy(() => import('./components/SoundTestModal').then((m) => ({ default: m.SoundTestModal })));
@@ -53,6 +54,7 @@ export default function App() {
     isAchievementsOpen, setAchievementsOpen,
     isInventoryOpen, setInventoryOpen,
     isTalentsOpen, setTalentsOpen,
+    isPrestigeOpen, setPrestigeOpen,
     isObservabilityOpen, setObservabilityOpen,
     isSoundTestOpen, setSoundTestOpen,
     levelUpData, setLevelUpData,
@@ -74,6 +76,7 @@ export default function App() {
       isAchievementsOpen ||
       isInventoryOpen ||
       isTalentsOpen ||
+      isPrestigeOpen ||
       isObservabilityOpen ||
       isSoundTestOpen ||
       levelUpData !== null ||
@@ -87,6 +90,7 @@ export default function App() {
     isAchievementsOpen,
     isInventoryOpen,
     isTalentsOpen,
+    isPrestigeOpen,
     isObservabilityOpen,
     isSoundTestOpen,
     levelUpData,
@@ -158,12 +162,15 @@ export default function App() {
       } else if (e.key === 't' || e.key === 'T') {
         soundEngine.playButtonClick();
         setTalentsOpen(!useGameStore.getState().isTalentsOpen);
+      } else if (e.key === 'p' || e.key === 'P') {
+        soundEngine.playButtonClick();
+        setPrestigeOpen(!useGameStore.getState().isPrestigeOpen);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState, setInventoryOpen, setTalentsOpen, setObservabilityOpen, setSoundTestOpen]);
+  }, [gameState, setInventoryOpen, setTalentsOpen, setPrestigeOpen, setObservabilityOpen, setSoundTestOpen]);
 
   // Auto-attempt landscape orientation lock on user gesture without blocking
   useEffect(() => {
@@ -414,6 +421,11 @@ export default function App() {
         {isTalentsOpen && (
           <Suspense fallback={null}>
             <TalentsModal onClose={() => setTalentsOpen(false)} />
+          </Suspense>
+        )}
+        {isPrestigeOpen && (
+          <Suspense fallback={null}>
+            <PrestigeModal onClose={() => setPrestigeOpen(false)} />
           </Suspense>
         )}
         {isObservabilityOpen && (

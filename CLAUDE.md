@@ -88,7 +88,7 @@ docs/
 
 ---
 
-## 🧭 Honestidade Técnica e Evidência
+## 🎓 Honestidade Técnica e Avaliação Crítica
 
 > Gap real do projeto, não teórico: PRs com `pnpm test` 100% passando já esconderam
 > regressão visual que só apareceu na verificação ao vivo (PRs #80/#81), e um PR
@@ -96,25 +96,70 @@ docs/
 > diff de verdade, não pelo status do PR (#89). Ver
 > `docs/architecture/08_JULES_SESSION_PROMPT.md`.
 
-**Nunca declare uma implementação "pronta", "funcionando" ou "sem problemas" só porque:**
-- o código compila / `tsc --noEmit` não reclama;
-- `pnpm test` passou;
-- não apareceu erro no console;
-- o *happy path* funciona.
+Compilar, passar nos testes existentes e funcionar no "happy path" **não** significam que uma
+tarefa está pronta. Ao reportar o resultado de um trabalho, diferencie sempre:
 
-Essas são evidências parciais — cada uma cobre uma fatia específica, nenhuma cobre
-"o jogo está bom". Ao reportar o resultado de uma mudança, diga explicitamente o
-que foi e o que **não** foi validado:
+- **IMPLEMENTADO**: o código existe e faz o que foi pedido.
+- **VALIDADO**: rodou uma verificação concreta — diga qual (`pnpm test`, `pnpm run build`,
+  execução manual no navegador, screenshot, leitura estática do código). "Análise estática"
+  e "execução real" não são a mesma coisa e devem ser nomeadas como tal.
+- **NÃO VALIDADO**: não há evidência ainda. Diga isso explicitamente — não omita.
+- **PROBLEMA ENCONTRADO**: risco ou falha concreta, mesmo que fora do escopo pedido.
+- **TRADE-OFF**: existe mais de uma solução razoável e a escolhida tem custo.
 
-- ✅ **Validado por `pnpm verify`** (typecheck + build) — cobre sintaxe/tipos, não comportamento em runtime
-- ✅ **Validado por `pnpm test`** — cobre os casos escritos, não o que não foi testado
-- ✅ **Validado manualmente / via Playwright** (`phaser-4-playtest-harness/SKILL.md`) — cobre runtime real
-- ⚠️ **Não validado:** `<o que ainda falta ver rodando — ex: "calibração visual em jogo", "comportamento em mobile", "balanceamento de dano">`
+Nunca escreva "está ótimo" / "sem problemas" / "pronto para produção" sem apontar qual
+validação sustenta a frase. "Não encontrei problemas" não vira "está excelente" — a ausência
+de evidência contrária não é evidência a favor. Quando a mecânica for algo que só se sente
+jogando (game feel, timing, sensação de controle mobile), declare "Não validado: precisa de
+playtest humano" em vez de assumir que está bom.
 
-Se encontrar um problema, risco ou limitação real durante o trabalho, **diga
-direto** — não suavize a crítica pra soar mais positivo, e nunca transforme "não
-encontrei problema" em "está excelente". Ausência de erro não é qualidade
-comprovada.
+## 🧠 Antes de Implementar uma Mudança Significativa
+
+Pare e responda, mesmo que rapidamente:
+1. Isso resolve o problema pedido, ou só parece resolver?
+2. É consistente com a arquitetura existente (Zustand↔Phaser bridge, extract/delegate do
+   `GameScene`, object pooling) ou introduz um padrão paralelo?
+3. Existe solução mais simples?
+4. Pode quebrar `Player.ts`, `Enemy.ts`, `GameScene.ts` ou outro arquivo de
+   `docs/critical/01_CRITICAL_FILES.md`?
+5. Afeta performance por frame (objetos criados/destruídos, tweens/timers/listeners não
+   limpos, número de inimigos/partículas simultâneos)?
+6. Afeta game feel ou UX (resposta de controle, timing, legibilidade, feedback de dano)?
+7. Funciona em mobile/touch e em proporções de tela diferentes, ou só foi pensado pra desktop?
+8. Está assumindo algo que o pedido não disse? Se sim, diga a suposição em vez de decidir calado.
+
+Se o pedido parecer tecnicamente inadequado, não implemente em silêncio: explique o problema,
+a evidência e a alternativa antes de codar. A meta é uma solução melhor, não obediência cega.
+
+## 📚 Consistência com a Documentação do Projeto
+
+Antes de mudar algo relevante, procure a spec relacionada em `docs/specs/` e os arquivos de
+`docs/architecture/`. Quando o pedido do usuário conflitar com o que está documentado, ou com
+o que o código já faz, aponte o conflito antes de alterar — não escolha uma interpretação
+silenciosa quando isso muda o resultado de forma relevante.
+
+Trate specs em `docs/specs/backlog/` ou `discovery/` como **ideias**, não requisitos ativos —
+só o que está em `in-progress/` ou o próprio código em produção reflete o estado real do jogo.
+O campo `status`/`progress` no frontmatter de uma spec pode estar desatualizado (specs
+`in-progress` já 100% implementadas são comuns neste projeto) — confirme contra o código antes
+de assumir que algo falta ou já existe.
+
+## ✅ Checklist Antes de Declarar uma Tarefa Concluída
+
+- [ ] Todos os requisitos explícitos do pedido foram atendidos? Alguma suposição foi feita
+      sem confirmação — e foi declarada?
+- [ ] `pnpm run typecheck`, `pnpm test -- --run` e `pnpm run build` rodaram e passaram?
+- [ ] Funcionalidades relacionadas continuam funcionando (sem regressão)?
+- [ ] Objetos/luzes/emissores/filtros criados são destruídos/limpos quando deixam de ser
+      necessários (lifecycle de cena, ObjectPool, `shutdown`/`destroy`)?
+- [ ] Fórmulas numéricas novas de combate/balance têm teste dedicado?
+- [ ] Funciona em touch/mobile e em proporções de tela diferentes, quando aplicável?
+- [ ] Releu o diff procurando de propósito por: bug, regressão, edge case, complexidade
+      desnecessária, problema de game feel/UX/performance?
+- [ ] O relatório final diz explicitamente o que foi validado (e como) e o que ficou como
+      "não validado"?
+
+Só depois de passar por isso é que a tarefa deve ser reportada como concluída.
 
 ---
 
@@ -395,7 +440,7 @@ Este `CLAUDE.md` orienta agentes Claude para:
 5. **Documentação:** Correlacionar trabalho com specs do projeto (mas nunca tratar `discovery/`/`scope-definition/` como mandato), manter changelog
 6. **Testing:** Validar com `pnpm verify` antes de finalizar
 7. **Workflow:** Desenvolver na branch designada, nunca em main sem autorização
-8. **Honestidade:** Reportar o que foi validado vs. não validado — nunca inflar sucesso porque "compilou e testou" (ver 🧭 Honestidade Técnica e Evidência)
+8. **Honestidade:** Reportar o que foi validado vs. não validado — nunca inflar sucesso porque "compilou e testou" (ver 🎓 Honestidade Técnica e Avaliação Crítica)
 9. **Qualidade de Jogo:** Avaliar game feel/UX mobile/gameplay, não só "está sem erro" (ver 🎮 Qualidade de Jogo)
 
 ---
@@ -412,18 +457,13 @@ Este `CLAUDE.md` orienta agentes Claude para:
 - ❌ Mudança que afeta persistência/save data (`localStorage`, futura Cloud Save)
 - ❌ Pedido que parece conflitar com um guardrail em `docs/critical/` ou com uma decisão já registrada em `docs/architecture/07_DECISION_LOG.md`
 
-### Questione, não implemente silenciosamente
-Se um pedido do Felipe parecer tecnicamente inadequado (contraria um guardrail
-documentado, reintroduz um bug já resolvido, ou tem escopo/impacto maior que o
-aparente), **não implemente calado**. Em 2-3 linhas: explique qual é o problema,
-que evidência existe (link pro ADR/critical file/bug conhecido), e qual
-alternativa você sugere — a decisão final continua sendo do Felipe, mas ele
-precisa ver o trade-off antes de confirmar.
-
-Isso vale principalmente para specs de prioridade/criticidade alta ou mudanças em
-arquivos críticos — **não é necessário** para tarefas pequenas e bem escopadas
-(ex: specs Jules-ready de baixa criticidade como normal maps ou fixes de
-determinismo). Escale o rigor da pergunta ao tamanho real do risco.
+Isso complementa (não repete) a seção 🧠 Antes de Implementar uma Mudança
+Significativa acima: aqueles 8 pontos valem pra qualquer mudança de porte real;
+os gatilhos aqui em cima são o que especificamente exige parar e falar com o
+Felipe **antes de commitar**, não só questionar internamente antes de codar.
+Escale o rigor ao tamanho real do risco — não é necessário para tarefas
+pequenas e bem escopadas (ex: specs Jules-ready de baixa criticidade como
+normal maps ou fixes de determinismo).
 
 ---
 
@@ -438,13 +478,13 @@ determinismo). Escale o rigor da pergunta ao tamanho real do risco.
 | `docs/critical/03_TESTING_GATES.md` | Requisitos de testes antes de merge |
 | `docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md` | Bugs e workarounds |
 | `docs/architecture/07_DECISION_LOG.md` | Por que decisões arquiteturais grandes foram tomadas (ADR-lite) |
-| `docs/architecture/08_JULES_SESSION_PROMPT.md` | Histórico de falhas reais que motivaram a seção 🧭 Honestidade Técnica |
+| `docs/architecture/08_JULES_SESSION_PROMPT.md` | Histórico de falhas reais que motivaram a seção 🎓 Honestidade Técnica |
 | `docs/specs/in-progress/` | Features em desenvolvimento |
 | `docs/specs/delivered/` | Features completadas com changelog |
 
 ---
 
 **Última atualização:** 2026-09-28  
-**Versão:** 1.1 (+ Honestidade Técnica, Qualidade de Jogo, Escalations expandido)  
+**Versão:** 1.2 (reconciliação com main/PR#121 — honestidade técnica consolidada de duas fontes independentes + 🎮 Qualidade de Jogo)  
 **Status:** Ativo e em uso por agentes Claude Code
 

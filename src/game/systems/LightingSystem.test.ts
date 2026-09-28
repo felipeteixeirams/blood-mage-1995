@@ -55,6 +55,27 @@ describe('LightingSystem (Frente C)', () => {
     expect(light.radius).toBe(144);
   });
 
+  it('não vaza a luz do jogador ao trocar de andar (spec 17, Frente C)', () => {
+    const system = new LightingSystem(mockScene);
+    system.enable('fosso_chagas');
+
+    // Andar 1
+    system.createPlayerLight();
+    const firstLight = (system as any).playerLight;
+    expect(mockLights.addLight).toHaveBeenCalledTimes(1);
+    expect(mockLights.removeLight).not.toHaveBeenCalled();
+
+    // Troca de andar (DungeonFlowController chama createPlayerLight de novo,
+    // sem passar por shutdown/clearTorchLights para a luz do player)
+    system.createPlayerLight();
+
+    expect(mockLights.removeLight).toHaveBeenCalledTimes(1);
+    expect(mockLights.removeLight).toHaveBeenCalledWith(firstLight);
+    expect(mockLights.addLight).toHaveBeenCalledTimes(2);
+    // A referência interna aponta só para a luz nova — a antiga foi removida.
+    expect((system as any).playerLight).not.toBe(firstLight);
+  });
+
   it('adds, flickers, and clears torch lights', () => {
     const system = new LightingSystem(mockScene);
     system.enable('santuario_sangue');

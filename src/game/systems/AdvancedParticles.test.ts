@@ -50,6 +50,34 @@ describe('AdvancedParticles System', () => {
     expect(particles).toBeDefined();
   });
 
+  it('emitDirectional restaura a rotação do emissor após emitir (spec 17, Frente G)', () => {
+    const { scene, add } = makeMockScene();
+    const particles = new AdvancedParticles(scene);
+
+    particles.emitDirectional({ type: 'blood_splatter', x: 10, y: 20, intensity: 1, angle: 45 });
+
+    // O emissor de blood_splatter é o 1º criado em initEmitters().
+    const bloodEmitter = add.particles.mock.results[0].value;
+    expect(bloodEmitter.setAngle).toHaveBeenNthCalledWith(1, 45);
+    // Depois de emitir, a rotação volta a 0 — senão o próximo emit() comum
+    // (sem ângulo) do mesmo tipo sairia deslocado permanentemente.
+    expect(bloodEmitter.setAngle).toHaveBeenNthCalledWith(2, 0);
+    expect(bloodEmitter.setAngle).toHaveBeenCalledTimes(2);
+  });
+
+  it('emit() comum após um emitDirectional não herda a rotação anterior', () => {
+    const { scene, add } = makeMockScene();
+    const particles = new AdvancedParticles(scene);
+    const bloodEmitter = add.particles.mock.results[0].value;
+
+    particles.emitDirectional({ type: 'blood_splatter', x: 0, y: 0, intensity: 1, angle: 90 });
+    bloodEmitter.setAngle.mockClear();
+
+    particles.emit({ type: 'blood_splatter', x: 0, y: 0, intensity: 1 });
+    // emit() puro nunca deveria mexer na rotação do emissor.
+    expect(bloodEmitter.setAngle).not.toHaveBeenCalled();
+  });
+
   it('emite dash trail com faíscas espectrais', () => {
     const { scene } = makeMockScene();
     const particles = new AdvancedParticles(scene);

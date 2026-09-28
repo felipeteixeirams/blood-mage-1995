@@ -148,7 +148,7 @@ export class DungeonFlowController {
     if (!this.scene || !this.scene.dungeonGenerator) return;
 
     const offsetX = chunkIndex * CHUNK_WIDTH;
-    const newRooms = this.scene.dungeonGenerator.generate(CHUNK_WIDTH, CHUNK_HEIGHT, biome, offsetX, 0);
+    const newRooms = this.scene.dungeonGenerator.generate(CHUNK_WIDTH, CHUNK_HEIGHT, biome);
 
     this.scene.rooms = [...(this.scene.rooms || []), ...newRooms];
 

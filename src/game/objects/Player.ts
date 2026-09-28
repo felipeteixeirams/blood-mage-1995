@@ -67,6 +67,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private currentLockedTarget: any = null;
   private targetLockGraphics?: Phaser.GameObjects.Graphics;
 
+  // Player Visibility Enhancement (Fase 2: Legibilidade)
+  private glowGraphics?: Phaser.GameObjects.Graphics;
+  private glowTint: number = 0xff3333; // Blood red glow
+
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'spr_bloodmage');
     if ((scene as any).lightingSystem) { (scene as any).lightingSystem.applyLightPipeline(this); }
@@ -76,6 +80,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(true);
     this.setSize(22, 28);
     this.setOffset(13, 14);
+
+    // Create glow effect: Graphics circle as pulsing aura around player (only in real scenes)
+    if (scene.add && scene.add.graphics) {
+      this.glowGraphics = scene.add.graphics();
+      this.glowGraphics.setDepth(this.depth - 1); // Behind player sprite
+      this.createGlowEffect();
+    }
 
     const typedSpellsData = spellsData as Record<string, SpellConfig>;
 
@@ -514,17 +525,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
       }
 
-      // Visual Status Tints
-      if (!this.isInvulnerable) {
-        if (this.stats.statusConditions?.poison) {
-          this.setTint(0x4ade80); // Green
-        } else if (this.stats.statusConditions?.infection) {
-          this.setTint(0xc084fc); // Purple
-        } else if (this.stats.statusConditions?.bleeding) {
-          this.setTint(0xf87171); // Deep Red
-        } else {
-          this.applyCosmeticTint();
-        }
+      // Visual Status Tints — now handled by subtle screen veil in GameScene instead of opaque sprite tint
+      // The StatusConditionVeil system renders a 12% opacity overlay for status conditions,
+      // which is much less intrusive than the previous full-saturation tint approach.
+      if (!this.isInvulnerable && !this.stats.statusConditions?.bleeding && !this.stats.statusConditions?.poison && !this.stats.statusConditions?.infection) {
+        this.applyCosmeticTint();
+      } else if (!this.isInvulnerable) {
+        this.clearTint();
       }
 
       this.updateLegendarySparks();
@@ -605,6 +612,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Directional indicator rendering
     this.renderDirectionReticle();
     this.renderTargetLockReticle(time);
+    this.updateGlowPosition(time);
   }
 
   /**
@@ -698,6 +706,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.targetLockGraphics) {
       this.targetLockGraphics.destroy();
       this.targetLockGraphics = undefined;
+    }
+    if (this.glowGraphics) {
+      this.glowGraphics.destroy();
+      this.glowGraphics = undefined;
     }
     super.destroy(fromScene);
   }
@@ -909,10 +921,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || spell.manaCost) * 2 : (spell.bloodCost || spell.manaCost)) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
+    this.stats.hp -= bloodCost;
     this.lastAutoShootTime = time;
     // Dispara a pose de conjuração UMA vez, com direção e duração fixas
     // (600ms = 6 frames @ 10fps), em vez de recalcular a cada frame — assim o
@@ -955,10 +967,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || spell.manaCost) * 2 : (spell.bloodCost || spell.manaCost)) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
+    this.stats.hp -= bloodCost;
     // Fase de merge com origin/main (24/08): outras skills também disparam a
     // pose de conjuração, não só o blood bolt — mesma trava fixa de 600ms.
     this.castAnimTimer = 600;
@@ -976,10 +988,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || spell.manaCost) * 2 : (spell.bloodCost || spell.manaCost)) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
+    this.stats.hp -= bloodCost;
     this.castAnimTimer = 600;
     this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
@@ -995,10 +1007,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || spell.manaCost) * 2 : (spell.bloodCost || spell.manaCost)) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
+    this.stats.hp -= bloodCost;
     this.castAnimTimer = 600;
     this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
@@ -1014,13 +1026,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    const hpCost = Math.max(0, Math.round((spell.hpCost || 0) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
-    if (this.stats.hp <= hpCost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0))) * 2 : (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0)))) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
-    this.stats.hp -= hpCost;
+    this.stats.hp -= bloodCost;
     this.castAnimTimer = 600;
     this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
@@ -1036,13 +1045,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    const hpCost = Math.max(0, Math.round((spell.hpCost || 0) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
-    if (this.stats.hp <= hpCost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0))) * 2 : (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0)))) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
-    this.stats.hp -= hpCost;
+    this.stats.hp -= bloodCost;
     this.castAnimTimer = 600;
     this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
@@ -1058,13 +1064,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    const hpCost = Math.max(0, Math.round((spell.hpCost || 0) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
-    if (this.stats.hp <= hpCost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0))) * 2 : (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0)))) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
-    this.stats.hp -= hpCost;
+    this.stats.hp -= bloodCost;
     this.castAnimTimer = 600;
     this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
@@ -1080,13 +1083,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    const hpCost = Math.max(0, Math.round((spell.hpCost || 0) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
-    if (this.stats.hp <= hpCost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0))) * 2 : (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0)))) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
-    this.stats.hp -= hpCost;
+    this.stats.hp -= bloodCost;
     this.castAnimTimer = 600;
     this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
@@ -1102,13 +1102,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hasRuneFamine = useGameStore.getState().activeModifiers.includes('rune_famine');
     const relicMods = useGameStore.getState().getRelicModifiers();
     const discount = relicMods.spellCostDiscount || 0;
-    const cost = Math.max(0, Math.round((hasRuneFamine ? spell.manaCost * 2 : spell.manaCost) * (1 - discount)));
-    const hpCost = Math.max(0, Math.round((spell.hpCost || 0) * (1 - discount)));
-    if (this.stats.mana < cost) return false;
-    if (this.stats.hp <= hpCost) return false;
+    const bloodCost = Math.max(0, Math.round((hasRuneFamine ? (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0))) * 2 : (spell.bloodCost || (spell.manaCost + (spell.hpCost || 0)))) * (1 - discount)));
+    if (this.stats.hp < bloodCost) return false;
 
-    this.stats.mana -= cost;
-    this.stats.hp -= hpCost;
+    this.stats.hp -= bloodCost;
     this.castAnimTimer = 600;
     this.castAnimDir = this.get8Direction(this.aimVector.x, this.aimVector.y);
     const cd = spell.cooldownMs * (1 - this.getEffectiveCooldownReduction());
@@ -1302,5 +1299,70 @@ this.stats.hp = Math.max(0, this.stats.hp - amount);
     // Notify React UI — comando tipado via store, ver
     // docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
     useGameStore.getState().notifyLootPickup(item);
+  }
+
+  private createGlowEffect(): void {
+    if (!this.glowGraphics) return;
+
+    const g = this.glowGraphics;
+    g.clear();
+
+    // Concentric circles with blood-red color and transparency gradient
+    const glowRadius = 24;
+    const pulseIntensity = 0.7;
+
+    // Outer glow (most transparent, fades out)
+    g.fillStyle(this.glowTint, 0.15 * pulseIntensity);
+    g.fillCircle(0, 0, glowRadius);
+
+    // Mid glow (semi-transparent)
+    g.fillStyle(this.glowTint, 0.25 * pulseIntensity);
+    g.fillCircle(0, 0, glowRadius * 0.65);
+
+    // Inner glow (more opaque)
+    g.fillStyle(this.glowTint, 0.4 * pulseIntensity);
+    g.fillCircle(0, 0, glowRadius * 0.35);
+
+    // Set up pulsing animation using tweens
+    if (this.scene && this.scene.tweens) {
+      this.scene.tweens.add({
+        targets: this,
+        glowTint: [0xff3333, 0xff6b6b, 0xff3333],
+        duration: 1500,
+        repeat: -1,
+        ease: 'Sine.InOut'
+      });
+    }
+  }
+
+  private updateGlowPosition(time: number): void {
+    if (!this.glowGraphics || this.stats.isUnconscious || this.stats.isDefinitivelyDead) {
+      if (this.glowGraphics) {
+        this.glowGraphics.clear();
+      }
+      return;
+    }
+
+    // Update glow position to follow player sprite
+    this.glowGraphics.setPosition(this.x, this.y);
+
+    // Recalculate glow with pulsing effect based on time
+    const g = this.glowGraphics;
+    g.clear();
+
+    const glowRadius = 24;
+    const pulse = Math.sin(time / 300) * 0.3 + 0.7; // Oscillates between 0.4 and 1.0
+
+    // Outer glow (most transparent, fades out)
+    g.fillStyle(this.glowTint, 0.15 * pulse);
+    g.fillCircle(0, 0, glowRadius);
+
+    // Mid glow (semi-transparent)
+    g.fillStyle(this.glowTint, 0.25 * pulse);
+    g.fillCircle(0, 0, glowRadius * 0.65);
+
+    // Inner glow (more opaque)
+    g.fillStyle(this.glowTint, 0.4 * pulse);
+    g.fillCircle(0, 0, glowRadius * 0.35);
   }
 }

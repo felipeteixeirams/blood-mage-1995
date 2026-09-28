@@ -144,16 +144,31 @@ export class AdvancedParticles {
 
   /**
    * Emitir efeito direcional (com ângulo)
+   *
+   * `emitter.setAngle()` NÃO é a config de espalhamento de partículas
+   * (`angle: {min,max}` do emitterConfig) — é o setter de rotação do
+   * próprio GameObject do emissor (mixin Transform, como em qualquer
+   * sprite). Os emissores são singletons compartilhados no Map `emitters`
+   * e reutilizados por todo efeito futuro do mesmo tipo; sem restaurar a
+   * rotação depois de emitir, um único dash/ataque direcional deixava o
+   * emissor girado permanentemente, e o próximo `emit()` sem ângulo do
+   * mesmo tipo (ex: gore comum de `blood_splatter`) saía deslocado na
+   * direção errada (spec 17, Frente G).
    */
   public emitDirectional(effect: ParticleEffect): void {
     const emitter = this.emitters.get(effect.type);
     if (!emitter) return;
 
-    if (effect.angle !== undefined) {
+    const hasAngle = effect.angle !== undefined;
+    if (hasAngle) {
       emitter.setAngle(effect.angle);
     }
 
     this.emit(effect);
+
+    if (hasAngle) {
+      emitter.setAngle(0);
+    }
   }
 
   /**

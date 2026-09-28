@@ -3,6 +3,7 @@ import { MonsterConfig, SpellConfig, DismembermentResult, DismembermentType } fr
 import spellsData from '../../data/spells.json';
 import { soundEngine } from '../../utils/soundEngine';
 import { CombatFeel } from './CombatFeel';
+import { useGameStore } from '../../store/gameStore';
 
 const typedSpellsData = spellsData as Record<string, SpellConfig>;
 
@@ -117,6 +118,12 @@ export class DismembermentSystem {
 
     const { x, y, texture, scaleX, scaleY, config, bloodEmitter } = enemy;
     const isBoss = config.bodyType === 'boss' || config.behavior === 'boss';
+    const isReduced = useGameStore.getState().settings?.contentIntensity === 'reduced';
+
+    const contentIntensity = useGameStore.getState().settings.contentIntensity ?? 'full';
+    if (contentIntensity === 'reduced' && (result.type === 'total_destruction' || result.type === 'partial_dismemberment')) {
+      result = { ...result, type: 'normal_collapse' };
+    }
 
     if (result.type === 'total_destruction') {
       // 1. Audio & Haptics
@@ -126,7 +133,7 @@ export class DismembermentSystem {
 
       // 2. High-volume blood particles
       if (bloodEmitter && bloodEmitter.active) {
-        bloodEmitter.emitParticleAt(x, y, 32);
+        bloodEmitter.emitParticleAt(x, y, isReduced ? 16 : 32);
       }
 
       // 3. Massive floor blood pool decal & directional gore (Frente 4)
@@ -147,27 +154,29 @@ export class DismembermentSystem {
         this.spawnFloorDecal(scene, x, y, poolKey, poolScale, 0.9, 12000);
       }
 
-      // 4. Fragment slice physics (4-6 quadrant chunks bursting outwards)
-      const fragmentCount = Math.max(4, config.executionFragments || 5);
-      const impulseBase = config.executionImpulse || 180;
+      // 4. Fragment slice physics (skipped in reduced intensity mode)
+      if (!isReduced) {
+        const fragmentCount = Math.max(4, config.executionFragments || 5);
+        const impulseBase = config.executionImpulse || 180;
 
-      for (let i = 0; i < fragmentCount; i++) {
-        const angle = (i / fragmentCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
-        const speed = impulseBase * (0.7 + Math.random() * 0.7);
-        const vx = Math.cos(angle) * speed;
-        const vy = Math.sin(angle) * speed - 60; // Upward initial trajectory
+        for (let i = 0; i < fragmentCount; i++) {
+          const angle = (i / fragmentCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
+          const speed = impulseBase * (0.7 + Math.random() * 0.7);
+          const vx = Math.cos(angle) * speed;
+          const vy = Math.sin(angle) * speed - 60; // Upward initial trajectory
 
-        this.spawnPhysicalGibPiece(
-          scene,
-          x + (Math.random() - 0.5) * 12,
-          y + (Math.random() - 0.5) * 12,
-          texture.key,
-          scaleX * 0.45,
-          vx,
-          vy,
-          (Math.random() - 0.5) * 16,
-          config.goreEffect === 'bone_dust' ? 0xdcd3c1 : 0x880000
-        );
+          this.spawnPhysicalGibPiece(
+            scene,
+            x + (Math.random() - 0.5) * 12,
+            y + (Math.random() - 0.5) * 12,
+            texture.key,
+            scaleX * 0.45,
+            vx,
+            vy,
+            (Math.random() - 0.5) * 16,
+            config.goreEffect === 'bone_dust' ? 0xdcd3c1 : 0x880000
+          );
+        }
       }
     } else if (result.type === 'partial_dismemberment') {
       // 1. Audio
@@ -197,28 +206,34 @@ export class DismembermentSystem {
           scaleX,
           scaleY,
           isAbomination: config.id === 'gore_abomination',
-          isMutilated: true,
+          isMutilated: !isReduced,
         });
       } else {
         const poolKey = config.goreEffect === 'bone_dust' ? 'particle_bone_dust' : 'blood_pool_stain';
         this.spawnFloorDecal(scene, x, y, poolKey, (config.executionBloodScale || 1.8) * 0.8, 0.85, 10000);
-        this.spawnMutilatedCorpseDecal(scene, x, y, texture.key, scaleX, scaleY);
+        if (isReduced) {
+          this.spawnIntactCorpseDecal(scene, x, y, texture.key, scaleX, scaleY);
+        } else {
+          this.spawnMutilatedCorpseDecal(scene, x, y, texture.key, scaleX, scaleY);
+        }
       }
 
-      // 4. Severed head / limb piece flying off
-      const severAngle = Math.random() * Math.PI * 2;
-      const speed = 120 + Math.random() * 70;
-      this.spawnPhysicalGibPiece(
-        scene,
-        x,
-        y - 10,
-        texture.key,
-        scaleX * 0.4,
-        Math.cos(severAngle) * speed,
-        Math.sin(severAngle) * speed - 40,
-        (Math.random() - 0.5) * 12,
-        config.goreEffect === 'bone_dust' ? 0xdcd3c1 : 0xaa1111
-      );
+      // 4. Severed head / limb piece flying off (skipped in reduced intensity mode)
+      if (!isReduced) {
+        const severAngle = Math.random() * Math.PI * 2;
+        const speed = 120 + Math.random() * 70;
+        this.spawnPhysicalGibPiece(
+          scene,
+          x,
+          y - 10,
+          texture.key,
+          scaleX * 0.4,
+          Math.cos(severAngle) * speed,
+          Math.sin(severAngle) * speed - 40,
+          (Math.random() - 0.5) * 12,
+          config.goreEffect === 'bone_dust' ? 0xdcd3c1 : 0xaa1111
+        );
+      }
     } else {
       // Normal Collapse
       soundEngine.playBloodSquish();
@@ -376,11 +391,12 @@ export class DismembermentSystem {
     if (!scene || !scene.add) return;
 
     const corpse = scene.add.image(x, y + 6, textureKey);
-    corpse.setDepth(2);
-    corpse.setScale(scaleX * 0.9, scaleY * 0.7);
-    corpse.setAngle(90 + (Math.random() - 0.5) * 30);
-    corpse.setTint(0x551111); // Dark coagulated gore tint
-    corpse.setAlpha(0.85);
+    if (!corpse) return;
+    if (typeof corpse.setDepth === 'function') corpse.setDepth(2);
+    if (typeof corpse.setScale === 'function') corpse.setScale(scaleX * 0.9, scaleY * 0.7);
+    if (typeof corpse.setAngle === 'function') corpse.setAngle(90 + (Math.random() - 0.5) * 30);
+    if (typeof corpse.setTint === 'function') corpse.setTint(0x551111); // Dark coagulated gore tint
+    if (typeof corpse.setAlpha === 'function') corpse.setAlpha(0.85);
 
     if (scene.tweens) {
       scene.tweens.add({
@@ -409,11 +425,12 @@ export class DismembermentSystem {
     if (!scene || !scene.add) return;
 
     const corpse = scene.add.image(x, y + 6, textureKey);
-    corpse.setDepth(2);
-    corpse.setScale(scaleX, scaleY);
-    corpse.setAngle(90);
-    corpse.setTint(0x444444);
-    corpse.setAlpha(0.7);
+    if (!corpse) return;
+    if (typeof corpse.setDepth === 'function') corpse.setDepth(2);
+    if (typeof corpse.setScale === 'function') corpse.setScale(scaleX, scaleY);
+    if (typeof corpse.setAngle === 'function') corpse.setAngle(90);
+    if (typeof corpse.setTint === 'function') corpse.setTint(0x444444);
+    if (typeof corpse.setAlpha === 'function') corpse.setAlpha(0.7);
 
     if (scene.tweens) {
       scene.tweens.add({

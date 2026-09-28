@@ -3,8 +3,8 @@ agent_context: game-engine, frontend
 target_module: src/utils/textureGenerator.ts
 priority: low
 criticality: low
-status: backlog
-last_updated: 2026-09-07
+status: delivered
+last_updated: 2026-09-08
 tags: [specs, texture, normal-map, light2d, jules-ready]
 ---
 

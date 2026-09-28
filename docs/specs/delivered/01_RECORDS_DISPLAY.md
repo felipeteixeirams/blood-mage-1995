@@ -33,7 +33,7 @@ Sistema de exibição de recordes (high scores) do jogo, com tela dedicada mostr
 - ✅ **RecordsDisplay.tsx** - Modal React com tabela de recordes
 - ✅ **RecordsScene.ts** - Tela Phaser com design pixel-art
 - ✅ **Botão Troféu** - Integrado no canto superior direito do HUD
-- ✅ **localStorage Integration** - Persistência de dados (key: `bloodmage_1995_highscores`)
+- ✅ **localStorage Integration** - Persistência de dados (key: `bloodmage.records`)
 - ✅ **Design Harmonizado** - Paleta ouro/dark compatível com visual do jogo
 
 ### Specs Atendidas
@@ -96,9 +96,10 @@ GameplayHUD
 
 ```json
 {
-  "bloodmage_1995_highscores": [
+  "bloodmage.records": [
     { "name": "VORTHAK", "score": 98450, "level": 12 },
-    { "name": "MORWENNA", "score": 87120, "level": 11 }
+    { "name": "MORWENNA", "score": 87120, "level": 11 },
+    ...
   ]
 }
 ```
@@ -107,10 +108,10 @@ GameplayHUD
 
 ## 📚 Documentação
 
-- **Spec detalhada:** [[../../archive/gameplay/05_RECORDS_SYSTEM.md]]
-- **Design patterns:** [[../../archive/design/02_UI_PATTERNS.md]]
-- **Context Frontend:** [[../../archive/context/FRONTEND_DEVELOPER.md]]
-- **Integration:** [[../../archive/integration/00_LOVABLE_INTEGRATION.md]]
+- **Spec detalhada:** [[../../gameplay/05_RECORDS_SYSTEM.md]]
+- **Design patterns:** [[../../design/02_UI_PATTERNS.md]]
+- **Context Frontend:** [[../../context/FRONTEND_DEVELOPER.md]]
+- **Integration:** [[../../integration/00_LOVABLE_INTEGRATION.md]]
 
 ---
 

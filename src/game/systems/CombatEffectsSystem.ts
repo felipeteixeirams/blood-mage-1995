@@ -6,6 +6,7 @@ import { LootSystem } from './LootSystem';
 import { DismembermentSystem } from './DismembermentSystem';
 import { CombatFeel } from './CombatFeel';
 import { ContractSystem } from './ContractSystem';
+import { FloatingTextDispatcher } from './FloatingTextDispatcher';
 import { soundEngine } from '../../utils/soundEngine';
 import HapticFeedback from '../../utils/haptics';
 import { useGameStore } from '../../store/gameStore';
@@ -22,7 +23,11 @@ import { UpgradeOption } from '../../types/game';
  * métodos aqui (registerKillCombo, spawnFloatingText, triggerLevelUp).
  */
 export class CombatEffectsSystem {
-  constructor(private scene: GameScene) {}
+  private floatingTextDispatcher: FloatingTextDispatcher;
+
+  constructor(private scene: GameScene) {
+    this.floatingTextDispatcher = new FloatingTextDispatcher();
+  }
 
   spawnProceduralGore(enemy: Enemy) {
     const scene = this.scene;
@@ -267,9 +272,14 @@ export class CombatEffectsSystem {
 
     // Just store pending data — player distributes later via talent tree (T key)
     if (scene.callbacks?.onLevelUp) {
-      const shuffled = [...upgradesData].sort(() => 0.5 - Math.random());
+      const currentLvl = scene.player.stats.level;
+      let pool = [...upgradesData];
+      if (currentLvl === 5 || currentLvl === 10) {
+        pool = upgradesData.filter((u: any) => u.isSpellEvolution || u.rarity === 'legendary' || u.category === 'spell');
+      }
+      const shuffled = [...pool].sort(() => 0.5 - Math.random());
       const selectedOptions = shuffled.slice(0, 3) as UpgradeOption[];
-      scene.callbacks.onLevelUp(scene.player.stats.level, selectedOptions);
+      scene.callbacks.onLevelUp(currentLvl, selectedOptions);
     }
   }
 
@@ -309,6 +319,12 @@ export class CombatEffectsSystem {
 
   spawnFloatingText(x: number, y: number, text: string, color: string = '#f87171', isCrit: boolean = false) {
     const scene = this.scene;
+    const currentTime = scene.time.now;
+    const duration = isCrit ? 850 : 650;
+
+    // Calculate final position using dispersion system to avoid overlaps
+    const finalPos = this.floatingTextDispatcher.calculateDispersion(x, y, currentTime);
+
     const highContrast = useGameStore.getState().settings.highContrastDamageTexts;
     const fontSize = highContrast
       ? (isCrit ? '22px' : '16px')
@@ -316,14 +332,16 @@ export class CombatEffectsSystem {
     const strokeColor = '#000000';
     const strokeThickness = highContrast ? 6 : (isCrit ? 4 : 3);
 
-    const jitterX = (Math.random() - 0.5) * 16;
-    const txt = scene.add.text(x + jitterX, y - 10, text, {
+    const txt = scene.add.text(finalPos.x, y - 10, text, {
       fontSize,
       fontFamily: '"Press Start 2P", monospace',
       color,
       stroke: strokeColor,
       strokeThickness,
     }).setOrigin(0.5).setDepth(2100);
+
+    // Register this text for dispersion tracking
+    this.floatingTextDispatcher.registerText(finalPos.x, y - (isCrit ? 40 : 28), currentTime, duration);
 
     if (isCrit) {
       txt.setScale(1.35);
@@ -338,9 +356,10 @@ export class CombatEffectsSystem {
 
     scene.tweens.add({
       targets: txt,
+      x: finalPos.x,
       y: y - (isCrit ? 40 : 28),
       alpha: 0,
-      duration: isCrit ? 850 : 650,
+      duration,
       ease: 'Cubic.easeOut',
       onComplete: () => txt.destroy(),
     });

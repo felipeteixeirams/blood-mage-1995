@@ -22,12 +22,14 @@ import { CodexSystem } from '../game/systems/CodexSystem';
 import monstersData from '../data/monsters.json';
 import relicsData from '../data/relics.json';
 import { CodexCategory, CodexEntry, MonsterConfig, RelicItem } from '../types/game';
+import { useTranslation } from '../i18n';
 
 interface CodexModalProps {
   onClose: () => void;
 }
 
 export const CodexModal: React.FC<CodexModalProps> = ({ onClose }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<CodexCategory>('enemies');
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
 
@@ -79,7 +81,7 @@ export const CodexModal: React.FC<CodexModalProps> = ({ onClose }) => {
 
   return (
     <ModalBase
-      title="CÓDICE DO SANGUE"
+      title={t('codex.title')}
       subtitle="Enciclopédia Ancestral de Demônios, Artefatos e Lore Gótica"
       onClose={() => {
         soundEngine.playButtonClick();
@@ -114,9 +116,9 @@ export const CodexModal: React.FC<CodexModalProps> = ({ onClose }) => {
         <div className="flex gap-1.5 border-b border-[#b8860b]/30 pb-2">
           {(['enemies', 'relics', 'lore'] as CodexCategory[]).map((cat) => {
             const labels: Record<CodexCategory, string> = {
-              enemies: 'BESTIÁRIO',
-              relics: 'RELÍQUIAS',
-              lore: 'MANUSCRITOS'
+              enemies: t('codex.enemies').toUpperCase(),
+              relics: t('codex.relics').toUpperCase(),
+              lore: t('codex.lore').toUpperCase()
             };
             const isActive = activeTab === cat;
             return (

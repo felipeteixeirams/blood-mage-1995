@@ -169,6 +169,7 @@ export interface SpellConfig {
   description: string;
   manaCost: number;
   hpCost?: number;
+  bloodCost?: number;
   cooldownMs: number;
   baseDamage: number;
   projectileSpeed: number;
@@ -246,7 +247,10 @@ export interface WaveConfig {
   bossMonsterId?: string;
 }
 
+export type Language = 'pt-BR' | 'en-US';
+
 export interface GameSettings {
+  language?: Language;
   minimapVisible: boolean;
   minimapAlpha: number;
   animatedPortrait: boolean;
@@ -269,6 +273,7 @@ export interface GameSettings {
   lowPerformanceParticles?: boolean;
   highContrastDamageTexts?: boolean;
   postProcessingEnabled?: boolean;
+  contentIntensity?: 'full' | 'reduced';
   hudLayout?: Record<string, { x: number, y: number, size: 'small' | 'medium' | 'large' }>;
   activePaletteId?: string;
 }

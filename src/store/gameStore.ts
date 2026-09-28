@@ -9,6 +9,7 @@ import achievementsData from '../data/achievements.json';
 import dialoguesData from '../data/dialogues.json';
 import campaignQuestsData from '../data/campaignQuests.json';
 import campaignItemsData from '../data/campaignItems.json';
+import talentsData from '../data/talents.json';
 
 type GameStateStatus = 'menu' | 'playing' | 'paused';
 
@@ -783,6 +784,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
   upgradeTalent: (talentId, cost) => {
     const { bloodCrystals, talentLevels } = get();
     if (bloodCrystals < cost) return false;
+
+    const node = (talentsData as any[]).find((t) => t.id === talentId);
+    if (node?.exclusive_with) {
+      const isBlocked = node.exclusive_with.some((otherId: string) => (talentLevels[otherId] || 0) > 0);
+      if (isBlocked) return false;
+    }
 
     const nextCrystals = bloodCrystals - cost;
     const currentLvl = talentLevels[talentId] || 0;

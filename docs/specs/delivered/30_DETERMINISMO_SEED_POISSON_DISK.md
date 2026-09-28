@@ -3,8 +3,8 @@ agent_context: game-engine, backend
 target_module: src/game/systems/HeightmapGenerator.ts
 priority: medium
 criticality: low
-status: backlog
-last_updated: 2026-09-07
+status: delivered
+last_updated: 2026-09-08
 tags: [specs, procedural-generation, determinism, seed, poisson-disk, jules-ready]
 ---
 

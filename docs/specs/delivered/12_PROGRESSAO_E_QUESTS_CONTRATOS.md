@@ -3,9 +3,9 @@ agent_context: backend, game-designer, frontend
 target_module: src/store/gameStore.ts, src/data
 priority: medium
 criticality: medium
-status: backlog
-progress: partial
-last_updated: "2026-09-02"
+status: delivered
+progress: complete
+last_updated: "2026-09-19"
 tags:
   - progression
   - contracts
@@ -17,7 +17,7 @@ tags:
 
 # 📜 Spec 12: Progressão, Micro-Quests (Contratos) e Evolução de Habilidades
 
-> **Status:** 🟡 PARCIALMENTE IMPLEMENTADO
+> **Status:** 🟢 CONCLUÍDO E INTEGRADO (DELIVERED)
 > **Data:** Setembro de 2026
 > **Domínio:** Progressão Roguelite, Contratos por Run, Modificadores de Desafio e Árvore de Talentos.
 
@@ -62,11 +62,11 @@ Diferente da especificação inicial do projeto, uma parte significativa desta f
 ## 4. 🧪 Critérios de Aceite
 - [x] 3 Contratos gerados aleatoriamente por run com acompanhamento dinâmico na HUD e entrega instantânea de recompensas (`ContractSystem.ts`).
 - [x] Modificadores de corrida funcionais na tela de seleção antes do início da partida (`RunModifiersModal.tsx`).
-- [ ] Árvore de talentos bloqueia caminhos mutuamente exclusivos quando um nó com `"exclusive_with"` é selecionado.
-- [ ] Popup de evolução de feitiço é engajado corretamente ao atingir nível 5 e 10 de qualquer habilidade.
+- [x] Árvore de talentos bloqueia caminhos mutuamente exclusivos quando um nó com `"exclusive_with"` é selecionado.
+- [x] Popup de evolução de feitiço é engajado corretamente ao atingir nível 5 e 10 de qualquer habilidade.
 
 ---
 
 ## 📊 Status & Esforço Estimado
-- **Status:** 🟡 PARCIALMENTE IMPLEMENTADO (Contratos e Modificadores 100% funcionais; Ramificação de Talentos e Evolução de Skills em Backlog)
-- **Esforço Estimado para Conclusão:** 2–3 dias de desenvolvimento.
+- **Status:** 🟢 100% IMPLEMENTADO (Contratos, Modificadores, Ramificação Mutuamente Exclusiva de Talentos e Evolução de Habilidades 100% integrados e testados)
+- **Esforço Estimado para Conclusão:** Concluído.

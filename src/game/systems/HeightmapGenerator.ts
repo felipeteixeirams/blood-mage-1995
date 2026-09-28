@@ -277,14 +277,20 @@ export class HeightmapGenerator {
       grid[gx][gy] = initialPoint;
     }
 
+    let poissonCallCount = 0;
+    const nextRandom = (): number => {
+      const val = this.hashLattice(poissonCallCount++, 0.314159);
+      return Math.min(0.999999, val);
+    };
+
     while (activeList.length > 0) {
-      const randIdx = Math.floor(Math.random() * activeList.length);
+      const randIdx = Math.floor(nextRandom() * activeList.length);
       const current = activeList[randIdx];
       let foundValid = false;
 
       for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const angle = Math.random() * Math.PI * 2;
-        const dist = minDistance + Math.random() * minDistance;
+        const angle = nextRandom() * Math.PI * 2;
+        const dist = minDistance + nextRandom() * minDistance;
         const candidateGridX = current.gridX + Math.cos(angle) * dist;
         const candidateGridY = current.gridY + Math.sin(angle) * dist;
 

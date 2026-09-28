@@ -32,10 +32,24 @@ function makeMockScene() {
 
 // Sprite mock com a Filters API do Phaser 4 (`sprite.filters.internal.addGlow`),
 // usada pelo Bloom (spec 11, Frente 5 — ver LightingPolish.ts).
+//
+// Fiel ao Phaser 4 real: `sprite.filters` só existe DEPOIS de `enableFilters()`
+// ser chamado (docs.phaser.io/filters — "Game objects do not have filters
+// available by default"). `enableFilters` aqui é um spy que só popula
+// `.filters` na primeira chamada, para que os testes possam confirmar que
+// (a) o código real chama `enableFilters()` antes de acessar `.filters`, e
+// (b) chamadas repetidas em sprites reciclados de ObjectPool não recriam a
+// filterCamera interna a cada respawn (spec 17, Frente A).
 function makeBloomSprite(overrides: Partial<{ x: number; y: number }> = {}) {
   const addGlow = vi.fn();
   const clear = vi.fn();
   const setTint = vi.fn(function (this: any, t: number) { this.tint = t; return this; });
+  const enableFilters = vi.fn(function (this: any) {
+    if (!this.filters) {
+      this.filters = { internal: { addGlow, clear } };
+    }
+    return this;
+  });
   return {
     x: overrides.x ?? 10,
     y: overrides.y ?? 20,
@@ -43,11 +57,13 @@ function makeBloomSprite(overrides: Partial<{ x: number; y: number }> = {}) {
     tint: 0xffffff,
     active: true,
     once: vi.fn(),
-    filters: { internal: { addGlow, clear } },
+    filters: undefined,
+    enableFilters,
     setTint,
     __addGlow: addGlow,
     __clear: clear,
     __setTint: setTint,
+    __enableFilters: enableFilters,
   } as any;
 }
 
@@ -237,6 +253,11 @@ describe('LightingPolish', () => {
       polish.addSpellGlow(sprite, 'hellfire_nova');
       expect(sprite.__clear).toHaveBeenCalledTimes(2);
       expect(sprite.__addGlow).toHaveBeenCalledTimes(2);
+      // Regressão (spec 17, Frente A): enableFilters() cria uma filterCamera
+      // interna por sprite. Reaplicar Bloom no mesmo sprite reciclado (todo
+      // respawn de ObjectPool) NÃO pode chamar enableFilters() de novo, ou
+      // vazamos uma filterCamera a cada ciclo do pool.
+      expect(sprite.__enableFilters).toHaveBeenCalledTimes(1);
     });
 
     it('respeita o teto MAX_ACTIVE_BLOOM_TARGETS de filtros simultâneos', () => {

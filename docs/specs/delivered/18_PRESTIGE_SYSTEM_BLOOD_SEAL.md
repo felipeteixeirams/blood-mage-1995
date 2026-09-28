@@ -15,7 +15,7 @@ Prover um ciclo de progressão de fim de jogo (endgame) onde o jogador pode volu
 ---
 
 ## Status
-🟢 **COMPLETO** (Lógica de Metajogo, Atributos, Persistência e Sincronização com o Player vivo) / 🟡 **PARCIAL** (Modal de Interface React em Backlog — ver `docs/specs/backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md`)
+🟢 **COMPLETO** (Lógica de Metajogo, Atributos, Persistência e Sincronização com o Player vivo, e Modal de Interface React `PrestigeModal.tsx`)
 
 ---
 
@@ -58,7 +58,7 @@ Prover um ciclo de progressão de fim de jogo (endgame) onde o jogador pode volu
 
 ## Notas & Divergência Encontrada
 
-- **Status do Modal UI:** a camada de backend, persistência, regras de negócio e cálculo de atributos de combate do sistema de Prestígio estão 100% implementadas e operacionais no motor. O modal React dedicado para acionar o prestígio visualmente na Safe House ainda não foi construído — ver `docs/specs/backlog/06_SISTEMA_DE_PRESTIGIO_BLOOD_SEAL.md` para o gap real. Hoje só é acionável via `useGameStore.getState().performPrestige()` (console/dev).
+- **Status do Modal UI (atualizado 2026-09-28):** a camada de backend, persistência, regras de negócio e cálculo de atributos de combate do sistema de Prestígio estão 100% implementadas e operacionais no motor. O modal React (`src/components/PrestigeModal.tsx` + `PrestigeModal.test.tsx`) já foi construído e entregue — alocação de selos, seleção de dificuldade, confirmação de sacrifício rúnico e navegação gamepad. Acionável tanto via UI (NPC Ancião na Safe House) quanto via `useGameStore.getState().performPrestige()` (console/dev).
 
 - **Bug crítico encontrado e corrigido em 2026-09-06** (ver
   `docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md`): a versão
