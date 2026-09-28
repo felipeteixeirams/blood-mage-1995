@@ -3,7 +3,7 @@ agent_context: all agents
 target_module: root
 priority: high
 status: active
-last_updated: 2026-09-03
+last_updated: 2026-09-28
 tags: [project-config, claude-code, architecture, conventions]
 ---
 
@@ -84,6 +84,75 @@ docs/
 - Adicionar UI diretamente ao canvas Phaser (sempre usar React + Zustand bridge)
 - Usar `CustomEvent` ou `window.dispatchEvent` para gameplay (só Zustand)
 - Fazer alterações acumuladas sem rodar testes entre elas
+
+---
+
+## 🎓 Honestidade Técnica e Avaliação Crítica
+
+Compilar, passar nos testes existentes e funcionar no "happy path" **não** significam que uma
+tarefa está pronta. Ao reportar o resultado de um trabalho, diferencie sempre:
+
+- **IMPLEMENTADO**: o código existe e faz o que foi pedido.
+- **VALIDADO**: rodou uma verificação concreta — diga qual (`pnpm test`, `pnpm run build`,
+  execução manual no navegador, screenshot, leitura estática do código). "Análise estática"
+  e "execução real" não são a mesma coisa e devem ser nomeadas como tal.
+- **NÃO VALIDADO**: não há evidência ainda. Diga isso explicitamente — não omita.
+- **PROBLEMA ENCONTRADO**: risco ou falha concreta, mesmo que fora do escopo pedido.
+- **TRADE-OFF**: existe mais de uma solução razoável e a escolhida tem custo.
+
+Nunca escreva "está ótimo" / "sem problemas" / "pronto para produção" sem apontar qual
+validação sustenta a frase. "Não encontrei problemas" não vira "está excelente" — a ausência
+de evidência contrária não é evidência a favor. Quando a mecânica for algo que só se sente
+jogando (game feel, timing, sensação de controle mobile), declare "Não validado: precisa de
+playtest humano" em vez de assumir que está bom.
+
+## 🧠 Antes de Implementar uma Mudança Significativa
+
+Pare e responda, mesmo que rapidamente:
+1. Isso resolve o problema pedido, ou só parece resolver?
+2. É consistente com a arquitetura existente (Zustand↔Phaser bridge, extract/delegate do
+   `GameScene`, object pooling) ou introduz um padrão paralelo?
+3. Existe solução mais simples?
+4. Pode quebrar `Player.ts`, `Enemy.ts`, `GameScene.ts` ou outro arquivo de
+   `docs/critical/01_CRITICAL_FILES.md`?
+5. Afeta performance por frame (objetos criados/destruídos, tweens/timers/listeners não
+   limpos, número de inimigos/partículas simultâneos)?
+6. Afeta game feel ou UX (resposta de controle, timing, legibilidade, feedback de dano)?
+7. Funciona em mobile/touch e em proporções de tela diferentes, ou só foi pensado pra desktop?
+8. Está assumindo algo que o pedido não disse? Se sim, diga a suposição em vez de decidir calado.
+
+Se o pedido parecer tecnicamente inadequado, não implemente em silêncio: explique o problema,
+a evidência e a alternativa antes de codar. A meta é uma solução melhor, não obediência cega.
+
+## 📚 Consistência com a Documentação do Projeto
+
+Antes de mudar algo relevante, procure a spec relacionada em `docs/specs/` e os arquivos de
+`docs/architecture/`. Quando o pedido do usuário conflitar com o que está documentado, ou com
+o que o código já faz, aponte o conflito antes de alterar — não escolha uma interpretação
+silenciosa quando isso muda o resultado de forma relevante.
+
+Trate specs em `docs/specs/backlog/` ou `discovery/` como **ideias**, não requisitos ativos —
+só o que está em `in-progress/` ou o próprio código em produção reflete o estado real do jogo.
+O campo `status`/`progress` no frontmatter de uma spec pode estar desatualizado (specs
+`in-progress` já 100% implementadas são comuns neste projeto) — confirme contra o código antes
+de assumir que algo falta ou já existe.
+
+## ✅ Checklist Antes de Declarar uma Tarefa Concluída
+
+- [ ] Todos os requisitos explícitos do pedido foram atendidos? Alguma suposição foi feita
+      sem confirmação — e foi declarada?
+- [ ] `pnpm run typecheck`, `pnpm test -- --run` e `pnpm run build` rodaram e passaram?
+- [ ] Funcionalidades relacionadas continuam funcionando (sem regressão)?
+- [ ] Objetos/luzes/emissores/filtros criados são destruídos/limpos quando deixam de ser
+      necessários (lifecycle de cena, ObjectPool, `shutdown`/`destroy`)?
+- [ ] Fórmulas numéricas novas de combate/balance têm teste dedicado?
+- [ ] Funciona em touch/mobile e em proporções de tela diferentes, quando aplicável?
+- [ ] Releu o diff procurando de propósito por: bug, regressão, edge case, complexidade
+      desnecessária, problema de game feel/UX/performance?
+- [ ] O relatório final diz explicitamente o que foi validado (e como) e o que ficou como
+      "não validado"?
+
+Só depois de passar por isso é que a tarefa deve ser reportada como concluída.
 
 ---
 
