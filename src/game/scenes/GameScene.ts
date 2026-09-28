@@ -26,6 +26,7 @@ import { ShadowSystem, LightSource } from '../systems/ShadowSystem';
 import { ReflectionSystem } from '../systems/ReflectionSystem';
 import { AtmosphereSystem } from '../systems/AtmosphereSystem';
 import { EnemyTelegraphSystem } from '../systems/EnemyTelegraphSystem';
+import { computeThreatIndicators } from '../systems/ThreatIndicatorSystem';
 import { BloodSplatterSystem } from '../systems/BloodSplatterSystem';
 import { useGameStore } from '../../store/gameStore';
 import { telemetry } from '../../utils/telemetry';
@@ -1741,83 +1742,58 @@ export class GameScene extends Phaser.Scene {
   private updateThreatIndicator(time: number) {
     if (!this.threatIndicatorGraphics) return;
 
-    // Offscreen Threat Indicator (Silent Hill-style edge chevrons)
-    const viewW = this.cameras.main.width || window.innerWidth;
-    const viewH = this.cameras.main.height || window.innerHeight;
-    const cx = viewW / 2;
-    const cy = viewH / 2;
+    // Offscreen Threat Indicator (Silent Hill-style edge chevrons).
+    // A matemática pura (quem está fora de tela, ângulo, ponto de borda,
+    // cor, ameaça mais próxima) vive em ThreatIndicatorSystem.ts e é
+    // exercitada isoladamente por ThreatIndicator.test.ts. Aqui ficam só as
+    // partes Phaser-specific: desenho no Graphics pooled e disparo de áudio.
+    const camera = this.cameras.main;
+    const viewW = camera.width || window.innerWidth;
+    const viewH = camera.height || window.innerHeight;
+    // Lido depois deste bloco (vinheta/postFX), por isso declarado no escopo
+    // externo — permanece 0 quando os efeitos de atmosfera estão desativados,
+    // igual ao comportamento original.
     let alertCount = 0;
 
     this.threatIndicatorGraphics.clear();
 
     const atmosphereEnabled = useGameStore.getState().settings.atmosphereEffectsEnabled !== false;
     if (atmosphereEnabled) {
-      const offscreenThreats: { enemy: Enemy; dist: number }[] = [];
+      const result = computeThreatIndicators(
+        { x: this.player.x, y: this.player.y },
+        this.enemiesGroup.getChildren() as Enemy[],
+        { scrollX: camera.scrollX, scrollY: camera.scrollY, zoom: camera.zoom, width: viewW, height: viewH }
+      );
+      const { indicators, closestOffscreenThreat } = result;
+      alertCount = result.alertCount;
 
-      this.enemiesGroup.getChildren().forEach((enemyObj: any) => {
-        const enemy = enemyObj as Enemy;
-        if (enemy.active) {
-          const isThreat = enemy.aiState === 'combat' || enemy.aiState === 'frenzy' || enemy.aiState === 'investigating';
-          if (isThreat) {
-            if (enemy.aiState === 'combat' || enemy.aiState === 'frenzy') {
-              alertCount++;
-            }
+      indicators.forEach(({ indicatorX, indicatorY, angle, color }) => {
+        const pulse = 0.4 + 0.3 * Math.sin(time * 0.008);
+        const finalAlpha = Phaser.Math.Clamp(pulse + (alertCount * 0.03), 0.3, 0.95);
 
-            // Check if offscreen
-            const screenX = (enemy.x - this.cameras.main.scrollX) * this.cameras.main.zoom;
-            const screenY = (enemy.y - this.cameras.main.scrollY) * this.cameras.main.zoom;
-            const isOffscreen = screenX < 0 || screenX > viewW || screenY < 0 || screenY > viewH;
+        this.threatIndicatorGraphics.lineStyle(2, color, finalAlpha);
+        this.threatIndicatorGraphics.fillStyle(color, finalAlpha * 0.4);
 
-            if (isOffscreen) {
-              const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
-              offscreenThreats.push({ enemy, dist });
-            }
-          }
-        }
+        const size = 16;
+        const px = Math.cos(angle) * size;
+        const py = Math.sin(angle) * size;
+        const tx = -Math.sin(angle) * (size * 0.6);
+        const ty = Math.cos(angle) * (size * 0.6);
+
+        this.threatIndicatorGraphics.beginPath();
+        this.threatIndicatorGraphics.moveTo(indicatorX + px, indicatorY + py);
+        this.threatIndicatorGraphics.lineTo(indicatorX - px + tx, indicatorY - py + ty);
+        this.threatIndicatorGraphics.lineTo(indicatorX - px - tx, indicatorY - py - ty);
+        this.threatIndicatorGraphics.closePath();
+        this.threatIndicatorGraphics.fillPath();
+        this.threatIndicatorGraphics.strokePath();
       });
 
-      if (offscreenThreats.length > 0) {
-        offscreenThreats.sort((a, b) => a.dist - b.dist);
-        // Draw edge indicators for up to 8 closest offscreen threats
-        const topThreats = offscreenThreats.slice(0, 8);
-
-        topThreats.forEach(({ enemy }) => {
-          const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, enemy.x, enemy.y);
-
-          // Project onto border
-          const edgeX = cx + Math.cos(angle) * (cx - 25);
-          const edgeY = cy + Math.sin(angle) * (cy - 25);
-
-          const indicatorX = Phaser.Math.Clamp(edgeX, 25, viewW - 25);
-          const indicatorY = Phaser.Math.Clamp(edgeY, 25, viewH - 25);
-
-          const pulse = 0.4 + 0.3 * Math.sin(time * 0.008);
-          const finalAlpha = Phaser.Math.Clamp(pulse + (alertCount * 0.03), 0.3, 0.95);
-          const color = (enemy.aiState === 'combat' || enemy.aiState === 'frenzy') ? 0xef4444 : 0xf59e0b;
-
-          this.threatIndicatorGraphics.lineStyle(2, color, finalAlpha);
-          this.threatIndicatorGraphics.fillStyle(color, finalAlpha * 0.4);
-
-          const size = 16;
-          const px = Math.cos(angle) * size;
-          const py = Math.sin(angle) * size;
-          const tx = -Math.sin(angle) * (size * 0.6);
-          const ty = Math.cos(angle) * (size * 0.6);
-
-          this.threatIndicatorGraphics.beginPath();
-          this.threatIndicatorGraphics.moveTo(indicatorX + px, indicatorY + py);
-          this.threatIndicatorGraphics.lineTo(indicatorX - px + tx, indicatorY - py + ty);
-          this.threatIndicatorGraphics.lineTo(indicatorX - px - tx, indicatorY - py - ty);
-          this.threatIndicatorGraphics.closePath();
-          this.threatIndicatorGraphics.fillPath();
-          this.threatIndicatorGraphics.strokePath();
-        });
-
+      if (closestOffscreenThreat) {
         // Spatial Audio & Tinnitus for closest offscreen threat
-        const closestEnemy = offscreenThreats[0].enemy;
+        const closestEnemy = closestOffscreenThreat.enemy;
+        const dist = closestOffscreenThreat.dist;
         const dx = closestEnemy.x - this.player.x;
-        const dy = closestEnemy.y - this.player.y;
-        const dist = Math.hypot(dx, dy);
         const relativeX = dist > 0 ? dx / dist : 0;
         const isCombatThreat = closestEnemy.aiState === 'combat' || closestEnemy.aiState === 'frenzy';
         soundEngine.updateSpatialThreat(relativeX, 0, isCombatThreat);
