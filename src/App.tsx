@@ -3,6 +3,7 @@ import { AnimatePresence } from 'motion/react';
 import { registerSW } from 'virtual:pwa-register';
 import { SplashScreen } from './components/SplashScreen';
 import { MainMenu } from './components/MainMenu';
+import { RotateDeviceOverlay } from './components/RotateDeviceOverlay';
 import { ModalBase } from './components/ui/ModalBase';
 import type { GameScene } from './game/scenes/GameScene';
 import { PlayerStats, UpgradeOption } from './types/game';
@@ -261,6 +262,8 @@ export default function App() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
+      <RotateDeviceOverlay />
+
       {/* Standalone CRT Scanline Overlay - pointer-events-none ensures touch & click pass through */}
       {settings.crtFilter && (
         <div className="fixed inset-0 pointer-events-none z-[120] crt-overlay" />
