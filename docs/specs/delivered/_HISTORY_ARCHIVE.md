@@ -24,6 +24,19 @@ tags: [specs, index, archive, delivered, history]
 
 | Spec | Escopo Concluído | Verificação / Testes |
 |---|---|---|
+| **[`delivered/01_RECORDS_DISPLAY.md`](../delivered/01_RECORDS_DISPLAY.md)** | **✅ Records Display System** | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/03_FASE3_CONDICOES_DE_SOBREVIVENCIA.md`](../delivered/03_FASE3_CONDICOES_DE_SOBREVIVENCIA.md)** | **🤢 Fase 3: Condições de Sobrevivência, Status Nocivos e Medicinas** | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/03_FASE3_STATUS_SOBREVIVENCIA.md`](../delivered/03_FASE3_STATUS_SOBREVIVENCIA.md)** | **🟡 Fase 3: Status de Sobrevivência** | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/04_FASE4_MUNDO_CONTINUO.md`](../delivered/04_FASE4_MUNDO_CONTINUO.md)** | **🗺️ Fase 4: Mundo Contínuo, Vilarejos Seguros e Iluminação/Áudio Dinâmico por Bioma** | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](../delivered/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md)** | **🚀 Fase 5: Polimento de Produção, Empacotamento Nativo (Play Store & Steam) e Imersão AAA** | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](../delivered/12_PROGRESSAO_E_QUESTS_CONTRATOS.md)** | **📜 Spec 12: Progressão, Micro-Quests (Contratos) e Evolução de Habilidades** | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/17_POLIMENTO_GRAFICO_CALIBRACAO_SISTEMAS_EXISTENTES.md`](../delivered/17_POLIMENTO_GRAFICO_CALIBRACAO_SISTEMAS_EXISTENTES.md)** | **Spec 17 — Polimento Gráfico por Calibração dos Sistemas Existentes** | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md`](../delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md)** | **🏅 Spec 18: Sistema de Prestígio 'Blood Seal' (Prestige Progression)** | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`](../delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md)** | **🌍 Mundo Contínuo Estilo Dungeon Siege — Chunk Streaming** | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/28_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md`](../delivered/28_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md)** | **Spec 28 — Padronização de Modais Secundários, Navegação Gamepad & Retratos Rúnicos** | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/30_DETERMINISMO_SEED_POISSON_DISK.md`](../delivered/30_DETERMINISMO_SEED_POISSON_DISK.md)** | **Determinismo por Seed no Espalhamento de Vegetação/Props (Poisson Disk)** | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/31_NORMAL_MAP_TILE_DOOR.md`](../delivered/31_NORMAL_MAP_TILE_DOOR.md)** | **Normal Map Ausente na Textura tile_door** | Vitest + E2E (`pnpm verify`) |
+| **[`delivered/32_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](../delivered/32_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** | **📜 Spec 32: Toggle de Intensidade de Conteúdo (Classificação Indicativa)** | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/27_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md`](../delivered/27_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md)** | **Joystick Virtual Nativo Phaser (Padrão Mobile Legends / Diablo Immortal):** Canvas nativo 60 FPS, drag-to-follow, floating stick, multi-touch isolado por `pointer.id`, curva de resposta, deadzone, escala S/M/L e modo canhoto | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md`](../delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md)** | **Evolução Gráfica, Terreno 2.5D & UI Adaptativa:** Base 1080p, Boss Zoom Out, Heightmap em Octaves, Cliff Faces verticais, colisão de desnível $\Delta Z$, Safe Area Insets e personalização de Joystick/Modo Canhoto | Vitest + E2E (`pnpm verify`) |
 | **[`delivered/11_VISUAL_POLISH_FRONTS.md`](../delivered/11_VISUAL_POLISH_FRONTS.md)** | **ÍNDICE MESTRE — Visual Polish & VFX Fronts:** Gestão descentralizada das 8 frentes de polimento gráfico, procedural e sonoro do jogo | Vitest + E2E (`pnpm verify`) |

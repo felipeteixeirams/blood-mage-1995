@@ -13,7 +13,7 @@ last_updated: 2026-08-14
 
 # 🎨 Eixo A — Gráficos Avançados (postFX, Iluminação Light2D e Normal Maps)
 
-> **Status:** Concluído | **Origem:** [[../propostas/01_EVOLUCAO_GRAFICA_AVANCADA.md]]
+> **Status:** Concluído | **Origem:** [[../discovery/01_EVOLUCAO_GRAFICA_AVANCADA.md]]
 
 ## Contexto
 
