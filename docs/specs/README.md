@@ -50,7 +50,7 @@ Quando uma spec está em `backlog/` ou `in-progress/`, pode ter **status adicion
 
 | 📋 Backlog | 🔨 Em Desenvolvimento | 🔍 Em Qualidade | ✅ Concluído *(7 dias)* |
 |---|---|---|---|
-| 🔒 **[08](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md)** Sprite Mapping<br>**[09](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md)** HUD Tier B/C<br>🔒 **[29](./backlog/29_CLOUD_SAVE_FASE5.md)** Cloud Save<br>🔒 **[32](./backlog/32_PIXEL_LAB_SPRITE_PRODUCTION_GUIDE.md)** PixelLab Guide<br>**[33](./backlog/33_BOSS_MULTIFASE_TELEGRAPH_SYSTEM.md)** Boss Multi-Fase<br>**[34](./backlog/34_EQUIPMENT_SET_BONUS_SYSTEM.md)** Equipment Sets | **[11](./in-progress/11_ATMOSFERA_E_TENSAO.md)** Atmosfera<br>*(parcial: Threat Tinnitus, Fear Distortion, Chevrons já feitos)* | — | **[32](./delivered/32_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** — Toggle Gore |
+| 🔒 **[08](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md)** Sprite Mapping<br>🔒 **[29](./backlog/29_CLOUD_SAVE_FASE5.md)** Cloud Save<br>🔒 **[32](./backlog/32_PIXEL_LAB_SPRITE_PRODUCTION_GUIDE.md)** PixelLab Guide | — | — | **[09](./delivered/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md)** HUD Tier B.6<br>**[11](./delivered/11_ATMOSFERA_E_TENSAO.md)** Atmosfera<br>**[32](./delivered/32_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** — Toggle Gore<br>**[33](./delivered/33_BOSS_MULTIFASE_TELEGRAPH_SYSTEM.md)** Boss Multi-Fase<br>**[34](./delivered/34_EQUIPMENT_SET_BONUS_SYSTEM.md)** Equipment Sets |
 
 > 🔒 = bloqueada por insumo externo (ver seção "🚧 Bloqueados" abaixo).
 >
@@ -59,6 +59,12 @@ Quando uma spec está em `backlog/` ou `in-progress/`, pode ter **status adicion
 > Modal), 12 (Progressão), 18 (Modal UI), 25, 30, 31 já estavam entregues em
 > `main` mas nossa branch ainda as tratava como pendentes. Ver notas em cada
 > seção abaixo.
+>
+> **Nota (2026-09-28, tarde):** Specs 09, 11, 33 e 34 implementadas em
+> paralelo por 4 agentes (worktrees isolados), integradas sequencialmente
+> com `pnpm verify`/`pnpm test -- --run` entre cada merge (571/571 testes
+> passando ao final). Detalhes de cada entrega nas seções correspondentes
+> abaixo.
 
 ---
 
@@ -78,10 +84,7 @@ Quando uma spec está em `backlog/` ou `in-progress/`, pode ter **status adicion
 
 | # | Spec | Pasta | P | C | Status / Bloqueador | Resumo de Execução |
 |---|---|---|---|---|---|---|
-| 1 | [`backlog/33_BOSS_MULTIFASE_TELEGRAPH_SYSTEM.md`](./backlog/33_BOSS_MULTIFASE_TELEGRAPH_SYSTEM.md) | backlog | 🟡 medium | 🔴 high | ✅ **Executável Agora** | Boss multi-fase por threshold de HP + corrige bug real (telegraph `boss_slam` nunca disparava — id desatualizado). Extensão 100% aditiva a `Enemy.ts` (não toca FSM). Conceito portado do protótipo Godot analisado em 2026-09-28. |
-| 2 | [`in-progress/11_ATMOSFERA_E_TENSAO.md`](./in-progress/11_ATMOSFERA_E_TENSAO.md) | in-progress | 🟡 medium | 🟡 medium | ✅ **Executável Agora** | Atmosfera, Tensão e Indicadores de Ameaça. Threat Tinnitus, Fear Distortion e Chevrons direcionais já entregues (main). Resta: áudio espacial completo e demais indicadores fora de tela. |
-| 3 | [`backlog/34_EQUIPMENT_SET_BONUS_SYSTEM.md`](./backlog/34_EQUIPMENT_SET_BONUS_SYSTEM.md) | backlog | 🟡 medium | 🟡 medium | ✅ **Executável Agora** | Bônus de conjunto (2/3 peças) reaproveitando as 8 Relíquias já entregues (spec 19). Conceito portado do protótipo Godot analisado em 2026-09-28. |
-| 4 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟢 low | 🟢 low | ✅ **Executável Agora** | HUD Tier B/C residual — menu contextual de mouse (desktop). Tier A entregue em `delivered/09`. ~4h estimado. |
+| — | *(vazia)* | — | — | — | — | Todas as specs desbloqueadas foram entregues em 2026-09-28 (ver Kanban acima e "🟢 Delivered" abaixo). Próxima leva depende de "🎯 Fila de Definição" (decisão de produto) ou de novas specs em `scope-definition/`/`discovery/`. |
 
 **Legenda:** P = Prioridade | C = Criticidade | Specs em "⏳ Awaiting Definition" não aparecem aqui (ver "🎯 Fila de Definição" abaixo)
 
@@ -91,6 +94,10 @@ Quando uma spec está em `backlog/` ou `in-progress/`, pode ter **status adicion
 > foi portado (Boss multi-fase, Equipment Sets) vs. descartado (Spell
 > System, Skill Tree por atributos, Prestige loot scaling — redundantes ou
 > inferiores ao que já existe entregue).
+>
+> *Nota (2026-09-28, tarde):* Specs 09, 11, 33 e 34 implementadas e
+> integradas — movidas para "🟢 Delivered" (ver detalhes ali). Fila
+> esvaziada.
 
 > *Nota (2026-09-28):* Fila drasticamente reduzida após reconciliação com
 > `main` — specs 05, 06, 12, 18, 25, 30, 31 que apareciam aqui (ou em
@@ -161,7 +168,11 @@ docs/specs/
 
 | Spec / Documento | Fases / Escopo Concluído | Fases / Itens Pendentes |
 |---|---|---|
-| **[`in-progress/11_ATMOSFERA_E_TENSAO.md`](./in-progress/11_ATMOSFERA_E_TENSAO.md)** | • Threat Tinnitus, Fear Distortion e Toggles de Acessibilidade<br>• Chevrons direcionais offscreen de ameaça ativas | • Restante dos itens de atmosfera e áudio espacial |
+| *(vazio)* | — | — |
+
+> *Nota (2026-09-28, tarde):* `11_ATMOSFERA_E_TENSAO.md` movida para
+> `delivered/` — o residual (indicador de ameaça fora de tela + áudio
+> espacial direcional) foi implementado, revisado e testado.
 
 > *Nota (2026-09-28):* `05_FASE5`, `06_SISTEMA_DE_PRESTIGIO`, `08_GUIA_EVOLUCAO_COMERCIAL`
 > e vários documentos "fantasma" (`SPECS_EVOLUCAO.md`, `06_EIXO_A...`,
@@ -191,6 +202,10 @@ docs/specs/
 | Spec | Escopo Concluído | Entregue em | Verificação / Testes |
 |---|---|---|---|
 | **[`delivered/32_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./delivered/32_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** | **Toggle de Intensidade de Conteúdo (Classificação Indicativa):** Seletor de intensidade em Configurações (Gore Completo/Reduzido), persistência Zod e adaptação nos sistemas de desmembramento e poças de sangue | 2026-09-21 | Vitest (`DismembermentSystem.test.ts`, `BloodSplatterSystem.test.ts`, `localStorage.test.ts`) |
+| **[`delivered/33_BOSS_MULTIFASE_TELEGRAPH_SYSTEM.md`](./delivered/33_BOSS_MULTIFASE_TELEGRAPH_SYSTEM.md)** | **Boss Multi-Fase com Telégrafo Evolutivo:** corrige bug real (`blood_lord_boss`→`necro_lord_boss`, telegraph `boss_slam` nunca disparava); `BossPhaseController.ts` (extract/delegate, aditivo, não toca FSM); 3 fases por threshold de HP em `necro_lord_boss`; novo telegraph `'wave'` na fase final | 2026-09-28 | Vitest (`BossPhaseController.test.ts`, 8 testes); typecheck 0 erros; build OK. **Não validado:** verificação visual em jogo real (Playwright indisponível no ambiente) |
+| **[`delivered/34_EQUIPMENT_SET_BONUS_SYSTEM.md`](./delivered/34_EQUIPMENT_SET_BONUS_SYSTEM.md)** | **Sistema de Bônus de Conjunto:** `setId` em itens/relíquias, `equipmentSets.json` (Conjunto Sangue + Conjunto Abissal), `calculateSetBonuses()` puro, integração em `getRelicModifiers()`, indicação no `InventoryModal.tsx` | 2026-09-28 | Vitest (`EquipmentSetSystem.test.ts`, 9 testes); corrigiu regressão real em `RelicSystem.test.ts` (valores desatualizados pelo novo bônus); typecheck 0 erros; build OK |
+| **[`delivered/11_ATMOSFERA_E_TENSAO.md`](./delivered/11_ATMOSFERA_E_TENSAO.md)** | **Atmosfera e Tensão (residual):** extraiu `ThreatIndicatorSystem.ts` (lógica pura do indicador de ameaça fora de tela + áudio espacial, já implementados por Jules em commit anterior, mas com teste duplicado/dessincronizado da produção — corrigido) | 2026-09-28 | Vitest (`ThreatIndicator.test.ts`, expandido com 3 casos novos); typecheck 0 erros; build OK. **Não validado:** game feel do áudio/visual em jogo real |
+| **[`delivered/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./delivered/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md)** | **HUD Tier B.6 residual:** menu contextual de alvo no hover do mouse ("ATACAR"/"CONVERSAR", desktop only), `HoverContextTarget.ts` (funções puras) | 2026-09-28 | Vitest (`HoverContextTarget.test.ts`, 9 testes); typecheck 0 erros; build OK. **Não validado:** game feel/legibilidade em jogo real |
 
 > *Nota (2026-09-28):* Diversas entregas que estavam nesta janela em `main`
 > (specs 03, 04, 09, 12, 17, 18, 25, 28, 30, 31 — datadas de 2026-09-06 a
@@ -207,17 +222,17 @@ docs/specs/
 | Spec / Proposta | Domínio / Resumo | Prioridade | Criticidade | Bloqueado? |
 |---|---|---|---|---|
 | **[`backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md`](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md)** | *(era in-progress)* Living Tracking Spec de integração de sprites físicos — Fase 0 concluída | high | medium | **Sim** — orçamento de arte (grupo com #32) |
-| **[`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md)** | Residual Tier B/C: menu contextual de mouse ao passar sobre alvo (desktop) — Tier A entregue em `delivered/09` | low | low | Não |
 | **[`backlog/32_PIXEL_LAB_SPRITE_PRODUCTION_GUIDE.md`](./backlog/32_PIXEL_LAB_SPRITE_PRODUCTION_GUIDE.md)** | *(renumerado de 09-PL em 2026-09-13)* Guia de prompts PixelLab, usado durante produção de sprites | high | low | **Sim** — orçamento de arte (grupo com #08) |
 | **[`backlog/29_CLOUD_SAVE_FASE5.md`](./backlog/29_CLOUD_SAVE_FASE5.md)** | *(novo, extraído de `05` já entregue)* Cloud Save automatizado (Firebase/Firestore) | medium | high | **Sim** — confirmação de Felipe pendente |
-| **[`backlog/33_BOSS_MULTIFASE_TELEGRAPH_SYSTEM.md`](./backlog/33_BOSS_MULTIFASE_TELEGRAPH_SYSTEM.md)** | *(novo, portado de protótipo Godot)* Boss multi-fase por threshold de HP, telegraph evolutivo, corrige bug de id desatualizado | medium | high | Não |
-| **[`backlog/34_EQUIPMENT_SET_BONUS_SYSTEM.md`](./backlog/34_EQUIPMENT_SET_BONUS_SYSTEM.md)** | *(novo, portado de protótipo Godot)* Bônus de conjunto (2/3 peças) sobre as Relíquias já entregues (spec 19) | medium | medium | Não |
 
 > *Nota (2026-09-28):* Spec 06 (Sistema de Prestígio) não aparece mais aqui
 > — já foi entregue por completo (backend + Modal UI, ver `delivered/18`),
 > confirmado por leitura do código (`src/components/PrestigeModal.tsx`
 > existe). `main` ainda a listava como "proposta inicial" por não ter
 > recebido esta reconciliação.
+>
+> *Nota (2026-09-28, tarde):* Specs 09, 33 e 34 saíram do Backlog — foram
+> implementadas e entregues (ver "🟢 Delivered" acima).
 
 ---
 
