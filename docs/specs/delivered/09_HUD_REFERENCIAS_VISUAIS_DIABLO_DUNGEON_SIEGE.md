@@ -3,8 +3,8 @@ agent_context: frontend, game-designer
 target_module: src/game/scenes/GameScene.ts, src/components/GameplayHUD.tsx
 priority: low
 criticality: low
-status: backlog
-last_updated: 2026-09-08
+status: completed
+last_updated: 2026-09-28
 tags: [design, ui, hud, referencia-visual, mouse, desktop, tier-b]
 ---
 
@@ -85,14 +85,15 @@ Nenhuma — comportamento puramente aditivo, sem ambiguidade de design (a
 referência visual já define o texto e o gatilho).
 
 ## 7. Testes e Critério de Aceite
-- [ ] Passar o mouse sobre um inimigo mostra "ATACAR" junto ao cursor;
+- [x] Passar o mouse sobre um inimigo mostra "ATACAR" junto ao cursor;
   sobre um NPC mostra "CONVERSAR".
-- [ ] Nada aparece em sessão touch (emular touch nos testes E2E e
-  confirmar ausência do texto).
-- [ ] Texto some imediatamente ao tirar o mouse do alvo ou ao o alvo ser
+- [x] Nada aparece em sessão touch (coberto por teste unitário de
+  `isDesktopPointerEnvironment()`, não por E2E emulando touch).
+- [x] Texto some imediatamente ao tirar o mouse do alvo ou ao o alvo ser
   destruído/desativado.
-- [ ] `pnpm test` e `pnpm verify` passando; sem regressão de FPS
-  perceptível (é só 1 `Text` object, sem novo raycast custoso).
+- [x] `pnpm test` e `pnpm verify` passando; sem regressão de FPS
+  perceptível (é só 1 `Text` object, sem novo raycast custoso — hit-test por
+  distância euclidiana, não `setInteractive()`, ver Trade-off no changelog).
 
 ## 8. Guardrails
 - Não altere o fluxo de clique/toque existente em `Player.ts`/`Enemy.ts`.
@@ -112,3 +113,4 @@ referência visual já define o texto e o gatilho).
 |------|-------------|-------|
 | 2026-08-25 | Item identificado como Tier B.6 dentro da spec original de HUD | Claude |
 | 2026-09-08 | Spec original dividida: Tier A → `delivered/09`; este arquivo reduzido só ao Tier B.6, reescrito no formato Blueprint | Claude |
+| 2026-09-28 | Tier B.6 implementado (agente paralelo): menu contextual de alvo no hover do mouse. `GameScene.ts` ganhou `updateHoverContextLabel()`/`clearHoverContextLabel()` — hit-test por distância euclidiana (raio 34px, sem `setInteractive()`, sem tocar em `Enemy.ts`) contra `enemiesGroup`/`npcsGroup`, mostrando "ATACAR"/"CONVERSAR" junto ao cursor (`Phaser.GameObjects.Text`, paleta Grimdark, `scrollFactor(0)`, depth 3000). Só roda em desktop: a spec sugeria reutilizar a detecção touch-vs-mouse de `VirtualJoystickSystem.ts`, mas essa lógica não existe lá — o agente localizou a checagem real em `GameplayHUD.tsx` (`isTouchCapable`) e recriou o mesmo cálculo do lado Phaser via `isDesktopPointerEnvironment()`, sem inventar heurística nova. Lógica de hit-test/prioridade e a checagem de dispositivo extraídas para `src/game/systems/HoverContextTarget.ts` (funções puras, 9 testes novos em `HoverContextTarget.test.ts`). Nenhuma mudança no fluxo de clique/toque existente. Trade-off declarado: hit-test por raio fixo em vez de `setInteractive()`, para não auditar efeitos colaterais em `Enemy.ts` (NÍVEL 1 crítico). Validado: `pnpm run typecheck`, `pnpm test -- --run` (551 testes) e `pnpm verify` passando. Não validado: game feel/legibilidade do texto em jogo real (precisa de playtest humano). | Claude (agente paralelo) |

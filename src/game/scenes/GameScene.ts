@@ -44,6 +44,7 @@ import { DungeonFlowController } from '../systems/DungeonFlowController';
 import { ScavengingSystem } from '../systems/ScavengingSystem';
 import { CombatEffectsSystem } from '../systems/CombatEffectsSystem';
 import { BossPhaseController } from '../systems/BossPhaseController';
+import { findNearestHoverCandidate, isDesktopPointerEnvironment, HoverCandidate } from '../systems/HoverContextTarget';
 
 export interface GameSceneCallbacks {
   onStatsUpdate: (stats: PlayerStats) => void;
@@ -117,6 +118,13 @@ export class GameScene extends Phaser.Scene {
   // Fase 1 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
   // marcador flutuante ("!") sobre NPCs interagíveis, procedural (sem sprite novo).
   private npcMarkers: { npcType: string; container: Phaser.GameObjects.Container; baseY: number }[] = []; // público via métodos: usado por DungeonFlowController
+
+  // Spec 09 residual (Tier B.6): menu contextual de alvo no hover do mouse
+  // ("ATACAR"/"CONVERSAR"), só em desktop com mouse — ver
+  // docs/specs/delivered/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md.
+  private isTouchInputDevice: boolean = false;
+  private hoverContextLabel: Phaser.GameObjects.Text | null = null;
+  private hoveredContextTargetRef: { active: boolean; hp?: number } | null = null;
 
   // Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
   // minimap mínimo — rastreia por índice do array `rooms` (layout orgânico
@@ -552,6 +560,23 @@ export class GameScene extends Phaser.Scene {
     // PhaserGame.tsx e docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md.
     // useCurativeItem() já era público (também usado pelos atalhos Z/X/V abaixo).
 
+    // Spec 09 residual (Tier B.6): mesma checagem touch-vs-mouse já usada em
+    // GameplayHUD.tsx (`isTouchCapable`, lá decide `showTouchControls`) —
+    // reaproveitada aqui, não é um novo sistema de detecção de dispositivo.
+    // O menu contextual de alvo ("ATACAR"/"CONVERSAR") só existe em desktop
+    // com mouse; em touch o tap já ataca/interage direto (ver
+    // docs/specs/delivered/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md).
+    this.isTouchInputDevice = !isDesktopPointerEnvironment({
+      hasOntouchstart: typeof window !== 'undefined' && 'ontouchstart' in window,
+      maxTouchPoints: typeof navigator !== 'undefined' ? navigator.maxTouchPoints || 0 : 0,
+      msMaxTouchPoints: typeof navigator !== 'undefined' ? (navigator as any).msMaxTouchPoints || 0 : 0,
+      matchesCoarsePointer:
+        typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+          ? window.matchMedia('(pointer: coarse)').matches
+          : false,
+    });
+    this.input.on('pointermove', this.updateHoverContextLabel, this);
+
 // Mouse / Touch Aim (ignoring movement pointers when virtual joysticks are active)
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       if (this.virtualJoystick && this.virtualJoystick.isActive() && pointer.id === (this.virtualJoystick as any).pointerId) return;
@@ -662,6 +687,17 @@ export class GameScene extends Phaser.Scene {
       if (this.advancedParticles) this.advancedParticles.stopAll();
     };
 
+    // Spec 09 residual (Tier B.6): destrói o texto do menu contextual de
+    // hover e remove o listener pointermove registrado acima em create().
+    const cleanupHoverContextLabel = () => {
+      this.input.off('pointermove', this.updateHoverContextLabel, this);
+      if (this.hoverContextLabel) {
+        this.hoverContextLabel.destroy();
+        this.hoverContextLabel = null;
+      }
+      this.hoveredContextTargetRef = null;
+    };
+
     this.events.once('shutdown', () => {
       if ((window as any).gameScene === this) {
         (window as any).gameScene = null;
@@ -683,6 +719,7 @@ export class GameScene extends Phaser.Scene {
         this.bloodSplatterSystem = null;
       }
       if (this.flickerTimer) this.flickerTimer.destroy();
+      cleanupHoverContextLabel();
       cleanupGraphicsSystems();
     });
     this.events.once('destroy', () => {
@@ -706,6 +743,7 @@ export class GameScene extends Phaser.Scene {
         this.bloodSplatterSystem = null;
       }
       if (this.flickerTimer) this.flickerTimer.destroy();
+      cleanupHoverContextLabel();
       cleanupGraphicsSystems();
     });
 
@@ -873,6 +911,78 @@ export class GameScene extends Phaser.Scene {
   public clearNpcMarkers() { // público: chamado por DungeonFlowController
     this.npcMarkers.forEach((m) => m.container.destroy());
     this.npcMarkers = [];
+  }
+
+  /**
+   * Spec 09 residual (Tier B.6): menu contextual de alvo no hover do mouse.
+   * Só roda em desktop (this.isTouchInputDevice — mesma checagem de
+   * GameplayHUD.tsx); no touch o tap já ataca/interage direto, sem esse
+   * feedback intermediário. Hit-test por distância ao ponteiro (mesmo
+   * espírito do "closest NPC" já calculado em update()), não usa
+   * setInteractive() nem toca em Enemy.ts/fluxo de clique existente — é
+   * puramente informativo. Inimigo vivo tem prioridade sobre NPC quando
+   * ambos caem sob o cursor. Ver
+   * docs/specs/delivered/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md.
+   */
+  private updateHoverContextLabel(pointer: Phaser.Input.Pointer): void {
+    if (this.isTouchInputDevice || !this.player || !this.player.active) {
+      this.clearHoverContextLabel();
+      return;
+    }
+
+    const HOVER_RADIUS = 34;
+    const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+
+    const enemyCandidates: HoverCandidate<Enemy>[] = (this.enemiesGroup.getChildren() as Enemy[])
+      .filter((e) => e.active && e.hp > 0)
+      .map((e) => ({ x: e.x, y: e.y, label: 'ATACAR', payload: e }));
+
+    const npcCandidates: HoverCandidate<Phaser.Physics.Arcade.Sprite>[] = this.npcsGroup
+      .getChildren()
+      .map((n) => n as unknown as Phaser.Physics.Arcade.Sprite)
+      .filter((n) => n.active)
+      .map((n) => ({ x: n.x, y: n.y, label: 'CONVERSAR', payload: n }));
+
+    const target = findNearestHoverCandidate(worldPoint.x, worldPoint.y, [enemyCandidates, npcCandidates], HOVER_RADIUS);
+
+    if (!target) {
+      this.clearHoverContextLabel();
+      return;
+    }
+
+    const color = target.label === 'ATACAR' ? '#f87171' : '#e3dac9';
+
+    if (!this.hoverContextLabel) {
+      this.hoverContextLabel = this.add.text(0, 0, target.label, {
+        fontFamily: '"Press Start 2P", monospace',
+        fontSize: '11px',
+        color,
+        stroke: '#171309',
+        strokeThickness: 4,
+      })
+        .setOrigin(0, 0.5)
+        .setScrollFactor(0)
+        .setDepth(3000);
+    } else {
+      this.hoverContextLabel.setText(target.label);
+      this.hoverContextLabel.setColor(color);
+    }
+    this.hoverContextLabel.setPosition(pointer.x + 16, pointer.y - 18);
+    this.hoverContextLabel.setVisible(true);
+
+    // Guarda a referência viva do alvo sob o cursor pra revalidar em
+    // update() (o listener pointermove só dispara quando o cursor se move —
+    // sem isso o texto ficaria preso na tela se o alvo morresse/desaparecesse
+    // com o mouse parado em cima dele).
+    this.hoveredContextTargetRef = target.payload as unknown as { active: boolean; hp?: number };
+  }
+
+  /** Esconde (sem destruir) o texto do menu contextual de alvo. Ver `updateHoverContextLabel()`. */
+  private clearHoverContextLabel(): void {
+    this.hoveredContextTargetRef = null;
+    if (this.hoverContextLabel) {
+      this.hoverContextLabel.setVisible(false);
+    }
   }
 
   /**
@@ -1204,6 +1314,18 @@ export class GameScene extends Phaser.Scene {
         m.container.y = m.baseY + bob;
         m.container.setVisible(store.activeNPC !== m.npcType && !isInCampaignDialogue);
       });
+    }
+
+    // Spec 09 residual (Tier B.6): revalida o alvo do menu contextual de
+    // hover a cada frame. O listener pointermove só dispara quando o cursor
+    // se move — sem isso "ATACAR"/"CONVERSAR" ficaria preso na tela se o
+    // alvo morresse/fosse desativado com o mouse parado em cima dele.
+    if (!this.isTouchInputDevice && this.hoveredContextTargetRef) {
+      const target = this.hoveredContextTargetRef;
+      const stillValid = target.active && (target.hp === undefined || target.hp > 0);
+      if (!stillValid) {
+        this.clearHoverContextLabel();
+      }
     }
 
     // Frente 2/3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: checa proximidade
