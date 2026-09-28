@@ -49,10 +49,16 @@ describe('RelicSystem', () => {
     // selo_hemorragico: bleedChance 0.30, damageMultiplier +0.10
     // olho_de_carmim: speedBonus +20, lifestealBonus +0.05
     // coracao_abissal: maxHpBonus +40, cooldownReductionBonus +0.15
+    //
+    // Spec 34 (Equipment Sets, 2026-09-28): selo_hemorragico + olho_de_carmim
+    // são as 2 peças do "Conjunto Sangue" (src/data/equipmentSets.json), então
+    // equipar as duas simultaneamente (como este teste faz) agora também
+    // ativa o bônus de conjunto 2/2 (+0.05 damageMultiplier, +0.05
+    // lifestealBonus), somado ao total das relíquias individuais abaixo.
     expect(mods.bleedChanceOnHit).toBe(0.30);
-    expect(mods.damageMultiplier).toBe(0.10);
+    expect(mods.damageMultiplier).toBeCloseTo(0.15);
     expect(mods.speedBonus).toBe(20);
-    expect(mods.lifestealBonus).toBe(0.05);
+    expect(mods.lifestealBonus).toBeCloseTo(0.10);
     expect(mods.maxHpBonus).toBe(40);
     expect(mods.cooldownReductionBonus).toBe(0.15);
   });

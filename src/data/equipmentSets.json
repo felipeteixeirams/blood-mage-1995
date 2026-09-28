@@ -1,0 +1,19 @@
+[
+  {
+    "id": "conjunto_sangue",
+    "name": "Conjunto Sangue",
+    "itemIds": ["selo_hemorragico", "olho_de_carmim"],
+    "bonuses": {
+      "2": { "lifestealBonus": 0.05, "damageMultiplier": 0.05 }
+    }
+  },
+  {
+    "id": "conjunto_abissal",
+    "name": "Conjunto Abissal",
+    "itemIds": ["coracao_abissal", "amuleto_do_martir", "calice_amaldicoado"],
+    "bonuses": {
+      "2": { "cooldownReductionBonus": 0.05 },
+      "3": { "cooldownReductionBonus": 0.12, "maxHpBonus": 20 }
+    }
+  }
+]

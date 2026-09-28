@@ -2,8 +2,9 @@ import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Shield, Sword, Sparkles, X, Heart, Zap, Flame, Award, CheckCircle2, PlusCircle, Lock, ArrowUpRight, ArrowDownRight, Filter } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
-import { LootItem, RelicItem, ItemRarity } from '../types/game';
+import { LootItem, RelicItem, ItemRarity, EquipmentSetDef } from '../types/game';
 import relicsData from '../data/relics.json';
+import equipmentSetsData from '../data/equipmentSets.json';
 import { useGamepadUINavigation } from '../hooks/useGamepadUINavigation';
 
 interface InventoryModalProps {
@@ -48,6 +49,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
     if (relicFilter === 'equipped') return isEquipped;
     return true;
   });
+
+  // Spec 34 (Equipment Sets): indicação textual simples de progresso de conjunto
+  // ("Conjunto: X (n/total peças equipadas)"), sem componente React dedicado.
+  const equipmentSets = equipmentSetsData as EquipmentSetDef[];
+  const equippedSetItemIds = new Set(
+    [equipment.weapon, equipment.armor, ...equipment.relics]
+      .filter((it): it is LootItem | RelicItem => Boolean(it && (it as LootItem | RelicItem).setId))
+      .map((it) => it.id)
+  );
+  const getSetProgressLabel = (setId?: string): string | null => {
+    if (!setId) return null;
+    const setDef = equipmentSets.find((s) => s.id === setId);
+    if (!setDef) return null;
+    const equippedCount = setDef.itemIds.filter((id) => equippedSetItemIds.has(id)).length;
+    return `Conjunto: ${setDef.name} (${equippedCount}/${setDef.itemIds.length} peças equipadas)`;
+  };
 
   const renderSlot = (title: string, item: LootItem | RelicItem | null, icon: React.ReactNode, onUnequip?: () => void) => {
     const rarityConfig = item ? RARITY_COLORS[item.rarity] : { bg: 'bg-black/60', border: 'border-gray-800', text: 'text-gray-600', badgeBg: 'bg-black' };
@@ -96,6 +113,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
           <div>
             <h4 className={`text-xs font-gothic font-bold ${rarityConfig.text} mb-0.5`}>{item.name}</h4>
             <p className="text-[10px] text-gray-300 font-retro leading-tight">{item.description}</p>
+            {getSetProgressLabel((item as LootItem | RelicItem).setId) && (
+              <p className="text-[9px] text-purple-300/90 font-retro italic mt-0.5">{getSetProgressLabel((item as LootItem | RelicItem).setId)}</p>
+            )}
           </div>
         ) : (
           <p className="text-[10px] sm:text-[11px] text-gray-600 font-retro italic py-1">Nenhum item equipado</p>
@@ -401,6 +421,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ onClose }) => {
                       <h4 className={`text-xs font-gothic font-bold ${isUnlocked ? 'text-[#e8c76a]' : 'text-gray-500'}`}>{relic.name}</h4>
                     </div>
                     <p className="text-[10px] text-gray-300 font-retro leading-tight">{relic.description}</p>
+                    {getSetProgressLabel(relic.setId) && (
+                      <p className="text-[9px] text-purple-300/90 font-retro italic mt-0.5">{getSetProgressLabel(relic.setId)}</p>
+                    )}
                   </div>
 
                   <div className="flex items-center shrink-0">

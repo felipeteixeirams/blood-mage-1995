@@ -1,10 +1,12 @@
 import { create } from 'zustand';
-import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, BiomeType, DroppedCorpse, CodexState, AchievementState, RunStats, UnlockedAchievementNotification, OnboardingState, PrestigeData, BloodSealType, GameDifficulty } from '../types/game';
+import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, EquipmentSetDef, BiomeType, DroppedCorpse, CodexState, AchievementState, RunStats, UnlockedAchievementNotification, OnboardingState, PrestigeData, BloodSealType, GameDifficulty } from '../types/game';
 import { GameMode, ZoneType, CampaignState, DialogueTree, QuestLogEntry, QuestDefinition, QuestObjective, CampaignEffect } from '../types/campaign';
 import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding, loadUnlockedRelics, saveUnlockedRelics, loadEquippedRelicIds, saveEquippedRelicIds, loadCodexState, saveCodexState, loadAchievements, saveAchievements, loadRunStats, saveRunStats, loadCampaignState, saveCampaignState, loadPrestigeData, savePrestigeData, defaultPrestigeData } from '../utils/localStorage';
 import { soundEngine } from '../utils/soundEngine';
 import { CodexSystem } from '../game/systems/CodexSystem';
+import { calculateSetBonuses } from '../game/systems/EquipmentSetSystem';
 import relicsData from '../data/relics.json';
+import equipmentSetsData from '../data/equipmentSets.json';
 import achievementsData from '../data/achievements.json';
 import dialoguesData from '../data/dialogues.json';
 import campaignQuestsData from '../data/campaignQuests.json';
@@ -776,6 +778,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (effect.bleedDamagePerSecond) combined.bleedDamagePerSecond! += effect.bleedDamagePerSecond;
       if (effect.spellCostDiscount) combined.spellCostDiscount! += effect.spellCostDiscount;
     });
+
+    // Spec 34 (Equipment Sets): soma o bônus de conjunto (2/3 peças) ao total
+    // de relíquias individuais já calculado acima. calculateSetBonuses() é
+    // uma função pura, derivada em tempo real de `equipment` — sem estado
+    // próprio persistido. Nota: `bloodCrystalMultiplier` aqui é tratado como
+    // delta aditivo (0 = neutro), não como o multiplicador absoluto usado no
+    // loop de relíquias acima — ver comentário em EquipmentSetSystem.ts.
+    const setBonuses = calculateSetBonuses(equipment, equipmentSetsData as EquipmentSetDef[]);
+    (Object.keys(setBonuses) as (keyof RelicEffect)[]).forEach((key) => {
+      if (key === 'bloodCrystalMultiplier') return;
+      const value = setBonuses[key];
+      if (value) combined[key] = (combined[key] || 0) + value;
+    });
+    if (setBonuses.bloodCrystalMultiplier) {
+      combined.bloodCrystalMultiplier! *= 1 + setBonuses.bloodCrystalMultiplier;
+    }
 
     return combined;
   },

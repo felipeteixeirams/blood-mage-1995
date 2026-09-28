@@ -32,6 +32,8 @@ export interface RelicItem {
     critChanceBonus?: number;
     hpRegenBonus?: number;
   };
+  /** Spec 34 (Equipment Sets): id de EquipmentSetDef ao qual este item pertence, se houver. Aditivo — undefined mantém comportamento atual (item avulso, sem set). */
+  setId?: string;
 }
 
 export interface LootItem {
@@ -50,12 +52,31 @@ export interface LootItem {
     hpRegenBonus?: number;
   };
   effect?: RelicEffect;
+  /** Spec 34 (Equipment Sets): id de EquipmentSetDef ao qual este item pertence, se houver. Aditivo — undefined mantém comportamento atual (item avulso, sem set). */
+  setId?: string;
 }
 
 export interface EquipmentSlots {
   weapon: LootItem | null;
   armor: LootItem | null;
   relics: (LootItem | RelicItem)[];
+}
+
+/**
+ * Spec 34 — Sistema de Bônus de Conjunto (Equipment Sets).
+ * Definição de dado puro (ver src/data/equipmentSets.json), consumida por
+ * calculateSetBonuses() em src/game/systems/EquipmentSetSystem.ts.
+ * Patamar "3" SUBSTITUI o "2" do mesmo set (nunca soma os dois); bônus de
+ * sets DIFERENTES ativos simultaneamente são somados.
+ */
+export interface EquipmentSetDef {
+  id: string;
+  name: string;
+  itemIds: string[];
+  bonuses: {
+    2?: Partial<RelicEffect>;
+    3?: Partial<RelicEffect>;
+  };
 }
 
 export type BiomeType = 'fosso_chagas' | 'catacumbas_martires' | 'santuario_sangue' | 'safe_house' | 'gloomy_woods';
