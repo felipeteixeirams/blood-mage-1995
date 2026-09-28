@@ -68,6 +68,8 @@ docs/
    - `phaser-4-physics-combat/SKILL.md`: Arcade Physics, hitboxes e poda espacial
    - `phaser-4-fx-filters/SKILL.md`: Beam Renderer, `enableFilters()`, auras e vinhetas
    - `phaser-4-playtest-harness/SKILL.md`: Verificação de runtime e testes de fumaça E2E
+   - `phaser4-ref-*` (Skills de Referência Oficial Phaser 4, importadas de `phaserjs/phaser`): documentação oficial do engine, complementares às skills próprias acima. Cobrem `particles`, `physics-arcade`, `input-keyboard-mouse-touch`, `audio-and-sound`, `time-and-timers`, `cameras`, `groups-and-containers`, `render-textures`, `scale-and-responsive`, `tweens`. São referência de API, não substituem os padrões do projeto (pooling, extract/delegate, Zustand bridge) — usar em conjunto com as skills `phaser-4-*` próprias, nunca no lugar delas.
+     ⚠️ **Duas skills oficiais do repo upstream NÃO foram instaladas de propósito:** `events-system` e `data-manager`. Ambas descrevem padrões nativos do Phaser (`EventEmitter`, `this.registry`, `sprite.setData()`) que competem diretamente com a ADR "Ponte Phaser↔React é 100% Zustand, zero CustomEvent" (`docs/architecture/07_DECISION_LOG.md`, 2026-08-25). Uso de eventos Phaser *internos* ao engine (`scene.events.on('shutdown', ...)`, animation-complete, física) continua permitido e necessário — isso não muda —, mas não deve ser aprendido/instalado como skill para evitar que vire atalho de comunicação Phaser↔React ou de estado paralelo ao Zustand. Se precisar desse padrão nativo para algo puramente interno ao Phaser, consulte a documentação oficial diretamente sem instalar a skill.
 
 ### 2. Regras de Ouro
 
