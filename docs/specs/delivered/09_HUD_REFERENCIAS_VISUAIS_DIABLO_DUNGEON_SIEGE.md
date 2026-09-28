@@ -3,9 +3,9 @@ agent_context: frontend, game designer
 target_module: src/components/GameplayHUD.tsx, src/components/hud, src/game/scenes/GameScene.ts
 priority: medium
 criticality: medium
-status: backlog
-progress: implementado (Tier A completo, validado) — Tiers B/C pendentes
-last_updated: 2026-08-31
+status: completed
+progress: Tier A completo e validado; Tier B.5 descartado por decisão de produto; Tier B.6 (menu contextual de hover) implementado nesta sessão — falta apenas playtest humano de game feel/legibilidade; Tier C ainda pendente (depende de sprites customizados, fora do escopo desta spec)
+last_updated: 2026-09-28
 tags: [design, ui, hud, referencia-visual, diablo2, dungeon-siege-1, mobile, combat-dynamics]
 ---
 
@@ -157,7 +157,10 @@ commit.
 - [x] Fase 3 — acabamento entalhado da barra de HP/MP (sem orbe) — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] Fase 4 — cinturão visual de curativos — falta você validar em jogo + `pnpm verify` antes do commit
 - [x] Tier B.5 avaliado e decidido — descartado, HP/mana/curativos continuam no topo-esquerda
-- [ ] Tier B.6 (menu contextual de mouse) — ainda em aberto, baixa prioridade
+- [x] Tier B.6 (menu contextual de mouse) — implementado 28/09: "ATACAR"/"CONVERSAR" no
+      hover, só em desktop (reaproveita a checagem touch-vs-mouse de `GameplayHUD.tsx`).
+      `pnpm verify` e `pnpm test -- --run` passaram; falta playtest humano de game
+      feel/legibilidade em jogo real.
 - [ ] Tier C revisitado quando houver sprites customizados de UI
 
 ---
@@ -185,4 +188,5 @@ commit.
 | 2026-08-25 | Fase 3 implementada: `PlayerStatus.tsx` ganhou moldura forjada (textura de metal batido + rebites de canto + highlight superior) nas barras de HP/MP e pulso vermelho quando HP ≤ 25%. Mesma posição, mesma forma retangular — falta validação em jogo | Claude |
 | 2026-08-25 | Fases 1, 2 e 4 implementadas: marcador "!" procedural sobre os 4 NPCs (bob + some em diálogo); minimap mínimo 3x3 sincronizado via Zustand (`minimapRooms`, throttle ~400ms, teste em `gameStore.test.ts`) substituindo os settings mortos; cinturão único de curativos com a mesma moldura forjada da Fase 3. Tier A da spec completo — falta validação em jogo | Claude |
 | 2026-08-31 | Registro das Diretrizes Definitivas de Design (Felipe): 1) Visual/atmosfera baseado estritamente em Diablo II (e não Diablo 1); 2) HUD com barras de status horizontais estruturadas no estilo Dungeon Siege 1 (proibido o uso de esferas/orbes); 3) Combate dinâmico e esquiva espacial ativa/manual (desvio motor de projéteis/feitiços) alinhado ao Dungeon Siege 1. | Antigravity |
+| 2026-09-28 | Tier B.6 implementado (residual desta spec, fechando o item que faltava): menu contextual de alvo no hover do mouse. `GameScene.ts` ganhou `updateHoverContextLabel()`/`clearHoverContextLabel()` — hit-test por distância (sem `setInteractive()`, sem tocar em `Enemy.ts`) contra `enemiesGroup`/`npcsGroup`, mostrando "ATACAR"/"CONVERSAR" junto ao cursor (`Phaser.GameObjects.Text`, paleta Grimdark, `scrollFactor(0)`, depth 3000). Só roda em desktop: reaproveita a mesma checagem touch-vs-mouse já usada em `GameplayHUD.tsx` (`isTouchCapable`) via `isDesktopPointerEnvironment()`, sem criar um novo sistema de detecção. Lógica de hit-test/prioridade e a checagem de dispositivo foram extraídas para `src/game/systems/HoverContextTarget.ts` (funções puras, testadas em `HoverContextTarget.test.ts` sem mock de Phaser/jsdom — 9 testes novos). Nenhuma mudança no fluxo de clique/toque existente. Movida de `backlog/` para `delivered/`. Validado: `pnpm run typecheck`, `pnpm test -- --run` (551 testes, 55 arquivos) e `pnpm verify` (assets+typecheck+build) passando. Não validado: game feel/legibilidade do texto em jogo real (precisa de playtest humano). | Claude |
 
