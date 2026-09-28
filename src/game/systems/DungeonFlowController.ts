@@ -192,6 +192,31 @@ export class DungeonFlowController {
   constructor(private scene: GameScene) {}
 
   /**
+   * Marca como já construído o índice de `CAMPAIGN_ZONE_CHUNKS` cujo bioma
+   * bate com o bioma que `buildDungeonMap()` acabou de montar como PISO da
+   * campanha. O piso da campanha É espacialmente o chunk correspondente
+   * (mesma sequência que o `zoneStreamer` percorre) — sem essa marcação,
+   * `updateChunkStream()` -> `loadChunkBiome()` roda de novo pro mesmo
+   * índice/bioma logo no primeiro `update()` do frame seguinte, rebakeando
+   * `SafeHouseDetailFactory` (que remove e recria as texturas por key, de
+   * propósito, pra ser idempotente sozinha) por cima do que
+   * `buildDungeonMap()` acabou de montar. Sprites já colocados nesta
+   * chamada ficam com o frame apontando pra uma textura destruída, e o
+   * Phaser quebra com "Cannot read properties of null (reading
+   * 'resolution')" no primeiro render seguinte — reproduzido de forma
+   * consistente ao entrar em modo Campanha (nunca em Arcade, cujo bioma de
+   * piso nunca coincide com o bioma do chunk 0). Público só pra ser
+   * testável diretamente, mesmo padrão de `getNextCampaignZone` abaixo. Ver
+   * docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md item 20.
+   */
+  public markOwnFloorChunkAsBuilt(biome: BiomeType): void {
+    const ownChunkIndex = CAMPAIGN_ZONE_CHUNKS.findIndex((c) => c.biome === biome);
+    if (ownChunkIndex >= 0) {
+      this.builtChunkIndices.add(ownChunkIndex);
+    }
+  }
+
+  /**
    * Próximo bioma da campanha a partir do atual, usando o mesmo
    * encadeamento linear ordenado do `ChunkStreamer` — substitui o if/else
    * hardcoded que existia direto em `advanceToNextFloor()`. Satura no
@@ -285,6 +310,7 @@ export class DungeonFlowController {
     
     if (gameMode === 'campaign') {
       biome = useGameStore.getState().campaignState.currentZone;
+      this.markOwnFloorChunkAsBuilt(biome);
     } else {
       if (floorDepth >= 5) {
         biome = 'santuario_sangue';

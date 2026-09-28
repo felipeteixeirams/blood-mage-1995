@@ -595,6 +595,24 @@ Componentes de fallback/guardrail (`RotateDeviceOverlay`, `darknessOverlay`, etc
 
 ---
 
+## 20. Modo Campanha Não Jogável — Safe House Rebakeada em Cima de Si Mesma (Crash de Renderer `Cannot read properties of null (reading 'resolution')`)
+
+### 🔴 Sintoma
+Em modo **Campanha**, o jogo trava logo no início: o personagem nunca aparece, nada responde, e o console mostra `Uncaught TypeError: Cannot read properties of null (reading 'resolution')` dentro do renderer WebGL do Phaser (`initialize.run`/`initialize.render`, código minificado da própria engine). Em modo **Arcade**, o mesmo fluxo funciona normalmente.
+
+### 🔍 Causa-Raiz
+`DungeonFlowController.buildDungeonMap()` monta o PISO da campanha usando `campaignState.currentZone` como bioma (`biome = 'safe_house'` no floor 1). Em paralelo, todo `update()` de `GameScene` chama `updateChunkStream(player.x)`, que mantém uma janela de `CAMPAIGN_ZONE_CHUNKS` carregada ao redor do jogador via `ChunkStreamer` — e o chunk 0 dessa sequência **também** é `'safe_house'`. Sem nenhuma coordenação entre os dois sistemas, `loadChunkBiome()` roda de novo para o chunk 0 na sequência, chamando `SafeHouseDetailFactory.bakeDetailTextures()` — que **remove e recria** as texturas por key de propósito (pra ser idempotente sozinha) — por cima da Safe House que `buildDungeonMap()` acabou de montar segundos antes. Os sprites já colocados na primeira montagem ficam com o frame apontando pra uma textura destruída, e o Phaser quebra no primeiro `render()` seguinte.
+
+Em modo Arcade isso nunca acontece: o bioma do piso (`fosso_chagas`, ou `catacumbas_martires`/`santuario_sangue` em profundidade maior) nunca coincide com o bioma do chunk 0 da sequência de campanha (`safe_house`), então não há bake duplicado.
+
+### 🛠️ Procedimento de Resolução
+Em `DungeonFlowController.buildDungeonMap()`, ao determinar o bioma do piso em modo campanha, marcar o índice correspondente em `CAMPAIGN_ZONE_CHUNKS` como já construído (`builtChunkIndices`) — método público `markOwnFloorChunkAsBuilt(biome)`, testável isoladamente (mesmo padrão de `getNextCampaignZone`). Isso faz `loadChunkBiome()` pular esse índice específico quando o `ChunkStreamer` tentar carregá-lo de novo, sem afetar os chunks vizinhos (que continuam carregando normalmente).
+
+### 🛡️ Prevenção
+Dois sistemas que geram/decoram conteúdo pro **mesmo espaço físico** (piso "clássico" via `buildDungeonMap()` + streaming de biomas vizinhos via `ChunkStreamer`) precisam de uma fonte única de verdade sobre "o que já foi construído" — nunca assumir que só porque um sistema roda sozinho hoje, ele nunca vai colidir com outro que compartilha o mesmo `biome`/índice espacial. Sempre que dois pipelines de geração procedural puderem operar na mesma região, adicionar o guard de dedup ANTES de integrar, não depois do crash em produção.
+
+---
+
 ## 🔗 Referências Relacionadas
 - [[docs/critical/00_ANTI_REGRESSION_GUIDE.md]] — Regras e guardrails de estabilidade.
 - [[docs/archive/integration/00_LOVABLE_INTEGRATION.md]] — Diretrizes de integração de assets e telas do Lovable.
