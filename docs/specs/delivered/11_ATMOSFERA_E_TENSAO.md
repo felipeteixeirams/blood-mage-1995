@@ -3,8 +3,8 @@ agent_context: game-engine, frontend, audio
 target_module: src/game/systems, src/utils/soundEngine.ts
 priority: medium
 criticality: medium
-status: in-progress
-last_updated: "2026-09-10"
+status: completed
+last_updated: "2026-09-28"
 tags:
   - atmosphere
   - threat_indicator
@@ -16,7 +16,7 @@ tags:
 
 # 📜 Spec 11: Atmosfera, Tensão e Indicadores de Ameaça
 
-> **Status:** 🟢 IMPLEMENTADO (Indicadores Fora de Tela, Vinheta Pulsante e Reforços `flee`)
+> **Status:** 🟢 ENTREGUE (Indicadores Fora de Tela, Áudio Espacial, Vinheta Pulsante e Reforços `flee`)
 > **Data:** Setembro de 2026
 > **Domínio:** Atmosfera Gótica, Indicadores Telegrafados, Áudio Espacial e Efeitos Visuais de Tensão.
 
@@ -26,7 +26,7 @@ Elevar a imersão, o suspense e a tensão tática de *Bloodmage 1995*, inspirand
 ---
 
 ## 2. 🔍 Contexto & Estado Real de Implementação
-Embora o indicador de ameaça no mapa de borda direcional seja um item de backlog futuro, os principais efeitos visuais e sonoros de tensão da especificação **já foram implementados no código-fonte**:
+Todos os itens da especificação (3.1–3.5) **estão implementados no código-fonte**. Os itens 3.1 (indicador direcional na borda da tela) e 3.2 (áudio espacial com `StereoPannerNode`) foram implementados em `9f18648` (12/09/2026, inline em `GameScene.ts`) e, em 28/09/2026, tiveram a matemática pura de posicionamento/ângulo extraída para `src/game/systems/ThreatIndicatorSystem.ts` — antes disso, `ThreatIndicator.test.ts` testava uma cópia local da fórmula, não o código realmente executado por `GameScene.ts` (duplicação de lógica, sem risco funcional mas sem garantia real de regressão). `GameScene.updateThreatIndicator()` agora delega o cálculo a essa função pura e cuida só do desenho no `Graphics` pooled e do disparo de áudio.
 
 - **Threat Tinnitus (Zumbido de Ameaça):**
   - Implementado em `src/utils/soundEngine.ts` (`startTinnitus()`, `stopTinnitus()`, `updateTinnitus()`) e acionado em `src/game/scenes/GameScene.ts` quando o HP do jogador cai abaixo de 30% ou diante de ameaças elites/bosses.
@@ -77,5 +77,12 @@ Embora o indicador de ameaça no mapa de borda direcional seja um item de backlo
 ---
 
 ## 📊 Status & Esforço Estimado
-- **Status:** 🟢 IMPLEMENTADO / AGUARDANDO PR
+- **Status:** 🟢 ENTREGUE
 - **Esforço Estimado:** Entregue.
+
+---
+
+## 📜 Changelog
+
+- **2026-09-12** (`9f18648`, google-labs-jules[bot]): Implementação inicial dos itens 3.1 (chevrons de ameaça na borda da câmera, cor âmbar/vermelha por `aiState`, até 8 ameaças mais próximas, cleanup imediato via `.clear()` por frame) e 3.2 (áudio espacial com `StereoPannerNode` + ruído estático direcional em `soundEngine.ts`), inline em `GameScene.ts`.
+- **2026-09-28**: Verificação de que 3.1–3.5 já estavam implementados (nenhuma reimplementação feita). Refatoração de consolidação: extraída a matemática pura de `updateThreatIndicator()` (filtragem de ameaças fora de tela, ângulo, ponto de borda, cor, ameaça mais próxima) para `src/game/systems/ThreatIndicatorSystem.ts` (`computeThreatIndicators()`), eliminando a duplicação entre o código real de `GameScene.ts` e a cópia local que `ThreatIndicator.test.ts` exercitava. `GameScene.ts` passou a delegar a esse módulo e ficou responsável só pela renderização Phaser-specific (Graphics pooled) e pelo disparo de áudio. Testes unitários ampliados (estado `flee` ignorado, seleção da ameaça mais próxima para áudio espacial mesmo fora de ordem, efeito de zoom da câmera no cálculo de offscreen). Validado com `pnpm run typecheck`, `pnpm test -- --run` (54 arquivos / 545 testes, 100%) e `pnpm run build`. Movida de `in-progress/` para `delivered/`.
