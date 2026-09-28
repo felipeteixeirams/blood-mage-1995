@@ -11,6 +11,7 @@ vi.mock('../utils/soundEngine', () => ({
     playBloodNova: vi.fn(),
     playRunicEmpowerment: vi.fn(),
     playMenuSelect: vi.fn(),
+    playContractComplete: vi.fn(),
   },
 }));
 
@@ -886,6 +887,103 @@ describe('gameStore', () => {
       const persisted = JSON.parse(localStorage.getItem('bloodmage_1995_prestige')!);
       expect(persisted.level).toBe(1);
       expect(persisted.seals.carnage).toBe(1);
+    });
+  });
+
+  describe('difficulty & target management', () => {
+    it('setDifficulty updates selectedDifficulty only if unlocked in prestige', () => {
+      useGameStore.setState({
+        prestige: {
+          ...useGameStore.getState().prestige,
+          unlockedDifficulties: ['normal', 'nightmare'],
+        },
+      });
+
+      useGameStore.getState().setDifficulty('nightmare');
+      expect(useGameStore.getState().prestige.selectedDifficulty).toBe('nightmare');
+
+      useGameStore.getState().setDifficulty('hell' as never);
+      expect(useGameStore.getState().prestige.selectedDifficulty).toBe('nightmare');
+    });
+
+    it('setCurrentTarget and clearStaleTarget clear target after 5000ms inactivity', () => {
+      useGameStore.getState().setCurrentTarget({ id: 'enemy_1', name: 'Goblin', hp: 50, maxHp: 50, level: 1 } as never);
+      const target = useGameStore.getState().currentTarget;
+      expect(target?.id).toBe('enemy_1');
+
+      const lastAttacked = target?.lastAttacked ?? Date.now();
+
+      // Less than 5000ms passed
+      useGameStore.getState().clearStaleTarget(lastAttacked + 4000);
+      expect(useGameStore.getState().currentTarget).not.toBeNull();
+
+      // More than 5000ms passed
+      useGameStore.getState().clearStaleTarget(lastAttacked + 6000);
+      expect(useGameStore.getState().currentTarget).toBeNull();
+    });
+  });
+
+  describe('unconscious, scavenge, and NPC state setters', () => {
+    it('setUnconscious sets isUnconscious state', () => {
+      useGameStore.getState().setUnconscious(true);
+      expect(useGameStore.getState().playerStats.isUnconscious).toBe(true);
+      useGameStore.getState().setUnconscious(false);
+      expect(useGameStore.getState().playerStats.isUnconscious).toBe(false);
+    });
+
+    it('setActiveScavengeable and setScavengeProgress update scavenge state', () => {
+      const scav = { id: 'chest_1', type: 'chest', x: 10, y: 10 };
+      useGameStore.getState().setActiveScavengeable(scav as never);
+      useGameStore.getState().setScavengeProgress(0.75);
+
+      expect(useGameStore.getState().activeScavengeable).toEqual(scav);
+      expect(useGameStore.getState().scavengeProgress).toBe(0.75);
+    });
+
+    it('setActiveNPC and setClosestNPCType update NPC state', () => {
+      useGameStore.getState().setActiveNPC('blacksmith');
+      useGameStore.getState().setClosestNPCType('alchemist');
+
+      expect(useGameStore.getState().activeNPC).toBe('blacksmith');
+      expect(useGameStore.getState().closestNPCType).toBe('alchemist');
+    });
+  });
+
+  describe('achievement and run stats state actions', () => {
+    it('unlockAchievement unlocks achievement and triggers notification', () => {
+      useGameStore.getState().unlockAchievement('first_blood');
+      expect(useGameStore.getState().achievements['first_blood']?.unlocked).toBe(true);
+      expect(useGameStore.getState().lastUnlockedAchievement?.achievementId).toBe('first_blood');
+
+      useGameStore.getState().clearLastUnlockedAchievement();
+      expect(useGameStore.getState().lastUnlockedAchievement).toBeNull();
+    });
+
+    it('redeemAchievement redeems reward for an unlocked achievement', () => {
+      useGameStore.getState().unlockAchievement('first_blood');
+      const initialCrystals = useGameStore.getState().bloodCrystals;
+
+      useGameStore.getState().redeemAchievement('first_blood', 50);
+      expect(useGameStore.getState().achievements['first_blood']?.redeemed).toBe(true);
+      expect(useGameStore.getState().bloodCrystals).toBe(initialCrystals + 50);
+
+      // Redeeming again is a no-op
+      useGameStore.getState().redeemAchievement('first_blood', 50);
+      expect(useGameStore.getState().bloodCrystals).toBe(initialCrystals + 50);
+    });
+
+    it('incrementRunStat, setRunStat and resetRunStats update metrics and check achievements', () => {
+      useGameStore.getState().resetRunStats();
+      expect(useGameStore.getState().runStats.kills_total).toBe(0);
+
+      useGameStore.getState().incrementRunStat('kills_total', 5);
+      expect(useGameStore.getState().runStats.kills_total).toBe(5);
+
+      useGameStore.getState().setRunStat('kills_total', 100);
+      expect(useGameStore.getState().runStats.kills_total).toBe(100);
+
+      useGameStore.getState().resetRunStats();
+      expect(useGameStore.getState().runStats.kills_total).toBe(0);
     });
   });
 });
