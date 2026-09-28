@@ -171,6 +171,10 @@ docs/specs/
 > de documentos já resolvidos em versões mais recentes desta própria
 > auditoria. `03_FASE3_STATUS_SOBREVIVENCIA.md` também saiu — `main` já
 > validou e entregou como `delivered/03_FASE3_CONDICOES_DE_SOBREVIVENCIA.md`.
+> Um PR posterior de auditoria de docs (Jules, PR #122) reintroduziu esses
+> mesmos fantasmas em `main` por ter partido de um snapshot anterior a esta
+> reconciliação — removidos de novo aqui em 2026-09-28 (2ª reconciliação),
+> mesma justificativa de conteúdo já documentada.
 
 > *Nota:* O arquivo histórico consolidado de acompanhamento (`SPECS_EVOLUCAO.md`) foi arquivado para [`in-progress/_ARCHIVED_SPECS_EVOLUCAO_2026_09_REFACTOR.md`](./in-progress/_ARCHIVED_SPECS_EVOLUCAO_2026_09_REFACTOR.md) durante a refatoração hierárquica por satélites.
 
@@ -181,6 +185,8 @@ docs/specs/
 > Histórico completo (tudo entregue há mais de 7 dias, nunca apagado):
 > [`delivered/_HISTORY_ARCHIVE.md`](./delivered/_HISTORY_ARCHIVE.md).
 > Ao passar dos 7 dias, mova a linha daqui para o topo do arquivo.
+>
+> *(Nota: Para lista exaustiva de specs de todas as pastas, consulte [`delivered/_HISTORY_ARCHIVE.md`](./delivered/_HISTORY_ARCHIVE.md))*
 
 | Spec | Escopo Concluído | Entregue em | Verificação / Testes |
 |---|---|---|---|
@@ -206,6 +212,12 @@ docs/specs/
 | **[`backlog/29_CLOUD_SAVE_FASE5.md`](./backlog/29_CLOUD_SAVE_FASE5.md)** | *(novo, extraído de `05` já entregue)* Cloud Save automatizado (Firebase/Firestore) | medium | high | **Sim** — confirmação de Felipe pendente |
 | **[`backlog/33_BOSS_MULTIFASE_TELEGRAPH_SYSTEM.md`](./backlog/33_BOSS_MULTIFASE_TELEGRAPH_SYSTEM.md)** | *(novo, portado de protótipo Godot)* Boss multi-fase por threshold de HP, telegraph evolutivo, corrige bug de id desatualizado | medium | high | Não |
 | **[`backlog/34_EQUIPMENT_SET_BONUS_SYSTEM.md`](./backlog/34_EQUIPMENT_SET_BONUS_SYSTEM.md)** | *(novo, portado de protótipo Godot)* Bônus de conjunto (2/3 peças) sobre as Relíquias já entregues (spec 19) | medium | medium | Não |
+
+> *Nota (2026-09-28):* Spec 06 (Sistema de Prestígio) não aparece mais aqui
+> — já foi entregue por completo (backend + Modal UI, ver `delivered/18`),
+> confirmado por leitura do código (`src/components/PrestigeModal.tsx`
+> existe). `main` ainda a listava como "proposta inicial" por não ter
+> recebido esta reconciliação.
 
 ---
 
