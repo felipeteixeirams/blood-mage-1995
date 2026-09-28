@@ -11,7 +11,8 @@
       "bleedChanceOnHit": 0.30,
       "bleedDamagePerSecond": 10,
       "damageMultiplier": 0.10
-    }
+    },
+    "setId": "conjunto_sangue"
   },
   {
     "id": "calice_amaldicoado",
@@ -24,7 +25,8 @@
     "effect": {
       "bloodCrystalMultiplier": 1.50,
       "hpRegenBonus": -0.5
-    }
+    },
+    "setId": "conjunto_abissal"
   },
   {
     "id": "olho_de_carmim",
@@ -37,7 +39,8 @@
     "effect": {
       "speedBonus": 20,
       "lifestealBonus": 0.05
-    }
+    },
+    "setId": "conjunto_sangue"
   },
   {
     "id": "coracao_abissal",
@@ -50,7 +53,8 @@
     "effect": {
       "maxHpBonus": 40,
       "cooldownReductionBonus": 0.15
-    }
+    },
+    "setId": "conjunto_abissal"
   },
   {
     "id": "amuleto_do_martir",
@@ -63,7 +67,8 @@
     "effect": {
       "spellCostDiscount": 0.20,
       "speedBonus": -10
-    }
+    },
+    "setId": "conjunto_abissal"
   },
   {
     "id": "anel_do_pacto_sanguineo",
