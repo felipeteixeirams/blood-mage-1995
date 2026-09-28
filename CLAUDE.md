@@ -3,8 +3,8 @@ agent_context: all agents
 target_module: root
 priority: high
 status: active
-last_updated: 2026-09-03
-tags: [project-config, claude-code, architecture, conventions]
+last_updated: 2026-09-28
+tags: [project-config, claude-code, architecture, conventions, honestidade-tecnica]
 ---
 
 # 🎮 Bloodmage 1995 — Guia de Configuração Claude Code
@@ -84,6 +84,37 @@ docs/
 - Adicionar UI diretamente ao canvas Phaser (sempre usar React + Zustand bridge)
 - Usar `CustomEvent` ou `window.dispatchEvent` para gameplay (só Zustand)
 - Fazer alterações acumuladas sem rodar testes entre elas
+- Tratar uma spec de `docs/specs/discovery/` ou `scope-definition/` como requisito ativo — são hipóteses, não escopo aprovado (ver 📖 Documentação de Specs)
+
+---
+
+## 🧭 Honestidade Técnica e Evidência
+
+> Gap real do projeto, não teórico: PRs com `pnpm test` 100% passando já esconderam
+> regressão visual que só apareceu na verificação ao vivo (PRs #80/#81), e um PR
+> chegou a duplicar código que já existia em `main` — só ficou claro comparando o
+> diff de verdade, não pelo status do PR (#89). Ver
+> `docs/architecture/08_JULES_SESSION_PROMPT.md`.
+
+**Nunca declare uma implementação "pronta", "funcionando" ou "sem problemas" só porque:**
+- o código compila / `tsc --noEmit` não reclama;
+- `pnpm test` passou;
+- não apareceu erro no console;
+- o *happy path* funciona.
+
+Essas são evidências parciais — cada uma cobre uma fatia específica, nenhuma cobre
+"o jogo está bom". Ao reportar o resultado de uma mudança, diga explicitamente o
+que foi e o que **não** foi validado:
+
+- ✅ **Validado por `pnpm verify`** (typecheck + build) — cobre sintaxe/tipos, não comportamento em runtime
+- ✅ **Validado por `pnpm test`** — cobre os casos escritos, não o que não foi testado
+- ✅ **Validado manualmente / via Playwright** (`phaser-4-playtest-harness/SKILL.md`) — cobre runtime real
+- ⚠️ **Não validado:** `<o que ainda falta ver rodando — ex: "calibração visual em jogo", "comportamento em mobile", "balanceamento de dano">`
+
+Se encontrar um problema, risco ou limitação real durante o trabalho, **diga
+direto** — não suavize a crítica pra soar mais positivo, e nunca transforme "não
+encontrei problema" em "está excelente". Ausência de erro não é qualidade
+comprovada.
 
 ---
 
@@ -160,6 +191,23 @@ Objetos fora da viewport são desativados automaticamente.
 
 ---
 
+## 🎮 Qualidade de Jogo: Gameplay, Game Feel & UX
+
+Uma feature não está "pronta" só porque funciona tecnicamente (compila, testa,
+sem erro no console). Antes de considerar concluída — proporcionalmente ao
+tamanho da mudança, não é checklist obrigatório pra todo PR pequeno — avalie:
+
+- **Game Feel:** resposta de controles, timing de animação, feedback de acerto/dano — ver `phaser-4-animation-tweens/SKILL.md` (FSM Windup-Strike-Recovery) e `phaser-4-fx-filters/SKILL.md` (glow/vignette como feedback funcional, não decoração gratuita)
+- **UX Mobile:** touch funciona? Legível em tela pequena? Joystick não quebra (ver bug conhecido de floating/fixed em `docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md`)?
+- **Gameplay consistente:** a mecânica nova respeita as regras já estabelecidas (ex: Hemomancer gasta HP, não mana)? Não introduz comportamento indesejado (ex: dano por contato passivo indevido — ver `phaser-4-physics-combat/SKILL.md`)?
+- **Performance real, não presumida:** não afirme "está performático" sem profiling (ver 🔍 Debugging & Observability abaixo) — especialmente em waves 5+ (pico conhecido, ver Bugs Conhecidos)
+
+Não adicione efeito visual/sonoro só para "ficar bonito" — deve ter propósito
+funcional (feedback de dano, telegraph de ataque, leitura de estado) alinhado ao
+tom gótico-sério do jogo. Efeito sem função é ruído visual, não polish.
+
+---
+
 ## 🎓 Padrões Phaser Comuns
 
 ### Extract/Delegate do GameScene
@@ -203,9 +251,16 @@ tags: [categoria, subcategoria]
 ### Localização de Specs
 - **Ativas/In Progress:** `docs/specs/in-progress/`
 - **Entregues:** `docs/specs/delivered/`
-- **Backlog:** `docs/specs/backlog/`
-- **Discovery (pesquisa):** `docs/specs/discovery/`
+- **Backlog:** `docs/specs/backlog/` — pronta pra implementação imediata (0% código, escopo 100% definido)
+- **Escopo em Definição:** `docs/specs/scope-definition/` — proposta real, mas falta decisão de produto/critério de aceite
+- **Discovery (pesquisa):** `docs/specs/discovery/` — pesquisa exploratória, sem compromisso de entrega
 - **Rejeitadas:** `docs/specs/rejected/`
+
+> ⚠️ **`scope-definition/` e `discovery/` são hipóteses, não requisito ativo.**
+> Nunca implemente a partir delas sem a spec ter sido promovida pra `backlog/`
+> (ver Seção 6 de `docs/architecture/05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md`).
+> Se um pedido referenciar uma delas diretamente, confirme o escopo antes de
+> codificar — documento antigo de proposta não é mandato silencioso.
 
 Ao completar uma feature:
 1. Mover spec de `in-progress/` para `delivered/`
@@ -337,9 +392,11 @@ Este `CLAUDE.md` orienta agentes Claude para:
 2. **Segurança:** Identificar arquivos críticos antes de tocar (Player.ts, Enemy.ts, GameScene.ts)
 3. **Performance:** Aplicar padrões de pooling, spatial pruning, culling automaticamente
 4. **Arquitetura:** Respeitar fluxo 100% Zustand para comunicação Phaser ↔ React
-5. **Documentação:** Correlacionar trabalho com specs do projeto, manter changelog
+5. **Documentação:** Correlacionar trabalho com specs do projeto (mas nunca tratar `discovery/`/`scope-definition/` como mandato), manter changelog
 6. **Testing:** Validar com `pnpm verify` antes de finalizar
 7. **Workflow:** Desenvolver na branch designada, nunca em main sem autorização
+8. **Honestidade:** Reportar o que foi validado vs. não validado — nunca inflar sucesso porque "compilou e testou" (ver 🧭 Honestidade Técnica e Evidência)
+9. **Qualidade de Jogo:** Avaliar game feel/UX mobile/gameplay, não só "está sem erro" (ver 🎮 Qualidade de Jogo)
 
 ---
 
@@ -347,13 +404,26 @@ Este `CLAUDE.md` orienta agentes Claude para:
 
 **Proprietário do Projeto:** Felipe Teixeira (`felipeconceicao@grpereira.com.br`)
 
-Se encontrar:
+### Pare e converse com Felipe ANTES de commitar quando encontrar:
 - ❌ Conflito de arquitetura
 - ❌ Performance regression
-- ❌ Breaking change em archivos críticos
-- ❌ Dúvida sobre integridade de estado
+- ❌ Breaking change em arquivos críticos (`Player.ts`, `Enemy.ts`, `GameScene.ts`)
+- ❌ Dúvida sobre integridade de estado (Zustand ↔ Phaser)
+- ❌ Mudança que afeta persistência/save data (`localStorage`, futura Cloud Save)
+- ❌ Pedido que parece conflitar com um guardrail em `docs/critical/` ou com uma decisão já registrada em `docs/architecture/07_DECISION_LOG.md`
 
-**Converse com Felipe antes de fazer commit.**
+### Questione, não implemente silenciosamente
+Se um pedido do Felipe parecer tecnicamente inadequado (contraria um guardrail
+documentado, reintroduz um bug já resolvido, ou tem escopo/impacto maior que o
+aparente), **não implemente calado**. Em 2-3 linhas: explique qual é o problema,
+que evidência existe (link pro ADR/critical file/bug conhecido), e qual
+alternativa você sugere — a decisão final continua sendo do Felipe, mas ele
+precisa ver o trade-off antes de confirmar.
+
+Isso vale principalmente para specs de prioridade/criticidade alta ou mudanças em
+arquivos críticos — **não é necessário** para tarefas pequenas e bem escopadas
+(ex: specs Jules-ready de baixa criticidade como normal maps ou fixes de
+determinismo). Escale o rigor da pergunta ao tamanho real do risco.
 
 ---
 
@@ -367,12 +437,14 @@ Se encontrar:
 | `docs/critical/02_PERFORMANCE_OPTIMIZATION.md` | Otimizações validadas |
 | `docs/critical/03_TESTING_GATES.md` | Requisitos de testes antes de merge |
 | `docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md` | Bugs e workarounds |
+| `docs/architecture/07_DECISION_LOG.md` | Por que decisões arquiteturais grandes foram tomadas (ADR-lite) |
+| `docs/architecture/08_JULES_SESSION_PROMPT.md` | Histórico de falhas reais que motivaram a seção 🧭 Honestidade Técnica |
 | `docs/specs/in-progress/` | Features em desenvolvimento |
 | `docs/specs/delivered/` | Features completadas com changelog |
 
 ---
 
-**Última atualização:** 2026-09-03  
-**Versão:** 1.0 (Inicial)  
+**Última atualização:** 2026-09-28  
+**Versão:** 1.1 (+ Honestidade Técnica, Qualidade de Jogo, Escalations expandido)  
 **Status:** Ativo e em uso por agentes Claude Code
 
