@@ -365,6 +365,11 @@
     "scoreValue": 2500,
     "executionFragments": 6,
     "executionImpulse": 240,
-    "executionBloodScale": 5.0
+    "executionBloodScale": 5.0,
+    "bossPhases": [
+      { "hpThreshold": 1.0, "speedMultiplier": 1.0, "attackIntervalMultiplier": 1.0 },
+      { "hpThreshold": 0.5, "speedMultiplier": 1.15, "attackIntervalMultiplier": 0.85 },
+      { "hpThreshold": 0.2, "speedMultiplier": 1.3, "attackIntervalMultiplier": 0.7, "unlocksWaveTelegraph": true }
+    ]
   }
 }
