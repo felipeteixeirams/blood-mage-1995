@@ -571,7 +571,27 @@ O mesmo padrão de bug (config existente mas com default errado) afetava `dragTo
 | Personagem anda virado para a direção errada | Ordem das direções do montador difere da de `animationManager.ts` | Conferir o array `DIRS` nos dois arquivos | Manter `south, south-east, east, north-east, north, north-west, west, south-west` |
 | Conquistas e notificações desenhadas no canvas do jogo | Sistema legado de conquistas no Phaser (`AchievementSystem`/`AchievementNotification`) | Inspecionar instâncias em `GameScene.ts` | Migrar para `runStats` no Zustand + overlay React `AchievementToast.tsx` |
 | Toque na esquerda da tela move o personagem pra DIREITA / nunca move pra esquerda | `floatingStick: false` (base fixa) + zona de toque bem mais larga que a base ancorada em `VirtualJoystickSystem.ts` | Testes de regressão em `VirtualJoystickSystem.test.ts` (`describe('regression: fixed-base stick...')`) | Definir `floatingStick: true` como default (`localStorage.ts`, `SettingsScene.ts`) |
+| HUD com elementos sobrepostos (barra de vida, abates/pontos, mapa) em celular na vertical, sem sobreposição em paisagem | `RotateDeviceOverlay` foi esvaziado (`return null`) e nunca remontado em `App.tsx`; `GameplayHUD.tsx` posiciona vida/abates-pontos/mapa de forma absoluta e independente, assumindo largura de paisagem | Reproduzir com Playwright em viewport retrato (~390x844) — HUD sobrepõe visivelmente | Restaurar `RotateDeviceOverlay` e remontar em `App.tsx` (item 19) |
 
+---
+
+## 19. Regressão Silenciosa: HUD Sobreposto em Retrato (`RotateDeviceOverlay` Esvaziado e Nunca Remontado)
+
+### 🔴 Sintoma
+Em celular na orientação retrato, o HUD de gameplay aparece com elementos sobrepostos de forma ilegível: a barra "SANGUE" (vida) cobre o texto de abates/pontos, e o painel "MAPA" cobre a fileira de botões de ação. Em paisagem, os mesmos elementos aparecem corretamente, sem sobreposição.
+
+### 🔍 Causa-Raiz
+`src/components/GameplayHUD.tsx` posiciona três blocos de forma absoluta e independente (`top-2 left-2`, `top-2 left-1/2 -translate-x-1/2`, `top-2 right-2`), sem nenhuma coordenação de largura entre eles. Isso sempre exigiu espaço horizontal de paisagem para não colidir. Existia uma proteção para isso — `src/components/RotateDeviceOverlay.tsx`, que bloqueia a tela com um aviso "ROTACIONE O DISPOSITIVO" enquanto o dispositivo estiver em retrato — mas o componente foi esvaziado (`return null`) num commit não relacionado (`feat(ux): minimapa procedimental dinamico baseado em geometria`) e a chamada `<RotateDeviceOverlay />` em `App.tsx` nunca foi restaurada. Sem o aviso bloqueando a tela, o HUD quebrado ficava visível e jogável (mal) em qualquer retrato.
+
+Decisão de produto (2026-09-28, Felipe): paisagem é a orientação prioritária; retrato não precisa de um HUD responsivo dedicado — precisa apenas não expor o layout quebrado.
+
+### 🛠️ Procedimento de Resolução
+1. Restaurar o corpo funcional de `RotateDeviceOverlay.tsx` (overlay fullscreen `z-[9999]`, detecta `window.innerHeight > window.innerWidth`, mostra avio até o dispositivo virar).
+2. Remontar `<RotateDeviceOverlay />` no topo da árvore de `App.tsx`, antes de qualquer outro overlay full-screen (fica acima até do `SplashScreen`).
+3. Validar com Playwright em dois viewports: retrato (391x844, deve mostrar só o aviso) e paisagem (844x391, deve mostrar o HUD normalmente, sem o aviso interferir).
+
+### 🛡️ Prevenção
+Componentes de fallback/guardrail (`RotateDeviceOverlay`, `darknessOverlay`, etc.) que são "esvaziados" numa refatoração devem ter sua remoção justificada explicitamente na mensagem do commit — nunca como efeito colateral silencioso de um commit sobre outro assunto. Ver também item 5 e item 13 desta mesma tabela para o mesmo padrão de regressão silenciosa.
 
 ---
 
