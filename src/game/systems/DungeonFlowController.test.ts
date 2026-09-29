@@ -100,6 +100,78 @@ describe('DungeonFlowController.getNextCampaignZone (Fase B — encanamento inte
     expect(mockScene.updateWorldAndCameraBounds).toHaveBeenCalledWith(0, 0, 3840, 1440);
   });
 
+  it('sem markOwnFloorChunkAsBuilt, updateChunkStream regenera o chunk do piso da campanha (bug real reproduzido)', () => {
+    const mockScene: any = {
+      updateWorldAndCameraBounds: vi.fn(),
+      dungeonGenerator: { generate: vi.fn().mockReturnValue([]) },
+      rooms: [],
+      postFX: { setBiome: vi.fn() },
+      atmosphereSystem: { setBiome: vi.fn(), blendBiomes: vi.fn() },
+      lightingSystem: { enable: vi.fn() },
+    };
+
+    const controller = new DungeonFlowController(mockScene);
+    // playerX=500 cai no chunk 0 (safe_house, 0-1920) — mesma faixa onde o
+    // piso da campanha (biome: safe_house) acabou de ser montado por
+    // buildDungeonMap(), sem a marcação de builtChunkIndices. Com
+    // loadRadius:1, chunk 0 (safe_house) E chunk 1 (gloomy_woods, vizinho)
+    // carregam na mesma chamada — sem a marcação, os DOIS rodam
+    // dungeonGenerator.generate(), incluindo o safe_house que buildDungeonMap()
+    // já tinha acabado de montar (o bug real: regeneração duplicada dele).
+    controller.updateChunkStream(500);
+
+    expect(mockScene.dungeonGenerator.generate).toHaveBeenCalledTimes(2);
+    expect(mockScene.dungeonGenerator.generate).toHaveBeenCalledWith(1920, 1440, 'safe_house');
+  });
+
+  it('markOwnFloorChunkAsBuilt impede que updateChunkStream regenere o chunk do piso da campanha (fix)', () => {
+    const mockScene: any = {
+      updateWorldAndCameraBounds: vi.fn(),
+      dungeonGenerator: { generate: vi.fn().mockReturnValue([]) },
+      rooms: [],
+      postFX: { setBiome: vi.fn() },
+      atmosphereSystem: { setBiome: vi.fn(), blendBiomes: vi.fn() },
+      lightingSystem: { enable: vi.fn() },
+    };
+
+    const controller = new DungeonFlowController(mockScene);
+    // Mesma chamada que buildDungeonMap() faz para o gameMode === 'campaign'
+    // logo após determinar o bioma do piso.
+    controller.markOwnFloorChunkAsBuilt('safe_house');
+    controller.updateChunkStream(500);
+
+    // O chunk 0 (safe_house) já está marcado como construído — loadChunkBiome
+    // não roda dungeonGenerator.generate() de novo pra ele; o único chunk que
+    // gera é o vizinho (chunk 1, gloomy_woods), carregado normalmente.
+    expect(mockScene.dungeonGenerator.generate).toHaveBeenCalledTimes(1);
+    expect(mockScene.dungeonGenerator.generate).toHaveBeenCalledWith(1920, 1440, 'gloomy_woods');
+  });
+
+  it('markOwnFloorChunkAsBuilt não afeta chunks vizinhos — eles continuam carregando normalmente', () => {
+    const mockScene: any = {
+      updateWorldAndCameraBounds: vi.fn(),
+      dungeonGenerator: { generate: vi.fn().mockReturnValue([]) },
+      rooms: [],
+      postFX: { setBiome: vi.fn(), blendBiomes: vi.fn() },
+      atmosphereSystem: { setBiome: vi.fn(), blendBiomes: vi.fn() },
+      lightingSystem: { enable: vi.fn() },
+      currentFloorDepth: 1,
+    };
+
+    const controller = new DungeonFlowController(mockScene);
+    controller.markOwnFloorChunkAsBuilt('safe_house'); // marca só o chunk 0
+
+    // playerX=1920 cai no chunk 1 (gloomy_woods) — com loadRadius:1, chunks
+    // 0 (safe_house, marcado), 1 (gloomy_woods) e 2 (fosso_chagas) carregam.
+    controller.updateChunkStream(1920);
+
+    // Chunk 0 (marcado) não gera de novo; os dois vizinhos não-marcados geram normalmente.
+    expect(mockScene.dungeonGenerator.generate).toHaveBeenCalledTimes(2);
+    expect(mockScene.dungeonGenerator.generate).not.toHaveBeenCalledWith(1920, 1440, 'safe_house');
+    expect(mockScene.dungeonGenerator.generate).toHaveBeenCalledWith(1920, 1440, 'gloomy_woods');
+    expect(mockScene.dungeonGenerator.generate).toHaveBeenCalledWith(1920, 1440, 'fosso_chagas');
+  });
+
   it('updateBoundaryTransitions (Fase C) calcula blendT e invoca blendBiomes ao aproximar da fronteira entre chunks', () => {
     const mockAtmosphere = { blendBiomes: vi.fn(), setBiome: vi.fn() };
     const mockPostFX = { blendBiomes: vi.fn(), setBiome: vi.fn() };
