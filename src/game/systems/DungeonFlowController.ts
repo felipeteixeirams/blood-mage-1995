@@ -1,0 +1,831 @@
+import Phaser from 'phaser';
+import { Player } from '../objects/Player';
+import { Enemy } from '../objects/Enemy';
+import { Scavengeable } from '../objects/Scavengeable';
+import { BiomeType, EliteAffix } from '../../types/game';
+import { soundEngine } from '../../utils/soundEngine';
+import { useGameStore } from '../../store/gameStore';
+import { telemetry } from '../../utils/telemetry';
+import { worldManager } from '../systems/WorldManager';
+import { ContractSystem } from './ContractSystem';
+import { ChunkStreamer, ChunkSpec } from './ChunkStreamer';
+import { SafeHouseAnimationController } from './SafeHouseAnimationController';
+import type { GameScene } from '../scenes/GameScene';
+
+/**
+ * Encadeamento real da campanha, na mesma ordem que existia como if/else
+ * hardcoded (ver histórico de `getNextCampaignZone` abaixo). Vira dado —
+ * consumido pelo `ChunkStreamer` (Fase A, `docs/specs/in-progress/
+ * 25_MUNDO_CONTINUO_CHUNK_STREAMING.md`) só para decidir o PRÓXIMO bioma
+ * por enquanto (Fase B — "encanamento interno": o GATILHO continua sendo
+ * colidir com o portal, comportamento do jogador idêntico ao de antes).
+ * `width` é simbólico (1 unidade por bioma) — os world bounds ainda são
+ * fixos, carga/descarga real de conteúdo via streamer é uma fase futura
+ * (precisa de bounds dinâmicos primeiro).
+ */
+const CHUNK_WIDTH = 1920;
+const CHUNK_HEIGHT = 1440;
+
+const CAMPAIGN_ZONE_CHUNKS: ChunkSpec[] = [
+  { id: 'safe_house', index: 0, width: CHUNK_WIDTH, biome: 'safe_house' },
+  { id: 'gloomy_woods', index: 1, width: CHUNK_WIDTH, biome: 'gloomy_woods' },
+  { id: 'fosso_chagas', index: 2, width: CHUNK_WIDTH, biome: 'fosso_chagas' },
+  { id: 'catacumbas_martires', index: 3, width: CHUNK_WIDTH, biome: 'catacumbas_martires' },
+  { id: 'santuario_sangue', index: 4, width: CHUNK_WIDTH, biome: 'santuario_sangue' },
+];
+
+/**
+ * Extraído de GameScene.ts (item 4 do roadmap de refatoração, continuação da
+ * extração do PlayerSkillSystem e do CollisionHandlers). Concentra a
+ * geração procedural de masmorra/piso, o spawn de inimigos (inicial e
+ * incremental até o cap ativo), o portal de descida e o avanço de andar.
+ *
+ * Extração MECÂNICA — mesmo comportamento de antes. Muitos campos de
+ * GameScene que eram `private` foram promovidos a `public` (depthGroup,
+ * scavengeablesGroup, npcsGroup, enemyProjectilesGroup, collectiblesGroup,
+ * wallsGroup, chestsGroup, achievements, lightingSystem,
+ * achievementNotification, totalFloorMonsters, floorMonstersKilled,
+ * portalSprite, isPortalActive, waveConfigs, pendingEnemySpawns) só para
+ * permitir este acesso entre classes — mudança de visibilidade em tempo de
+ * compilação apenas, sem alteração de comportamento em runtime.
+ * getActiveEnemyCap, registerEntityEffects e showFloorBanner foram movidos
+ * junto (só eram usados dentro deste bloco).
+ */
+export class DungeonFlowController {
+  // Fase B (mundo contínuo): substitui o if/else hardcoded de transição de
+  // bioma pelo mecanismo genérico do ChunkStreamer (Fase A). `onLoad`/
+  // `onUnload` são no-ops nesta fase — carga/descarga real de conteúdo
+  // continua acontecendo do jeito de sempre logo abaixo, em
+  // `advanceToNextFloor()`. O streamer aqui serve só pra decidir o
+  // PRÓXIMO bioma da sequência e manter `getCurrentChunkIndex()`/
+  // `getLoadedIndices()` sincronizados com a progressão real da
+  // campanha — base pronta pra quando os world bounds virarem dinâmicos
+  // (Fase B.2/C) e o streamer passar a dirigir carga/descarga de verdade.
+  private builtChunkIndices: Set<number> = new Set();
+
+  private zoneStreamer = new ChunkStreamer<BiomeType>(CAMPAIGN_ZONE_CHUNKS, {
+    loadRadius: 1,
+    onLoad: (chunk) => {
+      const biome = chunk.biome as BiomeType;
+      this.loadChunkBiome(biome, chunk.index);
+      return biome;
+    },
+    onUnload: (chunk) => {
+      const biome = chunk.biome as BiomeType;
+      this.unloadChunkBiome(biome, chunk.index);
+    },
+  });
+
+  private safeHouseAnimationController: SafeHouseAnimationController | null = null;
+
+  public updateChunkStream(playerWorldX: number) {
+    this.zoneStreamer.update(playerWorldX);
+    this.syncWorldBoundsWithStreamer();
+    this.updateBoundaryTransitions(playerWorldX);
+  }
+
+  /**
+   * Fase C (Transições Sem Corte): Calcula o fator de fusão blendT (0 a 1) nas
+   * fronteiras entre chunks vizinhos e aciona a interpolação contínua de
+   * iluminação, névoa, pós-processamento e áudio.
+   */
+  public updateBoundaryTransitions(playerWorldX: number) {
+    const TRANSITION_MARGIN = 400; // px de zona de transição ao redor da fronteira
+    const chunkIdx = this.zoneStreamer.getChunkIndexAt(playerWorldX);
+    const chunkStart = chunkIdx * CHUNK_WIDTH;
+    const chunkCenter = chunkStart + CHUNK_WIDTH * 0.5;
+
+    let biomeA: BiomeType = (CAMPAIGN_ZONE_CHUNKS[chunkIdx]?.biome as BiomeType) || 'fosso_chagas';
+    let biomeB: BiomeType = biomeA;
+    let blendT = -1;
+
+    if (playerWorldX > chunkCenter && chunkIdx + 1 < CAMPAIGN_ZONE_CHUNKS.length) {
+      const boundaryX = (chunkIdx + 1) * CHUNK_WIDTH;
+      if (playerWorldX >= boundaryX - TRANSITION_MARGIN) {
+        biomeA = CAMPAIGN_ZONE_CHUNKS[chunkIdx].biome as BiomeType;
+        biomeB = CAMPAIGN_ZONE_CHUNKS[chunkIdx + 1].biome as BiomeType;
+        blendT = Math.min(1, Math.max(0, (playerWorldX - (boundaryX - TRANSITION_MARGIN)) / (2 * TRANSITION_MARGIN)));
+      }
+    } else if (playerWorldX < chunkCenter && chunkIdx - 1 >= 0) {
+      const boundaryX = chunkIdx * CHUNK_WIDTH;
+      if (playerWorldX <= boundaryX + TRANSITION_MARGIN) {
+        biomeA = CAMPAIGN_ZONE_CHUNKS[chunkIdx - 1].biome as BiomeType;
+        biomeB = CAMPAIGN_ZONE_CHUNKS[chunkIdx].biome as BiomeType;
+        blendT = Math.min(1, Math.max(0, (playerWorldX - (boundaryX - TRANSITION_MARGIN)) / (2 * TRANSITION_MARGIN)));
+      }
+    }
+
+    if (blendT >= 0 && blendT <= 1) {
+      worldManager.blendBiomes(biomeA, biomeB, blendT);
+      if (this.scene.atmosphereSystem) {
+        this.scene.atmosphereSystem.blendBiomes(biomeA, biomeB, blendT);
+      }
+      if (this.scene.postFX) {
+        this.scene.postFX.blendBiomes(biomeA, biomeB, blendT, this.scene.currentFloorDepth);
+      }
+      const envConfig = worldManager.getCurrentConfig();
+      soundEngine.updateEnvironmentAudio(envConfig.isIndoor, envConfig.reverbLevel);
+    }
+  }
+
+  public syncWorldBoundsWithStreamer() {
+    const loadedIndices = this.zoneStreamer.getLoadedIndices();
+    if (loadedIndices.length === 0) return;
+
+    const minIdx = loadedIndices[0];
+    const maxIdx = loadedIndices[loadedIndices.length - 1];
+
+    const minX = minIdx * CHUNK_WIDTH;
+    const totalW = (maxIdx - minIdx + 1) * CHUNK_WIDTH;
+
+    this.scene.updateWorldAndCameraBounds(minX, 0, totalW, CHUNK_HEIGHT);
+  }
+
+  private loadChunkBiome(biome: BiomeType, chunkIndex: number) {
+    if (this.builtChunkIndices.has(chunkIndex)) return;
+    this.builtChunkIndices.add(chunkIndex);
+
+    if (!this.scene || !this.scene.dungeonGenerator) return;
+
+    const offsetX = chunkIndex * CHUNK_WIDTH;
+    const newRooms = this.scene.dungeonGenerator.generate(CHUNK_WIDTH, CHUNK_HEIGHT, biome);
+
+    this.scene.rooms = [...(this.scene.rooms || []), ...newRooms];
+
+    useGameStore.getState().setCurrentBiome(biome);
+    worldManager.setBiome(biome);
+
+    if (this.scene.postFX) this.scene.postFX.setBiome(biome);
+    if (this.scene.atmosphereSystem) this.scene.atmosphereSystem.setBiome(biome);
+    if (this.scene.lightingSystem) this.scene.lightingSystem.enable(biome, this.scene.currentFloorDepth);
+
+    telemetry.trackEvent('chunk_load', { chunkIndex, biome, offsetX });
+  }
+
+  private unloadChunkBiome(biome: BiomeType, chunkIndex: number) {
+    if (!this.builtChunkIndices.has(chunkIndex)) return;
+    this.builtChunkIndices.delete(chunkIndex);
+
+    const minX = chunkIndex * CHUNK_WIDTH;
+    const maxX = minX + CHUNK_WIDTH;
+
+    if (this.scene.rooms) {
+      this.scene.rooms = this.scene.rooms.filter(r => r.x < minX || r.x >= maxX);
+    }
+
+    const cleanGroup = (group: any) => {
+      if (!group || typeof group.getChildren !== 'function') return;
+      group.getChildren().forEach((child: any) => {
+        if (child && typeof child.x === 'number' && child.x >= minX && child.x < maxX) {
+          child.destroy();
+        }
+      });
+    };
+
+    cleanGroup(this.scene.wallsGroup);
+    cleanGroup(this.scene.chestsGroup);
+    cleanGroup(this.scene.scavengeablesGroup);
+
+    telemetry.trackEvent('chunk_unload', { chunkIndex, biome, minX, maxX });
+  }
+
+  constructor(private scene: GameScene) {}
+
+  /**
+   * Marca como já construído o índice de `CAMPAIGN_ZONE_CHUNKS` cujo bioma
+   * bate com o bioma que `buildDungeonMap()` acabou de montar como PISO da
+   * campanha. O piso da campanha É espacialmente o chunk correspondente
+   * (mesma sequência que o `zoneStreamer` percorre) — sem essa marcação,
+   * `updateChunkStream()` -> `loadChunkBiome()` roda de novo pro mesmo
+   * índice/bioma logo no primeiro `update()` do frame seguinte, rebakeando
+   * `SafeHouseDetailFactory` (que remove e recria as texturas por key, de
+   * propósito, pra ser idempotente sozinha) por cima do que
+   * `buildDungeonMap()` acabou de montar. Sprites já colocados nesta
+   * chamada ficam com o frame apontando pra uma textura destruída, e o
+   * Phaser quebra com "Cannot read properties of null (reading
+   * 'resolution')" no primeiro render seguinte — reproduzido de forma
+   * consistente ao entrar em modo Campanha (nunca em Arcade, cujo bioma de
+   * piso nunca coincide com o bioma do chunk 0). Público só pra ser
+   * testável diretamente, mesmo padrão de `getNextCampaignZone` abaixo. Ver
+   * docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md item 20.
+   */
+  public markOwnFloorChunkAsBuilt(biome: BiomeType): void {
+    const ownChunkIndex = CAMPAIGN_ZONE_CHUNKS.findIndex((c) => c.biome === biome);
+    if (ownChunkIndex >= 0) {
+      this.builtChunkIndices.add(ownChunkIndex);
+    }
+  }
+
+  /**
+   * Próximo bioma da campanha a partir do atual, usando o mesmo
+   * encadeamento linear ordenado do `ChunkStreamer` — substitui o if/else
+   * hardcoded que existia direto em `advanceToNextFloor()`. Satura no
+   * último bioma (`santuario_sangue`), exatamente como o `else` antigo
+   * ("Keeps the same, or handle end of campaign"). Público (não
+   * `private`) só pra ser testável diretamente, mesmo padrão já usado em
+   * `ProceduralForestGenerator.drawFractalTreeGraphics`.
+   */
+  public getNextCampaignZone(currentZone: BiomeType): BiomeType {
+    const currentChunk = CAMPAIGN_ZONE_CHUNKS.find((c) => c.biome === currentZone);
+    const currentPos = currentChunk ? currentChunk.index : 0;
+    const nextPos = Math.min(currentPos + 1, CAMPAIGN_ZONE_CHUNKS.length - 1);
+    const nextChunk = CAMPAIGN_ZONE_CHUNKS[nextPos];
+
+    // Mantém o streamer sincronizado com a progressão real da campanha
+    // (sem efeito colateral ainda — onLoad/onUnload são no-ops nesta fase).
+    this.zoneStreamer.update(nextPos + 0.5);
+
+    return nextChunk.biome as BiomeType;
+  }
+
+  private getActiveEnemyCap(): number {
+    const depth = this.scene.currentFloorDepth;
+    if (depth >= 5) return 30;
+    if (depth === 4) return 24;
+    return 18;
+  }
+
+  public checkAndSpawnPendingEnemies() {
+    const scene = this.scene;
+    const cap = this.getActiveEnemyCap();
+    while (scene.enemiesGroup.countActive(true) < cap && scene.pendingEnemySpawns.length > 0) {
+      const pending = scene.pendingEnemySpawns.shift();
+      if (pending) {
+        let affix: EliteAffix = 'none';
+        if (scene.currentFloorDepth >= 2 && Math.random() < Math.min(0.25, 0.08 + (scene.currentFloorDepth - 1) * 0.03)) {
+          const possibleAffixes: EliteAffix[] = ['frenzied', 'vampiric', 'cursed', 'spectral', 'teleporter', 'reflective'];
+          affix = Phaser.Utils.Array.GetRandom(possibleAffixes);
+        }
+
+        const enemy = new Enemy(scene, pending.x, pending.y, pending.monsterId, {
+          floorDepth: scene.currentFloorDepth,
+          eliteAffix: affix
+        });
+        // Set room patrol boundaries
+        enemy.patrolP1 = { x: pending.room.x + 40, y: pending.room.y + 40 };
+        enemy.patrolP2 = { x: pending.room.x + pending.room.width - 40, y: pending.room.y + pending.room.height - 40 };
+
+        scene.enemiesGroup.add(enemy);
+        scene.depthGroup.add(enemy);
+        scene.lightingPolish?.addMonsterGlow(enemy, pending.monsterId);
+        this.registerEntityEffects(enemy);
+      }
+    }
+  }
+
+  private registerEntityEffects(entity: any): void {
+    const scene = this.scene;
+    if (scene.shadowSystem) scene.shadowSystem.registerEntity(entity);
+    if (scene.reflectionSystem) scene.reflectionSystem.registerEntity(entity);
+  }
+
+  /**
+   * Builds procedural 3x3 interconnected Dungeon Map with Rooms, Corridors, Walls, Chests & Enemies
+   */
+  public buildDungeonMap(mapW: number, mapH: number, floorDepth: number) {
+    const scene = this.scene;
+
+    // Limpar animações da Safe House anterior (se existirem)
+    if (this.safeHouseAnimationController) {
+      this.safeHouseAnimationController.destroy();
+      this.safeHouseAnimationController = null;
+    }
+
+    this.builtChunkIndices.clear();
+    // Clear pending spawns
+    scene.pendingEnemySpawns = [];
+    // Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: descarta marcos
+    // descobríveis do andar anterior (os sprites já foram destruídos junto com o
+    // resto do cenário — aqui só limpamos a lista pra não checar objetos mortos)
+    scene.campaignDiscoverables = [];
+
+    // Initialize contracts on first floor
+    if (floorDepth === 1) {
+      ContractSystem.initRunContracts();
+    }
+
+    // Determine Biome based on Floor Depth or Campaign State
+    const gameMode = useGameStore.getState().gameMode;
+    let biome: BiomeType = 'fosso_chagas';
+    
+    if (gameMode === 'campaign') {
+      biome = useGameStore.getState().campaignState.currentZone;
+      this.markOwnFloorChunkAsBuilt(biome);
+    } else {
+      if (floorDepth >= 5) {
+        biome = 'santuario_sangue';
+      } else if (floorDepth >= 3) {
+        biome = 'catacumbas_martires';
+      }
+    }
+
+    // DEV-only: permite forçar um bioma via `?biome=gloomy_woods` para QA visual
+    // rápida (ex.: comparação com referências de arte) sem depender do fluxo
+    // normal de progressão da campanha. Nunca ativo em build de produção.
+    if (import.meta.env.DEV) {
+      const forcedBiome = new URLSearchParams(window.location.search).get('biome') as BiomeType | null;
+      if (forcedBiome) {
+        biome = forcedBiome;
+      }
+    }
+
+    useGameStore.getState().setCurrentBiome(biome);
+
+    // Apply WorldManager environmental biome changes (Lighting & Audio transitions)
+    const { isTransitionIndoorOutdoor, previousIndoorState } = worldManager.setBiome(biome);
+    const envConfig = worldManager.getCurrentConfig();
+    soundEngine.updateEnvironmentAudio(envConfig.isIndoor, envConfig.reverbLevel);
+    if (scene.postFX) {
+      scene.postFX.setBiome(biome);
+    }
+    if (scene.atmosphereSystem) {
+      scene.atmosphereSystem.setBiome(biome);
+    }
+    if (scene.lightingSystem) {
+      scene.lightingSystem.enable(biome, scene.currentFloorDepth);
+      scene.lightingSystem.clearTorchLights();
+    }
+
+    // Efeito de Adaptação de Pupila (Pupil Light Adaptation): Flash ao mudar de caverna/ambiente fechado para espaço aberto
+    if (isTransitionIndoorOutdoor) {
+      if (!envConfig.isIndoor) {
+        // Entrando em ambiente aberto ensolarado/iluminado: Flash brilhante de adaptação
+        scene.cameras.main.flash(350, 255, 255, 240);
+      } else {
+        // Entrando em subterrâneo/caverna fechada: Flash escuro de íris dilantando
+        scene.cameras.main.flash(300, 20, 10, 15);
+      }
+    }
+
+    const rooms = scene.dungeonGenerator.generate(mapW, mapH, biome);
+    scene.rooms = rooms;
+    // Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md
+    scene.initMinimap();
+
+    telemetry.trackEvent('floor_start', { floor: floorDepth, biome, rooms: rooms.length });
+
+    // Create Player in Spawn Room 0
+    const spawnRoom = rooms[0];
+    if (!scene.player) {
+      scene.player = new Player(scene, spawnRoom.centerX, spawnRoom.centerY);
+      scene.depthGroup.add(scene.player);
+    } else {
+      scene.player.setPosition(spawnRoom.centerX, spawnRoom.centerY);
+    }
+    scene.player.stats.floorDepth = floorDepth;
+
+    // Spec 16: Initial Siege ("O Cerco ao Altar de Sangue") on Floor 1 Spawn Room
+    if (floorDepth === 1 && biome !== 'safe_house') {
+      this.spawnInitialSiege(spawnRoom);
+    }
+
+    // Eixo A: luz real seguindo o player (WebGL)
+    if (scene.lightingSystem) {
+      scene.lightingSystem.createPlayerLight();
+    }
+
+    if (scene.lightingPolish) {
+      scene.lightingPolish.addPlayerStaffGlow(scene.player);
+    }
+
+    // Clear old NPCs
+    scene.npcsGroup.clear(true, true);
+    // Fase 1 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
+    // limpa os marcadores flutuantes do andar anterior antes de recriar os NPCs
+    scene.clearNpcMarkers();
+
+    if (biome === 'safe_house') {
+      // Safe House Environment Props — dimensões reduzidas (550x420), layout compacto e aconchegante
+
+      // Lareira central (coração do refúgio)
+      const hearth = scene.wallsGroup.create(spawnRoom.centerX, spawnRoom.y + 50, 'spr_hearth_fireplace');
+      hearth.setDepth(spawnRoom.y + 50);
+      hearth.setSize(48, 48);
+
+      // Cama no canto (sem animação de balanceio, apenas estática com detalhes)
+      const bed = scene.wallsGroup.create(spawnRoom.x + 60, spawnRoom.y + 90, 'spr_straw_bed');
+      bed.setDepth(spawnRoom.y + 90);
+
+      // Frente 1/2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: baú inicial
+      // de suprimentos — abrir dá a Adaga de Aço garantida e avança o objetivo
+      // obj_loot_chest de quest_ch1_first_steps (ver CollisionHandlers.ts).
+      const suppliesChest = scene.chestsGroup.create(
+        spawnRoom.centerX - 70,
+        spawnRoom.y + 80,
+        scene.dungeonGenerator.getChestTextureKey('south')
+      );
+      suppliesChest.setData('questChest', 'starter_dagger');
+      suppliesChest.setDepth(spawnRoom.y + 80);
+      if (scene.lightingSystem) scene.lightingSystem.applyLightPipeline(suppliesChest);
+
+      // Maelen NPC — posicionado à direita, voltado para o centro
+      const maelen = scene.npcsGroup.create(spawnRoom.centerX + 80, spawnRoom.centerY - 20, 'spr_npc_maelen');
+      maelen.setData('npcType', 'maelen');
+      scene.depthGroup.add(maelen);
+      scene.createNpcMarker(spawnRoom.centerX + 80, spawnRoom.centerY - 40, 'maelen', 0xf59e0b);
+
+      // No enemies in Safe House
+      scene.totalFloorMonsters = 0;
+      scene.floorMonstersKilled = 0;
+
+      // Create physical exit door to the next zone at the back of the safe house room
+      this.revealDescentDoor(spawnRoom.centerX, spawnRoom.y + 160);
+
+      // ===== Inicializar SafeHouseAnimationController com tweens e efeitos Phaser 4 =====
+      if (!this.safeHouseAnimationController) {
+        this.safeHouseAnimationController = new SafeHouseAnimationController(scene);
+      }
+      this.safeHouseAnimationController.initialize();
+    } else {
+      if (gameMode === 'arcade') {
+        // Spawn Safe Village NPCs in Spawn Room (Room 0)
+        // 1. Cleric (Curandeiro)
+        const cleric = scene.npcsGroup.create(spawnRoom.centerX - 120, spawnRoom.centerY - 80, 'spr_cultist');
+        cleric.setTint(0x38bdf8); // Blue glow
+        cleric.setData('npcType', 'cleric');
+        scene.depthGroup.add(cleric);
+        scene.createNpcMarker(spawnRoom.centerX - 120, spawnRoom.centerY - 80, 'cleric', 0x38bdf8);
+
+        // 2. Alchemist (Alquimista)
+        const alchemist = scene.npcsGroup.create(spawnRoom.centerX + 120, spawnRoom.centerY - 80, 'spr_cultist');
+        alchemist.setTint(0xc084fc); // Purple glow
+        alchemist.setData('npcType', 'alchemist');
+        scene.depthGroup.add(alchemist);
+        scene.createNpcMarker(spawnRoom.centerX + 120, spawnRoom.centerY - 80, 'alchemist', 0xc084fc);
+
+        // 3. Blacksmith (Ferreiro)
+        const blacksmith = scene.npcsGroup.create(spawnRoom.centerX - 120, spawnRoom.centerY + 80, 'spr_skeleton');
+        blacksmith.setTint(0xfacc15); // Golden glow
+        blacksmith.setData('npcType', 'blacksmith');
+        scene.depthGroup.add(blacksmith);
+        scene.createNpcMarker(spawnRoom.centerX - 120, spawnRoom.centerY + 80, 'blacksmith', 0xfacc15);
+
+        // 4. Elder (Ancião)
+        const elder = scene.npcsGroup.create(spawnRoom.centerX + 120, spawnRoom.centerY + 80, 'spr_boss');
+        elder.setTint(0xf87171); // Soft Red glow
+        elder.setData('npcType', 'elder');
+        scene.depthGroup.add(elder);
+        scene.createNpcMarker(spawnRoom.centerX + 120, spawnRoom.centerY + 80, 'elder', 0xf87171);
+      }
+
+      // Populate Enemies across Chambers & Boss Room
+      scene.totalFloorMonsters = 0;
+      scene.floorMonstersKilled = 0;
+
+      const currentWave = scene.waveConfigs[Math.min(floorDepth - 1, scene.waveConfigs.length - 1)];
+
+      // Frente 2/3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: gloomy_woods é
+      // a "orla da floresta" logo após a Safe House — intro leve com só os
+      // batedores corrompidos que o diálogo do Maelen menciona
+      // (quest_ch1_first_steps > obj_clear_woods, 4 kills), sem chefe nem elite, e
+      // o Altar Ancestral (obj_find_altar) pra descobrir. Reaproveita o layout
+      // orgânico padrão do DungeonGenerator (Frente 1 da spec 11, 27/08: BSP +
+      // Cellular Automata — portas, tochas, chests aleatórios), só troca a
+      // população de inimigos/marcos por uma leva dedicada e mais fraca.
+      if (biome === 'gloomy_woods') {
+        const totalScouts = 4;
+        let scoutsSpawned = 0;
+        let huntingGrounds = rooms.filter((r) => r.type !== 'spawn' && r.type !== 'boss');
+        if (huntingGrounds.length === 0) huntingGrounds = rooms;
+
+        // Spec 18 Task 3: Ecology mapping by zones/habitats in continuous topology
+        const zones = scene.dungeonGenerator?.pathDrivenGenerator?.lastZones || [];
+
+        huntingGrounds.forEach((room, idx) => {
+          if (scoutsSpawned >= totalScouts) return;
+          const isLastRoom = idx === huntingGrounds.length - 1;
+          const remaining = totalScouts - scoutsSpawned;
+          const countHere = isLastRoom ? remaining : Math.min(1 + Math.floor(Math.random() * 2), remaining);
+
+          for (let i = 0; i < countHere; i++) {
+            const spawnX = room.x + 50 + Math.random() * (room.width - 100);
+            const spawnY = room.y + 50 + Math.random() * (room.height - 100);
+
+            // Determine habitat at spawn position
+            let monsterId = 'scout_beast';
+            const matchingZone = zones.find((z) => Math.hypot(z.x - spawnX, z.y - spawnY) <= z.radius);
+            if (matchingZone) {
+              if (matchingZone.type === 'lake') {
+                monsterId = 'gore_abomination';
+              } else if (matchingZone.type === 'ruins') {
+                monsterId = 'skeleton_warrior';
+              } else if (matchingZone.type === 'cave_entrance') {
+                monsterId = 'bat_swarm';
+              }
+            }
+
+            scene.pendingEnemySpawns.push({ x: spawnX, y: spawnY, monsterId, room });
+            scene.totalFloorMonsters++;
+            scoutsSpawned++;
+          }
+        });
+
+        // Altar Ancestral — sala secret_treasure do grid genérico já fica no
+        // canto oposto ao spawn, serve bem como "escombros do altar ao leste"
+        const altarRoom = rooms.find((r) => r.type === 'secret_treasure') || rooms[rooms.length - 1];
+        if (altarRoom) {
+          const altar = scene.add.image(altarRoom.centerX, altarRoom.centerY, 'spr_altar_crimson');
+          altar.setDepth(altarRoom.centerY);
+          altar.setData('campaignDiscoverableId', 'altar_crimson');
+          scene.depthGroup.add(altar);
+          if (scene.lightingSystem) scene.lightingSystem.applyLightPipeline(altar);
+          // Frente 8 (spec 11, 27/08): pulso ambiente sutil, sempre ativo —
+          // sinaliza de longe que o altar é uma estrutura interativa.
+          scene.lightingPolish?.addAltarGlow(altar);
+          scene.campaignDiscoverables.push(altar);
+        }
+
+        this.checkAndSpawnPendingEnemies();
+        this.showFloorBanner(floorDepth);
+        return;
+      }
+
+      rooms.forEach((room) => {
+        if (room.type === 'spawn') return; // Spawn room is safe!
+
+        if (room.type === 'boss') {
+          // Boss Sanctum Room
+          const bossId = currentWave.isBossWave && currentWave.bossMonsterId ? currentWave.bossMonsterId : 'necro_lord_boss';
+          const boss = new Enemy(scene, room.centerX, room.centerY, bossId, { floorDepth, eliteAffix: 'none' });
+          scene.enemiesGroup.add(boss);
+          scene.depthGroup.add(boss);
+          scene.lightingPolish?.addMonsterGlow(boss, bossId);
+          this.registerEntityEffects(boss);
+          scene.totalFloorMonsters++;
+
+          if (bossId === 'necro_lord_boss' || bossId.includes('boss')) {
+            useGameStore.getState().triggerOnboardingEvent('firstBossSeen', 'CUIDADO: O Senhor das Chagas despertou! Ele entrará em fúria se ferido!');
+          }
+
+          // Add Elite Bodyguards scaled by blood_tide
+          const hasBloodTide = useGameStore.getState().activeModifiers.includes('blood_tide');
+          const spawnMultiplier = hasBloodTide ? 1.4 : 1.0;
+          const bodyguardCount = Math.round(2 * spawnMultiplier);
+          for (let i = 0; i < bodyguardCount; i++) {
+            const offset = i === 0 ? -90 : (i === 1 ? 90 : (i === 2 ? -140 : 140));
+            const guard = new Enemy(scene, room.centerX + offset, room.centerY + 50, 'cultist_acolyte', { floorDepth, eliteAffix: 'none' });
+            scene.enemiesGroup.add(guard);
+            scene.depthGroup.add(guard);
+            scene.lightingPolish?.addMonsterGlow(guard, 'cultist_acolyte');
+            this.registerEntityEffects(guard);
+            scene.totalFloorMonsters++;
+          }
+        } else {
+          // Standard Chamber: 2 to 4 enemies in patrol/guard positions scaled by blood_tide
+          const hasBloodTide = useGameStore.getState().activeModifiers.includes('blood_tide');
+          const spawnMultiplier = hasBloodTide ? 1.4 : 1.0;
+          let monsterCount = 2 + Math.floor(Math.random() * 2) + Math.min(2, floorDepth - 1);
+          monsterCount = Math.round(monsterCount * spawnMultiplier);
+
+          for (let i = 0; i < monsterCount; i++) {
+            const monsterId = Phaser.Utils.Array.GetRandom(currentWave.monsterPool);
+            const spawnX = room.x + 50 + Math.random() * (room.width - 100);
+            const spawnY = room.y + 50 + Math.random() * (room.height - 100);
+
+            scene.pendingEnemySpawns.push({ x: spawnX, y: spawnY, monsterId, room });
+            scene.totalFloorMonsters++;
+          }
+        }
+
+        // Spawn Scavengeables in non-spawn rooms
+        if (Math.random() < 0.75) {
+          const numScav = Math.random() < 0.5 ? 1 : 2;
+          for (let i = 0; i < numScav; i++) {
+            const sx = room.x + 50 + Math.random() * (room.width - 100);
+            const sy = room.y + 50 + Math.random() * (room.height - 100);
+            const stype = Phaser.Utils.Array.GetRandom(['skeleton', 'corpse', 'crate']) as any;
+            const scavObj = new Scavengeable(scene, sx, sy, stype);
+            scene.scavengeablesGroup.add(scavObj);
+            scene.depthGroup.add(scavObj);
+          }
+        }
+      });
+    }
+
+    // Initial spawn push up to cap
+    this.checkAndSpawnPendingEnemies();
+
+    // Floor Announcement Banner
+    this.showFloorBanner(floorDepth);
+  }
+
+  /**
+   * Spec 16: Spawns the Initial Siege ("O Cerco ao Altar de Sangue") on Floor 1
+   * Spawns 3 weak scout_beasts and 1 vanguard skeleton_warrior in windup phase
+   */
+  public spawnInitialSiege(spawnRoom: any) {
+    const scene = this.scene;
+
+    // 1. Spawn 3 scout_beast crawling beasts around spawn room (radius 120px to 180px)
+    const scoutAngles = [0.85, 2.9, 4.95];
+    scoutAngles.forEach((angle) => {
+      const dist = 120 + Math.random() * 50;
+      const sx = spawnRoom.centerX + Math.cos(angle) * dist;
+      const sy = spawnRoom.centerY + Math.sin(angle) * dist;
+      const scout = new Enemy(scene, sx, sy, 'scout_beast', { floorDepth: 1, eliteAffix: 'none' });
+      scout.patrolP1 = { x: spawnRoom.x + 20, y: spawnRoom.y + 20 };
+      scout.patrolP2 = { x: spawnRoom.x + spawnRoom.width - 20, y: spawnRoom.y + spawnRoom.height - 20 };
+      scout.alertToCombat();
+      scene.enemiesGroup.add(scout);
+      scene.depthGroup.add(scout);
+      scene.lightingPolish?.addMonsterGlow(scout, 'scout_beast');
+      this.registerEntityEffects(scout);
+      scene.totalFloorMonsters++;
+    });
+
+    // 2. Spawn 1 vanguard skeleton_warrior preparing a telegraphed ground strike
+    const skelDist = 140;
+    const skelX = spawnRoom.centerX;
+    const skelY = spawnRoom.centerY - skelDist;
+    const skel = new Enemy(scene, skelX, skelY, 'skeleton_warrior', { floorDepth: 1, eliteAffix: 'none' });
+    skel.patrolP1 = { x: spawnRoom.x + 20, y: spawnRoom.y + 20 };
+    skel.patrolP2 = { x: spawnRoom.x + spawnRoom.width - 20, y: spawnRoom.y + spawnRoom.height - 20 };
+    skel.alertToCombat();
+
+    // Prepare telegraphed strike area on ground
+    skel.attackPhase = 'windup';
+    skel.attackPhaseStartTime = scene.time.now;
+    skel.attackPhaseEndTime = scene.time.now + 1400;
+    skel.attackTargetPos = { x: spawnRoom.centerX, y: spawnRoom.centerY };
+    skel.attackType = 'melee';
+
+    scene.enemiesGroup.add(skel);
+    scene.depthGroup.add(skel);
+    scene.lightingPolish?.addMonsterGlow(skel, 'skeleton_warrior');
+    this.registerEntityEffects(skel);
+    scene.totalFloorMonsters++;
+
+    // Prompt dodge hint banner if firstDashDone is false
+    if (!useGameStore.getState().onboarding.firstDashDone) {
+      useGameStore.getState().setActiveTip('ESQUIVE! Toque em [DASH] ou duplo-toque para esquivar com invulnerabilidade.');
+    }
+  }
+
+  private showFloorBanner(floorDepth: number) {
+    const scene = this.scene;
+    const titles = ['CATACOMBAS DOS MORTOS', 'SANTUÁRIO DAS SOMBRAS', 'ABISMO INFERNAL', 'TRONO DO SENHOR DA MORTE'];
+    const floorTitle = titles[(floorDepth - 1) % titles.length];
+
+    const text = scene.add.text(
+      scene.player.x,
+      scene.player.y - 120,
+      `🏰 CALABOUÇO - NIVEL ${floorDepth}\n"${floorTitle}"`,
+      {
+        fontSize: '22px',
+        color: '#f59e0b',
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 6,
+        align: 'center',
+      }
+    ).setOrigin(0.5).setDepth(2200);
+
+    scene.tweens.add({
+      targets: text,
+      y: text.y - 30,
+      alpha: 0,
+      duration: 3200,
+      onComplete: () => text.destroy(),
+    });
+  }
+
+  public revealDescentDoor(x: number, y: number) {
+    const scene = this.scene;
+    scene.isPortalActive = true;
+
+    // Usar a estrutura física de porta em vez de portal mágico giratório
+    const doorTextureKey = scene.textures.exists('tile_door') ? 'tile_door' : 'tile_wood_wall';
+    scene.portalSprite = scene.add.sprite(x, y, doorTextureKey).setDepth(y + 16).setScale(1.5);
+
+    if (scene.lightingSystem) {
+      scene.lightingSystem.applyLightPipeline(scene.portalSprite);
+      // Suave brilho rúnico/dourado na soleira da porta de saída
+      scene.lightingSystem.addTorchLights([{ x, y, kind: 'torch' }]);
+    }
+
+    // Banner de Saída da Vila
+    const text = scene.add.text(
+      scene.player.x,
+      scene.player.y - 100,
+      '🚪 A PORTA PARA A MATA SOMBRIA ESTÁ ABERTA! 🚪',
+      {
+        fontSize: '20px',
+        color: '#f59e0b',
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 5,
+      }
+    ).setOrigin(0.5).setDepth(2200);
+
+    scene.tweens.add({
+      targets: text,
+      y: text.y - 40,
+      alpha: 0,
+      duration: 3500,
+      onComplete: () => text.destroy(),
+    });
+  }
+
+  public revealDescentPortal(x: number, y: number) {
+    const scene = this.scene;
+    scene.isPortalActive = true;
+    scene.portalSprite = scene.add.sprite(x, y, 'spr_portal').setDepth(10).setScale(1.2);
+    scene.lightingPolish?.addPortalGlow(scene.portalSprite);
+
+    // Swirling portal tween
+    scene.tweens.add({
+      targets: scene.portalSprite,
+      rotation: Math.PI * 2,
+      duration: 3000,
+      repeat: -1,
+    });
+
+    // Portal Announcement
+    const text = scene.add.text(
+      scene.player.x,
+      scene.player.y - 100,
+      '🌀 O PORTAL PARA AS PROFUNDEZES FOI REVELADO! 🌀',
+      {
+        fontSize: '20px',
+        color: '#a855f7',
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 5,
+      }
+    ).setOrigin(0.5).setDepth(2200);
+
+    scene.tweens.add({
+      targets: text,
+      y: text.y - 40,
+      alpha: 0,
+      duration: 3500,
+      onComplete: () => text.destroy(),
+    });
+  }
+
+  public advanceToNextFloor() {
+    const scene = this.scene;
+    scene.isPortalActive = false;
+    soundEngine.playPortalEnter();
+    if (scene.portalSprite) {
+      scene.portalSprite.destroy();
+      scene.portalSprite = undefined;
+    }
+
+    const hpRatio = scene.player.stats.hp / scene.player.stats.maxHp;
+    ContractSystem.onFloorCompleted(scene.currentFloorDepth, hpRatio, scene);
+
+    const store = useGameStore.getState();
+    const gameMode = store.gameMode;
+    const currentZone = store.campaignState.currentZone;
+
+    if (gameMode === 'campaign') {
+      // Fase B (mundo contínuo, ver docs/specs/in-progress/
+      // 25_MUNDO_CONTINUO_CHUNK_STREAMING.md): decisão de próximo bioma
+      // agora vem do ChunkStreamer (dado ordenado), não mais de if/else
+      // hardcoded — mesma sequência, mesmo comportamento de saturar no
+      // último bioma.
+      store.setCampaignZone(this.getNextCampaignZone(currentZone));
+    }
+
+    scene.currentFloorDepth++;
+    scene.player.heal(35); // Reward floor clear with HP restore
+    scene.player.addMana(50);
+
+    // Conquistas unificadas: atualiza profundidade máxima
+    useGameStore.getState().setRunStat('floor_depth_max', scene.currentFloorDepth);
+
+    // Clear old map entities
+    scene.wallsGroup.clear(true, true);
+    scene.chestsGroup.clear(true, true);
+    scene.collectiblesGroup.clear(true, true);
+    scene.enemyProjectilesGroup.clear(true, true);
+    scene.scavengeablesGroup.clear(true, true);
+    scene.lootGroup.clear(true, true);
+    scene.bloodStainsGroup.clear(true, true);
+    scene.bloodSplatterSystem?.clearAll();
+
+    // If player leaves floor without collecting corpse, it is lost
+    if (store.playerStats.droppedCorpse.hasDroppedCorpse) {
+      store.setDroppedCorpse({
+        ...store.playerStats.droppedCorpse,
+        hasDroppedCorpse: false
+      });
+      store.addLootLog("O cadáver foi deixado para trás e perdido para sempre nas catacumbas...");
+    }
+
+    // Rebuild Dungeon Map for Next Floor Depth!
+    this.buildDungeonMap(1920, 1440, scene.currentFloorDepth);
+  }
+
+  /**
+   * Limpa recursos do DungeonFlowController (animações, tweens, emissores).
+   * Chamado ao destruir a cena.
+   */
+  public cleanup(): void {
+    if (this.safeHouseAnimationController) {
+      this.safeHouseAnimationController.destroy();
+      this.safeHouseAnimationController = null;
+    }
+  }
+}
