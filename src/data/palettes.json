@@ -1,0 +1,33 @@
+[
+  {
+    "id": "crimson",
+    "name": "Sangue Carmesim",
+    "description": "A essência vermelha primordial (Padrão)",
+    "color": "#ffffff",
+    "unlockType": "default"
+  },
+  {
+    "id": "corrupted",
+    "name": "Sangue Corrupto",
+    "description": "Tonalidade roxa das profundezas do Abismo",
+    "color": "#a855f7",
+    "unlockType": "crystals",
+    "cost": 150
+  },
+  {
+    "id": "golden",
+    "name": "Sangue Dourado",
+    "description": "Aura dourada brilhante dos campeões",
+    "color": "#facc15",
+    "unlockType": "crystals",
+    "cost": 300
+  },
+  {
+    "id": "shadow",
+    "name": "Sangue Negro",
+    "description": "Preto obsidiana sombrio e gótico",
+    "color": "#1e1b4b",
+    "unlockType": "crystals",
+    "cost": 250
+  }
+]

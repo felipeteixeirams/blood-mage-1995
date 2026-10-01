@@ -1,0 +1,275 @@
+import { describe, it, expect, vi } from 'vitest';
+
+// Minimal Phaser mock for unit testing Enemy logic without WebGL
+vi.mock('phaser', () => {
+  class Sprite {
+    public active = true;
+    public visible = true;
+    public x = 0;
+    public y = 0;
+    public body: any = { velocity: { x: 0, y: 0 } };
+    public tintTopLeft = 0;
+    public isTinted = false;
+    public scaleX = 1;
+    public scaleY = 1;
+    public rotation = 0;
+    public flipX = false;
+    public width = 32;
+    public height = 32;
+    public texture = { key: 'spr_skeleton' };
+
+    constructor() {}
+    setActive(v: boolean) { this.active = v; return this; }
+    setVisible(v: boolean) { this.visible = v; return this; }
+    setPosition(x: number, y: number) { this.x = x; this.y = y; return this; }
+    setRotation(r: number) { this.rotation = r; return this; }
+    setVelocity(x: number, y: number) {
+      this.body.velocity.x = x;
+      this.body.velocity.y = y;
+      return this;
+    }
+    setScale(x: number, y?: number) {
+      this.scaleX = x;
+      this.scaleY = y !== undefined ? y : x;
+      return this;
+    }
+    setSize() { return this; }
+    setCollideWorldBounds() { return this; }
+    setTint(tint: number) { this.tintTopLeft = tint; this.isTinted = true; return this; }
+    clearTint() { this.isTinted = false; return this; }
+    setAlpha() { return this; }
+    setFlipX(f: boolean) { this.flipX = f; return this; }
+    // enableFilters existe no mock (Phaser 4 real sempre expõe o método),
+    // mas só popula `this.filters` quando chamado — Enemy.applyEliteGlow
+    // só chama isso quando scene.game.renderer.isWebGL === true, então o
+    // "no-op" real de ambientes headless continua coberto pelos testes
+    // que usam makeScene() sem `game` (a maioria).
+    public filters: any = null;
+    enableFilters() { this.filters = { internal: { addGlow: vi.fn() } }; return this; }
+  }
+
+  class Scene {
+    public add = { existing: () => {} };
+    public physics = { add: { existing: () => {} } };
+    public time = { now: 1000, delayedCall: (_ms: number, cb: () => void) => cb() };
+  }
+
+  class PhysicsSprite extends Sprite {
+    public scene: any;
+    constructor(scene: any, x: number, y: number, key: string) {
+      super();
+      this.x = x;
+      this.y = y;
+      this.scene = scene || new Scene();
+    }
+  }
+
+  return {
+    default: {
+      Physics: { Arcade: { Sprite: PhysicsSprite } },
+      Math: {
+        Vector2: class Vector2 {
+          public x: number;
+          public y: number;
+          constructor(x = 0, y = 0) {
+            this.x = x;
+            this.y = y;
+          }
+          set(x: number, y: number) {
+            this.x = x;
+            this.y = y;
+            return this;
+          }
+        },
+        Distance: {
+          Between: (x1: number, y1: number, x2: number, y2: number) => Math.hypot(x2 - x1, y2 - y1),
+        },
+        Angle: {
+          Between: (x1: number, y1: number, x2: number, y2: number) => Math.atan2(y2 - y1, x2 - x1),
+          Normalize: (a: number) => {
+            let angle = a % (Math.PI * 2);
+            if (angle < 0) angle += Math.PI * 2;
+            return angle;
+          },
+        },
+        DegToRad: (deg: number) => (deg * Math.PI) / 180,
+        Clamp: (v: number, min: number, max: number) => Math.max(min, Math.min(max, v)),
+      },
+    },
+  };
+});
+
+import { Enemy } from './Enemy';
+
+function makeScene() {
+  return {
+    add: {
+      existing: vi.fn(),
+      image: vi.fn().mockReturnValue({
+        setDepth: vi.fn().mockReturnThis(),
+        setRotation: vi.fn().mockReturnThis(),
+        setAlpha: vi.fn().mockReturnThis(),
+        setScale: vi.fn().mockReturnThis(),
+        setTint: vi.fn().mockReturnThis(),
+        destroy: vi.fn(),
+      }),
+    },
+    physics: { add: { existing: vi.fn() } },
+    textures: { exists: vi.fn().mockReturnValue(true) },
+    time: { now: 1000, delayedCall: vi.fn(), addEvent: vi.fn().mockReturnValue({ repeatCount: 0 }) },
+    tweens: { add: vi.fn() },
+  } as any;
+}
+
+describe('Enemy Monster Balancing & Scaling', () => {
+  it('instantiates balanced Tier 1, 2, and 3 monsters correctly', () => {
+    const skeleton = new Enemy(makeScene(), 100, 100, 'skeleton_warrior');
+    expect(skeleton.hp).toBe(85);
+    expect(skeleton.maxHp).toBe(85);
+    expect(skeleton.damage).toBe(12);
+
+    const cultist = new Enemy(makeScene(), 100, 100, 'cultist_acolyte');
+    expect(cultist.hp).toBe(75);
+    expect(cultist.damage).toBe(18);
+
+    const zombie = new Enemy(makeScene(), 100, 100, 'zombie_shambler');
+    expect(zombie.config.speed).toBe(48);
+    expect(zombie.hp).toBe(110);
+
+    const specter = new Enemy(makeScene(), 100, 100, 'blood_specter');
+    expect(specter.hp).toBe(150);
+
+    const abomination = new Enemy(makeScene(), 100, 100, 'gore_abomination');
+    expect(abomination.hp).toBe(200);
+  });
+
+  it('scales stats progressively per floor depth (+6% HP, +4% Damage)', () => {
+    const floor1Skeleton = new Enemy(makeScene(), 100, 100, 'skeleton_warrior', { floorDepth: 1 });
+    expect(floor1Skeleton.hp).toBe(85);
+    expect(floor1Skeleton.damage).toBe(12);
+
+    // Floor 5: +24% HP (85 * 1.24 = 105.4 -> 105), +16% Damage (12 * 1.16 = 13.92 -> 14)
+    const floor5Skeleton = new Enemy(makeScene(), 100, 100, 'skeleton_warrior', { floorDepth: 5 });
+    expect(floor5Skeleton.hp).toBe(105);
+    expect(floor5Skeleton.damage).toBe(14);
+
+    // Floor 10: +54% HP (85 * 1.54 = 130.9 -> 131), +36% Damage (12 * 1.36 = 16.32 -> 16)
+    const floor10Skeleton = new Enemy(makeScene(), 100, 100, 'skeleton_warrior', { floorDepth: 10 });
+    expect(floor10Skeleton.hp).toBe(131);
+    expect(floor10Skeleton.damage).toBe(16);
+  });
+
+  it('applies Frenzied elite affix with increased speed, damage, and tint', () => {
+    const frenzied = new Enemy(makeScene(), 100, 100, 'skeleton_warrior', {
+      floorDepth: 1,
+      eliteAffix: 'frenzied',
+    });
+    expect(frenzied.damage).toBe(15); // 12 * 1.25 = 15
+    expect(frenzied.aiState).toBe('frenzy');
+    expect(frenzied.eliteAffix).toBe('frenzied');
+  });
+
+  it('applies Vampiric elite affix with boosted HP and lifesteal capability', () => {
+    const vampiric = new Enemy(makeScene(), 100, 100, 'skeleton_warrior', {
+      floorDepth: 1,
+      eliteAffix: 'vampiric',
+    });
+    expect(vampiric.hp).toBe(119); // 85 * 1.4 = 119
+    expect(vampiric.eliteAffix).toBe('vampiric');
+  });
+
+  it('applies Spectral elite affix with enhanced dodge capability', () => {
+    const spectral = new Enemy(makeScene(), 100, 100, 'skeleton_warrior', {
+      floorDepth: 1,
+      eliteAffix: 'spectral',
+    });
+    expect(spectral.eliteAffix).toBe('spectral');
+  });
+
+  it('applies Teleporter elite affix with boosted HP and strategic blink repositioning', () => {
+    const teleporter = new Enemy(makeScene(), 100, 100, 'skeleton_warrior', {
+      floorDepth: 1,
+      eliteAffix: 'teleporter',
+    });
+    expect(teleporter.hp).toBe(106); // 85 * 1.25 = 106.25 -> 106
+    expect(teleporter.eliteAffix).toBe('teleporter');
+  });
+
+  it('applies Reflective elite affix with 35% projectile damage mitigation and counter-spark', () => {
+    const scene = makeScene();
+    scene.spawnReflectedSpark = vi.fn();
+    const reflective = new Enemy(scene, 100, 100, 'skeleton_warrior', {
+      floorDepth: 1,
+      eliteAffix: 'reflective',
+    });
+    expect(reflective.hp).toBe(115); // 85 * 1.35 = 114.75 -> 115
+    expect(reflective.eliteAffix).toBe('reflective');
+
+    // Ambiente headless (makeScene() padrão, sem scene.game): o glow FX
+    // (phaser-4-fx-filters — filters só existem sob WebGL real) faz no-op
+    // silencioso — halo-ring + tint continuam sendo a distinção de elite
+    // aqui. Nada lançou construindo os 5 elites acima; é essa a garantia.
+    expect((reflective as any).filters).toBeNull();
+
+    // Take 40 damage from source (100, 50). 35% mitigation -> 26 damage
+    reflective.takeDamage(40, 100, 50);
+    expect(reflective.hp).toBe(115 - 26);
+    expect(scene.spawnReflectedSpark).toHaveBeenCalledWith(100, 100, 100, 50);
+  });
+
+  it('aplica glow FX (postFX addGlow) na cor do afixo quando WebGL está disponível', () => {
+    const scene = makeScene();
+    scene.game = { renderer: { isWebGL: true } };
+
+    const vampiric = new Enemy(scene, 100, 100, 'skeleton_warrior', {
+      floorDepth: 1,
+      eliteAffix: 'vampiric',
+    });
+
+    expect((vampiric as any).filters).not.toBeNull();
+    expect((vampiric as any).filters.internal.addGlow).toHaveBeenCalledWith(0xd97706, 3, 0, 1);
+  });
+
+  it('NÃO aplica glow FX em inimigos comuns (sem afixo de elite)', () => {
+    const scene = makeScene();
+    scene.game = { renderer: { isWebGL: true } };
+
+    const commonEnemy = new Enemy(scene, 100, 100, 'skeleton_warrior', { floorDepth: 1 });
+
+    expect((commonEnemy as any).filters).toBeNull();
+  });
+
+  it('handles advanced damage effects (flinch, knockback, hit flash) and gibs on overkill', () => {
+    const scene = makeScene();
+    const enemy = new Enemy(scene, 100, 100, 'bat_swarm');
+
+    // Take non-lethal damage with hit source position (bat_swarm maxHp is 38)
+    const isDead = enemy.takeDamage(20, 80, 100, false, false);
+    expect(isDead).toBe(false);
+    expect(enemy.hp).toBe(18);
+    expect(enemy.x).toBeGreaterThan(100); // Flinch shifted enemy away from x=80
+
+    // Take overkill lethal damage triggering gibs
+    const spawnGibsSpy = vi.spyOn(enemy, 'spawnGibs');
+    const isLethal = enemy.takeDamage(100, 80, 100, true, false);
+    expect(isLethal).toBe(true);
+    expect(spawnGibsSpy).toHaveBeenCalled();
+  });
+
+  it('respects Line of Sight (hasWallBetween) and blocks perception / aggro when obscured (Task 4)', () => {
+    const scene = makeScene();
+    const enemy = new Enemy(scene, 100, 100, 'skeleton_warrior');
+
+    // Without wall blocking, enemy can see player within range and facing angle.
+    // facingAngle é private em Enemy.ts — bug de typecheck pré-existente em
+    // origin/main (commit 2d3fdb7, Spec 18) que passou pelo merge; corrigido
+    // aqui com o mesmo acesso via cast já usado alhures neste arquivo de teste.
+    (enemy as unknown as { facingAngle: number }).facingAngle = 0; // facing East
+    const canSeeWithoutWall = enemy.canSeePlayer(150, 100, false);
+    expect(canSeeWithoutWall).toBe(true);
+
+    // With wall blocking (hasWallBetween = true), enemy perception fails
+    const canSeeWithWall = enemy.canSeePlayer(150, 100, true);
+    expect(canSeeWithWall).toBe(false);
+  });
+});

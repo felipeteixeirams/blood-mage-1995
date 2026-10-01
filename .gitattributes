@@ -1,0 +1,15 @@
+# Bloquear tratamento de texto em arquivos binários
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.woff2 binary
+*.mp3 binary
+*.ogg binary
+*.wav binary
+
+# Assegurar que o git não tente fazer diff de texto
+*.png -text -diff
+*.jpg -text -diff
+*.woff2 -text -diff

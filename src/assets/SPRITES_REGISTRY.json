@@ -1,0 +1,217 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "last_updated": "2026-09-03",
+    "format": "Sprite Registry for Agent Context",
+    "usage": "Agents use this instead of reading binary images directly. Contains metadata for all sprites/assets.",
+    "vision_api_guidance": "If agent needs to SEE the actual visual, use Gemini Vision or Claude Vision API. Provide file path: src/assets/ui/[filename].png"
+  },
+  "sprites": {
+    "ui": {
+      "title_logo": {
+        "file": "title-logo.png",
+        "size_kb": 824,
+        "dimensions": "1600x400px (estimated)",
+        "purpose": "Main menu title logo - 'Bloodmage 1995' retro style",
+        "visual_description": "Large retro-style text logo with bloody/crimson color scheme, reminiscent of 1995 Diablo. Contains ornate lettering.",
+        "used_in": ["TitleScene", "MenuScene"],
+        "integration_notes": "High-res UI element, renders as fullscreen title overlay",
+        "last_updated": "2026-08-31",
+        "status": "active"
+      },
+      "ui_plaque": {
+        "file": "ui-plaque.png",
+        "size_kb": 656,
+        "dimensions": "800x600px (estimated)",
+        "purpose": "Decorative UI panel - modal/dialog background",
+        "visual_description": "Stone/wood plaque with ornate borders. Dark background with carved edges. Used as modal/dialog background.",
+        "used_in": ["ModalBase", "InventoryModal", "TalentsModal", "GameplayHUD"],
+        "integration_notes": "Repeating/tiling pattern in corners and edges. Scales to dialog size.",
+        "last_updated": "2026-08-31",
+        "status": "active"
+      },
+      "ui_corner": {
+        "file": "ui-corner.png",
+        "size_kb": 648,
+        "dimensions": "200x200px (estimated)",
+        "purpose": "Corner decoration for UI panels",
+        "visual_description": "Ornate corner element with gargoyle/stone carving design. Used to decorate corners of UI panels.",
+        "used_in": ["ModalBase", "HUD overlays"],
+        "integration_notes": "Positioned at corners of dialogs/panels. 4-way rotatable.",
+        "last_updated": "2026-08-31",
+        "status": "active"
+      },
+      "ui_gem": {
+        "file": "ui-gem.png",
+        "size_kb": 484,
+        "dimensions": "128x128px (estimated)",
+        "purpose": "Health/Mana gem indicator in HUD",
+        "visual_description": "Gem-like circular indicator with gradient and shine. Represents player HP/Mana resource. Crimson/blood-red color.",
+        "used_in": ["GameplayHUD", "StatDisplay"],
+        "integration_notes": "Animates scale/pulse when player takes damage or gains mana. Used in both player stats display and hotbar.",
+        "last_updated": "2026-08-31",
+        "status": "active"
+      },
+      "ui_slider_cap": {
+        "file": "ui-slider-cap.png",
+        "size_kb": 528,
+        "dimensions": "100x100px (estimated)",
+        "purpose": "Slider handle/cap for volume/settings controls",
+        "visual_description": "Stone/metal circular cap with ornate design. Darkly styled to match UI theme.",
+        "used_in": ["SettingsModal", "SoundTestModal"],
+        "integration_notes": "Draggable slider handle. Used for volume, brightness, difficulty sliders.",
+        "last_updated": "2026-08-31",
+        "status": "active"
+      },
+      "torch": {
+        "file": "torch.png",
+        "size_kb": 468,
+        "dimensions": "256x256px (estimated)",
+        "purpose": "Torch/light source visual in dungeons",
+        "visual_description": "Animated torch with flame. Flickering orange/red color. Used as dungeon lighting source visual.",
+        "used_in": ["GameScene", "LightingSystem", "LightingPolish"],
+        "integration_notes": "Placed at light source locations. Works with Light2D system for dynamic lighting effects. Has flicker animation.",
+        "last_updated": "2026-08-31",
+        "status": "active",
+        "animation": "flickering flames, ~8-12 fps"
+      },
+      "altar": {
+        "file": "altar.png",
+        "size_kb": 640,
+        "dimensions": "512x512px (estimated)",
+        "purpose": "Safe house altar - central hub decoration",
+        "visual_description": "Large ornate stone altar with dark mystical design. Featured in Safe House as central interactive element.",
+        "used_in": ["SafeHouse scene", "Hub navigation"],
+        "integration_notes": "Static decoration, interactive hotspot. Used for safe house ambiance.",
+        "last_updated": "2026-08-31",
+        "status": "active"
+      },
+      "rune_arch": {
+        "file": "rune-arch.png",
+        "size_kb": 656,
+        "dimensions": "512x768px (estimated)",
+        "purpose": "Dungeon entrance arch - rune-carved archway",
+        "visual_description": "Tall stone archway with glowing runes carved into it. Purple/arcane glow. Mystical dungeon entrance.",
+        "used_in": ["DungeonEntrance", "TransitionScene", "Safe House"],
+        "integration_notes": "Portal visual for dungeon entry. Works with Light2D for glow effects on runes.",
+        "last_updated": "2026-08-31",
+        "status": "active"
+      },
+      "gargoyle_top": {
+        "file": "gargoyle-top.png",
+        "size_kb": 636,
+        "dimensions": "400x600px (estimated)",
+        "purpose": "Top gargoyle decoration - UI ornament",
+        "visual_description": "Stone gargoyle head/statue. Positioned at top of UI screens. Dark gothic aesthetic.",
+        "used_in": ["MenuScene", "SettingsScene", "Decorative UI elements"],
+        "integration_notes": "Non-interactive decoration. Positioned at screen top center.",
+        "last_updated": "2026-08-31",
+        "status": "active"
+      },
+      "gargoyle_bottom": {
+        "file": "gargoyle-bottom.png",
+        "size_kb": 564,
+        "dimensions": "400x600px (estimated)",
+        "purpose": "Bottom gargoyle decoration - UI ornament",
+        "visual_description": "Stone gargoyle statue. Positioned at bottom of UI screens. Mirrors top gargoyle.",
+        "used_in": ["MenuScene", "SettingsScene", "Decorative UI elements"],
+        "integration_notes": "Non-interactive decoration. Positioned at screen bottom center. Vertical mirror of top gargoyle.",
+        "last_updated": "2026-08-31",
+        "status": "active"
+      },
+      "stone_tile": {
+        "file": "stone-tile.jpg",
+        "size_kb": 84,
+        "dimensions": "512x512px (tiling texture)",
+        "purpose": "Dungeon floor texture - stone tiles",
+        "visual_description": "Gray stone floor tiles with mortar lines. Repeating texture for dungeon ground.",
+        "used_in": ["Dungeon tilemap", "Catacombs floor", "Temple grounds"],
+        "integration_notes": "Tiling texture. Used as base ground layer in dungeons. Procedurally applied to tilemap.",
+        "last_updated": "2026-08-31",
+        "status": "active"
+      },
+      "rock_tile": {
+        "file": "rock-tile.jpg",
+        "size_kb": 88,
+        "dimensions": "512x512px (tiling texture)",
+        "purpose": "Dungeon wall texture - rocky stone",
+        "visual_description": "Dark gray/brown rocky stone texture. Used for dungeon walls. Repeating tiling pattern.",
+        "used_in": ["Dungeon tilemap walls", "Catacombs walls", "Procedural generation"],
+        "integration_notes": "Tiling texture. Applied to wall layers in procedural dungeon generation.",
+        "last_updated": "2026-08-31",
+        "status": "active"
+      }
+    },
+    "pending_sprites": {
+      "comment": "These sprites are referenced in assetManifest.json but not yet integrated (using procedural fallback)",
+      "enemies": [
+        {
+          "id": "spr_skeleton",
+          "name": "Skeleton",
+          "status": "pending",
+          "fallback": "Procedurally generated white bone-like shape",
+          "integration_priority": "medium"
+        },
+        {
+          "id": "spr_cultist",
+          "name": "Cultist",
+          "status": "pending",
+          "fallback": "Procedurally generated robed humanoid figure",
+          "integration_priority": "medium"
+        },
+        {
+          "id": "spr_hound",
+          "name": "Hound",
+          "status": "pending",
+          "fallback": "Procedurally generated quadruped shape",
+          "integration_priority": "medium"
+        }
+      ],
+      "projectiles": [
+        {
+          "id": "proj_blood_bolt",
+          "name": "Blood Bolt",
+          "status": "pending",
+          "fallback": "Red animated particle burst",
+          "integration_priority": "high"
+        }
+      ],
+      "items": [
+        {
+          "id": "orb_hp",
+          "name": "Health Orb",
+          "status": "pending",
+          "fallback": "Red glowing sphere",
+          "integration_priority": "high"
+        }
+      ]
+    }
+  },
+  "integration_workflow": {
+    "step_1_designer_creates": "Designer creates sprite image (PNG/JPG) and saves to src/assets/[category]/[name].[ext]",
+    "step_2_add_metadata": "Add entry to this file (SPRITES_REGISTRY.json) with: file, size, dimensions, purpose, visual_description, used_in, integration_notes",
+    "step_3_code_integration": "Developer integrates sprite reference in code (e.g., ImageLoader, assetManifest.json)",
+    "step_4_agent_context": "When Agent needs to work with sprite: reads this JSON instead of binary image",
+    "step_5_vision_if_needed": "If Agent needs to SEE actual visual: use Gemini Vision API with file path"
+  },
+
+  "agent_guidelines": {
+    "reading_sprites": "❌ DO NOT read binary image files. ✅ DO read this SPRITES_REGISTRY.json",
+    "visual_inspection": "If you need to see actual sprite visual (for color matching, proportions, etc), REQUEST Gemini Vision API: 'Use Gemini Vision to inspect src/assets/ui/torch.png'",
+    "context_priority": "Use visual_description field for understanding. Call Vision API only if description insufficient.",
+    "updating_registry": "When integrating new sprite: update this file FIRST, then code. Commit both together.",
+    "common_tasks": {
+      "adding_sprite": "1. Add JSON entry to SPRITES_REGISTRY.json 2. Use Gemini Vision to verify 3. Integrate in code 4. Commit both",
+      "modifying_sprite": "1. Update visual_description 2. Use Vision API to verify changes 3. Update integration_notes if needed",
+      "querying_sprite_info": "Search this file for sprite name or ID. All metadata is here."
+    }
+  },
+
+  "economy_notes": {
+    "tokens_saved": "Blocking binary images: 78,000 tokens (no agents read .png/.jpg files)",
+    "tokens_used_here": "This registry: ~2,000 tokens (comprehensive metadata + guidelines)",
+    "net_savings": "76,000 tokens economy",
+    "vision_api_cost": "If agent needs Vision inspect: ~500 tokens per image (call on-demand, not per operation)",
+    "recommendation": "Use this registry as primary source. Call Vision API only for visual decisions (colors, proportions, etc)."
+  }
+}
