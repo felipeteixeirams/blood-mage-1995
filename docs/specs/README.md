@@ -95,80 +95,21 @@ docs/specs/
 | **[`in-progress/10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md`](./in-progress/10_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md)** | • Quick wins de áudio/gráficos e animações procedurais | • Entregue e supersedido por delivered/24 |
 | **[`in-progress/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md`](./in-progress/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md)** | • Resolução adaptativa UI e terreno 2.5D heightmap | • Entregue e supersedido por delivered/16 |
 | **[`in-progress/17_POLIMENTO_GRAFICO_CALIBRACAO_SISTEMAS_EXISTENTES.md`](./in-progress/17_POLIMENTO_GRAFICO_CALIBRACAO_SISTEMAS_EXISTENTES.md)** | • Calibração de 9 frentes de polimento gráfico | • Entregue e supersedido por delivered/17 |
-| **[`in-progress/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./in-progress/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md)** | • Conectividade entre biomas e topologia de mundo | • Superada em parte por delivered/25 |
+| **[`in-progress/11_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md`](./in-progress/11_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md)** | • Touchpad & Joystick Virtual Nativo no Phaser | • Concluído 100% |
+| **[`in-progress/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./in-progress/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md)** | • Conectividade entre biomas e topologia de mundo | • Superada em parte |
 | **[`in-progress/SPECS_EVOLUCAO.md`](./in-progress/SPECS_EVOLUCAO.md)** | • Índice de specs de evolução e roadmap histórico | • Histórico mantido para referência de contexto |
 | **[`in-progress/_ARCHIVED_SPECS_EVOLUCAO_2026_09_REFACTOR.md`](./in-progress/_ARCHIVED_SPECS_EVOLUCAO_2026_09_REFACTOR.md)** | • Arquivo histórico de specs de evolução pós-refactor | • Arquivado |
 
 ---
 
-## 🟢 Delivered (Últimos 7 dias — janela "quente")
+## 🟢 Delivered
 
-> Histórico completo (tudo entregue há mais de 7 dias, nunca apagado):
-> [`delivered/_HISTORY_ARCHIVE.md`](./delivered/_HISTORY_ARCHIVE.md).
-> Ao passar dos 7 dias, mova a linha daqui para o topo do arquivo.
->
-> *(Nota: Para lista exaustiva de specs de todas as pastas, consulte [`delivered/_HISTORY_ARCHIVE.md`](./delivered/_HISTORY_ARCHIVE.md))*
+> *Nota:* Especificações arquivadas / entregues consolidadas.
 
 | Spec | Escopo Concluído | Entregue em | Verificação / Testes |
 |---|---|---|---|
-| **[`delivered/32_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`](./delivered/32_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** | **Toggle de Intensidade de Conteúdo (Classificação Indicativa):** Seletor de intensidade em Configurações (Gore Completo/Reduzido), persistência Zod e adaptação nos sistemas de desmembramento e poças de sangue | 2026-09-21 | Vitest (`DismembermentSystem.test.ts`, `BloodSplatterSystem.test.ts`, `localStorage.test.ts`) |
-| **[`delivered/12_PROGRESSAO_E_QUESTS_CONTRATOS.md`](./delivered/12_PROGRESSAO_E_QUESTS_CONTRATOS.md)** | **Progressão, Micro-Quests (Contratos) e Evolução de Habilidades:** Contratos dinâmicos, modificadores de desafio, ramificação mutuamente exclusiva de talentos e evolução de habilidades níveis 5/10 | 2026-09-19 | Vitest (`gameStore.test.ts`) |
-| **[`delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md`](./delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md)** | **Modal UI de Prestígio (Blood Seal):** Componente React `PrestigeModal.tsx`, alocação de selos, seleção de dificuldade, confirmação de sacrifício rúnico e navegação gamepad | 2026-09-09 | Vitest (`PrestigeModal.test.tsx`) |
-| **[`delivered/31_NORMAL_MAP_TILE_DOOR.md`](./delivered/31_NORMAL_MAP_TILE_DOOR.md)** | **Normal Map Ausente na Textura `tile_door`:** Gerar e registrar normal map para `tile_door` via `addTextureWithNormalMap` permitindo iluminação Light2D nas portas | 2026-09-08 | Vitest (`textureGenerator.test.ts`) |
-| **[`delivered/30_DETERMINISMO_SEED_POISSON_DISK.md`](./delivered/30_DETERMINISMO_SEED_POISSON_DISK.md)** | **Determinismo por Seed no Espalhamento Poisson Disk:** Amostragem de vegetação e props 100% determinística por seed da instância de `HeightmapGenerator` | 2026-09-08 | Vitest (`HeightmapGenerator.test.ts`) |
-| **[`delivered/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`](./delivered/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md)** | **Fase 5: Polimento de Produção, Empacotamento Nativo & i18n:** Performance zero-GC, Gamepad API, Haptics, PWA/TWA/Steam builds, Advanced Particles, Achievements e internacionalização (PT-BR / EN-US) | 2026-09-08 | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`](./delivered/25_MUNDO_CONTINUO_CHUNK_STREAMING.md)** | **Mundo Contínuo Estilo Dungeon Siege — Chunk Streaming:** Fases A, B, B.2, C e D entregues (streaming de chunks, bounds dinâmicos, transições sem corte de iluminação/névoa/áudio/FX e porta de saída física) | 2026-09-08 | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/17_POLIMENTO_GRAFICO_CALIBRACAO_SISTEMAS_EXISTENTES.md`](./delivered/17_POLIMENTO_GRAFICO_CALIBRACAO_SISTEMAS_EXISTENTES.md)** | **Polimento Gráfico por Calibração dos Sistemas Existentes:** Calibração completa das 9 Frentes (Glow, PostFX, Lighting, Atmosphere, Shadows, Reflections, Particles, Tree Shader & Terrain), tokens de sequência de FX e profundidades relativas | 2026-09-07 | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/28_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md`](./delivered/28_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md)** | **Padronização de Modais Secundários, Navegação Gamepad & Retratos Rúnicos:** UI consistente entre modais secundários, navegação completa via gamepad e retratos temáticos | 2026-09-06 | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md`](./delivered/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md)** | **Polimento Visual Procedural:** 8 inimigos com silhuetas curvas e normal maps, sombras elípticas radiais, partículas com degradê, tochas alinhadas e tijolos com musgo orgânico | 2026-09-05 | Vitest + E2E (`spec10-validation.spec.ts`) |
-| **[`delivered/04_FASE4_MUNDO_CONTINUO.md`](./delivered/04_FASE4_MUNDO_CONTINUO.md)** | **Fase 4: Mundo Contínuo:** Safe Town (Room 0), iluminação adaptativa, NPCs interativos, áudio e clima por bioma | 2026-08-31 | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md`](./delivered/23_EIXO_A_GRAFICOS_AVANCADOS.md)** | **ÍNDICE MESTRE — Eixo A: Gráficos Avançados:** Iluminação GPU real (Light2D), pós-processamento WebGL (PostFXSystem) e normal maps procedurais | 2026-08-31 | Vitest + E2E (`pnpm verify`) |
-| **[`delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md`](./delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md)** | **ÍNDICE MESTRE — Evolução Gráfica & Auditiva:** Quick wins (Medo, Cascata de Luz, Tinnitus), animações 8-direcionais, ragdoll/gibs e shaders de status/sombra/reflexo | 2026-08-31 | Vitest + E2E (`pnpm verify`) |
 
 ---
-
-### 📦 Arquivos Históricos em Delivered (Referenciados)
-
-| Spec | Escopo / Título | Status | Verificação |
-|---|---|---|---|
-| **[`delivered/01_FASE1_INCONSCIENCIA.md`](./delivered/01_FASE1_INCONSCIENCIA.md)** | **🟢 Fase 1: Sistema de Inconsciência** | Entregue | Vitest + E2E |
-| **[`delivered/01_RECORDS_DISPLAY.md`](./delivered/01_RECORDS_DISPLAY.md)** | **✅ Records Display System** | Entregue | Vitest + E2E |
-| **[`delivered/02_FASE2_TELA_DE_MORTE_E_GORE.md`](./delivered/02_FASE2_TELA_DE_MORTE_E_GORE.md)** | **🔴 Fase 2: Tela de Morte, Resgate de Cadáver (Corpse Retrieval) e Gore** | Entregue | Vitest + E2E |
-| **[`delivered/03_FASE3_CONDICOES_DE_SOBREVIVENCIA.md`](./delivered/03_FASE3_CONDICOES_DE_SOBREVIVENCIA.md)** | **🤢 Fase 3: Condições de Sobrevivência, Status Nocivos e Medicinas** | Entregue | Vitest + E2E |
-| **[`delivered/03_FASE3_STATUS_SOBREVIVENCIA.md`](./delivered/03_FASE3_STATUS_SOBREVIVENCIA.md)** | **🟡 Fase 3: Status de Sobrevivência** | Entregue | Vitest + E2E |
-| **[`delivered/05_FASE5_POLIMENTO_PRODUCAO_COMPLETO.md`](./delivered/05_FASE5_POLIMENTO_PRODUCAO_COMPLETO.md)** | **🚀 Fase 5: Polimento de Produção — 100% COMPLETO** | Entregue | Vitest + E2E |
-| **[`delivered/11_01_VISUAL_DUNGEON_GENERATION.md`](./delivered/11_01_VISUAL_DUNGEON_GENERATION.md)** | **Spec 11.01: Geração Orgânica de Dungeon (BSP + Cellular Automata)** | Entregue | Vitest + E2E |
-| **[`delivered/11_02_VISUAL_ATMOSFERA_NEBLINA.md`](./delivered/11_02_VISUAL_ATMOSFERA_NEBLINA.md)** | **Spec 11.02: Atmosfera e Névoa Volumétrica (Atmospherics & Weather)** | Entregue | Vitest + E2E |
-| **[`delivered/11_03_VISUAL_DECALS_SANGUE.md`](./delivered/11_03_VISUAL_DECALS_SANGUE.md)** | **Spec 11.03: Decals de Sangue e Reações do Mundo (World Reactions)** | Entregue | Vitest + E2E |
-| **[`delivered/11_04_VISUAL_GORE_HIT_STOP.md`](./delivered/11_04_VISUAL_GORE_HIT_STOP.md)** | **Spec 11.04: Gore, Hit-Stop e Character FX (Character FX & Combat Feel)** | Entregue | Vitest + E2E |
-| **[`delivered/11_05_VISUAL_ILUMINACAO_BLOOM.md`](./delivered/11_05_VISUAL_ILUMINACAO_BLOOM.md)** | **Spec 11.05: Iluminação 2D e Bloom FX (Lighting & Spell VFX)** | Entregue | Vitest + E2E |
-| **[`delivered/11_06_VISUAL_AUDIO_PITCH_DRONES.md`](./delivered/11_06_VISUAL_AUDIO_PITCH_DRONES.md)** | **Spec 11.06: Pitch Shifting e Drones de Áudio (Audio Engineering)** | Entregue | Vitest + E2E |
-| **[`delivered/11_07_VISUAL_PALETTE_SWAP.md`](./delivered/11_07_VISUAL_PALETTE_SWAP.md)** | **Spec 11.07: Palette Swap Procedural e Cosméticos de Itens (Items Wearables)** | Entregue | Vitest + E2E |
-| **[`delivered/11_08_VISUAL_NPCS_INTERATIVIDADE.md`](./delivered/11_08_VISUAL_NPCS_INTERATIVIDADE.md)** | **Spec 11.08: NPCs e Interatividade de Mundo (Quests & World Interactivity)** | Entregue | Vitest + E2E |
-| **[`delivered/11_VISUAL_POLISH_FRONTS.md`](./delivered/11_VISUAL_POLISH_FRONTS.md)** | **Spec 11: Visual Polish & VFX Fronts (Índice Mestre)** | Entregue | Vitest + E2E |
-| **[`delivered/12_01_EXPANSION_TRAPS_INTERACTIONS.md`](./delivered/12_01_EXPANSION_TRAPS_INTERACTIONS.md)** | **🕸️ Spec 12.01: Interações de Ambiente e Armadilhas (Dungeon Depth)** | Entregue | Vitest + E2E |
-| **[`delivered/12_02_EXPANSION_AI_ELITE_MOBS.md`](./delivered/12_02_EXPANSION_AI_ELITE_MOBS.md)** | **⚔️ Spec 12.02: Inteligência Artificial e Modificadores de Elite (Combat Challenge)** | Entregue | Vitest + E2E |
-| **[`delivered/12_03_EXPANSION_META_PROGRESSION.md`](./delivered/12_03_EXPANSION_META_PROGRESSION.md)** | **🩸 Spec 12.03: Meta-Progressão e Economia (Replayability)** | Entregue | Vitest + E2E |
-| **[`delivered/12_04_EXPANSION_UX_POLISH.md`](./delivered/12_04_EXPANSION_UX_POLISH.md)** | **👁️ Spec 12.04: Interface/UX e Polimento Sombrio (Game Feel)** | Entregue | Vitest + E2E |
-| **[`delivered/12_05_EXPANSION_AUDIO_SOUNDTRACK.md`](./delivered/12_05_EXPANSION_AUDIO_SOUNDTRACK.md)** | **🎵 Spec 12.05: Trilha Sonora Procedural 16-Bit (Web Audio FM Engine)** | Entregue | Vitest + E2E |
-| **[`delivered/12_EXPANSION_FRONTS.md`](./delivered/12_EXPANSION_FRONTS.md)** | **🗺️ Spec 12: ÍNDICE MESTRE — Expansion & Replayability Fronts** | Entregue | Vitest + E2E |
-| **[`delivered/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md`](./delivered/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md)** | **Spec 13: Transição para ARPG Clássico & Safe House (Campanha Zero-to-Hero)** | Entregue | Vitest + E2E |
-| **[`delivered/14_IMMERSION_AND_GAME_FEEL.md`](./delivered/14_IMMERSION_AND_GAME_FEEL.md)** | **Spec 14: Imersão, UI Premium e Game Feel** | Entregue | Vitest + E2E |
-| **[`delivered/15_PWA_AND_OFFLINE_READY.md`](./delivered/15_PWA_AND_OFFLINE_READY.md)** | **📜 Spec 15: PWA e Offline-First (Standalone Experience)** | Entregue | Vitest + E2E |
-| **[`delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md`](./delivered/16_GRAPHICAL_UI_TERRAIN_EVOLUTION.md)** | **📜 Spec 16: Evolução Gráfica, Resolução Adaptativa UI & Terreno Procedural 2.5D/3D** | Entregue | Vitest + E2E |
-| **[`delivered/17_IN_MEDIA_RES_ONBOARDING_AND_COMBAT_FLOW.md`](./delivered/17_IN_MEDIA_RES_ONBOARDING_AND_COMBAT_FLOW.md)** | **📜 Spec 17: Onboarding "In Media Res" & Fluxo de Combate Imediato (<10s Time-to-Fun)** | Entregue | Vitest + E2E |
-| **[`delivered/19_RELICS_AND_ARTIFACTS_SYSTEM.md`](./delivered/19_RELICS_AND_ARTIFACTS_SYSTEM.md)** | **💍 Spec 19: Sistema de Relíquias e Artefatos Passivos (Relics & Artifacts System)** | Entregue | Vitest + E2E |
-| **[`delivered/20_ADVANCED_PARTICLES_SYSTEM.md`](./delivered/20_ADVANCED_PARTICLES_SYSTEM.md)** | **🎆 Spec 20: Sistema de Partículas Avançadas (Advanced Particles System)** | Entregue | Vitest + E2E |
-| **[`delivered/21_ACHIEVEMENTS_SYSTEM.md`](./delivered/21_ACHIEVEMENTS_SYSTEM.md)** | **🏆 Spec 21: Sistema de Conquistas (Achievements System)** | Entregue | Vitest + E2E |
-| **[`delivered/22_DASH_EVASION_MECHANIC.md`](./delivered/22_DASH_EVASION_MECHANIC.md)** | **💨 Spec 22: Mecânica de Dash/Esquiva (Dash & Evasion Mechanic)** | Entregue | Vitest + E2E |
-| **[`delivered/23_01_POSTFX_GPU_SHADERS.md`](./delivered/23_01_POSTFX_GPU_SHADERS.md)** | **Spec 23.01: Pós-Processamento GPU e Shaders de Câmera (PostFXSystem)** | Entregue | Vitest + E2E |
-| **[`delivered/23_02_PROCEDURAL_NORMAL_MAPS.md`](./delivered/23_02_PROCEDURAL_NORMAL_MAPS.md)** | **Spec 23.02: Normal Maps Procedurais em Runtime** | Entregue | Vitest + E2E |
-| **[`delivered/23_03_LIGHT2D_DYNAMIC_LIGHTING.md`](./delivered/23_03_LIGHT2D_DYNAMIC_LIGHTING.md)** | **Spec 23.03: Iluminação Dinâmica 2D (Light2D Pipeline)** | Entregue | Vitest + E2E |
-| **[`delivered/24_01_GRAPHICS_AUDIO_QUICKWINS.md`](./delivered/24_01_GRAPHICS_AUDIO_QUICKWINS.md)** | **Spec 24.01: Quick Wins Visuais & Auditivos (Fear, Light Cascade, Tinnitus)** | Entregue | Vitest + E2E |
-| **[`delivered/24_02_PROCEDURAL_ANIMATIONS_RAGDOLL_GIBS.md`](./delivered/24_02_PROCEDURAL_ANIMATIONS_RAGDOLL_GIBS.md)** | **Spec 24.02: Animações 8-Direcionais, Feedbacks de Dano e Ragdoll Gibs** | Entregue | Vitest + E2E |
-| **[`delivered/24_03_STATUS_EFFECTS_SHADOWS_REFLECTIONS.md`](./delivered/24_03_STATUS_EFFECTS_SHADOWS_REFLECTIONS.md)** | **Spec 24.03: Shaders de Status, Sombras 2.5D e Reflexos em Líquidos** | Entregue | Vitest + E2E |
-| **[`delivered/26_RECORDS_DISPLAY.md`](./delivered/26_RECORDS_DISPLAY.md)** | **✅ Records Display System** | Entregue | Vitest + E2E |
-| **[`delivered/27_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md`](./delivered/27_NATIVE_PHASER_TOUCHPAD_JOYSTICK.md)** | **🕹️ Spec 11: Touchpad & Joystick Virtual Nativo no Phaser (Padrão Mobile Legends / Diablo Immortal)** | Entregue | Vitest + E2E |
 
 ---
 

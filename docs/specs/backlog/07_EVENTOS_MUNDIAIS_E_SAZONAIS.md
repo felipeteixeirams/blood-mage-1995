@@ -95,7 +95,7 @@ Para que os eventos sazonais e de hora em hora funcionem sem a necessidade de um
 ## Referências
 
 - [[docs/specs/discovery/04_MOBILE_APP_E_MONETIZACAO_INDIE.md]] — Conexão com o Passe de Batalha de Sobrevivência
-- [[docs/specs/delivered/04_FASE4_MUNDO_CONTINUO.md]] — Configurações de iluminação e biomas contínuos
+- [[docs/specs/README.md]] — Configurações de iluminação e biomas contínuos (ver índice)
 
 ## Registro de mudanças
 
