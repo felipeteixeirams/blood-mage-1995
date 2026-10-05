@@ -38,6 +38,22 @@ Quando uma spec está em `backlog/` ou `in-progress/`, pode ter **status adicion
 
 ---
 
+## 🚨 NOVIDADE: Readiness Gates & Dependency Graph
+
+Implementado em **2026-10-05**: Sistema de gates de prontidão e mapa de dependências para melhor rastreamento de bloqueadores e readiness das specs.
+
+### Documentos Relacionados:
+- **[📋 READINESS_GATES.md](./READINESS_GATES.md)**: Checklist dos 4 gates obrigatórios (Product Decision, Technical Prototype, Scope Locked, Dependencies Resolved)
+- **[📊 DEPENDENCY_GRAPH.md](./DEPENDENCY_GRAPH.md)**: Grafo visual de dependências, bloqueadores e status de specs
+- **[🔗 DEPENDENCY_MAP.yaml](./DEPENDENCY_MAP.yaml)**: Fonte de verdade central para bloqueadores e relacionamentos entre specs
+
+**Resumo Rápido (2026-10-05):**
+- 5 specs bloqueadas (aguardando decisões/insumos externos)
+- 12 specs prontas para implementação
+- 1 spec em QA (código pronto, aguardando playtest do Felipe)
+
+---
+
 ## 🗂️ Board de Fluxo (Kanban)
 
 > **A visão mais rápida do estado real do projeto.** 4 raias — atualiza só

@@ -1,0 +1,167 @@
+# 🔗 Spec Dependency Map — Bloodmage 1995
+# Mapa de bloqueadores e dependências entre specs
+# Atualização: 2026-10-05
+
+specs:
+  # ===== SPECS EM PRODUÇÃO/QA =====
+
+  "03":
+    name: "Fase 3 — Status de Sobrevivência"
+    status: "in-progress"
+    blocked_by: []
+    progress: "95%"
+    blocking_on: "Felipe (QA manual e tuning)"
+    note: "Código 100% pronto, aguardando playtest"
+
+  # ===== SPECS PRONTOS PARA IMPLEMENTAR (TODOS OS 4 GATES: ✅) =====
+
+  "06":
+    name: "Eixo A — Gráficos Avançados"
+    status: "in-progress"
+    blocked_by: []
+    readiness_gates:
+      - name: "product_decision"
+        status: "✅"
+        note: "Decisão tomada (2026-09-15)"
+      - name: "technical_prototype"
+        status: "✅"
+        note: "Testado em Phaser 4"
+      - name: "scope_locked"
+        status: "✅"
+        note: "3 fases bem definidas"
+      - name: "dependencies_resolved"
+        status: "✅"
+        note: "Nenhuma bloqueante"
+    note: "Desenvolvimento ativo"
+
+  "11":
+    name: "Touchpad & Joystick Virtual Nativo Phaser"
+    status: "in-progress"
+    blocked_by: []
+    readiness_gates:
+      - name: "product_decision"
+        status: "✅"
+      - name: "technical_prototype"
+        status: "✅"
+      - name: "scope_locked"
+        status: "✅"
+      - name: "dependencies_resolved"
+        status: "✅"
+    note: "Code review pendente"
+
+  # ===== SPECS EM DESENVOLVIMENTO (VARIADOS) =====
+
+  "08":
+    name: "Mapeamento Completo de Sprites & Checklist"
+    status: "in-progress"
+    blocked_by:
+      - spec_id: "14"
+        reason: "Sprites físicos (arte pixel) ainda não produzidos"
+        status: "waiting_external"
+    blockers_are_external: true
+    blocker_owner: "Felipe (decisão de orçamento de arte)"
+    note: "Pendente de Spec 14"
+
+  "09":
+    name: "Guia Direto para Pixel Lab (Bloodmage 1995)"
+    status: "in-progress"
+    blocked_by: []
+    note: "Documentação de workflow de arte"
+
+  "10":
+    name: "Evolução Gráfica & Auditiva (Quick Wins & Roadmap)"
+    status: "in-progress"
+    blocked_by: []
+    note: "Planejamento de melhorias gráficas/áudio"
+
+  "16":
+    name: "Evolução Gráfica — Resolução Adaptativa & UI"
+    status: "in-progress"
+    blocked_by: []
+    note: "Polimento de UI responsivo"
+
+  "17":
+    name: "Polimento Gráfico — Calibração dos Sistemas"
+    status: "in-progress"
+    blocked_by: []
+    note: "Refinamento visual geral"
+
+  "18":
+    name: "Topologia de Mundo Contínuo e Variedade"
+    status: "in-progress"
+    blocked_by: []
+    note: "Expandir world generation"
+
+  "25":
+    name: "Padronização de Modais Secundários & Gamepad"
+    status: "in-progress"
+    blocked_by: []
+    note: "Padronização de UI modais"
+
+  # ===== SPECS BLOQUEADAS =====
+
+  "07":
+    name: "Eventos Mundiais e Sazonais"
+    status: "backlog"
+    blocked_by:
+      - spec_id: null
+        reason: "Ainda em definição de escopo"
+        status: "waiting_design"
+    note: "Precisa de decisão de produto e refinamento"
+
+  "13":
+    name: "UI Assets Externos Framework"
+    status: "backlog"
+    blocked_by:
+      - spec_id: "14"
+        reason: "Precisa do pipeline de sprites/assets externos definido"
+        status: "waiting_spec"
+    note: "Bloqueada por Spec 14"
+
+  "14":
+    name: "Sprites & Assets Externos Tiers"
+    status: "backlog"
+    blocked_by:
+      - spec_id: null
+        reason: "Orçamento de arte e direção artística ainda pendente de decisão do Felipe"
+        status: "waiting_decision"
+    blockers_are_external: true
+    blocker_owner: "Felipe (decisão estratégica)"
+    note: "Bloqueadora crítica (Specs 08, 13 dependem disso)"
+
+  "29":
+    name: "Cloud Save — Fase 5"
+    status: "backlog"
+    blocked_by:
+      - spec_id: null
+        reason: "Escopo grande (Phase 5), não é prioritário no MVP"
+        status: "deprioritized"
+    note: "Pronto tecnicamente, mas fora do escopo do MVP"
+
+  # ===== SPECS EM DISCOVERY (PESQUISA) =====
+
+  "01":
+    name: "DISCOVERY — Avaliação Arquitetural Phaser 4.2.1"
+    status: "discovery"
+    blocked_by: []
+    note: "Pesquisa e validação de arquitetura"
+
+  "02":
+    name: "Discovery — Pipeline de Integração de Assets Externos"
+    status: "discovery"
+    blocked_by: []
+    note: "Pesquisa de workflow de assets"
+
+  "04":
+    name: "DISCOVERY — Mobile App & Monetização Indie"
+    status: "discovery"
+    blocked_by: []
+    note: "Pesquisa de plataforma mobile e monetização"
+
+  # ===== SPECS REJEITADAS =====
+
+  "05":
+    name: "REJEITADA — Sistema de Skinning e Camadas Dinâmicas"
+    status: "rejected"
+    blocked_by: []
+    note: "Rejeitada no triage de escopo"
