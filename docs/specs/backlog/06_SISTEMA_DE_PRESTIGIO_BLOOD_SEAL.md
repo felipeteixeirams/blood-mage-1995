@@ -15,7 +15,7 @@ tags: [specs, prestige, ui, backlog-real]
 > era uma proposta completa de "0% de código" para um sistema de
 > Prestígio ("Selo de Sangue") — mas o sistema **já existe, ~90%
 > implementado**, em
-> [`delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md`](../delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md).
+> [`delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md`](../README.md).
 > Confirmado no código: `canPrestige()`, `performPrestige()`,
 > `allocateBloodSeal()`, `getPrestigeModifiers()` em `src/store/gameStore.ts`,
 > multiplicadores aplicados em `Player.ts`, persistência Zod e SFX
@@ -46,5 +46,5 @@ atributos estão 100% implementados e operacionais.
 
 ## Referências
 
-- [[../delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md]] — spec completa do que já está implementado
+- [[docs/specs/README.md]] — índice geral de especificações
 - [[../../product/ROADMAP.md]] — onde essa frente se encaixa no roadmap de produto

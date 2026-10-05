@@ -23,5 +23,5 @@ tags: [specs, prestige, ui, delivered]
 
 ## Referências
 
-- [[../delivered/18_PRESTIGE_SYSTEM_BLOOD_SEAL.md]] — spec completa da lógica e persistência
+- [[docs/specs/README.md]] — índice geral de especificações
 - [[../../product/ROADMAP.md]] — roadmap de produto
