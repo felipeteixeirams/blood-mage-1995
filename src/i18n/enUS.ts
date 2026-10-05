@@ -184,6 +184,22 @@ export const enUS: TranslationDictionary = {
     mainMenu: 'MAIN MENU',
   },
 
+  // World Events
+  events: {
+    blood_eclipse: {
+      name: 'Blood Eclipse',
+      desc: 'Crimson runic darkness. Monster frenzy (+15% attack speed) and drops increased by 50%.',
+    },
+    ancestors_night: {
+      name: 'Ancestors Night',
+      desc: 'The veil between the living and dead is thin. Increased undead spawns and drop bonuses.',
+    },
+    winter_solstice: {
+      name: 'Feast of Ice',
+      desc: 'Dark ice and freezing winds sweep the realm. Chance for icy slows.',
+    },
+  },
+
   // PWA & System
   pwa: {
     installTitle: 'Install Bloodmage 1995',

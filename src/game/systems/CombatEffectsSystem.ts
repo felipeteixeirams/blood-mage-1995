@@ -3,6 +3,7 @@ import { GameScene } from '../scenes/GameScene';
 import { Enemy } from '../objects/Enemy';
 import { LootSprite } from '../objects/Loot';
 import { LootSystem } from './LootSystem';
+import { WorldEventSystem } from './WorldEventSystem';
 import { DismembermentSystem } from './DismembermentSystem';
 import { CombatFeel } from './CombatFeel';
 import { ContractSystem } from './ContractSystem';
@@ -240,7 +241,9 @@ export class CombatEffectsSystem {
       soundEngine.playOrbPickup();
     }
 
-    const dropMult = useGameStore.getState().getPrestigeModifiers?.().dropMult ?? 1.0;
+    const baseDropMult = useGameStore.getState().getPrestigeModifiers?.().dropMult ?? 1.0;
+    const eventDropMult = WorldEventSystem.getActiveModifiers().dropMultiplier ?? 1.0;
+    const dropMult = baseDropMult * eventDropMult;
     const hasBloodTide = useGameStore.getState().activeModifiers.includes('blood_tide');
     const rolled = hasBloodTide ? (Math.random() < 0.325 * dropMult) : LootSystem.rollLootChance(dropMult);
     if (rolled) {

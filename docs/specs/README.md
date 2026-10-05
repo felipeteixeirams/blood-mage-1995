@@ -41,8 +41,7 @@ tags: [specs, index, workflow, in-progress, delivered, backlog, discovery, rejec
 | # | Spec | Pasta | Prioridade | Criticidade | Progresso |
 |---|---|---|---|---|---|
 | 1 | [`backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md`](./backlog/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md) | backlog | 🟡 medium | 🟡 medium | Tier A completo — Tiers B/C pendentes |
-| 2 | [`backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./backlog/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md) | backlog | 🟡 medium | 🟡 medium | draft |
-| 3 | [`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md) | backlog | 🟢 low | 🟡 medium | Superada em parte — só resta a pergunta menor de variedade interna em `gloomy_woods` |
+| 2 | [`backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./backlog/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md) | backlog | 🟢 low | 🟡 medium | Superada em parte — só resta a pergunta menor de variedade interna em `gloomy_woods` |
 
 > *Nota:* `in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md` saiu desta fila em
 > 2026-09-08 — PR #93 entregou os 2 itens de código que faltavam (cura via
@@ -84,6 +83,7 @@ docs/specs/
 
 | Spec / Documento | Fases / Escopo Concluído | Fases / Itens Pendentes (destravados) |
 |---|---|---|
+| **[`in-progress/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./in-progress/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md)** | • Estrutura de dados, eventos sazonais e cíclicos (Eclipse de Sangue, Noite dos Ancestrais, Banquete do Gelo)<br>• WorldEventSystem e sincronização Zustand<br>• Modificadores em jogo e badge no HUD | • Concluído em PR |
 | **[`in-progress/08_GUIA_EVOLUCAO_COMERCIAL.md`](./in-progress/08_GUIA_EVOLUCAO_COMERCIAL.md)** | • Checklist de requisitos comerciais e arquiteturais para lançamento (Steam/Play Store/itch.io) | • Implementações visuais e de infraestrutura |
 | **[`in-progress/11_ATMOSFERA_E_TENSAO.md`](./in-progress/11_ATMOSFERA_E_TENSAO.md)** | • Threat Tinnitus, Fear Distortion e Toggles de Acessibilidade<br>• Chevrons direcionais offscreen de ameaça ativas | • *(Restante dos itens de atmosfera e áudio espacial)* |
 | **[`in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md`](./in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md)** | • Gameplay loop completo (Sangramento/Veneno/Infecção aplicados por monstro, dreno de HP, cura via consumível comprável no Alquimista)<br>• Cura via NPC Clérigo (PR #93)<br>• Ícones customizados SVG (PR #93) | • *(nenhum item de código — só QA manual e tuning de valores, dependentes do Felipe jogar)* |

@@ -182,6 +182,22 @@ export const ptBR = {
     mainMenu: 'MENU PRINCIPAL',
   },
 
+  // World Events
+  events: {
+    blood_eclipse: {
+      name: 'Eclipse de Sangue',
+      desc: 'Escuridão rúnica carmesim. Fúria dos monstros (+15% velocidade de ataque) e drops aumentados em 50%.',
+    },
+    ancestors_night: {
+      name: 'Noite dos Ancestrais',
+      desc: 'O véu entre os vivos e os mortos está tênue. Maior surgimento de mortos-vivos e bônus de drops.',
+    },
+    winter_solstice: {
+      name: 'O Banquete do Gelo',
+      desc: 'Gelo escuro e ventos congelantes atingem o reino. Chance de desaceleração pelo gelo.',
+    },
+  },
+
   // PWA & System
   pwa: {
     installTitle: 'Instalar Bloodmage 1995',

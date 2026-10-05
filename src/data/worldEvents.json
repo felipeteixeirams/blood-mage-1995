@@ -1,0 +1,74 @@
+[
+  {
+    "id": "blood_eclipse",
+    "nameKey": "events.blood_eclipse.name",
+    "descriptionKey": "events.blood_eclipse.desc",
+    "type": "atmospheric",
+    "scheduleType": "cyclical",
+    "cyclicalSchedule": {
+      "cycleDurationHours": 2,
+      "cycleIntervalHours": 4
+    },
+    "modifiers": {
+      "lightRadiusMultiplier": 0.7,
+      "monsterFrenzy": true,
+      "monsterAttackSpeedBonus": 0.15,
+      "dropMultiplier": 1.5
+    },
+    "visuals": {
+      "tint": "#ef4444",
+      "fogAlpha": 0.45,
+      "particleType": "embers",
+      "badgeIcon": "Moon",
+      "badgeColor": "#ef4444"
+    }
+  },
+  {
+    "id": "ancestors_night",
+    "nameKey": "events.ancestors_night.name",
+    "descriptionKey": "events.ancestors_night.desc",
+    "type": "seasonal",
+    "scheduleType": "seasonal",
+    "seasonalDateRange": {
+      "startMonth": 10,
+      "startDay": 25,
+      "endMonth": 11,
+      "endDay": 2
+    },
+    "modifiers": {
+      "skeletonSpawnBonus": 0.25,
+      "dropMultiplier": 1.25
+    },
+    "visuals": {
+      "tint": "#8800cc",
+      "fogAlpha": 0.35,
+      "particleType": "purple_sparks",
+      "badgeIcon": "Skull",
+      "badgeColor": "#a855f7"
+    }
+  },
+  {
+    "id": "winter_solstice",
+    "nameKey": "events.winter_solstice.name",
+    "descriptionKey": "events.winter_solstice.desc",
+    "type": "seasonal",
+    "scheduleType": "seasonal",
+    "seasonalDateRange": {
+      "startMonth": 12,
+      "startDay": 20,
+      "endMonth": 1,
+      "endDay": 5
+    },
+    "modifiers": {
+      "freezeChance": 0.1,
+      "dropMultiplier": 1.2
+    },
+    "visuals": {
+      "tint": "#60a5fa",
+      "fogAlpha": 0.3,
+      "particleType": "snow",
+      "badgeIcon": "Snowflake",
+      "badgeColor": "#3b82f6"
+    }
+  }
+]
