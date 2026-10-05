@@ -6,6 +6,7 @@ import { useGameStore } from '../../store/gameStore';
 import { safePlayAnimation } from '../animations/animationManager';
 import { DismembermentSystem } from '../systems/DismembermentSystem';
 import { CombatFeel } from '../systems/CombatFeel';
+import { WorldEventSystem } from '../systems/WorldEventSystem';
 
 export interface EnemyOptions {
   floorDepth?: number;
@@ -611,7 +612,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     const isFrozen = (this.scene as any)?.statusEffectSystem?.hasStatus?.(this, 'frozen');
-    let effectiveBaseSpeed = isFrozen ? 0 : this.config.speed * this.speedMultiplier;
+    const eventMods = WorldEventSystem.getActiveModifiers();
+    const eventSpeedMult = (1.0 + (eventMods.monsterAttackSpeedBonus ?? 0)) * (eventMods.monsterFrenzy ? 1.15 : 1.0);
+    let effectiveBaseSpeed = isFrozen ? 0 : this.config.speed * this.speedMultiplier * eventSpeedMult;
 
     // Spec 18 Task 2: 30% movement speed penalty on water tiles for terrestrial enemies
     const dungeonGen = (this.scene as any)?.dungeonGenerator;

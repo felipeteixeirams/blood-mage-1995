@@ -12,6 +12,7 @@ import { DialogueModal } from './hud/DialogueModal';
 import { RecordsDisplay } from './hud/RecordsDisplay';
 import { AchievementToast } from './hud/AchievementToast';
 import { JoystickVisual } from './hud/JoystickVisual';
+import { WorldEventBadge } from './hud/WorldEventBadge';
 import palettesData from '../data/palettes.json';
 import { useFloatingJoystick } from '../hooks/useFloatingJoystick';
 import { soundEngine } from '../utils/soundEngine';
@@ -193,6 +194,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
     <div className="absolute inset-0 pointer-events-none z-20 select-none overflow-hidden font-pixel">
       <TargetFrame />
       <LootLog />
+      <WorldEventBadge />
 
       {/* ── Unconscious Tunnel Vision & Desaturation Overlay ── */}
       {stats.isUnconscious && (

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { PlayerStats, UpgradeOption, GameSettings, HighScoreRecord, LootItem, RelicItem, RelicEffect, EquipmentSlots, BiomeType, DroppedCorpse, CodexState, AchievementState, RunStats, UnlockedAchievementNotification, OnboardingState, PrestigeData, BloodSealType, GameDifficulty } from '../types/game';
+import { WorldEvent } from '../types/worldEvent';
 import { GameMode, ZoneType, CampaignState, DialogueTree, QuestLogEntry, QuestDefinition, QuestObjective, CampaignEffect } from '../types/campaign';
 import { loadSettings, saveSettings, loadHighScores, saveHighScore, loadBloodCrystals, saveBloodCrystals, loadTalentLevels, saveTalentLevels, loadOnboarding, saveOnboarding, loadUnlockedRelics, saveUnlockedRelics, loadEquippedRelicIds, saveEquippedRelicIds, loadCodexState, saveCodexState, loadAchievements, saveAchievements, loadRunStats, saveRunStats, loadCampaignState, saveCampaignState, loadPrestigeData, savePrestigeData, defaultPrestigeData } from '../utils/localStorage';
 import { soundEngine } from '../utils/soundEngine';
@@ -88,6 +89,10 @@ interface GameStore {
   activeModifiers: string[];
   toggleModifier: (id: string) => void;
   clearModifiers: () => void;
+
+  // World Events
+  activeWorldEvent: WorldEvent | null;
+  setActiveWorldEvent: (event: WorldEvent | null) => void;
   onboarding: OnboardingState;
   triggerOnboardingEvent: (key: keyof OnboardingState, tipText?: string) => void;
   activeTip: string | null;
@@ -618,6 +623,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ activeModifiers: next });
   },
   clearModifiers: () => set({ activeModifiers: [] }),
+
+  activeWorldEvent: null,
+  setActiveWorldEvent: (event) => set({ activeWorldEvent: event }),
   onboarding: loadOnboarding(),
   activeTip: null,
   setActiveTip: (tip) => set({ activeTip: tip }),
