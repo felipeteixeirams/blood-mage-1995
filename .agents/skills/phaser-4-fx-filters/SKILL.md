@@ -5,6 +5,8 @@ description: Filtros visuais, shaders de pós-processamento, Glow, Vignette, Blo
 
 # 🔮 Skill: Phaser 4.2.1 Filters, Shaders & Post-Processing (Beam Renderer)
 
+> ⚠️ **Correção 2026-10-07:** `renderer.isWebGL` **não existe** no Phaser 4.2.1 — os snippets abaixo que o usam desligam o efeito em WebGL real. Use `renderer.type === Phaser.WEBGL`; para iluminação por objeto use `obj.setLighting(true)` (não `setPipeline`). Ver `docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md` item 21 e `docs/specs/backlog/35_01_DETECCAO_WEBGL_E_LIGHT2D_PHASER4.md`.
+
 Esta skill ensina a utilizar o novo subsistema de **Filters** do renderizador WebGL2 (**Beam Renderer**) no **Phaser 4.2.1**, garantindo atmosfera gótica imersiva e mantendo a taxa de 60 FPS no **Bloodmage 1995**.
 
 ---

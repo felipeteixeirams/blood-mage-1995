@@ -13,6 +13,7 @@
     },
     "contextPriority": [
       "CLAUDE.md",
+      "docs/AGENTS.md",
       ".claude/skills/",
       "docs/critical/",
       "docs/architecture/",

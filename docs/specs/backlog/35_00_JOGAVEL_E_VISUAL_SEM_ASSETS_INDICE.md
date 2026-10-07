@@ -62,7 +62,7 @@ tudo sem nenhum asset externo novo.
 | A13 | Quatro specs em `delivered/` afirmam comportamento que o runtime não tem: 23.01 (PostFX ativo em WebGL), 23.02 (normal map no `spr_bloodmage`), 23.03 (Light2D ativo), 25 fase B.2 (offset por chunk). Mesmo padrão "teste verde ≠ feature viva" já registrado em `08_JULES_SESSION_PROMPT.md` | A1, A6, A9 | 🟠 Alta (confiança na documentação) | changelog das specs afetadas (feito nesta data) |
 | A14 | Nenhum gate de teste roda automaticamente: `.husky/pre-commit` só roda `verify` (assets + typecheck + build, **sem testes**); `lint-staged`/`vitest related` configurado e nunca chamado; não há CI. `pnpm test` hoje: 574/574 em ~32 s | Leitura + execução | 🟠 Alta (processo) | 35.06 |
 | A15 | Só 23.x, 25, parte da 10 e a 13 foram verificadas em runtime nesta auditoria; ~25 specs em `delivered/` nunca tiveram verificação de execução registrada. `LightingPolish` (glows de feitiço/portal/boss) depende de `lights.active` e também está inerte | Leitura + execução | 🟡 Média (risco de divergências ocultas) | 35.07 (discovery) |
-| A16 | Documentação de gates contradiz a realidade: `CLAUDE.md` diz que `pnpm verify` roda testes (não roda); `03_TESTING_GATES.md` gate 4 ("sem chunks > 500 kB") é violado pelo build atual (`phaser-*.js` 1.387 kB) | Leitura + `pnpm run build` | 🟡 Média | 35.06 |
+| A16 | Documentação de gates contradiz a realidade: ~~`CLAUDE.md` diz que `pnpm verify` roda testes~~ (**corrigido em 2026-10-07** na separação `CLAUDE.md`/`docs/AGENTS.md`; o `AGENTS.md` da raiz também); `03_TESTING_GATES.md` gate 4 ("sem chunks > 500 kB") é violado pelo build atual (`phaser-*.js` 1.387 kB) | Leitura + `pnpm run build` | 🟡 Média | 35.06 |
 
 ### 3.1 O que os achados NÃO dizem
 
@@ -124,6 +124,8 @@ Pela Seção 6 de `05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md` ("o que NÃO é um
 | D7 | Leitura por bioma (`safe_house`, `gloomy_woods`) | 35.05 | — (bloqueia 35.05) |
 | D8 | Luz do jogador: centro ou topo do cajado | 35.03, 35.05 | Centro |
 | D9 | Apagar o `25_*` duplicado da raiz | 5.1 | Não apagar |
+| D10 | Seção "Git remoto" do `AGENTS.md` da raiz (push em `main` com token na URL do remote) — remover, reescrever ou manter | ADR 2026-10-07 em `07_DECISION_LOG.md` | Manter sem alteração; Claude Code não a segue |
+| D11 | Unificar `.claude/skills/`, `.agents/skills/` e `skills/` (3 cópias) | ADR 2026-10-07 | Manter; `.claude/skills/` é a referência |
 
 ## 6. Convenção EARS usada nos satélites
 

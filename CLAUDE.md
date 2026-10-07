@@ -1,92 +1,83 @@
 ---
-agent_context: all agents
+agent_context: Claude Code
 target_module: root
 priority: high
 status: active
-last_updated: 2026-09-28
-tags: [project-config, claude-code, architecture, conventions, honestidade-tecnica]
+last_updated: 2026-10-07
+tags: [claude-code, fluxo-de-trabalho, spec-driven, honestidade-tecnica, git, checklist]
 ---
 
-# 🎮 Bloodmage 1995 — Guia de Configuração Claude Code
+# 🎮 Bloodmage 1995 — Como Trabalhar com Claude Code
 
-Este arquivo orienta agentes Claude Code sobre como trabalhar com o projeto Bloodmage 1995 — um ARPG retro 2D inspirado em Diablo 1995 e Dungeon Siege, desenvolvido com Phaser 4.2.1 + React 19.
+Este arquivo define **como o Claude Code trabalha** neste repositório: ordem de leitura, fluxo
+spec-driven, padrão de honestidade nos relatórios, checklist de conclusão, comandos e Git.
 
-## 🎯 Visão Geral do Projeto
-
-**Tipo:** Roguelike ARPG solo em tempo real (Single-Player Action RPG)
-**Engine:** Phaser 4.2.1 (WebGL) + React 19 (HUD)
-**Estado:** MVP com 4 capítulos de campanha, sistema de habilidades, loot procedural, iluminação dinâmica 2D
-**Plataformas:** Web (PWA), Steam (via Electron)
-
-### Pilha Tecnológica
-- **Motor:** Phaser 4.2.1 (Arcade Physics + Light2D)
-- **Frontend HUD:** React 19 + TypeScript
-- **Estado:** Zustand 5 + Zod (validação)
-- **UI:** Tailwind CSS v4 + Radix UI + Shadcn UI
-- **Áudio:** Web Audio API (síntese procedural + samples)
-- **Build:** PNPM (monorepo)
+> **Contexto do projeto** (o que o jogo é, conceitos de domínio, mapa do código, guardrails
+> inegociáveis, padrões de estado e performance, onde está cada documento) **não está aqui** —
+> está em [`docs/AGENTS.md`](docs/AGENTS.md), o ponto de entrada da base documental.
+> Leia-o antes de qualquer tarefa. A fronteira entre os dois arquivos está na §7 dele.
 
 ---
 
-## 📂 Estrutura de Código
+## 🚨 Antes de Fazer Qualquer Mudança
 
-```
-src/
-├── components/          # React HUD (Modais, Menus, Overlays)
-├── data/               # Configurações JSON (monstros, mágias, talentos, etc)
-├── game/
-│   ├── objects/        # Entidades físicas (Player, Enemy, Projectile, etc)
-│   ├── scenes/         # Cenas Phaser (GameScene, MenuScene, etc)
-│   └── systems/        # Lógica desacoplada (Lighting, Combat, AI, etc)
-├── hooks/              # React Hooks customizados
-├── store/              # Zustand store (gameStore.ts)
-├── types/              # TypeScript tipos de domínio
-└── utils/              # Utilitários (soundEngine, logger, localStorage)
+### 1. Ordem de leitura
+1. **[`docs/AGENTS.md`](docs/AGENTS.md)** — contexto, guardrails 1–7, avisos de estado, mapa dos documentos.
+2. **[`docs/critical/01_CRITICAL_FILES.md`](docs/critical/01_CRITICAL_FILES.md)** — antes de tocar `Player.ts`, `Enemy.ts` ou `GameScene.ts` (MUST READ).
+3. **[`docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md`](docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md)** — antes de debugar render, áudio ou assets.
+4. **`docs/architecture/`** conforme a tarefa (`03_PHASER_PATTERNS.md` é crítico para performance; `04_STATE_MANAGEMENT.md` para a ponte React↔Phaser).
+5. **A spec relacionada** em `docs/specs/` (ver §3 abaixo) e a skill do domínio (§2).
 
-docs/
-├── architecture/       # Padrões técnicos (LEIA PRIMEIRO)
-├── critical/          # Anti-regressão e files críticos (LEIA ANTES DE MEXER)
-└── specs/             # Especificações de features
-```
+### 2. Skills (`.claude/skills/`)
+- `phaser-4-development`: WebGL2, baking pattern e shaders
+- `phaser-4-procedural-generation`: determinismo por seed (terreno/textura), autotiling por bitmask, normal maps, paleta/dithering e busca ativa na web quando a API do Phaser 4 for incerta
+- `phaser-4-animation-tweens`: animações, tweens encadeados e FSM de ataque
+- `phaser-4-physics-combat`: Arcade Physics, hitboxes e poda espacial
+- `phaser-4-fx-filters`: Beam Renderer, `enableFilters()`, auras e vinhetas
+- `phaser-4-playtest-harness`: verificação de runtime e testes de fumaça E2E
+- `phaser4-ref-*` (referência oficial do Phaser 4, importada de `phaserjs/phaser`): documentação do engine, complementar às skills próprias. Cobrem `particles`, `physics-arcade`, `input-keyboard-mouse-touch`, `audio-and-sound`, `time-and-timers`, `cameras`, `groups-and-containers`, `render-textures`, `scale-and-responsive`, `tweens`. São referência de API, não substituem os padrões do projeto (pooling, extract/delegate, Zustand bridge) — usar em conjunto com as `phaser-4-*` próprias, nunca no lugar delas.
 
----
+⚠️ **Duas skills oficiais do repo upstream NÃO foram instaladas de propósito:** `events-system` e `data-manager`. Ambas descrevem padrões nativos do Phaser (`EventEmitter`, `this.registry`, `sprite.setData()`) que competem diretamente com a ADR "Ponte Phaser↔React é 100% Zustand, zero CustomEvent" (`docs/architecture/07_DECISION_LOG.md`, 2026-08-25). Uso de eventos Phaser *internos* ao engine (`scene.events.on('shutdown', ...)`, animation-complete, física) continua permitido e necessário, mas não deve ser aprendido/instalado como skill, para não virar atalho de comunicação Phaser↔React nem estado paralelo ao Zustand. Se precisar desse padrão para algo puramente interno ao Phaser, consulte a documentação oficial sem instalar a skill.
 
-## 🚨 ANTES DE FAZER QUALQUER MUDANÇA
+> ⚠️ **Skills com snippets desatualizados:** `phaser-4-fx-filters` e `phaser-4-development` ensinam `renderer.isWebGL`, que **não existe** no Phaser 4.2.1 (use `renderer.type === Phaser.WEBGL`; para luz por objeto, `setLighting(true)`, não `setPipeline`). Ver `docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md` item 21.
 
-### 1. Leia Estes Arquivos (Ordem Crítica)
-1. **`docs/architecture/00_OVERVIEW.md`** — Visão arquitetural geral
-2. **`docs/architecture/01_TECH_STACK.md`** — Stack tecnológico
-3. **`docs/architecture/02_CODE_ORGANIZATION.md`** — Organização de código
-4. **`docs/architecture/03_PHASER_PATTERNS.md`** — Padrões do Phaser (⚠️ CRÍTICO para performance)
-5. **`docs/architecture/04_STATE_MANAGEMENT.md`** — Zustand + React ↔ Phaser bridge
-6. **`docs/critical/01_CRITICAL_FILES.md`** — Arquivos que NÃO se deve tocar (MUST READ)
-7. **`docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md`** — Bugs conhecidos e workarounds
-8. **`.claude/skills/` (Phaser 4.2.1 Skills Especializadas)**:
-   - `phaser-4-development/SKILL.md`: WebGL2, baking pattern e shaders
-   - `phaser-4-procedural-generation/SKILL.md`: Determinismo por seed (terreno/textura), autotiling por bitmask, normal maps, paleta/dithering e busca ativa na web quando a API do Phaser 4 for incerta
-   - `phaser-4-animation-tweens/SKILL.md`: Animações, tweens encadeados e FSM de ataque
-   - `phaser-4-physics-combat/SKILL.md`: Arcade Physics, hitboxes e poda espacial
-   - `phaser-4-fx-filters/SKILL.md`: Beam Renderer, `enableFilters()`, auras e vinhetas
-   - `phaser-4-playtest-harness/SKILL.md`: Verificação de runtime e testes de fumaça E2E
-   - `phaser4-ref-*` (Skills de Referência Oficial Phaser 4, importadas de `phaserjs/phaser`): documentação oficial do engine, complementares às skills próprias acima. Cobrem `particles`, `physics-arcade`, `input-keyboard-mouse-touch`, `audio-and-sound`, `time-and-timers`, `cameras`, `groups-and-containers`, `render-textures`, `scale-and-responsive`, `tweens`. São referência de API, não substituem os padrões do projeto (pooling, extract/delegate, Zustand bridge) — usar em conjunto com as skills `phaser-4-*` próprias, nunca no lugar delas.
-     ⚠️ **Duas skills oficiais do repo upstream NÃO foram instaladas de propósito:** `events-system` e `data-manager`. Ambas descrevem padrões nativos do Phaser (`EventEmitter`, `this.registry`, `sprite.setData()`) que competem diretamente com a ADR "Ponte Phaser↔React é 100% Zustand, zero CustomEvent" (`docs/architecture/07_DECISION_LOG.md`, 2026-08-25). Uso de eventos Phaser *internos* ao engine (`scene.events.on('shutdown', ...)`, animation-complete, física) continua permitido e necessário — isso não muda —, mas não deve ser aprendido/instalado como skill para evitar que vire atalho de comunicação Phaser↔React ou de estado paralelo ao Zustand. Se precisar desse padrão nativo para algo puramente interno ao Phaser, consulte a documentação oficial diretamente sem instalar a skill.
-
-### 2. Regras de Ouro
+### 3. Regras de ouro
 
 ✅ **SEMPRE:**
-- Verificar `docs/critical/01_CRITICAL_FILES.md` antes de mexer em `Player.ts`, `Enemy.ts`, ou `GameScene.ts`
-- Executar `pnpm verify` após cada mudança maior (sem acumular alterações)
-- Rodar suite de testes: `pnpm test` (devem passar 100%)
-- Seguir padrão de extração de métodos do `GameScene` (ver `03_PHASER_PATTERNS.md`)
+- Verificar `docs/critical/01_CRITICAL_FILES.md` antes de mexer em `Player.ts`, `Enemy.ts` ou `GameScene.ts`
+- Rodar `pnpm test` e `pnpm run verify` após cada mudança maior, sem acumular alterações (ver §6 para o que cada comando cobre)
+- Seguir o padrão Extract/Delegate ao mexer no `GameScene` (`docs/architecture/03_PHASER_PATTERNS.md`)
 - Documentar mudanças no changelog da spec correspondente
 
 ❌ **NUNCA:**
-- Modificar cálculos de física em `Player.ts` sem entender deeply (ver Critical Files)
-- Tocar na FSM de inimigos (`Enemy.ts` estados) sem validação profunda
-- Adicionar UI diretamente ao canvas Phaser (sempre usar React + Zustand bridge)
-- Usar `CustomEvent` ou `window.dispatchEvent` para gameplay (só Zustand)
+- Modificar cálculos de física em `Player.ts` sem entender a fundo (ver Critical Files)
+- Tocar na FSM de inimigos (`Enemy.ts`) sem validação profunda
+- Violar os guardrails 1–7 de `docs/AGENTS.md` — em especial UI no canvas Phaser (7), `CustomEvent`/`window.dispatchEvent` para gameplay (só Zustand), `localStorage` fora de `src/utils/localStorage.ts` (3) e edição de binários com ferramenta de texto (6)
 - Fazer alterações acumuladas sem rodar testes entre elas
-- Tratar uma spec de `docs/specs/discovery/` ou `scope-definition/` como requisito ativo — são hipóteses, não escopo aprovado (ver 📖 Documentação de Specs)
+- Tratar uma spec de `docs/specs/discovery/` ou `scope-definition/` como requisito ativo — são hipóteses, não escopo aprovado
+
+---
+
+## 🚦 Fluxo de Trabalho Spec-Driven
+
+Metodologia completa (modos, blueprint de spec, triagem de complexidade, gates):
+[`docs/architecture/05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md`](docs/architecture/05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md). O essencial:
+
+**Classifique o pedido antes de agir.** Nem toda interação exige especificação formal.
+
+| Modo | Gatilho | O que fazer |
+|---|---|---|
+| **Conversational** | Pergunta conceitual, brainstorm, opinião técnica | Responda direto e conciso. **Não** crie specs, arquivos em `docs/specs/` nem planos não pedidos |
+| **Architecture** | Tradeoffs, desenho de sistema/integração | Apresente prós/contras e alternativas pragmáticas. Mini-spec **só se pedida** |
+| **Spec-Driven** | Feature relevante, refatoração de vários módulos, mudança de persistência/arquitetura | Ciclo `Spec` → `Contract` → `Implementation` |
+
+**Antes de implementar algo relevante:** procure spec em `docs/specs/` (ver `specs/README.md`). A spec define o **o quê e o porquê**; `architecture/` define o **como e o estado atual**. Se não houver spec e o trabalho for Spec-Driven, crie uma incremental seguindo o Blueprint (`05_SPEC…` §6) — e só em `backlog/` se tiver profundidade técnica mínima; senão `scope-definition/`.
+
+**Ciclo de vida** (detalhe em `docs/AGENTS.md` §5): `discovery/` → `scope-definition/` → `backlog/` → `in-progress/` → `delivered/`; `rejected/`.
+- Só `backlog/` (pronta) e `in-progress/` são executáveis. Se um pedido citar uma spec de `discovery/`/`scope-definition/`, **confirme o escopo antes de codar** — documento antigo de proposta não é mandato silencioso.
+- Confira os gates de [`docs/specs/READINESS_GATES.md`](docs/specs/READINESS_GATES.md) antes de começar uma spec; "pega a próxima" resolve para a linha 1 executável da Fila de Prioridade de `docs/specs/README.md`.
+- **Gate de Entrega:** spec que muda render, cenas ou geração de mundo só vai para `delivered/` com **evidência de execução real** registrada no changelog (E2E/sonda em WebGL, screenshot ou leitura de `window.gameScene`) — `pnpm test` verde não basta.
+- Ao concluir: mover a spec de `in-progress/` para `delivered/`, registrar changelog (data + o que foi entregue) e referenciar os commits.
 
 ---
 
@@ -95,8 +86,10 @@ docs/
 > Gap real do projeto, não teórico: PRs com `pnpm test` 100% passando já esconderam
 > regressão visual que só apareceu na verificação ao vivo (PRs #80/#81), e um PR
 > chegou a duplicar código que já existia em `main` — só ficou claro comparando o
-> diff de verdade, não pelo status do PR (#89). Ver
-> `docs/architecture/08_JULES_SESSION_PROMPT.md`.
+> diff de verdade, não pelo status do PR (#89). Em 2026-10-07 a auditoria da Spec 35
+> achou Light2D/PostFX entregues com testes verdes e **inertes em runtime**
+> (mocks com propriedade que o engine não tem). Ver
+> `docs/architecture/08_JULES_SESSION_PROMPT.md` e `docs/specs/backlog/35_00_*`.
 
 Compilar, passar nos testes existentes e funcionar no "happy path" **não** significam que uma
 tarefa está pronta. Ao reportar o resultado de um trabalho, diferencie sempre:
@@ -143,100 +136,8 @@ silenciosa quando isso muda o resultado de forma relevante.
 Trate specs em `docs/specs/backlog/` ou `discovery/` como **ideias**, não requisitos ativos —
 só o que está em `in-progress/` ou o próprio código em produção reflete o estado real do jogo.
 O campo `status`/`progress` no frontmatter de uma spec pode estar desatualizado (specs
-`in-progress` já 100% implementadas são comuns neste projeto) — confirme contra o código antes
-de assumir que algo falta ou já existe.
-
-## ✅ Checklist Antes de Declarar uma Tarefa Concluída
-
-- [ ] Todos os requisitos explícitos do pedido foram atendidos? Alguma suposição foi feita
-      sem confirmação — e foi declarada?
-- [ ] `pnpm run typecheck`, `pnpm test -- --run` e `pnpm run build` rodaram e passaram?
-- [ ] Funcionalidades relacionadas continuam funcionando (sem regressão)?
-- [ ] Objetos/luzes/emissores/filtros criados são destruídos/limpos quando deixam de ser
-      necessários (lifecycle de cena, ObjectPool, `shutdown`/`destroy`)?
-- [ ] Fórmulas numéricas novas de combate/balance têm teste dedicado?
-- [ ] Funciona em touch/mobile e em proporções de tela diferentes, quando aplicável?
-- [ ] Releu o diff procurando de propósito por: bug, regressão, edge case, complexidade
-      desnecessária, problema de game feel/UX/performance?
-- [ ] O relatório final diz explicitamente o que foi validado (e como) e o que ficou como
-      "não validado"?
-
-Só depois de passar por isso é que a tarefa deve ser reportada como concluída.
-
----
-
-## 🔗 Arquitetura de Estado: Zustand ↔ Phaser
-
-O projeto usa **100% Zustand** para comunicação entre React e Phaser desde 25/08/2026.
-
-### Padrão: Comando + Reset (React → Phaser, baixa frequência)
-```typescript
-// Em React (ex: GameplayHUD.tsx)
-useGameStore.setState({ activeSkillTrigger: 'fireball' });
-
-// Em PhaserGame.tsx useEffect
-useEffect(() => {
-  if (store.activeSkillTrigger) {
-    gameScene?.castSkill(store.activeSkillTrigger);
-    store.setActiveSkillTrigger(null); // reset
-  }
-}, [store.activeSkillTrigger]);
-```
-
-### Padrão: Valor + Versão (qualquer direção, alta frequência)
-```typescript
-// Em Phaser (GameScene.ts)
-useGameStore.getState().setPlayerStats({hp: 45, mp: 80});
-
-// Em React (HUD)
-const {hp, mp} = useGameStore(s => ({hp: s.stats.hp, mp: s.stats.mp}));
-```
-
-**Nunca misture padrões.** Ver `docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md` para histórico completo.
-
----
-
-## 📊 Sistema de Estados: Zustand Schema
-
-### Campos Críticos (SINCRONIZAR VIA ZUSTAND)
-- `stats`: HP, MP, Level, XP (game loop → React em tempo real)
-- `inventory`: Equipamentos, loot
-- `talentTree`: Estado de habilidades desbloqueadas
-- `runStats`: Kills, dano, conquistas (para avaliação de achievements)
-- `achievementUnlocks`: Sistema de prêmios automático
-
-Ver `src/store/gameStore.ts` para tipo Zod completo.
-
----
-
-## ⚡ Padrões de Performance
-
-### 1. **Object Pooling**
-Projéteis, efeitos, danos flutuantes são reciclados via `Phaser.GameObjects.Group`.
-**Nunca** crie novos objetos no loop de update sem pooling.
-
-### 2. **Spatial Pruning (AI)**
-Inimigos filtram por distância quadrática antes de raycasting.
-```typescript
-// ❌ RUIM: Raycasting em 20 inimigos = lag
-enemies.forEach(e => e.hasLineOfSight(player));
-
-// ✅ BOM: Filtrar por distância quadrática primeiro
-enemies
-  .filter(e => e.distanceSquaredTo(player) < 90000) // ~300px
-  .forEach(e => e.hasLineOfSight(player));
-```
-
-### 3. **Culling de Câmera**
-Objetos fora da viewport são desativados automaticamente.
-
-### 4. **60 FPS Target**
-- Phaser/Arcade Physics roda a 60 FPS fixo
-- WebGL rendering otimizado
-- Fallback automático para Canvas mode se WebGL falhar
-- Light2D pipeline com fallback para `darknessOverlay` em Canvas ou `postProcessingEnabled=false`
-
----
+`in-progress` já 100% implementadas são comuns neste projeto; specs `delivered/` com efeito
+ausente em runtime também) — confirme contra o código antes de assumir que algo falta ou já existe.
 
 ## 🎮 Qualidade de Jogo: Gameplay, Game Feel & UX
 
@@ -246,204 +147,80 @@ tamanho da mudança, não é checklist obrigatório pra todo PR pequeno — aval
 
 - **Game Feel:** resposta de controles, timing de animação, feedback de acerto/dano — ver `phaser-4-animation-tweens/SKILL.md` (FSM Windup-Strike-Recovery) e `phaser-4-fx-filters/SKILL.md` (glow/vignette como feedback funcional, não decoração gratuita)
 - **UX Mobile:** touch funciona? Legível em tela pequena? Joystick não quebra (ver bug conhecido de floating/fixed em `docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md`)?
-- **Gameplay consistente:** a mecânica nova respeita as regras já estabelecidas (ex: Hemomancer gasta HP, não mana)? Não introduz comportamento indesejado (ex: dano por contato passivo indevido — ver `phaser-4-physics-combat/SKILL.md`)?
-- **Performance real, não presumida:** não afirme "está performático" sem profiling (ver 🔍 Debugging & Observability abaixo) — especialmente em waves 5+ (pico conhecido, ver Bugs Conhecidos)
+- **Gameplay consistente:** a mecânica nova respeita as regras já estabelecidas (ex: Hemomancer gasta HP, não mana)? Não introduz comportamento indesejado (ex: dano por contato passivo indevido — guardrail 2 e `phaser-4-physics-combat/SKILL.md`)?
+- **Performance real, não presumida:** não afirme "está performático" sem profiling — especialmente em waves 5+ (pico conhecido, ver Bugs Conhecidos)
 
 Não adicione efeito visual/sonoro só para "ficar bonito" — deve ter propósito
 funcional (feedback de dano, telegraph de ataque, leitura de estado) alinhado ao
-tom gótico-sério do jogo. Efeito sem função é ruído visual, não polish.
+tom gótico-sério do jogo. Efeito sem função é ruído visual, não polish. Não altere
+cor/intensidade de iluminação sem testar em múltiplos biomas.
+
+## ✅ Checklist Antes de Declarar uma Tarefa Concluída
+
+- [ ] Todos os requisitos explícitos do pedido foram atendidos? Alguma suposição foi feita
+      sem confirmação — e foi declarada?
+- [ ] `pnpm run typecheck`, `pnpm test` e `pnpm run build` rodaram e passaram?
+- [ ] Mudança em render/cena/geração de mundo: há **evidência de execução real** (E2E, sonda ou
+      screenshot em WebGL), não só teste unitário?
+- [ ] Funcionalidades relacionadas continuam funcionando (sem regressão)?
+- [ ] Objetos/luzes/emissores/filtros criados são destruídos/limpos quando deixam de ser
+      necessários (lifecycle de cena, ObjectPool, `shutdown`/`destroy`)?
+- [ ] Fórmulas numéricas novas de combate/balance têm teste dedicado?
+- [ ] Funciona em touch/mobile e em proporções de tela diferentes, quando aplicável?
+- [ ] Releu o diff procurando de propósito por: bug, regressão, edge case, complexidade
+      desnecessária, problema de game feel/UX/performance?
+- [ ] Mocks de teste do engine usam só propriedades que existem em `node_modules/phaser/src`?
+- [ ] O relatório final diz explicitamente o que foi validado (e como) e o que ficou como
+      "não validado"?
+
+Só depois de passar por isso é que a tarefa deve ser reportada como concluída.
 
 ---
 
-## 🎓 Padrões Phaser Comuns
+## 🧪 Testes e Comandos
 
-### Extract/Delegate do GameScene
-`GameScene.ts` foi quebrado em sistemas desacoplados. Ao adicionar nova lógica:
+| Comando | O que faz de fato (conforme `package.json`) |
+|---|---|
+| `pnpm test` | Vitest — suíte unitária (`vitest run`) |
+| `pnpm run typecheck` | `tsc --noEmit` do projeto |
+| `pnpm run build` | Build de produção (Vite) |
+| `pnpm run verify` | `verify-assets.cjs` + typecheck + build. **Não roda testes.** É o que o hook `pre-commit` executa (`npm run verify`) |
+| `pnpm run verify:all` | typecheck + `typecheck:game` + testes |
+| `pnpm e2e` / `pnpm e2e:update` | Playwright (usa o dev server); `e2e:update` regrava os snapshots |
+| `pnpm test:coverage` | Cobertura |
 
-1. **Ampliar visibilidade** de campos necessários: `private` → `public` com comentário `// public: usado por NomeDaClasse`
-2. **Mover o corpo** para nova classe com `constructor(private scene: GameScene)`
-3. **Substituir por wrapper fino** que delega, preservando nome/assinatura exatos
-4. **Instanciar em `create()`** respeitando ordem de dependências
-5. **Rodar `pnpm verify`** a cada extração (não acumular)
+> Corrigido em 2026-10-07: versões anteriores deste arquivo e do `AGENTS.md` diziam que
+> `verify` roda testes e citavam `pnpm test:ui`/`pnpm test:e2e`, que não existem.
+> Automação de gates (testes no hook, CI, `e2e:smoke`): specs `35.02` e `35.06`.
 
-Sistemas já extraídos: `PlayerSkillSystem`, `CollisionHandlers`, `DungeonFlowController`, `ScavengingSystem`, `CombatEffectsSystem`.
+**Padrão de testes:** mudança em `.ts` de lógica crítica leva teste de regressão; `describe`/`it`
+com nomes descritivos (pt ou en); exemplo: `VirtualJoystickSystem.test.ts` cobre o bug de
+joystick floating/fixed. **Mocks do engine devem espelhar a API real do Phaser 4** (ver item 21 do troubleshooting).
 
----
-
-## 🎨 Sistema de Iluminação Dinâmica 2D
-
-### Light2D Pipeline (Spec 23.03 - COMPLETO)
-- `LightingSystem.ts`: Gerencia `ambientColor` por bioma, ponto de luz do jogador
-- `LightingPolish.ts`: Glow/bloom em feitiços, itens raros, portais, bosses
-- Fallback automático: Canvas mode ou `postProcessingEnabled=false` → `darknessOverlay`
-
-**Não altere** valores de cor/intensidade sem testar em múltiplos biomas (Catacumbas = frio espectral, Santuário = rubro).
+**Chromium em ambiente de nuvem:** já vem em `/opt/pw-browsers` — não rode `playwright install`; para WebGL headless use os flags `--use-gl=angle --use-angle=swiftshader`.
 
 ---
 
-## 📖 Documentação de Specs
+## 📝 Git
 
-Cada spec segue estrutura padrão:
-```yaml
----
-agent_context: [backend|frontend|all]
-target_module: [src/... ou root]
-priority: [high|medium|low]
-status: [active|completed|on-hold]
-last_updated: YYYY-MM-DD
-tags: [categoria, subcategoria]
----
+### Convenção de commits
 ```
-
-### Localização de Specs
-- **Ativas/In Progress:** `docs/specs/in-progress/`
-- **Entregues:** `docs/specs/delivered/`
-- **Backlog:** `docs/specs/backlog/` — pronta pra implementação imediata (0% código, escopo 100% definido)
-- **Escopo em Definição:** `docs/specs/scope-definition/` — proposta real, mas falta decisão de produto/critério de aceite
-- **Discovery (pesquisa):** `docs/specs/discovery/` — pesquisa exploratória, sem compromisso de entrega
-- **Rejeitadas:** `docs/specs/rejected/`
-
-> ⚠️ **`scope-definition/` e `discovery/` são hipóteses, não requisito ativo.**
-> Nunca implemente a partir delas sem a spec ter sido promovida pra `backlog/`
-> (ver Seção 6 de `docs/architecture/05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md`).
-> Se um pedido referenciar uma delas diretamente, confirme o escopo antes de
-> codificar — documento antigo de proposta não é mandato silencioso.
-
-Ao completar uma feature:
-1. Mover spec de `in-progress/` para `delivered/`
-2. Adicionar changelog entry com data e o que foi entregue
-3. Referenciar commits relacionados
-
----
-
-## 🧪 Testes e Validação
-
-### Rodar Suite Completa
-```bash
-pnpm verify        # Lint + type check + test
-pnpm test         # Vitest suite
-pnpm test:ui      # Dashboard interativo
+feat: <feature>      fix: <bug corrigido>       docs: <documentação>
+refactor: <sem mudar comportamento>   perf: <otimização>   test: <testes>
 ```
+Use escopo quando ajudar (`docs(specs): …`, `fix(campaign): …`).
 
-### Padrão de Testes
-- Cada mudança em `.ts` responsável por lógica crítica deve ter regressão test
-- Usar `describe`/`it` com nomes descritivos (português ou inglês)
-- Exemplo: `VirtualJoystickSystem.test.ts` tem testes para bug de joystick floating/fixed
+### Branch designada e procedimento
+Desenvolver em `claude/frentes-atuacao-projeto-qypbg3`:
+1. `git fetch origin claude/frentes-atuacao-projeto-qypbg3`
+2. `git checkout claude/frentes-atuacao-projeto-qypbg3`
+3. Trabalhar e commitar com mensagens claras (o hook roda `pnpm run verify`)
+4. `git push -u origin claude/frentes-atuacao-projeto-qypbg3`
+5. **NÃO abrir PR** a menos que explicitamente solicitado. Nunca commitar em `main` sem autorização.
 
----
-
-## 🐛 Bugs Conhecidos e Workarounds
-
-Ver `docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md` para lista completa de:
-- Joystick behavior em mobile (fixed vs floating)
-- Dialogue tree hardcoding (usar helpers como `getMaelenDialogueTreeId()`)
-- Performance spikes em wave 5+ (culling, pooling mitigation)
-- Dark mode + Light2D interactions
-
-Sempre consulte antes de abrir novo issue.
-
----
-
-## 📝 Commits e Workflow Git
-
-### Convenção de Commits
-```
-feat: <descrição curta da feature>
-fix: <descrição do bug corrigido>
-docs: <atualização de documentação>
-refactor: <reorganização sem alterar behavior>
-perf: <otimização>
-test: <adição/correção de testes>
-```
-
-### Branch Designada
-Desenvolver na branch: `claude/frentes-atuacao-projeto-qypbg3`
-
-### Procedure
-1. Fetch da branch: `git fetch origin claude/frentes-atuacao-projeto-qypbg3`
-2. Checkout: `git checkout claude/frentes-atuacao-projeto-qypbg3`
-3. Trabalhar, commit com mensagens claras
-4. Push: `git push -u origin claude/frentes-atuacao-projeto-qypbg3`
-5. **NÃO abrir PR** a menos que explicitamente solicitado
-
----
-
-## 🔑 Conceitos-Chave a Compreender
-
-### 1. **Bloodmage (Personagem Principal)**
-- Classe: Mago de sangue (Hemomancer)
-- Mecânica: Casting de feitiços com custo de vida (não mana clássica)
-- Staff: Cajado com pulso carmesim dinâmico no topo (light effect)
-- Movimento: Aceleração gradual tipo Dungeon Siege (não movimento instantâneo)
-
-### 2. **Árvore de Talentos Hemomancia**
-- Sistema de progressão baseado em Skilltree (tipo Diablo)
-- Talentos desbloqueados = cristais de sangue credenciados via achievements
-- Estado persistido em Zustand + localStorage
-
-### 3. **Campanha de 4 Capítulos**
-- Cap 1: Santuário (intro + tutorial)
-- Cap 2: Catacumbas (exploração, lore)
-- Cap 3: Cripta Ancestral
-- Cap 4: Câmara de Ritual
-- Cada capítulo = dialogue tree + quests + loot progression
-
-### 4. **Safe House (Hub)**
-- Espaço seguro entre runs
-- NPCs com dialogue trees (Maelen = guia principal)
-- Acesso a Talent Tree, Inventory, Settings
-- Usa sistema de dialogue IDs parametrizados (ex: `getMaelenDialogueTreeId()`)
-
----
-
-## 🎮 Entidades Principais
-
-| Entidade | Arquivo | Papel |
-|----------|---------|-------|
-| Player | `src/game/objects/Player.ts` | Personagem do jogador, physics, HP |
-| Enemy | `src/game/objects/Enemy.ts` | IA com FSM 6-estado |
-| Projectile | `src/game/objects/Projectile.ts` | Feitiços, pooled |
-| Trap | `src/game/objects/Trap.ts` | Armadilhas procedurais |
-| Scavengeable | `src/game/objects/Scavengeable.ts` | Objetos interativos (barris, etc) |
-| Collectible | `src/game/objects/Collectible.ts` | Loot, XP orbs, pooled |
-
----
-
-## 🔍 Debugging & Observability
-
-### Logger Global
-```typescript
-import { logger } from '@/utils/logger';
-logger.info('GameScene', 'Player spawned at', {x, y});
-logger.warn('LootSystem', 'Rare drop', {itemId});
-logger.error('CombatSystem', 'Critical error', {error});
-```
-
-### DevTools
-- React DevTools browser extension
-- Zustand DevTools middleware (se habilitado)
-- Phaser Debug mode: `?debug=true` na URL
-
-### Performance Profiling
-- Chrome DevTools → Performance tab
-- Target 60 FPS steadily
-- Watch para GC stutters (object pooling falha)
-
----
-
-## 🤖 Como Este Arquivo Guia Claude Code
-
-Este `CLAUDE.md` orienta agentes Claude para:
-
-1. **Contexto Imediato:** Entender que este é um ARPG Phaser + React, não um jogo casual simples
-2. **Segurança:** Identificar arquivos críticos antes de tocar (Player.ts, Enemy.ts, GameScene.ts)
-3. **Performance:** Aplicar padrões de pooling, spatial pruning, culling automaticamente
-4. **Arquitetura:** Respeitar fluxo 100% Zustand para comunicação Phaser ↔ React
-5. **Documentação:** Correlacionar trabalho com specs do projeto (mas nunca tratar `discovery/`/`scope-definition/` como mandato), manter changelog
-6. **Testing:** Validar com `pnpm verify` antes de finalizar
-7. **Workflow:** Desenvolver na branch designada, nunca em main sem autorização
-8. **Honestidade:** Reportar o que foi validado vs. não validado — nunca inflar sucesso porque "compilou e testou" (ver 🎓 Honestidade Técnica e Avaliação Crítica)
-9. **Qualidade de Jogo:** Avaliar game feel/UX mobile/gameplay, não só "está sem erro" (ver 🎮 Qualidade de Jogo)
+> ⚠️ O `AGENTS.md` da raiz ainda traz um procedimento de push para `main` com token pessoal
+> embutido na URL do remote. **Para Claude Code vale este arquivo**, não aquele: nunca grave
+> token na URL do remote nem faça push para `main`.
 
 ---
 
@@ -457,36 +234,15 @@ Este `CLAUDE.md` orienta agentes Claude para:
 - ❌ Breaking change em arquivos críticos (`Player.ts`, `Enemy.ts`, `GameScene.ts`)
 - ❌ Dúvida sobre integridade de estado (Zustand ↔ Phaser)
 - ❌ Mudança que afeta persistência/save data (`localStorage`, futura Cloud Save)
-- ❌ Pedido que parece conflitar com um guardrail em `docs/critical/` ou com uma decisão já registrada em `docs/architecture/07_DECISION_LOG.md`
+- ❌ Pedido que parece conflitar com um guardrail em `docs/AGENTS.md` / `docs/critical/` ou com uma decisão já registrada em `docs/architecture/07_DECISION_LOG.md`
 
-Isso complementa (não repete) a seção 🧠 Antes de Implementar uma Mudança
-Significativa acima: aqueles 8 pontos valem pra qualquer mudança de porte real;
-os gatilhos aqui em cima são o que especificamente exige parar e falar com o
-Felipe **antes de commitar**, não só questionar internamente antes de codar.
-Escale o rigor ao tamanho real do risco — não é necessário para tarefas
-pequenas e bem escopadas (ex: specs Jules-ready de baixa criticidade como
-normal maps ou fixes de determinismo).
+Isso complementa (não repete) a seção 🧠 Antes de Implementar uma Mudança Significativa:
+aqueles 8 pontos valem pra qualquer mudança de porte real; os gatilhos acima são o que
+especificamente exige parar e falar com o Felipe **antes de commitar**, não só questionar
+internamente antes de codar. Escale o rigor ao tamanho real do risco — não é necessário para
+tarefas pequenas e bem escopadas (ex: specs de baixa criticidade como normal maps ou fixes de determinismo).
 
 ---
 
-## 📚 Referência Rápida de Documentos
-
-| Doc | Propósito |
-|-----|-----------|
-| `docs/architecture/00_OVERVIEW.md` | Big picture da arquitetura |
-| `docs/architecture/03_PHASER_PATTERNS.md` | Padrões obrigatórios (pooling, spatial pruning, extract/delegate) |
-| `docs/critical/01_CRITICAL_FILES.md` | Arquivos que podem quebrar o jogo |
-| `docs/critical/02_PERFORMANCE_OPTIMIZATION.md` | Otimizações validadas |
-| `docs/critical/03_TESTING_GATES.md` | Requisitos de testes antes de merge |
-| `docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md` | Bugs e workarounds |
-| `docs/architecture/07_DECISION_LOG.md` | Por que decisões arquiteturais grandes foram tomadas (ADR-lite) |
-| `docs/architecture/08_JULES_SESSION_PROMPT.md` | Histórico de falhas reais que motivaram a seção 🎓 Honestidade Técnica |
-| `docs/specs/in-progress/` | Features em desenvolvimento |
-| `docs/specs/delivered/` | Features completadas com changelog |
-
----
-
-**Última atualização:** 2026-09-28  
-**Versão:** 1.2 (reconciliação com main/PR#121 — honestidade técnica consolidada de duas fontes independentes + 🎮 Qualidade de Jogo)  
-**Status:** Ativo e em uso por agentes Claude Code
-
+**Última atualização:** 2026-10-07
+**Versão:** 2.0 — separação de papéis: contexto do projeto → `docs/AGENTS.md`; fluxo de trabalho com Claude Code → este arquivo

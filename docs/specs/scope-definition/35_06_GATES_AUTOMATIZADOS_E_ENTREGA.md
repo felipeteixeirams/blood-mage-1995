@@ -27,7 +27,7 @@ Medido em 2026-10-07 nesta branch:
 | `.github/workflows/` | **não existe** |
 | `pnpm test` | 57 arquivos, **574/574** passando, ~32 s (container de nuvem) |
 | E2E (`tests/e2e/*.spec.ts`, 5 arquivos) | só rodam manualmente com `pnpm e2e` |
-| `CLAUDE.md` §Testes | afirma "`pnpm verify` # Lint + type check + test" — **incorreto** |
+| `CLAUDE.md` §Testes | afirmava "`pnpm verify` # Lint + type check + test" — **incorreto; corrigido em 2026-10-07** (tabela de comandos reescrita conforme `package.json`) |
 | `03_TESTING_GATES.md` gate 4 | "Vite não deve reclamar de chunks > 500 kB" — **violado hoje**: `phaser-*.js` 1.387 kB, `vendor-*.js` 438 kB (o build emite o aviso) |
 | `05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md` §5 | lista assets/typecheck/test/build — **nenhum gate de execução real** |
 
@@ -65,7 +65,7 @@ runtime obrigatória para mudanças de render, sem documentação contraditória
 | R35.06-02 | **ONDE** o CI for aprovado ⏳, **QUANDO** houver push ou PR para `main`, o workflow **DEVE** rodar `pnpm run typecheck`, `pnpm test -- --run`, `pnpm run build` e `pnpm e2e:smoke`, e **DEVE** falhar se qualquer um falhar. | execução do workflow |
 | R35.06-03 | **SE** o CI não for aprovado, **ENTÃO** `03_TESTING_GATES.md` **DEVE** listar `pnpm e2e:smoke` como passo manual obrigatório antes de merge de mudanças em `src/game/scenes`, `src/game/systems` ou `src/utils/textureGenerator.ts`. | revisão do doc |
 | R35.06-04 | **QUANDO** uma spec que altera render, cenas ou geração de mundo for movida para `delivered/`, o changelog dela **DEVE** conter evidência de execução real (sonda/E2E em WebGL, screenshot ou leitura de `window.gameScene`). | checklist em `05_SPEC…` §5 e `CLAUDE.md` |
-| R35.06-05 | O `CLAUDE.md` **DEVE** descrever `pnpm verify` exatamente como `package.json` o define. | revisão do doc |
+| R35.06-05 | O `CLAUDE.md` **DEVE** descrever `pnpm verify` exatamente como `package.json` o define. | ✅ **Atendido em 2026-10-07** (`CLAUDE.md` §Testes e Comandos; também corrigido no `AGENTS.md` da raiz). Manter sincronizado se `package.json` mudar |
 | R35.06-06 | `03_TESTING_GATES.md` **NÃO DEVE** conter gate que o build atual viola sem exceção documentada (gate 4). | `pnpm run build` sem aviso **ou** exceção registrada |
 | R35.06-07 | **SE** um teste mockar o renderer do Phaser, **ENTÃO** o mock **DEVE** usar apenas propriedades existentes em `node_modules/phaser/src` (ex.: `type`, não `isWebGL`). | revisão + regra em `03_TESTING_GATES.md` |
 
@@ -79,8 +79,8 @@ runtime obrigatória para mudanças de render, sem documentação contraditória
 
 ## 6. Critério para sair de `scope-definition/`
 
-As 3 decisões de §5 respondidas. A partir daí, R35.06-01/03/04/05/06/07 são
-executáveis em menos de um dia; R35.06-02 depende de 35.02 entregue.
+As 3 decisões de §5 respondidas. A partir daí, R35.06-01/03/04/06/07 são
+executáveis em menos de um dia (R35.06-05 já foi atendido; R35.06-04 e o aviso de mock já constam no checklist do `CLAUDE.md`, falta o gate no `05_SPEC…` §5 e no `03_TESTING_GATES.md`); R35.06-02 depende de 35.02 entregue.
 
 ## 7. Referências
 
@@ -91,4 +91,5 @@ executáveis em menos de um dia; R35.06-02 depende de 35.02 entregue.
 
 | Data | O que mudou | Autor |
 |------|-------------|-------|
+| 2026-10-07 | R35.06-05 atendido junto com a separação `CLAUDE.md`/`docs/AGENTS.md` (ver ADR em `07_DECISION_LOG.md`) | Claude |
 | 2026-10-07 | Criação: hook sem testes, CI inexistente, `CLAUDE.md` descreve `verify` errado, gate 4 violado, Gate de Entrega só em `READINESS_GATES.md` | Claude |

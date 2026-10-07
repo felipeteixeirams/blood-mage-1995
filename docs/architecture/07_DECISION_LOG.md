@@ -3,7 +3,7 @@ agent_context: all
 target_module: root
 priority: media
 status: active
-last_updated: 2026-09-06
+last_updated: 2026-10-07
 tags: [architecture, adr, decision-log, governanca]
 ---
 
@@ -26,6 +26,16 @@ afetam como código futuro deve ser escrito merecem entrada aqui — não é
 changelog de features. Formato: data, título curto, Contexto (o problema),
 Decisão (o que foi escolhido e por quê), Consequências (o que isso implica
 pra quem mexer no código depois).
+
+---
+
+### 2026-10-07 — Base Documental Separada em Contexto (`docs/AGENTS.md`) e Fluxo de Trabalho (`CLAUDE.md`)
+
+**Contexto:** três arquivos disputavam o papel de "ponto de entrada": `AGENTS.md` na raiz (guardrails + regras de modo + procedimento Git), `docs/AGENTS.md` (navegação) e `CLAUDE.md` (492 linhas misturando contexto do projeto — stack, domínio, padrões de estado — com fluxo de trabalho — honestidade técnica, checklist, Git). Consequências medidas: a convenção de estado Zustand ("Comando + Reset"/"Valor + Versão") e os conceitos de domínio existiam **só** no `CLAUDE.md`, invisíveis a Jules/AI Studio/Codex; `CLAUDE.md` e `AGENTS.md` afirmavam que `pnpm verify` roda testes (não roda) e citavam `pnpm test:ui`/`test:e2e` (inexistentes); `?debug=true` era citado e não existe no código.
+
+**Decisão:** (1) `docs/AGENTS.md` é o **ponto de entrada do contexto do projeto**, agnóstico de ferramenta: visão, domínio, mapa do código, **guardrails 1–7 com numeração estável e texto movido sem alteração**, padrões de estado/performance, convenções de docs, tabela "onde está cada coisa". (2) `CLAUDE.md` passa a tratar **só de como trabalhar com Claude Code**: ordem de leitura, skills, fluxo spec-driven, honestidade técnica, perguntas pré-implementação, checklist, comandos, Git, escalonamento. (3) `AGENTS.md` da raiz vira **ponteiro fino** com índice dos guardrails, porque ferramentas externas ainda leem esse caminho. Regra: cada fato mora em um lugar; os demais linkam.
+
+**Consequências:** guardrails continuam citáveis como "Guardrail #7"/"Regra 6b" (specs, skills e comentários de código não mudam). Mudança de regra do projeto → `docs/AGENTS.md`; mudança de fluxo de trabalho → `CLAUDE.md`. **Pendente de decisão do Felipe:** a seção "Git remoto" do `AGENTS.md` da raiz (push para `main` com token pessoal gravado na URL do remote) conflita com o fluxo de `CLAUDE.md` e foi preservada sem alteração por poder ser usada por ferramentas externas; Claude Code não a segue. Também pendente: `.claude/skills/` (16 skills), `.agents/skills/` (5) e `skills/` (5 + `spritecook-integration`) mantêm cópias separadas das mesmas skills; hoje as comuns estão idênticas (sincronizadas em 2026-10-07 ao propagar o aviso sobre `renderer.isWebGL`), mas nada impede nova divergência.
 
 ---
 

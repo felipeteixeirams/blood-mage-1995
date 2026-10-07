@@ -1,5 +1,7 @@
 # 📚 Base de Conhecimento e Mapa do Projeto (Bloodmage 1995)
 
+> **Ponto de entrada:** [`AGENTS.md`](./AGENTS.md) (contexto do projeto, guardrails, mapa do código). Este arquivo é o **índice mestre** que ele referencia. Fluxo de trabalho com Claude Code: [`../CLAUDE.md`](../CLAUDE.md).
+
 > **MANDATO PARA AGENTES IA:** 
 > O *Bloodmage 1995* opera em **Spec-Driven Mode restrito** associado a **Context-Driven Engineering**.
 > 
@@ -61,9 +63,7 @@ O que testamos e estamos validando. Hipóteses orientadas a *Game Feel* e reten�
 Index mestre: `docs/specs/README.md`
 
 #### 🟡 Em Andamento (`docs/specs/in-progress/`)
-* `docs/specs/in-progress/03_FASE3_STATUS_SOBREVIVENCIA.md` - **Fase 3:** Status de Sobrevivência (sangramento/veneno/infecção) — só falta QA manual.
-* `docs/specs/in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md` - **Fase 5:** Polimento de Produção, PWA e Builds Electron/Steam — só falta i18n.
-* `docs/specs/in-progress/25_MUNDO_CONTINUO_CHUNK_STREAMING.md` - Mundo Contínuo via Chunk Streaming — só falta Fase C (transições sem corte).
+* Nenhuma spec ativa em 2026-10-07 (a pasta só tem o arquivo `_ARCHIVED_*`). As antigas 03 (Status de Sobrevivência), 05 (Polimento/PWA/Steam) e 25 (Chunk Streaming) estão em `docs/specs/delivered/`. Estado atual e fila: `docs/specs/README.md`.
 
 #### 🟢 Entregues / Concluídas (`docs/specs/delivered/`)
 * `docs/specs/delivered/28_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md` - **Spec 28:** Padronização de Modais Secundários, Navegação Gamepad & Retratos Rúnicos.
@@ -83,10 +83,10 @@ Index mestre: `docs/specs/README.md`
 * `docs/specs/delivered/24_EVOLUCAO_GRAFICA_AUDIO_QUICKWINS_E_ROADMAP.md` - **Spec 24:** Índice Mestre de Evolução Gráfica e Áudio (Satélites 24.01 a 24.03: QuickWins, Ragdolls, Fear Distortion e Threat Tinnitus).
 
 #### 🔵 Propostas & Backlog (`docs/specs/backlog/`)
-* `docs/specs/backlog/` - Especificações prontas para implementação imediata (escopo 100% definido): Prestígio (modal de UI), Mapeamento de Sprites, Guia PixelLab, Atmosfera & Tensão, Contratos & Quests, Toggle de Conteúdo, Poisson Disk, Normal Map de Porta, Cloud Save, HUD residual.
+* `docs/specs/backlog/` - Especificações prontas para implementação (escopo 100% definido): **Spec 35** (jogável e visual sem assets: gate E2E, Light2D/PostFX real, normal map do jogador, chunks), Mapeamento de Sprites (08), Guia PixelLab (32), Cloud Save (29). Fila e bloqueios: `docs/specs/README.md`, `docs/specs/DEPENDENCY_GRAPH.md`.
 
 #### 🟠 Escopo em Definição (`docs/specs/scope-definition/`)
-* `docs/specs/scope-definition/` - Propostas reais que ainda não batem a barra técnica mínima de `backlog/` (Eventos Mundiais e Sazonais, Topologia de Mundo Contínuo/`gloomy_woods`).
+* `docs/specs/scope-definition/` - Propostas reais que ainda não batem a barra técnica mínima de `backlog/` (Eventos Mundiais e Sazonais, Topologia de Mundo Contínuo/`gloomy_woods`, calibração visual pós-religação 35.05, gates automatizados 35.06).
 
 #### 💡 Discoveries & Spikes (`docs/specs/discovery/`)
 * `docs/specs/discovery/` - Pesquisas exploratórias, avaliações arquiteturais (Phaser 4.2.1, UI externa, pipeline de assets externos, P2P WebRTC, AI art pipeline e Store wrappers).
@@ -118,5 +118,5 @@ Specs originais, planos passados e documentação desatualizada. **Não use como
 1. **Evite Alterações Massivas:** Se um arquivo tiver >400 linhas, faça edições cirúrgicas. Nunca reescreva o arquivo inteiro.
 2. **Evite Acoplamento Precoce:** Não adicione código para lidar com Auth, Firebase, Supabase ou Cloud Save. 
 3. **Mantenha o Fallback:** Sempre que adicionar assets, utilize os scripts híbridos de fallback.
-4. **Isolamento de React e Phaser:** A comunicação React <-> Phaser se dá por eventos (Event Bus) e Zustand Store. Não passe instâncias do React para o Phaser nem vice-versa.
+4. **Isolamento de React e Phaser:** A comunicação React <-> Phaser é 100% Zustand Store (sem `CustomEvent`/Event Bus para gameplay — ADR de 2026-08-25). Não passe instâncias do React para o Phaser nem vice-versa.
 5. **Filtro de Sucesso Mobile Mandatório:** Toda nova proposta ou spec de feature deve passar pelo filtro de `docs/product/00_MOBILE_FIRST_SUCCESS_BIBLE.md` (Time to Fun <10s, impacto em D1/D7/D30, ergonomia touch e 60 FPS).
