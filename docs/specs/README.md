@@ -48,7 +48,7 @@ Implementado em **2026-10-05**: Sistema de gates de prontidão e mapa de depend�
 - **[🔗 DEPENDENCY_MAP.yaml](./DEPENDENCY_MAP.yaml)**: Fonte de verdade central para bloqueadores e relacionamentos entre specs
 
 **Resumo Rápido (2026-10-07 — regenerar com `python3 scripts/specs-dependency-graph.py`):**
-- 2 prontas (35.00 índice, 35.02 gate E2E) · 9 bloqueadas (4 em cadeia da Spec 35, 5 por decisão/insumo externo) · 1 pendência de organização (arquivo `25_*` solto na raiz, duplicata de `delivered/28`)
+- 2 prontas (35.00 índice, 35.02 gate E2E) · 10 bloqueadas (4 em cadeia da Spec 35, 6 por decisão/insumo externo) · discovery nova: [`35_07`](./discovery/35_07_AUDITORIA_RUNTIME_SPECS_ENTREGUES.md) (auditoria de runtime das specs entregues) · 1 pendência de organização (arquivo `25_*` solto na raiz, duplicata de `delivered/28`)
 - ⚠️ A versão de 2026-10-05 deste resumo ("12 prontas") estava errada: foi montada a partir de outra branch e contava specs entregues/discovery como abertas.
 
 > 🔴 **Spec 35 (2026-10-07):** auditoria com execução real mostrou que Light2D e
@@ -139,6 +139,7 @@ Implementado em **2026-10-05**: Sistema de gates de prontidão e mapa de depend�
 |---|---|---|---|
 | **[`scope-definition/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./scope-definition/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md)** | scope-definition | Qual evento implementar PRIMEIRO? (Lua de Sangue / Eclipse / Solstício Negro / Cerco ao Vilarejo?) + Escopo: 1 evento por satélite ou agregar? | Quando decidido → divide em Índice Mestre + satélites, move 1º evento para `backlog/` |
 | **[`scope-definition/35_05_CALIBRACAO_VISUAL_POS_RELIGACAO.md`](./scope-definition/35_05_CALIBRACAO_VISUAL_POS_RELIGACAO.md)** | scope-definition | Aparelho-alvo mobile + metas de FPS; leitura por bioma (`safe_house`, `gloomy_woods`); luz do jogador no centro ou no cajado; limiar de contraste | Depois de 35.01/35.03/35.04 entregues → promove para `backlog/` |
+| **[`scope-definition/35_06_GATES_AUTOMATIZADOS_E_ENTREGA.md`](./scope-definition/35_06_GATES_AUTOMATIZADOS_E_ENTREGA.md)** | scope-definition | CI no GitHub Actions sim/não; hook com suíte completa (~32 s) ou só testes afetados; exceção do gate de chunks > 500 kB para o Phaser | Decidido → promove para `backlog/` (executável em < 1 dia) |
 | **[`scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md)** | scope-definition | 🔄 **Partially Superseded**: conectividade entre biomas já resolvida por `delivered/25` (Chunk Streaming). Resta: variedade orgânica interna de `gloomy_woods` é desejo ou escopo? | Quando clarificado → vira Blueprint técnico próprio ou fecha como "completo via #25" |
 
 > ✅ *Removida em 2026-09-28:* spec 05 (i18n) — a decisão de biblioteca já

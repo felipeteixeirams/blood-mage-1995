@@ -72,6 +72,17 @@ specs:
     blockers_are_external: true
     blocker_owner: "Felipe (direção de arte + metas de performance)"
 
+  "35.06":
+    name: "Gates Automatizados (Hook, CI) e Gate de Entrega"
+    status: "scope-definition"
+    file: "scope-definition/35_06_GATES_AUTOMATIZADOS_E_ENTREGA.md"
+    blocked_by:
+      - spec_id: null
+        reason: "Decisões do Felipe: CI sim/não, hook com suíte completa ou só afetados, exceção do gate de chunks"
+        status: "waiting_decision"
+    blockers_are_external: true
+    blocker_owner: "Felipe (infraestrutura + fluxo de trabalho)"
+
   "07":
     name: "Eventos Mundiais e Sazonais"
     status: "scope-definition"
@@ -138,5 +149,5 @@ specs:
     blocked_by: []
     note: "Quase-duplicata de delivered/28 (ambas status: completed). Mesclar diferenças e apagar — aguarda OK do Felipe"
 
-# discovery/ (01–07) e rejected/ (05) não entram no mapa: não são executáveis
+# discovery/ (01–07, 35_07) e rejected/ (05) não entram no mapa: não são executáveis
 # por definição (ver docs/architecture/05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md §6).

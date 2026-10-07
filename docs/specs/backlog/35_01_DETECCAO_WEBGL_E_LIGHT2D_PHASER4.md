@@ -42,9 +42,12 @@ Causas, todas confirmadas no código-fonte do engine instalado:
    `Loot`, `Scavengeable`) dependem desse método.
 3. **Método inexistente** — `SafeHouseAnimationController.ts:147-149` chama
    `lightingSystem.addLightSource({...})`, que não existe.
-4. **Testes mascarando** — mocks com `renderer: { isWebGL: true }` em
+4. **Testes mascarando** — 36 ocorrências de `isWebGL` em mocks de 5 arquivos:
    `LightingSystem.test.ts`, `PostFXSystem.test.ts`, `AtmosphericTreeShader.test.ts`,
-   `Enemy.test.ts`.
+   `Enemy.test.ts`, `ProceduralForestGenerator.test.ts`.
+   (Varredura de 2026-10-07: além de `isWebGL`/`setPipeline`, **nenhuma outra**
+   API exclusiva do Phaser 3 aparece em `src/` — `setPostPipeline`, `preFX`,
+   `createEmitter`, `ParticleEmitterManager` ausentes ou só em comentário.)
 5. **Skills propagando o erro** — `phaser-4-fx-filters/SKILL.md:45,59,77` e
    `phaser-4-development/SKILL.md:236` ensinam `renderer.isWebGL`.
 6. `GameScene.ts:340-344` desenha `darknessOverlay` (alpha 0.32, depth 1990)
@@ -52,6 +55,11 @@ Causas, todas confirmadas no código-fonte do engine instalado:
 7. `PhaserGame.tsx:21` não define `render.maxLights`; o padrão do engine é **10**
    luzes por câmera (`core/Config.js:481`), com culling por distância da câmera
    (`LightsManager.js:200`). Há ~60 sprites `light_torch` por andar.
+
+8. **Efeito cascata em `LightingPolish`** — `isLight2DActive()` (`LightingPolish.ts:43-49`)
+   exige `scene.lights.active`, que nunca fica `true`; as 7 chamadas
+   `lights.addLight` (`:291-503`: glow de feitiço, item raro, portal, boss) estão
+   inertes. Voltam a funcionar só com R35.01-06; nenhuma mudança no arquivo.
 
 O resto do `LightingSystem` (`enable`, `createPlayerLight`, `updatePlayerLight`,
 `addTorchLights`, `update` com flicker, `clearTorchLights`, `shutdown`) já usa
@@ -102,7 +110,7 @@ contra o formato real do renderer do Phaser 4.
 | R35.01-10 | `PhaserGame.tsx` **DEVE** definir `render: { maxLights: 16 }` (default — ver §6). | leitura do config |
 | R35.01-11 | **ENQUANTO** o renderer for WebGL, `PostFXSystem` **DEVE** registrar seus filtros em `cameras.main.filters.external`. | E2E: `filters.external.list.length >= 1` |
 | R35.01-12 | **SE** `scene.add.shader` lançar exceção em `createAtmosphericTree`, **ENTÃO** a função **DEVE** cair no sprite estático já existente e registrar `logger.warn` (o caminho shader nunca rodou em WebGL real até esta spec). | `AtmosphericTreeShader.test.ts` + E2E sem `pageerror` |
-| R35.01-13 | Os mocks de renderer nos 4 testes listados em §1.4 **DEVEM** usar `type: Phaser.WEBGL` (ou `2`), não `isWebGL`. | revisão de diff |
+| R35.01-13 | Os mocks de renderer nos 5 testes listados em §1.4 **DEVEM** usar `type: Phaser.WEBGL` (ou `2`), não `isWebGL`. | revisão de diff |
 | R35.01-14 | As skills `phaser-4-fx-filters` e `phaser-4-development` **DEVEM** trocar todo `renderer.isWebGL` por `renderer.type === Phaser.WEBGL` e incluir um aviso de que `isWebGL` não existe no Phaser 4. | revisão de diff |
 
 ## 5. Requisitos Técnicos e Arquivos-Alvo
@@ -140,7 +148,7 @@ public addLightSource(o: { x: number; y: number; radius: number; color: number; 
 | `src/game/systems/SafeHouseAnimationController.ts:189` | detecção |
 | `src/game/scenes/GameScene.ts:340-344` | `darknessOverlay.setVisible(!this.lightingSystem.isActive())` após `lightingSystem.enable` (⚠️ arquivo crítico — wrapper fino) |
 | `src/game/PhaserGame.tsx:21` | `render.maxLights` |
-| 4 arquivos `*.test.ts` | mocks |
+| 5 arquivos `*.test.ts` | mocks |
 | `.claude/skills/phaser-4-fx-filters/SKILL.md`, `.claude/skills/phaser-4-development/SKILL.md` | snippets |
 | `docs/specs/delivered/23_01_*`, `23_02_*`, `23_03_*` | linha de changelog apontando para 35.01 |
 | `docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md` | novo item "Light2D/PostFX inertes: `isWebGL` não existe no Phaser 4" |
@@ -184,3 +192,4 @@ public addLightSource(o: { x: number; y: number; radius: number; color: number; 
 | Data | O que mudou | Autor |
 |------|-------------|-------|
 | 2026-10-07 | Criação (achados A1–A5, A11) com evidência de execução | Claude |
+| 2026-10-07 | Correção: 5 (não 4) testes com mock `isWebGL`; varredura de outras APIs Phaser 3 (nenhuma); efeito cascata em `LightingPolish` | Claude |

@@ -49,7 +49,7 @@ tudo sem nenhum asset externo novo.
 |---|---|---|---|---|
 | A1 | `renderer.isWebGL` **não existe** no `WebGLRenderer` do Phaser 4.2.1 → 6 checagens em 5 arquivos retornam `false` em WebGL real: `LightingSystem.ts:79` (e `:122`), `PostFXSystem.ts:56`, `AtmosphericTreeShader.ts:236`, `Enemy.ts:160`, `SafeHouseAnimationController.ts:189` | Execução: `renderer.type=2` (WEBGL), `renderer.isWebGL=undefined`, `postFX.isWebGL=false`, `lightingSystem.enabled=false`, `cameras.main.filters.external` com **0** filtros | 🔴 Crítica | 35.01 |
 | A2 | `LightingSystem.applyLightPipeline()` chama `setPipeline('Light2D')` — API do Phaser 3, **inexistente** no 4.2.1 (`grep setPipeline node_modules/phaser/src` = 0). No-op silencioso em ~30 call sites | Execução: `typeof obj.setPipeline === 'undefined'` em 100% dos objetos; só **18 de ~7.750** objetos com `lighting=true` (os inimigos, via `Enemy.ts:120`) | 🔴 Crítica | 35.01 |
-| A3 | Os testes unitários mascaram A1/A2: `LightingSystem.test.ts`, `PostFXSystem.test.ts`, `AtmosphericTreeShader.test.ts`, `Enemy.test.ts` mockam `isWebGL: true` | Leitura estática | 🔴 Crítica (processo) | 35.01 |
+| A3 | Os testes unitários mascaram A1/A2: 5 arquivos (`LightingSystem`, `PostFXSystem`, `AtmosphericTreeShader`, `Enemy`, `ProceduralForestGenerator`) mockam `isWebGL: true` (36 ocorrências) | Leitura estática | 🔴 Crítica (processo) | 35.01 |
 | A4 | As skills do projeto **ensinam** a checagem errada: `phaser-4-fx-filters/SKILL.md` (3 snippets, §3–§4) e `phaser-4-development/SKILL.md` (1 snippet). Aviso de correção adicionado no topo de ambas em 2026-10-07; a troca dos snippets fica para a 35.01 | Leitura estática | 🟠 Alta (propaga o bug) | 35.01 |
 | A5 | `lightingSystem.addLightSource()` é chamado pela lareira da Safe House (`SafeHouseAnimationController.ts:147-149`) mas **não existe** em `LightingSystem` → luz da lareira nunca é criada | `grep addLightSource src` = só o call site | 🟠 Alta | 35.01 |
 | A6 | Player sem normal map nos **dois** caminhos: PNG `spr_bloodmage` carregado com `scene.load.spritesheet` sem `normalMap` (`assetManifest.ts:104-107`) e fallback procedural via `addSpriteSheet` sem `dataSource` (`textureGenerator.ts:35-46`). Contradiz `delivered/23_02` ("aplicado a `spr_bloodmage`") | Execução: `player.texture.dataSource` vazio, `player.lighting=false` | 🟠 Alta | 35.03 |
@@ -60,6 +60,9 @@ tudo sem nenhum asset externo novo.
 | A11 | `maxLights` padrão = **10** por câmera (`Config.js:481`); `PhaserGame.tsx` não define `render.maxLights`; há ~60 sprites `light_torch` em cena | Leitura do engine + execução | 🟡 Média (vira relevante ao religar A1/A2) | 35.01 / 35.05 |
 | A12 | `PostFXSystem.createFilters()` registraria **3** filtros externos de câmera (vignette, colorMatrix, displacement) — acima do teto de 2 da skill `phaser-4-fx-filters` §5. Hoje inerte por A1; passa a custar ao religar | `PostFXSystem.ts:62-80` | 🟡 Média | 35.05 (K2) |
 | A13 | Quatro specs em `delivered/` afirmam comportamento que o runtime não tem: 23.01 (PostFX ativo em WebGL), 23.02 (normal map no `spr_bloodmage`), 23.03 (Light2D ativo), 25 fase B.2 (offset por chunk). Mesmo padrão "teste verde ≠ feature viva" já registrado em `08_JULES_SESSION_PROMPT.md` | A1, A6, A9 | 🟠 Alta (confiança na documentação) | changelog das specs afetadas (feito nesta data) |
+| A14 | Nenhum gate de teste roda automaticamente: `.husky/pre-commit` só roda `verify` (assets + typecheck + build, **sem testes**); `lint-staged`/`vitest related` configurado e nunca chamado; não há CI. `pnpm test` hoje: 574/574 em ~32 s | Leitura + execução | 🟠 Alta (processo) | 35.06 |
+| A15 | Só 23.x, 25, parte da 10 e a 13 foram verificadas em runtime nesta auditoria; ~25 specs em `delivered/` nunca tiveram verificação de execução registrada. `LightingPolish` (glows de feitiço/portal/boss) depende de `lights.active` e também está inerte | Leitura + execução | 🟡 Média (risco de divergências ocultas) | 35.07 (discovery) |
+| A16 | Documentação de gates contradiz a realidade: `CLAUDE.md` diz que `pnpm verify` roda testes (não roda); `03_TESTING_GATES.md` gate 4 ("sem chunks > 500 kB") é violado pelo build atual (`phaser-*.js` 1.387 kB) | Leitura + `pnpm run build` | 🟡 Média | 35.06 |
 
 ### 3.1 O que os achados NÃO dizem
 
@@ -90,11 +93,37 @@ tudo sem nenhum asset externo novo.
 | 3 | [35.03 — Normal Map e Iluminação do Jogador](./35_03_NORMAL_MAP_E_LUZ_DO_JOGADOR.md) | backlog | high | high | 35.01 |
 | 4 | [35.04 — Contaminação de Biomas no Chunk Streaming](./35_04_CONTAMINACAO_BIOMAS_CHUNK_STREAMING.md) | backlog | high | high | 35.02 |
 | 5 | [35.05 — Calibração Visual Pós-Religação e Orçamento de Render](../scope-definition/35_05_CALIBRACAO_VISUAL_POS_RELIGACAO.md) | scope-definition | high | medium | 35.01, 35.03, 35.04 |
+| paralelo | [35.06 — Gates Automatizados e Gate de Entrega](../scope-definition/35_06_GATES_AUTOMATIZADOS_E_ENTREGA.md) | scope-definition | high | medium | decisões do Felipe; R35.06-02 depende de 35.02 |
+| paralelo | [35.07 — Auditoria de Runtime das Specs Entregues](../discovery/35_07_AUDITORIA_RUNTIME_SPECS_ENTREGUES.md) | discovery | medium | low | prioridade 1 só depois de 35.01 |
 
 **Por que 35.02 vem antes de 35.01:** religar Light2D + PostFX muda o
 render de **toda** cena. Sem um gate que entre em Arcade e Campanha, uma
 regressão (tela preta, crash de renderer como em `3a52786`) passa por
 `pnpm test` verde — exatamente o padrão que A3 documenta.
+
+### 5.1 Pendências que não viram spec (registradas aqui para não se perderem)
+
+Pela Seção 6 de `05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md` ("o que NÃO é uma spec"), estes itens não ganham satélite próprio:
+
+| Pendência | Por que não é spec | Ação | Dono |
+|---|---|---|---|
+| `docs/specs/25_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md` solto na raiz, quase idêntico a `delivered/28_*` (ambos `status: completed`; o `diff` acusa diferenças) | Documento duplicado | Mesclar o que houver de novo em `delivered/28` e apagar o da raiz | Aguarda OK do Felipe |
+| Streaming de mundo contínuo **no Arcade** como feature | Não há pedido; o default de 35.04 é desligar | Se desejado, abrir spec própria com sequência de chunks do Arcade | Felipe decide |
+| Sonda Playwright da auditoria (`probe*.spec.ts`) | Ficou no scratchpad da sessão, fora do repo | Será reescrita como `smoke-playable.spec.ts` (35.02) | 35.02 |
+
+### 5.2 Decisões do Felipe em aberto (consolidado)
+
+| # | Decisão | Spec | Default se não houver resposta |
+|---|---|---|---|
+| D1 | Rodar E2E em CI ou só local | 35.02, 35.06 | Só local |
+| D2 | Hook com suíte completa ou só testes afetados | 35.06 | Só afetados (`vitest related`) |
+| D3 | Gate 4 de chunks: exceção para o Phaser? | 35.06 | Exceção documentada |
+| D4 | Streaming de chunks no Arcade | 35.04 | Desligado |
+| D5 | `maxLights` | 35.01 | 16 |
+| D6 | Aparelho-alvo mobile e metas de FPS/p95 | 35.05 | — (bloqueia 35.05) |
+| D7 | Leitura por bioma (`safe_house`, `gloomy_woods`) | 35.05 | — (bloqueia 35.05) |
+| D8 | Luz do jogador: centro ou topo do cajado | 35.03, 35.05 | Centro |
+| D9 | Apagar o `25_*` duplicado da raiz | 5.1 | Não apagar |
 
 ## 6. Convenção EARS usada nos satélites
 
@@ -118,8 +147,9 @@ requisitos estéticos só entram quando houver métrica ou decisão do Felipe.
 ## 7. Testes e Critério de Aceite (do Índice)
 
 A spec 35 é concluída quando os satélites 35.01–35.03 estão em `delivered/`
-com seus testes passando, 35.04 entregue, e 35.05 promovida a `backlog/` (decisões
-de produto tomadas) ou fechada com justificativa.
+com seus testes passando, 35.04 entregue, 35.05 e 35.06 promovidas a `backlog/`
+(decisões D1–D9 tomadas) ou fechadas com justificativa. A discovery 35.07 não
+bloqueia o encerramento — ela alimenta specs novas.
 
 ## 8. Guardrails
 
@@ -140,3 +170,4 @@ de produto tomadas) ou fechada com justificativa.
 | Data | O que mudou | Autor |
 |------|-------------|-------|
 | 2026-10-07 | Criação: auditoria com execução real (sonda Playwright) + leitura do Phaser 4.2.1; 11 achados, matriz de redundância, 5 satélites em EARS. 35.04 promovida a `backlog/` no mesmo dia após sonda de bounds confirmar a causa-raiz | Claude |
+| 2026-10-07 | Documentado o que não foi feito: achados A14–A16, satélites 35.06 (gates/CI) e 35.07 (auditoria de runtime), pendências fora de spec e decisões D1–D9 consolidadas | Claude |

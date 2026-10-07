@@ -1,12 +1,12 @@
 # 📊 Spec Dependency Graph — Bloodmage 1995
 
-**Última atualização:** 2026-10-07 03:30:55
+**Última atualização:** 2026-10-07 03:40:51
 
 ---
 
 ## 📈 Sumário de Status
 
-- 🔒 **Bloqueados:** 9 specs
+- 🔒 **Bloqueados:** 10 specs
 - ✅ **Prontos:** 2 specs
 - 🔍 **Em QA/Validação:** 0 specs
 - 🗂️ **Outras (não executáveis/organização):** 1 specs
@@ -26,6 +26,7 @@
 | 35.03 | Normal Map e Iluminação do Jogador | Spec 35.01 | waiting_spec |
 | 35.04 | Contaminação de Biomas no Chunk Streaming | Spec 35.02 | waiting_spec |
 | 35.05 | Calibração Visual Pós-Religação e Orçamento de Render | Spec 35.01, Spec 35.03, Spec 35.04, Externo | waiting_decision, waiting_spec |
+| 35.06 | Gates Automatizados (Hook, CI) e Gate de Entrega | Externo | waiting_decision |
 
 ### Detalhes de Bloqueadores Externos
 
@@ -52,6 +53,10 @@
 **[35.05] Calibração Visual Pós-Religação e Orçamento de Render**
 - Bloqueado por: Felipe (direção de arte + metas de performance)
 - Razão: Decisões do Felipe: aparelho-alvo e metas de FPS, leitura por bioma, posição da luz do jogador
+
+**[35.06] Gates Automatizados (Hook, CI) e Gate de Entrega**
+- Bloqueado por: Felipe (infraestrutura + fluxo de trabalho)
+- Razão: Decisões do Felipe: CI sim/não, hook com suíte completa ou só afetados, exceção do gate de chunks
 
 ---
 
@@ -99,6 +104,8 @@
   └─ 📋 [35.03] Normal Map e Iluminação do Jogador
   └─ 📋 [35.04] Contaminação de Biomas no Chunk Streaming
   └─ ⛔ BLOQUEADO: Decisões do Felipe: aparelho-alvo e metas de FPS, leitura por bioma, posição da luz do jogador
+📝 [35.06] Gates Automatizados (Hook, CI) e Gate de Entrega
+  └─ ⛔ BLOQUEADO: Decisões do Felipe: CI sim/não, hook com suíte completa ou só afetados, exceção do gate de chunks
 ```
 
 ---

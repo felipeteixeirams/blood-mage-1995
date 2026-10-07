@@ -53,6 +53,7 @@ Cada spec em **backlog** ou **in-progress** deve passar por 4 gates antes de ser
 | **35.04** | Contaminação de biomas (chunks) | ✅ (default: streaming só na Campanha) | ✅ (bounds medidos) | ✅ | ⏳ 35.02 | Após 35.02 |
 | **35.03** | Normal map do jogador | ✅ | ⏳ (tempo de boot não medido) | ✅ | ⏳ 35.01 | Após 35.01 |
 | **35.05** | Calibração pós-religação | ⏳ Felipe | ❌ | ⏳ | ⏳ 35.01/03/04 | `scope-definition/` |
+| **35.06** | Gates automatizados (hook/CI) | ⏳ Felipe (D1–D3) | ✅ (`pnpm test` 574/574 em ~32 s) | ✅ | ✅ | `scope-definition/` |
 | **07** | Eventos Mundiais e Sazonais | ⏳ Felipe | ⏳ | ⏳ | ✅ | `scope-definition/` |
 | **18** | Topologia de Mundo Contínuo | ⏳ Felipe | — | ⏳ | ✅ | `scope-definition/` |
 | **08** | Mapeamento de Sprites | ✅ | ✅ | ✅ | ❌ arte externa | Aguarda orçamento de arte |
