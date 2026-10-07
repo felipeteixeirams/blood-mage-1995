@@ -1,167 +1,142 @@
 # 🔗 Spec Dependency Map — Bloodmage 1995
-# Mapa de bloqueadores e dependências entre specs
-# Atualização: 2026-10-05
+# Fonte de verdade de bloqueios/dependências das specs ABERTAS.
+# Specs entregues ficam em delivered/ e não entram aqui.
+# Reconstruído em 2026-10-07 a partir das pastas reais (a versão de 2026-10-05
+# foi montada a partir de outra branch e listava specs já entregues como abertas).
+#
+# Regenerar o grafo: python3 scripts/specs-dependency-graph.py
 
 specs:
-  # ===== SPECS EM PRODUÇÃO/QA =====
+  # ===== backlog/ — Spec 35 (Jogável e Visual sem Assets) =====
 
-  "03":
-    name: "Fase 3 — Status de Sobrevivência"
-    status: "in-progress"
+  "35.00":
+    name: "Índice Mestre — Jogável e Visual sem Assets"
+    status: "backlog"
+    file: "backlog/35_00_JOGAVEL_E_VISUAL_SEM_ASSETS_INDICE.md"
     blocked_by: []
-    progress: "95%"
-    blocking_on: "Felipe (QA manual e tuning)"
-    note: "Código 100% pronto, aguardando playtest"
+    note: "Índice; concluído quando 35.01–35.04 entregues e 35.05 decidida"
 
-  # ===== SPECS PRONTOS PARA IMPLEMENTAR (TODOS OS 4 GATES: ✅) =====
-
-  "06":
-    name: "Eixo A — Gráficos Avançados"
-    status: "in-progress"
+  "35.02":
+    name: "Gate E2E de Jogabilidade (Arcade + Campanha)"
+    status: "backlog"
+    file: "backlog/35_02_GATE_E2E_JOGABILIDADE_ARCADE_CAMPANHA.md"
     blocked_by: []
-    readiness_gates:
-      - name: "product_decision"
-        status: "✅"
-        note: "Decisão tomada (2026-09-15)"
-      - name: "technical_prototype"
-        status: "✅"
-        note: "Testado em Phaser 4"
-      - name: "scope_locked"
-        status: "✅"
-        note: "3 fases bem definidas"
-      - name: "dependencies_resolved"
-        status: "✅"
-        note: "Nenhuma bloqueante"
-    note: "Desenvolvimento ativo"
+    note: "Primeira da fila: protege a religação de Light2D/PostFX"
 
-  "11":
-    name: "Touchpad & Joystick Virtual Nativo Phaser"
-    status: "in-progress"
-    blocked_by: []
-    readiness_gates:
-      - name: "product_decision"
-        status: "✅"
-      - name: "technical_prototype"
-        status: "✅"
-      - name: "scope_locked"
-        status: "✅"
-      - name: "dependencies_resolved"
-        status: "✅"
-    note: "Code review pendente"
-
-  # ===== SPECS EM DESENVOLVIMENTO (VARIADOS) =====
-
-  "08":
-    name: "Mapeamento Completo de Sprites & Checklist"
-    status: "in-progress"
+  "35.01":
+    name: "Detecção WebGL e Iluminação Phaser 4 Real"
+    status: "backlog"
+    file: "backlog/35_01_DETECCAO_WEBGL_E_LIGHT2D_PHASER4.md"
     blocked_by:
-      - spec_id: "14"
-        reason: "Sprites físicos (arte pixel) ainda não produzidos"
-        status: "waiting_external"
+      - spec_id: "35.02"
+        reason: "Precisa do gate E2E antes de mudar o render de todas as cenas"
+        status: "waiting_spec"
+
+  "35.03":
+    name: "Normal Map e Iluminação do Jogador"
+    status: "backlog"
+    file: "backlog/35_03_NORMAL_MAP_E_LUZ_DO_JOGADOR.md"
+    blocked_by:
+      - spec_id: "35.01"
+        reason: "Sem Light2D ativo o normal map não tem efeito visível"
+        status: "waiting_spec"
+
+  "35.04":
+    name: "Contaminação de Biomas no Chunk Streaming"
+    status: "backlog"
+    file: "backlog/35_04_CONTAMINACAO_BIOMAS_CHUNK_STREAMING.md"
+    blocked_by:
+      - spec_id: "35.02"
+        reason: "Gate E2E precisa existir para provar que o fix 3a52786 não regride"
+        status: "waiting_spec"
+
+  # ===== scope-definition/ =====
+
+  "35.05":
+    name: "Calibração Visual Pós-Religação e Orçamento de Render"
+    status: "scope-definition"
+    file: "scope-definition/35_05_CALIBRACAO_VISUAL_POS_RELIGACAO.md"
+    blocked_by:
+      - spec_id: "35.01"
+        reason: "Calibrar só faz sentido com Light2D/PostFX ativos"
+        status: "waiting_spec"
+      - spec_id: "35.03"
+        reason: "Jogador precisa de normal map antes da calibração"
+        status: "waiting_spec"
+      - spec_id: "35.04"
+        reason: "Contagem de objetos/visual muda após remover sobreposição de chunks"
+        status: "waiting_spec"
+      - spec_id: null
+        reason: "Decisões do Felipe: aparelho-alvo e metas de FPS, leitura por bioma, posição da luz do jogador"
+        status: "waiting_decision"
     blockers_are_external: true
-    blocker_owner: "Felipe (decisão de orçamento de arte)"
-    note: "Pendente de Spec 14"
-
-  "09":
-    name: "Guia Direto para Pixel Lab (Bloodmage 1995)"
-    status: "in-progress"
-    blocked_by: []
-    note: "Documentação de workflow de arte"
-
-  "10":
-    name: "Evolução Gráfica & Auditiva (Quick Wins & Roadmap)"
-    status: "in-progress"
-    blocked_by: []
-    note: "Planejamento de melhorias gráficas/áudio"
-
-  "16":
-    name: "Evolução Gráfica — Resolução Adaptativa & UI"
-    status: "in-progress"
-    blocked_by: []
-    note: "Polimento de UI responsivo"
-
-  "17":
-    name: "Polimento Gráfico — Calibração dos Sistemas"
-    status: "in-progress"
-    blocked_by: []
-    note: "Refinamento visual geral"
-
-  "18":
-    name: "Topologia de Mundo Contínuo e Variedade"
-    status: "in-progress"
-    blocked_by: []
-    note: "Expandir world generation"
-
-  "25":
-    name: "Padronização de Modais Secundários & Gamepad"
-    status: "in-progress"
-    blocked_by: []
-    note: "Padronização de UI modais"
-
-  # ===== SPECS BLOQUEADAS =====
+    blocker_owner: "Felipe (direção de arte + metas de performance)"
 
   "07":
     name: "Eventos Mundiais e Sazonais"
-    status: "backlog"
+    status: "scope-definition"
+    file: "scope-definition/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md"
     blocked_by:
       - spec_id: null
-        reason: "Ainda em definição de escopo"
-        status: "waiting_design"
-    note: "Precisa de decisão de produto e refinamento"
-
-  "13":
-    name: "UI Assets Externos Framework"
-    status: "backlog"
-    blocked_by:
-      - spec_id: "14"
-        reason: "Precisa do pipeline de sprites/assets externos definido"
-        status: "waiting_spec"
-    note: "Bloqueada por Spec 14"
-
-  "14":
-    name: "Sprites & Assets Externos Tiers"
-    status: "backlog"
-    blocked_by:
-      - spec_id: null
-        reason: "Orçamento de arte e direção artística ainda pendente de decisão do Felipe"
+        reason: "Qual evento implementar primeiro e escopo por satélite"
         status: "waiting_decision"
     blockers_are_external: true
-    blocker_owner: "Felipe (decisão estratégica)"
-    note: "Bloqueadora crítica (Specs 08, 13 dependem disso)"
+    blocker_owner: "Felipe (decisão de produto)"
+
+  "18":
+    name: "Topologia de Mundo Contínuo e Variedade Orgânica"
+    status: "scope-definition"
+    file: "scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md"
+    blocked_by:
+      - spec_id: null
+        reason: "Partially superseded por delivered/25; variedade interna de gloomy_woods é desejo ou escopo?"
+        status: "waiting_decision"
+    blockers_are_external: true
+    blocker_owner: "Felipe (decisão de produto)"
+
+  # ===== backlog/ bloqueadas por insumo externo =====
+
+  "08":
+    name: "Mapeamento Completo de Sprites & Checklist"
+    status: "backlog"
+    file: "backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md"
+    blocked_by:
+      - spec_id: null
+        reason: "Sprites físicos dos personagens ainda não produzidos (orçamento de arte)"
+        status: "waiting_external"
+    blockers_are_external: true
+    blocker_owner: "Felipe (orçamento + direção de arte)"
+
+  "32":
+    name: "Guia de Produção de Sprites PixelLab"
+    status: "backlog"
+    file: "backlog/32_PIXEL_LAB_SPRITE_PRODUCTION_GUIDE.md"
+    blocked_by:
+      - spec_id: null
+        reason: "Só tem valor com produção PixelLab ativa"
+        status: "waiting_external"
+    blockers_are_external: true
+    blocker_owner: "Felipe (orçamento + direção de arte)"
 
   "29":
     name: "Cloud Save — Fase 5"
     status: "backlog"
+    file: "backlog/29_CLOUD_SAVE_FASE5.md"
     blocked_by:
       - spec_id: null
-        reason: "Escopo grande (Phase 5), não é prioritário no MVP"
-        status: "deprioritized"
-    note: "Pronto tecnicamente, mas fora do escopo do MVP"
+        reason: "Nenhuma integração de conta/nuvem sem aprovação explícita (demanda comercial + LGPD)"
+        status: "waiting_decision"
+    blockers_are_external: true
+    blocker_owner: "Felipe (confirmação comercial)"
 
-  # ===== SPECS EM DISCOVERY (PESQUISA) =====
+  # ===== Pendências de organização (não executáveis) =====
 
-  "01":
-    name: "DISCOVERY — Avaliação Arquitetural Phaser 4.2.1"
-    status: "discovery"
+  "25-raiz":
+    name: "Arquivo solto docs/specs/25_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md"
+    status: "housekeeping"
+    file: "25_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md"
     blocked_by: []
-    note: "Pesquisa e validação de arquitetura"
+    note: "Quase-duplicata de delivered/28 (ambas status: completed). Mesclar diferenças e apagar — aguarda OK do Felipe"
 
-  "02":
-    name: "Discovery — Pipeline de Integração de Assets Externos"
-    status: "discovery"
-    blocked_by: []
-    note: "Pesquisa de workflow de assets"
-
-  "04":
-    name: "DISCOVERY — Mobile App & Monetização Indie"
-    status: "discovery"
-    blocked_by: []
-    note: "Pesquisa de plataforma mobile e monetização"
-
-  # ===== SPECS REJEITADAS =====
-
-  "05":
-    name: "REJEITADA — Sistema de Skinning e Camadas Dinâmicas"
-    status: "rejected"
-    blocked_by: []
-    note: "Rejeitada no triage de escopo"
+# discovery/ (01–07) e rejected/ (05) não entram no mapa: não são executáveis
+# por definição (ver docs/architecture/05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md §6).

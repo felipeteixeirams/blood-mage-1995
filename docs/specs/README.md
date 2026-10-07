@@ -4,7 +4,7 @@ target_module: docs/specs
 priority: high
 criticality: high
 status: active
-last_updated: 2026-09-28
+last_updated: 2026-10-07
 tags: [specs, index, workflow, in-progress, delivered, backlog, scope-definition, discovery, rejected]
 ---
 
@@ -47,10 +47,13 @@ Implementado em **2026-10-05**: Sistema de gates de prontidão e mapa de depend�
 - **[📊 DEPENDENCY_GRAPH.md](./DEPENDENCY_GRAPH.md)**: Grafo visual de dependências, bloqueadores e status de specs
 - **[🔗 DEPENDENCY_MAP.yaml](./DEPENDENCY_MAP.yaml)**: Fonte de verdade central para bloqueadores e relacionamentos entre specs
 
-**Resumo Rápido (2026-10-05):**
-- 5 specs bloqueadas (aguardando decisões/insumos externos)
-- 12 specs prontas para implementação
-- 1 spec em QA (código pronto, aguardando playtest do Felipe)
+**Resumo Rápido (2026-10-07 — regenerar com `python3 scripts/specs-dependency-graph.py`):**
+- 2 prontas (35.00 índice, 35.02 gate E2E) · 9 bloqueadas (4 em cadeia da Spec 35, 5 por decisão/insumo externo) · 1 pendência de organização (arquivo `25_*` solto na raiz, duplicata de `delivered/28`)
+- ⚠️ A versão de 2026-10-05 deste resumo ("12 prontas") estava errada: foi montada a partir de outra branch e contava specs entregues/discovery como abertas.
+
+> 🔴 **Spec 35 (2026-10-07):** auditoria com execução real mostrou que Light2D e
+> PostFX (specs 23.x) estão **inertes em WebGL** — `renderer.isWebGL` não existe
+> no Phaser 4.2.1. Ver [`backlog/35_00`](./backlog/35_00_JOGAVEL_E_VISUAL_SEM_ASSETS_INDICE.md).
 
 ---
 
@@ -66,7 +69,7 @@ Implementado em **2026-10-05**: Sistema de gates de prontidão e mapa de depend�
 
 | 📋 Backlog | 🔨 Em Desenvolvimento | 🔍 Em Qualidade | ✅ Concluído *(7 dias)* |
 |---|---|---|---|
-| 🔒 **[08](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md)** Sprite Mapping<br>🔒 **[29](./backlog/29_CLOUD_SAVE_FASE5.md)** Cloud Save<br>🔒 **[32](./backlog/32_PIXEL_LAB_SPRITE_PRODUCTION_GUIDE.md)** PixelLab Guide | — | — | **[09](./delivered/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md)** HUD Tier B.6<br>**[11](./delivered/11_ATMOSFERA_E_TENSAO.md)** Atmosfera<br>**[32](./delivered/32_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** — Toggle Gore<br>**[33](./delivered/33_BOSS_MULTIFASE_TELEGRAPH_SYSTEM.md)** Boss Multi-Fase<br>**[34](./delivered/34_EQUIPMENT_SET_BONUS_SYSTEM.md)** Equipment Sets |
+| **[35.02](./backlog/35_02_GATE_E2E_JOGABILIDADE_ARCADE_CAMPANHA.md)** Gate E2E<br>⏳ **[35.01](./backlog/35_01_DETECCAO_WEBGL_E_LIGHT2D_PHASER4.md)** Light2D/PostFX real<br>⏳ **[35.04](./backlog/35_04_CONTAMINACAO_BIOMAS_CHUNK_STREAMING.md)** Chunks sobrepostos<br>⏳ **[35.03](./backlog/35_03_NORMAL_MAP_E_LUZ_DO_JOGADOR.md)** Normal map jogador<br>🔒 **[08](./backlog/08_MAPEAMENTO_COMPLETO_SPRITES_E_CHECKLIST.md)** Sprite Mapping<br>🔒 **[29](./backlog/29_CLOUD_SAVE_FASE5.md)** Cloud Save<br>🔒 **[32](./backlog/32_PIXEL_LAB_SPRITE_PRODUCTION_GUIDE.md)** PixelLab Guide | — | — | **[09](./delivered/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md)** HUD Tier B.6<br>**[11](./delivered/11_ATMOSFERA_E_TENSAO.md)** Atmosfera<br>**[32](./delivered/32_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md)** — Toggle Gore<br>**[33](./delivered/33_BOSS_MULTIFASE_TELEGRAPH_SYSTEM.md)** Boss Multi-Fase<br>**[34](./delivered/34_EQUIPMENT_SET_BONUS_SYSTEM.md)** Equipment Sets |
 
 > 🔒 = bloqueada por insumo externo (ver seção "🚧 Bloqueados" abaixo).
 >
@@ -100,7 +103,10 @@ Implementado em **2026-10-05**: Sistema de gates de prontidão e mapa de depend�
 
 | # | Spec | Pasta | P | C | Status / Bloqueador | Resumo de Execução |
 |---|---|---|---|---|---|---|
-| — | *(vazia)* | — | — | — | — | Todas as specs desbloqueadas foram entregues em 2026-09-28 (ver Kanban acima e "🟢 Delivered" abaixo). Próxima leva depende de "🎯 Fila de Definição" (decisão de produto) ou de novas specs em `scope-definition/`/`discovery/`. |
+| 1 | [35.02 — Gate E2E de Jogabilidade](./backlog/35_02_GATE_E2E_JOGABILIDADE_ARCADE_CAMPANHA.md) | backlog | high | medium | ✅ Executável Agora | `pnpm e2e:smoke` contra build de produção, Arcade + Campanha + retrato |
+| 2 | [35.01 — Detecção WebGL e Light2D Phaser 4](./backlog/35_01_DETECCAO_WEBGL_E_LIGHT2D_PHASER4.md) | backlog | high | high | ⏳ após 35.02 | `isWebGLRenderer()`, `setLighting(true)`, `addLightSource`, overlay, mocks, skills |
+| 3 | [35.04 — Contaminação de Biomas no Chunk Streaming](./backlog/35_04_CONTAMINACAO_BIOMAS_CHUNK_STREAMING.md) | backlog | high | high | ⏳ após 35.02 | Repassar `offsetX` aos geradores; streaming só na Campanha |
+| 4 | [35.03 — Normal Map e Luz do Jogador](./backlog/35_03_NORMAL_MAP_E_LUZ_DO_JOGADOR.md) | backlog | high | high | ⏳ após 35.01 | `attachRuntimeNormalMap` no boot; `normalMapPath` no loader |
 
 **Legenda:** P = Prioridade | C = Criticidade | Specs em "⏳ Awaiting Definition" não aparecem aqui (ver "🎯 Fila de Definição" abaixo)
 
@@ -132,6 +138,7 @@ Implementado em **2026-10-05**: Sistema de gates de prontidão e mapa de depend�
 | Spec | Pasta | O que Felipe precisa clarificar | Próximo passo |
 |---|---|---|---|
 | **[`scope-definition/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md`](./scope-definition/07_EVENTOS_MUNDIAIS_E_SAZONAIS.md)** | scope-definition | Qual evento implementar PRIMEIRO? (Lua de Sangue / Eclipse / Solstício Negro / Cerco ao Vilarejo?) + Escopo: 1 evento por satélite ou agregar? | Quando decidido → divide em Índice Mestre + satélites, move 1º evento para `backlog/` |
+| **[`scope-definition/35_05_CALIBRACAO_VISUAL_POS_RELIGACAO.md`](./scope-definition/35_05_CALIBRACAO_VISUAL_POS_RELIGACAO.md)** | scope-definition | Aparelho-alvo mobile + metas de FPS; leitura por bioma (`safe_house`, `gloomy_woods`); luz do jogador no centro ou no cajado; limiar de contraste | Depois de 35.01/35.03/35.04 entregues → promove para `backlog/` |
 | **[`scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md`](./scope-definition/18_ARPG_CONTINUOUS_WORLD_TOPOLOGY.md)** | scope-definition | 🔄 **Partially Superseded**: conectividade entre biomas já resolvida por `delivered/25` (Chunk Streaming). Resta: variedade orgânica interna de `gloomy_woods` é desejo ou escopo? | Quando clarificado → vira Blueprint técnico próprio ou fecha como "completo via #25" |
 
 > ✅ *Removida em 2026-09-28:* spec 05 (i18n) — a decisão de biblioteca já

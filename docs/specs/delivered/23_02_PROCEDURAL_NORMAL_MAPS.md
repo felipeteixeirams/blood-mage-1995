@@ -21,3 +21,7 @@ Gerar normal maps RGB em tempo de execução para texturas procedurais de person
 ## Validação e Garantia de Qualidade
 - Testes unitários cobrindo casos de borda e geração de transparência.
 - Performance de boot mantida com consumo irrisório de CPU/RAM durante a inicialização.
+
+## ⚠️ Correção pós-entrega (2026-10-07)
+
+A afirmação "aplicado a `spr_bloodmage`" não se confirma: o PNG do jogador é carregado por `scene.load.spritesheet` sem normal map e o fallback procedural usa `addSpriteSheet` sem `dataSource` (execução: `player.texture.dataSource` vazio). Inimigos, paredes e baús têm normal map de fato. Correção em [`backlog/35_03`](../backlog/35_03_NORMAL_MAP_E_LUZ_DO_JOGADOR.md) (achado A6).

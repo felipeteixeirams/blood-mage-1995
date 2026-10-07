@@ -74,3 +74,4 @@ Fontes: [Dungeon Siege Wiki](https://dungeonsiege.fandom.com/wiki/Dungeon_Siege)
 | 2026-09-06 | Criação e entrega da Fase A (`ChunkStreamer.ts`). | Claude |
 | 2026-09-08 | Entrega das Fases B, B.2 e D (PR #92). | Jules / Claude |
 | 2026-09-08 | Entrega da Fase C (transições sem corte entre biomas). Spec 100% concluída. | Jules |
+| 2026-10-07 | ⚠️ Correção pós-entrega: a Fase B.2 não está ligada — `loadChunkBiome` calcula `offsetX` mas não o repassa, e `DungeonGenerator.generate` ignora `_offsetX/_offsetY`; todo chunk nasce em x≈0–2500 (Safe House recebe a grama de `gloomy_woods` por baixo; Arcade também faz streaming). Correção em [`backlog/35_04`](../backlog/35_04_CONTAMINACAO_BIOMAS_CHUNK_STREAMING.md). | Claude |

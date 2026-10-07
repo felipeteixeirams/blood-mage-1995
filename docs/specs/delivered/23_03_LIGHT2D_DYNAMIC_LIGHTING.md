@@ -24,3 +24,7 @@ Substituir as falsas luzes de canvas por iluminação dinâmica de WebGL via `Li
 ## Validação e Garantia de Qualidade
 - 60 FPS garantido no desktop e mobile.
 - Fallback automático para `darknessOverlay` no modo Canvas ou quando `postProcessingEnabled` = `false`.
+
+## ⚠️ Correção pós-entrega (2026-10-07)
+
+Em runtime WebGL o Light2D **nunca liga**: `LightingSystem.ts:79` testa `renderer.isWebGL` (inexistente no Phaser 4.2.1) → `enabled=false`, `lights.active=false`, 0 luzes. Além disso `applyLightPipeline` usa `setPipeline('Light2D')` (API do Phaser 3; no-op no 4 — o correto é `setLighting(true)`) e `addLightSource`, chamado pela lareira da Safe House, não existe. Só os inimigos têm `lighting=true` (18 de ~7.750 objetos). Correção em [`backlog/35_01`](../backlog/35_01_DETECCAO_WEBGL_E_LIGHT2D_PHASER4.md) (achados A1, A2, A5).

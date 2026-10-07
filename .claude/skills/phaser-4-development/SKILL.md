@@ -5,6 +5,8 @@ description: Diretrizes de arquitetura, renderização WebGL2, Dynamic Textures 
 
 # 🎮 Skill: Phaser 4.2.1 Game Development & WebGL2 Rendering
 
+> ⚠️ **Correção 2026-10-07:** `renderer.isWebGL` **não existe** no Phaser 4.2.1 — os snippets abaixo que o usam desligam o efeito em WebGL real. Use `renderer.type === Phaser.WEBGL`; para iluminação por objeto use `obj.setLighting(true)` (não `setPipeline`). Ver `docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md` item 21 e `docs/specs/backlog/35_01_DETECCAO_WEBGL_E_LIGHT2D_PHASER4.md`.
+
 Esta skill ensina agentes de IA (como Claude Code) a arquitetar, desenvolver e otimizar recursos utilizando o **Phaser 4.2.1** com foco em renderização WebGL2 de alta performance, padrões de texturas procedurais assadas e shaders customizados no ecossistema do **Bloodmage 1995**.
 
 ---

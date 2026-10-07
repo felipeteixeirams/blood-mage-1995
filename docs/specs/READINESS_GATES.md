@@ -40,44 +40,36 @@ Cada spec em **backlog** ou **in-progress** deve passar por 4 gates antes de ser
 
 ---
 
-## 📋 Status Atual de Specs
+## 📋 Status Atual de Specs (reconstruído em 2026-10-07)
 
-### 🔒 Bloqueadas (Não começar até gates passarem)
+> A versão de 2026-10-05 desta tabela estava errada (montada a partir de outra
+> branch: listava 03, 06, 09, 10, 11, 16, 17, 25 como abertas — todas já estão
+> em `delivered/`). Fonte de verdade: [`DEPENDENCY_MAP.yaml`](./DEPENDENCY_MAP.yaml).
 
-| Spec | Nome | Gate 1 | Gate 2 | Gate 3 | Gate 4 | Bloqueado por | Ação |
-|------|------|--------|--------|--------|--------|---------------|------|
-| **07** | Eventos Mundiais e Sazonais | ⏳ | ⏳ | ⏳ | ⏳ | Definição de escopo | Agendar refinamento |
-| **08** | Mapeamento Sprites | ✅ | ✅ | ✅ | ❌ | Spec 14 (sprites) | Aguardar art |
-| **13** | UI Assets Externos Framework | ✅ | ⏳ | ⏳ | ❌ | Spec 14 | Aguardar decisão |
-| **14** | Sprites Assets Externos | ✅ | ⏳ | ⏳ | ❌ | Decisão Felipe | Escalate |
-| **29** | Cloud Save Fase 5 | ✅ | ✅ | ⏳ | ✅ | Escopo grande (MVP) | Redefinir scope |
+| Spec | Nome | G1 Produto | G2 Protótipo | G3 Escopo | G4 Dependências | Bloqueio / Próxima ação |
+|------|------|:-:|:-:|:-:|:-:|---|
+| **35.02** | Gate E2E de Jogabilidade | ✅ | ✅ (sonda Playwright rodou em 2026-10-07) | ✅ | ✅ | **Executável agora** |
+| **35.01** | Detecção WebGL + Light2D Phaser 4 | ✅ | ✅ (API verificada no Phaser 4.2.1 instalado) | ✅ | ⏳ 35.02 | Após 35.02 |
+| **35.04** | Contaminação de biomas (chunks) | ✅ (default: streaming só na Campanha) | ✅ (bounds medidos) | ✅ | ⏳ 35.02 | Após 35.02 |
+| **35.03** | Normal map do jogador | ✅ | ⏳ (tempo de boot não medido) | ✅ | ⏳ 35.01 | Após 35.01 |
+| **35.05** | Calibração pós-religação | ⏳ Felipe | ❌ | ⏳ | ⏳ 35.01/03/04 | `scope-definition/` |
+| **07** | Eventos Mundiais e Sazonais | ⏳ Felipe | ⏳ | ⏳ | ✅ | `scope-definition/` |
+| **18** | Topologia de Mundo Contínuo | ⏳ Felipe | — | ⏳ | ✅ | `scope-definition/` |
+| **08** | Mapeamento de Sprites | ✅ | ✅ | ✅ | ❌ arte externa | Aguarda orçamento de arte |
+| **32** | Guia PixelLab | ✅ | ✅ | ✅ | ❌ arte externa | Aguarda orçamento de arte |
+| **29** | Cloud Save Fase 5 | ⏳ Felipe (demanda + LGPD) | ✅ | ✅ | ✅ | Aguarda decisão comercial |
 
-### ✅ Prontos para Implementar (Todos os 4 gates: ✅)
+## 🏁 Lição da Spec 35 — Gate de Entrega (Definition of Done)
 
-| Spec | Nome | Status | Next Action |
-|------|------|--------|-------------|
-| **03** | Fase 3 — Status Sobrevivência | in-progress | QA com Felipe |
-| **06** | Eixo A — Gráficos Avançados | in-progress | Continue |
-| **11** | Touchpad & Joystick Nativo | in-progress | Code review |
+Os 4 gates acima decidem se uma spec **pode começar**. A auditoria da Spec 35
+mostrou que falta um portão na **saída**: 23.01, 23.02, 23.03 e 25 (fase B.2)
+foram para `delivered/` com testes unitários verdes, mas o comportamento não
+existe em runtime (mocks com propriedades que o engine não tem).
 
-### ⏳ Outros (Prontos, sem gates definidos)
-
-| Spec | Nome | Status | Ação |
-|------|------|--------|------|
-| **09** | Guia Direto Pixel Lab | in-progress | Documentação |
-| **10** | Evolução Gráfica & Áudio | in-progress | Continue |
-| **16** | UI Resolução Adaptativa | in-progress | Continue |
-| **17** | Polimento Gráfico Calibração | in-progress | Continue |
-| **18** | Topologia Mundo Contínuo | in-progress | Continue |
-| **25** | Modais Secundários & Gamepad | in-progress | Continue |
-
-### 🔍 Em QA (Código pronto, bloqueado em validação)
-
-| Spec | Nome | Progress | Bloqueado em | Ação |
-|------|------|----------|--------------|------|
-| **03** | Fase 3 — Status Sobrevivência | 95% | Felipe QA | Agendar playtest |
-
----
+**Regra:** uma spec que muda render, cenas ou geração de mundo só vai para
+`delivered/` com **evidência de execução real** registrada no changelog
+(sonda/E2E Playwright em WebGL, screenshot ou leitura de estado de
+`window.gameScene`) — não só `pnpm test`.
 
 ## 🔄 Como Usar Este Documento
 
@@ -107,4 +99,4 @@ Assim o histórico de gates fica rastreável no git.
 
 ---
 
-**Última revisão:** 2026-10-05
+**Última revisão:** 2026-10-07

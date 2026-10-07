@@ -159,3 +159,4 @@ Aplicar via `camera.filters.internal` / `camera.filters.external` (v4) — sem s
 | Data | O que mudou | Autor |
 |------|-------------|-------|
 | 2026-08-11 | Criação — roadmap Eixos A/B/C + discovery Phaser 4.2 | opencode (Felipe) |
+| 2026-10-07 | Eixo A foi entregue como `delivered/23_*`, mas os critérios de §A.3 nunca foram verificados em execução — Light2D e filtros de câmera estão inertes em WebGL real. Ver [`backlog/35_00`](../backlog/35_00_JOGAVEL_E_VISUAL_SEM_ASSETS_INDICE.md). Esta discovery não deve gerar spec nova: o trabalho restante do Eixo A está nas satélites 35.01/35.03/35.05. | Claude |

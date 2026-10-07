@@ -18,6 +18,8 @@ from datetime import datetime
 REPO_ROOT = Path(__file__).parent.parent
 DEPENDENCY_MAP = REPO_ROOT / "docs/specs/DEPENDENCY_MAP.yaml"
 OUTPUT = REPO_ROOT / "docs/specs/DEPENDENCY_GRAPH.md"
+# Só backlog/ e in-progress/ podem ser "prontas" — discovery/scope-definition nunca.
+EXECUTABLE_STATUSES = {"backlog", "in-progress"}
 
 def load_map():
     """Carrega DEPENDENCY_MAP.yaml"""
@@ -30,6 +32,7 @@ def categorize_specs(specs):
     blocked = {}
     ready = {}
     in_qa = {}
+    other = {}
 
     for spec_id, spec_data in specs.items():
         blockers = spec_data.get("blocked_by", [])
@@ -39,10 +42,12 @@ def categorize_specs(specs):
             blocked[spec_id] = spec_data
         elif status == "in-progress" and spec_data.get("blocking_on"):
             in_qa[spec_id] = spec_data
-        else:
+        elif status in EXECUTABLE_STATUSES:
             ready[spec_id] = spec_data
+        else:
+            other[spec_id] = spec_data
 
-    return blocked, ready, in_qa
+    return blocked, ready, in_qa, other
 
 def generate_dependency_tree(specs):
     """Gera árvore ASCII de dependências"""
@@ -77,15 +82,15 @@ def generate_dependency_tree(specs):
                 prefix_ext = "  " * (indent + 1) + "└─ "
                 lines.append(f"{prefix_ext}{blocker_icon} BLOQUEADO: {reason}")
 
-    for spec_id, spec_data in specs.items():
-        if not spec_data.get("blocked_by"):
-            add_spec_tree(spec_id, spec_data)
+    # Cada spec é raiz da própria cadeia de bloqueio (ex.: 35.03 → 35.01 → 35.02).
+    for spec_id in sorted(specs.keys()):
+        add_spec_tree(spec_id, specs[spec_id])
 
     return "\n".join(lines)
 
 def generate_markdown(specs):
     """Gera markdown com todos os gráficos e tabelas"""
-    blocked, ready, in_qa = categorize_specs(specs)
+    blocked, ready, in_qa, other = categorize_specs(specs)
 
     md = []
     md.append("# 📊 Spec Dependency Graph — Bloodmage 1995")
@@ -101,6 +106,7 @@ def generate_markdown(specs):
     md.append(f"- 🔒 **Bloqueados:** {len(blocked)} specs")
     md.append(f"- ✅ **Prontos:** {len(ready)} specs")
     md.append(f"- 🔍 **Em QA/Validação:** {len(in_qa)} specs")
+    md.append(f"- 🗂️ **Outras (não executáveis/organização):** {len(other)} specs")
     md.append("")
 
     # ===== BLOQUEADOS =====
@@ -115,14 +121,10 @@ def generate_markdown(specs):
         for spec_id in sorted(blocked.keys()):
             spec = blocked[spec_id]
             blockers = spec.get("blocked_by", [])
-            blocker_str = ""
-            for b in blockers:
-                if b.get("spec_id"):
-                    blocker_str = f"Spec {b['spec_id']}"
-                else:
-                    blocker_str = "Decisão externa"
-            blocker_reason = blockers[0].get("reason", "?") if blockers else "?"
-            status = blockers[0].get("status", "?") if blockers else "?"
+            blocker_str = ", ".join(
+                f"Spec {b['spec_id']}" if b.get("spec_id") else "Externo" for b in blockers
+            )
+            status = ", ".join(sorted({b.get("status", "?") for b in blockers}))
 
             md.append(f"| {spec_id} | {spec.get('name', '?')} | {blocker_str} | {status} |")
 
@@ -135,7 +137,9 @@ def generate_markdown(specs):
                 blocker_owner = spec.get("blocker_owner", "?")
                 md.append(f"**[{spec_id}] {spec.get('name')}**")
                 md.append(f"- Bloqueado por: {blocker_owner}")
-                md.append(f"- Razão: {spec.get('blocked_by', [{}])[0].get('reason', '?')}")
+                external = [b for b in spec.get("blocked_by", []) if not b.get("spec_id")]
+                reason = (external or spec.get("blocked_by", [{}]))[0].get("reason", "?")
+                md.append(f"- Razão: {reason}")
                 md.append("")
 
     # ===== PRONTOS =====
@@ -172,6 +176,17 @@ def generate_markdown(specs):
             md.append(f"- Bloqueado em: {spec.get('blocking_on', '?')}")
             md.append(f"- Nota: {spec.get('note', 'N/A')}")
             md.append("")
+
+    # ===== OUTRAS =====
+    if other:
+        md.append("---")
+        md.append("")
+        md.append("## 🗂️ Outras (não executáveis por agente)")
+        md.append("")
+        for spec_id in sorted(other.keys()):
+            spec = other[spec_id]
+            md.append(f"- **[{spec_id}] {spec.get('name')}** ({spec.get('status')}) — {spec.get('note', '')}")
+        md.append("")
 
     # ===== DEPENDÊNCIA TREE =====
     md.append("---")
@@ -212,8 +227,8 @@ def main():
 
         OUTPUT.write_text(md, encoding="utf-8")
         print(f"✅ Dependency graph gerado: {OUTPUT}")
-        print(f"   - {len([s for s in specs.values() if s.get('blocked_by')])} specs bloqueadas")
-        print(f"   - {len([s for s in specs.values() if not s.get('blocked_by') and s.get('status') != 'in-progress'])} specs prontas")
+        blocked, ready, in_qa, other = categorize_specs(specs)
+        print(f"   - {len(blocked)} bloqueadas | {len(ready)} prontas | {len(in_qa)} em QA | {len(other)} outras")
 
     except FileNotFoundError:
         print(f"❌ Arquivo não encontrado: {DEPENDENCY_MAP}")

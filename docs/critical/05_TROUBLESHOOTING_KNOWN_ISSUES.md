@@ -613,6 +613,28 @@ Dois sistemas que geram/decoram conteúdo pro **mesmo espaço físico** (piso "c
 
 ---
 
+## 21. Light2D, PostFX e Glows Inertes em WebGL (`renderer.isWebGL` Não Existe no Phaser 4) — ABERTO
+
+### 🔴 Sintoma
+Nada quebra visivelmente: o jogo roda, mas sem iluminação dinâmica, sem vinheta/gradação de câmera, sem glow de elite e sem shader de árvore. `pnpm test` passa 100%.
+
+### 🔍 Causa-Raiz
+- `renderer.isWebGL === true` é a checagem usada em `LightingSystem.ts:79`, `PostFXSystem.ts:56`, `AtmosphericTreeShader.ts:236`, `Enemy.ts:160`, `SafeHouseAnimationController.ts:189` — e o `WebGLRenderer` do Phaser 4.2.1 **não tem** essa propriedade. Forma correta: `renderer.type === Phaser.WEBGL`.
+- `LightingSystem.applyLightPipeline` usa `setPipeline('Light2D')` (Phaser 3). No Phaser 4: `gameObject.setLighting(true)`.
+- Mocks de teste injetam `renderer: { isWebGL: true }`, por isso os testes passam.
+- As skills `phaser-4-fx-filters` e `phaser-4-development` ensinam o padrão errado.
+
+### 🔬 Como Confirmar
+Em jogo (WebGL): `window.gameScene.sys.game.renderer.isWebGL` → `undefined`; `window.gameScene.lights.active` → `false`; `window.gameScene.cameras.main.filters.external.list.length` → `0`.
+
+### 🛠️ Resolução
+Especificada em `docs/specs/backlog/35_01_DETECCAO_WEBGL_E_LIGHT2D_PHASER4.md`. **Até lá: não copie o snippet `renderer.isWebGL` das skills.**
+
+### 🛡️ Prevenção
+Mock de engine em teste deve reproduzir a forma real da API (conferir em `node_modules/phaser/src`), e mudanças de render só vão para `delivered/` com evidência de execução real (ver `docs/specs/READINESS_GATES.md`, "Gate de Entrega").
+
+---
+
 ## 🔗 Referências Relacionadas
 - [[docs/critical/00_ANTI_REGRESSION_GUIDE.md]] — Regras e guardrails de estabilidade.
 - [[docs/archive/integration/00_LOVABLE_INTEGRATION.md]] — Diretrizes de integração de assets e telas do Lovable.

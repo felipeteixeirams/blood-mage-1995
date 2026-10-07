@@ -1,14 +1,15 @@
 # 📊 Spec Dependency Graph — Bloodmage 1995
 
-**Última atualização:** 2026-10-05 04:42:15
+**Última atualização:** 2026-10-07 03:30:55
 
 ---
 
 ## 📈 Sumário de Status
 
-- 🔒 **Bloqueados:** 5 specs
-- ✅ **Prontos:** 12 specs
-- 🔍 **Em QA/Validação:** 1 specs
+- 🔒 **Bloqueados:** 9 specs
+- ✅ **Prontos:** 2 specs
+- 🔍 **Em QA/Validação:** 0 specs
+- 🗂️ **Outras (não executáveis/organização):** 1 specs
 
 ---
 
@@ -16,21 +17,41 @@
 
 | Spec | Nome | Bloqueado Por | Status |
 |------|------|---------------|--------|
-| 07 | Eventos Mundiais e Sazonais | Decisão externa | waiting_design |
-| 08 | Mapeamento Completo de Sprites & Checklist | Spec 14 | waiting_external |
-| 13 | UI Assets Externos Framework | Spec 14 | waiting_spec |
-| 14 | Sprites & Assets Externos Tiers | Decisão externa | waiting_decision |
-| 29 | Cloud Save — Fase 5 | Decisão externa | deprioritized |
+| 07 | Eventos Mundiais e Sazonais | Externo | waiting_decision |
+| 08 | Mapeamento Completo de Sprites & Checklist | Externo | waiting_external |
+| 18 | Topologia de Mundo Contínuo e Variedade Orgânica | Externo | waiting_decision |
+| 29 | Cloud Save — Fase 5 | Externo | waiting_decision |
+| 32 | Guia de Produção de Sprites PixelLab | Externo | waiting_external |
+| 35.01 | Detecção WebGL e Iluminação Phaser 4 Real | Spec 35.02 | waiting_spec |
+| 35.03 | Normal Map e Iluminação do Jogador | Spec 35.01 | waiting_spec |
+| 35.04 | Contaminação de Biomas no Chunk Streaming | Spec 35.02 | waiting_spec |
+| 35.05 | Calibração Visual Pós-Religação e Orçamento de Render | Spec 35.01, Spec 35.03, Spec 35.04, Externo | waiting_decision, waiting_spec |
 
 ### Detalhes de Bloqueadores Externos
 
-**[08] Mapeamento Completo de Sprites & Checklist**
-- Bloqueado por: Felipe (decisão de orçamento de arte)
-- Razão: Sprites físicos (arte pixel) ainda não produzidos
+**[07] Eventos Mundiais e Sazonais**
+- Bloqueado por: Felipe (decisão de produto)
+- Razão: Qual evento implementar primeiro e escopo por satélite
 
-**[14] Sprites & Assets Externos Tiers**
-- Bloqueado por: Felipe (decisão estratégica)
-- Razão: Orçamento de arte e direção artística ainda pendente de decisão do Felipe
+**[08] Mapeamento Completo de Sprites & Checklist**
+- Bloqueado por: Felipe (orçamento + direção de arte)
+- Razão: Sprites físicos dos personagens ainda não produzidos (orçamento de arte)
+
+**[18] Topologia de Mundo Contínuo e Variedade Orgânica**
+- Bloqueado por: Felipe (decisão de produto)
+- Razão: Partially superseded por delivered/25; variedade interna de gloomy_woods é desejo ou escopo?
+
+**[29] Cloud Save — Fase 5**
+- Bloqueado por: Felipe (confirmação comercial)
+- Razão: Nenhuma integração de conta/nuvem sem aprovação explícita (demanda comercial + LGPD)
+
+**[32] Guia de Produção de Sprites PixelLab**
+- Bloqueado por: Felipe (orçamento + direção de arte)
+- Razão: Só tem valor com produção PixelLab ativa
+
+**[35.05] Calibração Visual Pós-Religação e Orçamento de Render**
+- Bloqueado por: Felipe (direção de arte + metas de performance)
+- Razão: Decisões do Felipe: aparelho-alvo e metas de FPS, leitura por bioma, posição da luz do jogador
 
 ---
 
@@ -38,46 +59,46 @@
 
 | Spec | Nome | Status | Readiness |
 |------|------|--------|-----------|
-| 01 | DISCOVERY — Avaliação Arquitetural Phaser 4.2.1 | discovery | ❓ Não definido |
-| 02 | Discovery — Pipeline de Integração de Assets Externos | discovery | ❓ Não definido |
-| 04 | DISCOVERY — Mobile App & Monetização Indie | discovery | ❓ Não definido |
-| 05 | REJEITADA — Sistema de Skinning e Camadas Dinâmicas | rejected | ❓ Não definido |
-| 06 | Eixo A — Gráficos Avançados | in-progress | ✅ Todos |
-| 09 | Guia Direto para Pixel Lab (Bloodmage 1995) | in-progress | ❓ Não definido |
-| 10 | Evolução Gráfica & Auditiva (Quick Wins & Roadmap) | in-progress | ❓ Não definido |
-| 11 | Touchpad & Joystick Virtual Nativo Phaser | in-progress | ✅ Todos |
-| 16 | Evolução Gráfica — Resolução Adaptativa & UI | in-progress | ❓ Não definido |
-| 17 | Polimento Gráfico — Calibração dos Sistemas | in-progress | ❓ Não definido |
-| 18 | Topologia de Mundo Contínuo e Variedade | in-progress | ❓ Não definido |
-| 25 | Padronização de Modais Secundários & Gamepad | in-progress | ❓ Não definido |
+| 35.00 | Índice Mestre — Jogável e Visual sem Assets | backlog | ❓ Não definido |
+| 35.02 | Gate E2E de Jogabilidade (Arcade + Campanha) | backlog | ❓ Não definido |
 
 ---
 
-## 🔍 Em QA/Validação (Código Pronto, Bloqueado em Playtest)
+## 🗂️ Outras (não executáveis por agente)
 
-**[03] Fase 3 — Status de Sobrevivência**
-- Progresso: 95%
-- Bloqueado em: Felipe (QA manual e tuning)
-- Nota: Código 100% pronto, aguardando playtest
+- **[25-raiz] Arquivo solto docs/specs/25_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md** (housekeeping) — Quase-duplicata de delivered/28 (ambas status: completed). Mesclar diferenças e apagar — aguarda OK do Felipe
 
 ---
 
 ## 🌳 Árvore de Dependências
 
 ```
-🔨 [03] Fase 3 — Status de Sobrevivência
-🔨 [06] Eixo A — Gráficos Avançados
-🔨 [11] Touchpad & Joystick Virtual Nativo Phaser
-🔨 [09] Guia Direto para Pixel Lab (Bloodmage 1995)
-🔨 [10] Evolução Gráfica & Auditiva (Quick Wins & Roadmap)
-🔨 [16] Evolução Gráfica — Resolução Adaptativa & UI
-🔨 [17] Polimento Gráfico — Calibração dos Sistemas
-🔨 [18] Topologia de Mundo Contínuo e Variedade
-🔨 [25] Padronização de Modais Secundários & Gamepad
-❓ [01] DISCOVERY — Avaliação Arquitetural Phaser 4.2.1
-❓ [02] Discovery — Pipeline de Integração de Assets Externos
-❓ [04] DISCOVERY — Mobile App & Monetização Indie
-❓ [05] REJEITADA — Sistema de Skinning e Camadas Dinâmicas
+📝 [07] Eventos Mundiais e Sazonais
+  └─ ⛔ BLOQUEADO: Qual evento implementar primeiro e escopo por satélite
+📋 [08] Mapeamento Completo de Sprites & Checklist
+  └─ ⏳ BLOQUEADO: Sprites físicos dos personagens ainda não produzidos (orçamento de arte)
+📝 [18] Topologia de Mundo Contínuo e Variedade Orgânica
+  └─ ⛔ BLOQUEADO: Partially superseded por delivered/25; variedade interna de gloomy_woods é desejo ou escopo?
+❓ [25-raiz] Arquivo solto docs/specs/25_UI_MODAIS_SECUNDARIOS_E_GAMEPAD_NAVIGATION.md
+📋 [29] Cloud Save — Fase 5
+  └─ ⛔ BLOQUEADO: Nenhuma integração de conta/nuvem sem aprovação explícita (demanda comercial + LGPD)
+📋 [32] Guia de Produção de Sprites PixelLab
+  └─ ⏳ BLOQUEADO: Só tem valor com produção PixelLab ativa
+📋 [35.00] Índice Mestre — Jogável e Visual sem Assets
+📋 [35.01] Detecção WebGL e Iluminação Phaser 4 Real
+  └─ 📋 [35.02] Gate E2E de Jogabilidade (Arcade + Campanha)
+📋 [35.02] Gate E2E de Jogabilidade (Arcade + Campanha)
+📋 [35.03] Normal Map e Iluminação do Jogador
+  └─ 📋 [35.01] Detecção WebGL e Iluminação Phaser 4 Real
+    └─ 📋 [35.02] Gate E2E de Jogabilidade (Arcade + Campanha)
+📋 [35.04] Contaminação de Biomas no Chunk Streaming
+  └─ 📋 [35.02] Gate E2E de Jogabilidade (Arcade + Campanha)
+📝 [35.05] Calibração Visual Pós-Religação e Orçamento de Render
+  └─ 📋 [35.01] Detecção WebGL e Iluminação Phaser 4 Real
+    └─ 📋 [35.02] Gate E2E de Jogabilidade (Arcade + Campanha)
+  └─ 📋 [35.03] Normal Map e Iluminação do Jogador
+  └─ 📋 [35.04] Contaminação de Biomas no Chunk Streaming
+  └─ ⛔ BLOQUEADO: Decisões do Felipe: aparelho-alvo e metas de FPS, leitura por bioma, posição da luz do jogador
 ```
 
 ---

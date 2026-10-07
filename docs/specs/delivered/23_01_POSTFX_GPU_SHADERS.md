@@ -27,3 +27,7 @@ Centralizar e gerenciar os efeitos de pós-processamento de câmera GPU no Phase
 ## Validação e Garantia de Qualidade
 - 100% dos testes unitários verdes em `PostFXSystem.test.ts`.
 - Validação de renderização sem erros no modo WebGL e Canvas.
+
+## ⚠️ Correção pós-entrega (2026-10-07)
+
+Execução real (sonda Playwright, WebGL) mostrou `postFX.isWebGL === false` e 0 filtros em `cameras.main.filters.external`: `PostFXSystem.ts:56` testa `renderer.isWebGL`, propriedade que não existe no `WebGLRenderer` do Phaser 4.2.1. Os testes passavam porque o mock injeta `isWebGL: true`. Correção especificada em [`backlog/35_01`](../backlog/35_01_DETECCAO_WEBGL_E_LIGHT2D_PHASER4.md); achado A1 em [`backlog/35_00`](../backlog/35_00_JOGAVEL_E_VISUAL_SEM_ASSETS_INDICE.md).
