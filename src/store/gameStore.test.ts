@@ -416,7 +416,7 @@ describe('gameStore', () => {
     });
   });
 
-  describe('Phaser<->React typed bridge (docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md)', () => {
+  describe('Phaser<->React typed bridge (docs/architecture/state-management.md)', () => {
     it('setActiveCurativeTrigger stores and clears the curative command', () => {
       useGameStore.getState().setActiveCurativeTrigger('bandages');
       expect(useGameStore.getState().activeCurativeTrigger).toBe('bandages');

@@ -313,7 +313,7 @@ export class GameScene extends Phaser.Scene {
     // 3. Generate Dungeon Map Layout
     this.buildDungeonMap(mapW, mapH, this.currentFloorDepth);
 
-    // Limpeza (2026-08-25, Fase 0 de docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md):
+    // Limpeza (2026-08-25, Fase 0 de docs/architecture/state-management.md):
     // removidos os listeners mortos 'trigger-npc' e 'trigger-scavenge' — grep
     // confirmou que nenhum dos dois era disparado por ninguém em src/. A
     // interação com NPC já é 100% via store (setActiveNPC chamado direto pela
@@ -321,7 +321,7 @@ export class GameScene extends Phaser.Scene {
     //
     // Respawno do jogador agora é disparado via store (respawnRequested), não mais
     // por window.addEventListener — ver public respawnPlayer() abaixo e
-    // docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
+    // docs/architecture/state-management.md
 
     // --- VISUAL: Darkness overlay + Lighting ---
     this.dragAimGraphics = this.add.graphics().setDepth(2050);
@@ -543,7 +543,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     // use-curative agora chega via store (activeCurativeTrigger) — ver
-    // PhaserGame.tsx e docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md.
+    // PhaserGame.tsx e docs/architecture/state-management.md.
     // useCurativeItem() já era público (também usado pelos atalhos Z/X/V abaixo).
 
 // Mouse / Touch Aim (ignoring movement pointers when virtual joysticks are active)
@@ -636,7 +636,7 @@ export class GameScene extends Phaser.Scene {
     // agora são chamados diretamente por PhaserGame.tsx via store (dragAim),
     // não mais por window.addEventListener.
     // update-cosmetic-tint agora chega via store (cosmeticTintVersion) — ver
-    // public applyCosmeticTint() abaixo e docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
+    // public applyCosmeticTint() abaixo e docs/architecture/state-management.md
 
     // Spec 17 (Polimento Gráfico por Calibração), Frente I: luzes, glow, névoa,
     // sombras e reflexos tinham GameObjects/tweens próprios (Lights, TileSprite,
@@ -756,7 +756,7 @@ export class GameScene extends Phaser.Scene {
    * limpa as telas de game over. Extraído do antigo listener
    * window.addEventListener('respawn-player', ...) — agora chamado por
    * PhaserGame.tsx quando useGameStore().respawnRequested vira true.
-   * Ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md.
+   * Ver docs/architecture/state-management.md.
    */
   public respawnPlayer() { // público: chamado por PhaserGame.tsx via store (respawnRequested)
     const spawnRoom = this.rooms[0];
@@ -851,7 +851,7 @@ export class GameScene extends Phaser.Scene {
    * Reaplica a paleta cosmética atual ao sprite do jogador. Extraído do
    * antigo listener window.addEventListener('update-cosmetic-tint', ...) —
    * agora chamado por PhaserGame.tsx quando useGameStore().cosmeticTintVersion
-   * muda. Ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md.
+   * muda. Ver docs/architecture/state-management.md.
    */
   public applyCosmeticTint() { // público: chamado por PhaserGame.tsx via store (cosmeticTintVersion)
     if (this.player) {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../../store/gameStore';
 
 // Migrado de window.addEventListener('loot-acquired', ...) para o store tipado
-// (lastLootPickup) — ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md.
+// (lastLootPickup) — ver docs/architecture/state-management.md.
 // O campo `id` incrementa a cada pickup, mesmo para o mesmo item, para que o
 // toast reapareça/reinicie o timer também em coletas consecutivas idênticas
 // (uma mudança de referência de objeto sozinha não seria suficiente aqui, já

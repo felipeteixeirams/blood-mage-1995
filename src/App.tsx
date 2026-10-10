@@ -13,7 +13,7 @@ import { tryLockLandscape, initOrientationGestureHandler } from './utils/orienta
 // only render after the splash/menu, so none of that code (nor its
 // transitive imports — Phaser itself, GameScene and everything it pulls in)
 // needs to be in the initial bundle. Each becomes its own chunk, fetched on
-// first use. See docs/critical/02_PERFORMANCE_OPTIMIZATION.md.
+// first use. See docs/critical/performance-optimization.md.
 const PhaserGame = lazy(() => import('./game/PhaserGame').then((m) => ({ default: m.PhaserGame })));
 const GameplayHUD = lazy(() => import('./components/GameplayHUD').then((m) => ({ default: m.GameplayHUD })));
 const LevelUpModal = lazy(() => import('./components/LevelUpModal').then((m) => ({ default: m.LevelUpModal })));

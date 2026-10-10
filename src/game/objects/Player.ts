@@ -1297,7 +1297,7 @@ this.stats.hp = Math.max(0, this.stats.hp - amount);
     soundEngine.playEquipLoot(); // Play sound for loot
 
     // Notify React UI — comando tipado via store, ver
-    // docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
+    // docs/architecture/state-management.md
     useGameStore.getState().notifyLootPickup(item);
   }
 

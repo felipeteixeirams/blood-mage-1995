@@ -186,7 +186,7 @@ export const GAME_ANIMATIONS: AnimationDefinition[] = [
   },
   // Casts (linhas 9-16 do spritesheet, 6 frames reais por direção nas colunas 0-5;
   // usamos `frames` explícito em vez de startFrame/endFrame para não incluir as
-  // 2 colunas finais transparentes de cada linha — ver docs/critical item 15).
+  // 2 colunas finais transparentes de cada linha — ver docs/troubleshooting/spritesheet-jogador-celulas-48-vs-68.md).
   {
     key: 'bloodmage_cast_south',
     textureKey: 'spr_bloodmage',

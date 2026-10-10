@@ -111,7 +111,7 @@ export class PlayerSkillSystem {
 
   // Payload plano em vez de CustomEvent<T> — a ponte com a UI passou a ser o
   // store tipado (dragAim), não mais window.dispatchEvent/CustomEvent. Ver
-  // docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md.
+  // docs/architecture/state-management.md.
   public handleDragAimStart(payload: { spellId: string }) {
     this.scene.activeDragAimSpellId = payload.spellId;
     this.scene.dragAimVector.set(0, 0);

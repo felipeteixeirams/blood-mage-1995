@@ -207,7 +207,7 @@ export class DungeonFlowController {
    * consistente ao entrar em modo Campanha (nunca em Arcade, cujo bioma de
    * piso nunca coincide com o bioma do chunk 0). Público só pra ser
    * testável diretamente, mesmo padrão de `getNextCampaignZone` abaixo. Ver
-   * docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md item 20.
+   * docs/troubleshooting/campanha-safe-house-rebake-crash-renderer.md.
    */
   public markOwnFloorChunkAsBuilt(biome: BiomeType): void {
     const ownChunkIndex = CAMPAIGN_ZONE_CHUNKS.findIndex((c) => c.biome === biome);

@@ -438,7 +438,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
                           ...settings,
                           activePaletteId: p.id
                         });
-                        // Comando tipado via store — ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
+                        // Comando tipado via store — ver docs/architecture/state-management.md
                         useGameStore.getState().bumpCosmeticTint();
                       }}
                       className={`py-0.5 border transition cursor-pointer ${

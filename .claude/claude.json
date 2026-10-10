@@ -57,9 +57,9 @@
       ".claude/skills/phaser-4-physics-combat/SKILL.md",
       ".claude/skills/phaser-4-fx-filters/SKILL.md",
       ".claude/skills/phaser-4-playtest-harness/SKILL.md",
-      "docs/critical/01_CRITICAL_FILES.md",
-      "docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md",
-      "docs/architecture/03_PHASER_PATTERNS.md"
+      "docs/critical/critical-files.md",
+      "docs/troubleshooting/README.md",
+      "docs/architecture/phaser-patterns.md"
     ],
     "specDirectory": "docs/specs/",
     "architectureDirectory": "docs/architecture/"

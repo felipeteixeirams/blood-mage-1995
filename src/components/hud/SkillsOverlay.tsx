@@ -282,7 +282,7 @@ export const SkillsOverlay: React.FC<SkillsOverlayProps> = ({
             active: true,
             hasDragged: false
           };
-          // Comando tipado via store — ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
+          // Comando tipado via store — ver docs/architecture/state-management.md
           useGameStore.getState().setDragAim({ spellId, phase: 'start', dx: 0, dy: 0, isDrag: false });
         }}
         onPointerMove={(e) => {

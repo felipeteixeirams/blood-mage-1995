@@ -14,7 +14,7 @@ import { Smartphone } from 'lucide-react';
  * esvaziado (virou um `return null`) por um commit não relacionado
  * (`fe1b4ed`, sobre minimapa procedural) sem nunca ter sido remontado de
  * volta em `App.tsx` — regressão silenciosa, mesmo padrão documentado em
- * `docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md`.
+ * `docs/troubleshooting/README.md`.
  */
 export const RotateDeviceOverlay: React.FC = () => {
   const [isPortrait, setIsPortrait] = useState(false);

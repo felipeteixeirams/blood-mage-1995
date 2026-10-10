@@ -24,7 +24,7 @@ não tiver certeza absoluta da sintaxe/existência de uma API do Phaser
 `github.com/phaserjs/phaser`) antes de escrever o código — não invente
 nome de classe/método por analogia com Phaser 3. Isto já rendeu erro real
 neste projeto: a auditoria de 2026-09 encontrou métodos citados em specs
-que nunca existiram no código (`docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md`).
+que nunca existiram no código.
 
 **`TilemapGPULayer` (confirmado real via docs oficiais, 2026-09)** —
 renderiza uma camada de tilemap inteira como 1 único quad via shader,
@@ -54,7 +54,7 @@ private hashLattice(ix: number, iy: number): number { /* ... */ }
 // esparsa — NUNCA chame o hash cru direto por célula de grid (bug real
 // corrigido em 2026-09: isso produz ruído "sal-e-pimenta" sem correlação
 // espacial, quebrando qualquer heightmap/autotiling que dependa de
-// vizinhança — ver docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md).
+// vizinhança).
 private pseudoNoise(x: number, y: number, freq: number): number { /* ... */ }
 ```
 
@@ -121,8 +121,7 @@ Marching Squares do zero. Marching Squares é uma técnica válida
 (transições suaves de contorno num campo escalar 2D) mas **ainda não
 está implementada aqui** — se for genuinamente necessária pra um caso
 novo, avise antes de introduzir uma técnica de geração paralela à
-existente, pelo mesmo motivo que motivou a Fila de Automação do Jules
-(`docs/specs/backlog/16_FILA_AUTOMACAO_JULES.md`): duas técnicas
+existente: duas técnicas
 concorrentes pro mesmo problema é dívida técnica, não robustez.
 
 ---
@@ -204,7 +203,7 @@ requisito, já em vigor).
 ## 8. 🚨 Regras que não mudam (herdadas de `phaser-4-development` e `CLAUDE.md`)
 
 - Nunca crie UI dentro do Canvas Phaser — toda UI é React (`src/components/`).
-- Ponte Phaser↔React é 100% Zustand (`docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md`) — nunca `CustomEvent`/`dispatchEvent`.
+- Ponte Phaser↔React é 100% Zustand (`docs/architecture/state-management.md`) — nunca `CustomEvent`/`dispatchEvent`.
 - `Player.ts`, `Enemy.ts`, `GameScene.ts`, `DungeonGenerator.ts` são
-  arquivos críticos Nível 1 (`docs/critical/01_CRITICAL_FILES.md`) — ver
+  arquivos críticos Nível 1 (`docs/critical/critical-files.md`) — ver
   antes de mexer, mesmo pra algo aparentemente pequeno.

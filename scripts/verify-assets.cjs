@@ -311,7 +311,7 @@ verifyManifestCoverage();
 
 if (hasError) {
   console.error('\n💥 FALHA NA INTEGRIDADE: assets corrompidos ou obrigatórios ausentes encontrados!');
-  console.error('Consulte /docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md para restaurar assets corrompidos.\n');
+  console.error('Consulte docs/troubleshooting/png-corrompido-utf8.md para restaurar assets corrompidos.\n');
   process.exit(1);
 } else {
   console.log('\n✅ Verificação de assets concluída sem falhas obrigatórias.\n');

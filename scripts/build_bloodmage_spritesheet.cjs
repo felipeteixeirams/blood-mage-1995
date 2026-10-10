@@ -27,7 +27,7 @@
  *   Ordem das direções (walk E cast): south, south-east, east, north-east, north, north-west, west, south-west
  *
  * Não usa dependências externas: decodifica e codifica PNG com zlib nativo.
- * Recusa qualquer arquivo de origem corrompido (ver docs/critical/05_TROUBLESHOOTING_KNOWN_ISSUES.md, itens 13-14).
+ * Recusa qualquer arquivo de origem corrompido (ver docs/troubleshooting/png-corrompido-utf8.md).
  */
 const fs = require('fs');
 const path = require('path');
@@ -72,7 +72,7 @@ function assertIntact(file, buf) {
   if (!buf.subarray(0, 8).equals(PNG_MAGIC)) {
     throw new Error(
       `${file}: não é um PNG válido (header = ${buf.subarray(0, 4).toString('hex')}). ` +
-      `Se começa com "efbfbd", o arquivo foi corrompido como texto UTF-8 — veja o item 14 do troubleshooting.`
+      `Se começa com "efbfbd", o arquivo foi corrompido como texto UTF-8 — veja docs/troubleshooting/png-corrompido-utf8.md.`
     );
   }
   if (buf.includes(Buffer.from([0xef, 0xbf, 0xbd]))) {

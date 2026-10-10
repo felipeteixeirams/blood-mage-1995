@@ -117,7 +117,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart, 
               e.stopPropagation();
               e.nativeEvent?.stopImmediatePropagation?.();
               soundEngine.playButtonClick();
-              // Comando tipado via store — ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
+              // Comando tipado via store — ver docs/architecture/state-management.md
               useGameStore.getState().setRespawnRequested(true);
             }}
             onPointerDown={(e) => {

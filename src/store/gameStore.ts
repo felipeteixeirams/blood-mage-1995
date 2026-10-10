@@ -161,7 +161,7 @@ interface GameStore {
   activeSkillTrigger: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | null;
   setActiveSkillTrigger: (skill: 'nova' | 'syphon' | 'bone_shield' | 'crimson_scythe' | 'blood_ritual_circle' | 'hemomancy_beam' | null) => void;
 
-  // Bridge tipada Phaser<->React (substitui window.dispatchEvent/CustomEvent) — ver docs/architecture/06_PHASER_REACT_BRIDGE_MIGRATION.md
+  // Bridge tipada Phaser<->React (substitui window.dispatchEvent/CustomEvent) — ver docs/architecture/state-management.md
   /** Comando "usar curativo" disparado pela UI; PhaserGame processa e reseta para null (mesmo padrão de activeSkillTrigger). */
   activeCurativeTrigger: 'bandages' | 'antidotes' | 'antibiotics' | null;
   setActiveCurativeTrigger: (type: 'bandages' | 'antidotes' | 'antibiotics' | null) => void;
