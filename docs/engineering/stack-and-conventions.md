@@ -67,7 +67,6 @@ public/              assets, fonts, audio_samples, ícones e manifest PWA
 
 - `src/` não importa nada de `lib/` nem de `@workspace/*` (busca em 2026-10-10); `@/lib/utils` é `src/lib/utils.ts`.
 - `artifacts/bloodmage/` tem `package.json`, `vite.config.ts`, `index.html` e `public/`, sem `src/` próprio; seu `tsconfig.json` inclui `../../src/**/*`. O `package.json` dele usa o mesmo nome (`@workspace/bloodmage`) do `package.json` da raiz.
-- A raiz também contém scripts soltos de uso pontual (`fix_*.cjs`, `patch_*.cjs`, `update_*.cjs`, `add_trap_collisions.cjs`) e relatórios `.md` datados (`MUDANCAS_SESSAO_2026_08_10_11.md`, `STATUS_PROGRESSO_2026_08_11.md`).
 
 ## Configuração relevante
 
