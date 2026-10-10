@@ -8,7 +8,7 @@ import { SafeHouseDetailFactory } from './SafeHouseDetailFactory';
 // Spec 18 de origin/main (PathDrivenGenerator, mundo contínuo por nós) e o
 // ProceduralForestGenerator desta branch (floresta orgânica por ruído) são
 // duas implementações concorrentes pro MESMO bioma (gloomy_woods) — decisão
-// arquitetural pendente (ver docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md).
+// arquitetural pendente.
 // Por ora, mantido instanciado mas NÃO usado em generate() — gloomy_woods
 // continua no ProceduralForestGenerator (produção/testado ao vivo) até a
 // escolha ser feita; não remover este import sem antes decidir o vencedor.
@@ -35,7 +35,6 @@ interface BspLeaf {
   height: number;
 }
 
-// Fase 3.2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
 // exportado pra GameScene.ts (posicionamento de tochas) usar o MESMO número em vez de um
 // valor solto (±70) que nunca foi conferido contra o vão de porta real.
 export const DOOR_WIDTH = 80;
@@ -79,7 +78,7 @@ export class DungeonGenerator {
     // vivo). Decisão pendente sobre migrar pro PathDrivenGenerator de
     // origin/main ("Spec 18", mundo contínuo por nós) — ambos coexistem no
     // código (ver import acima) até essa escolha ser feita; não trocar sem
-    // decidir antes (ver docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md).
+    // decidir antes.
     if (biome === 'gloomy_woods') {
       const forestGen = new ProceduralForestGenerator(this.scene);
       this.heightGenerator = forestGen.heightGenerator;
@@ -348,7 +347,7 @@ export class DungeonGenerator {
         }
       } else
       // Spikes and Barrels in regular chambers — mas não em `gloomy_woods`
-      // (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md, observação de escopo da
+      // (observação de escopo da
       // Frente 2/3): é a introdução da Campanha, o jogador começa desarmado e
       // corpo a corpo contra os scout_beast — armadilhas de área/barril
       // explosivo empilhadas em cima disso é punitivo demais pra quem ainda tá

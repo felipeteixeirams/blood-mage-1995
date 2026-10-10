@@ -338,7 +338,7 @@ describe('localStorage persistence', () => {
     });
   });
 
-  describe('Campaign State (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md — persistência)', () => {
+  describe('Campaign State (persistência)', () => {
     it('returns defaults when nothing is stored', () => {
       expect(loadCampaignState()).toEqual(defaultCampaignState);
     });

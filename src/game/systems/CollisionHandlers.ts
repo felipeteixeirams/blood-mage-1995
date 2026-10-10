@@ -92,7 +92,7 @@ export class CollisionHandlers {
     soundEngine.playChestOpen();
     ContractSystem.onChestOpened(scene);
 
-    // Frente 1/2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: o baú de
+    // o baú de
     // suprimentos da Safe House não sorteia loot aleatório — dá a Adaga de Aço
     // garantida (item fixo, não LootSystem.generateLoot) e avança
     // obj_loot_chest de quest_ch1_first_steps.
@@ -232,7 +232,7 @@ export class CollisionHandlers {
     }
   }
 
-  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero):
+  // Zero-to-Hero:
   // dano do golpe de adaga — mesmo caminho de efeitos do handleProjectileHitEnemy
   // acima (crit roll, floating text, vampirismo, morte/splatter), só sem
   // Projectile (golpe instantâneo, sem objeto de projétil pra liberar/girar).

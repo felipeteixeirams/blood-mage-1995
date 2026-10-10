@@ -30,7 +30,7 @@ interface GameStore {
   setCampaignZone: (zone: ZoneType) => void;
   unlockCampaignSpell: (spellId: string) => void;
   isCampaignSpellUnlocked: (spellId: string) => boolean;
-  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (27/08, fecha o
+  // (27/08, fecha o
   // gap dos "6 feitiços sem gatilho" — ver CAMPAIGN_SPELL_UNLOCK_LEVEL):
   // chamado do `GameScene.update()` sempre que `player.stats.level` sobe em
   // modo Campanha; destrava todo feitiço cujo nível-requisito já foi
@@ -171,7 +171,7 @@ interface GameStore {
   /** Comando "sincronizar reset de prestígio" disparado por performPrestige(); PhaserGame processa
    *  (GameScene.applyPrestigeReset() escreve o reset na instância viva do Player) e reseta para false.
    *  Mesmo padrão de respawnRequested — necessário porque performPrestige() só tem acesso à store,
-   *  não à instância viva do Player.ts (ver docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md). */
+   *  não à instância viva do Player.ts. */
   prestigeResetRequested: boolean;
   setPrestigeResetRequested: (requested: boolean) => void;
   /** Incrementado sempre que uma paleta cosmética é aplicada; PhaserGame reage à mudança de valor (sem payload). */
@@ -185,7 +185,6 @@ interface GameStore {
   notifyLootPickup: (item: LootItem) => void;
 
   /**
-   * Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
    * snapshot do minimap — layout de salas gerado por DungeonGenerator (Frente 1
    * da spec 11, 27/08: BSP + Cellular Automata, número/tamanho/posição das
    * salas variam por andar, não é mais um grid fixo). `hud/Minimap.tsx` lê
@@ -218,7 +217,7 @@ interface GameStore {
 
   activeNPC: 'cleric' | 'alchemist' | 'blacksmith' | 'elder' | null;
   setActiveNPC: (npc: 'cleric' | 'alchemist' | 'blacksmith' | 'elder' | null) => void;
-  // 'maelen' foi adicionado com a Safe House (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md)
+  // 'maelen' foi adicionado com a Safe House
   // — só o NPC "mais próximo" pode ser Maelen; `activeNPC` (o modal genérico de
   // loja) nunca recebe 'maelen' porque a interação com ele sempre é roteada
   // pra `startDialogue`, não pro modal de NPC comum (ver GameplayHUD.tsx/GameScene.ts).
@@ -274,7 +273,7 @@ const defaultPlayerStats: PlayerStats = {
   },
 };
 
-// Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (27/08) — gatilho
+// 27/08 — gatilho
 // simples por progressão pros 6 feitiços que ficavam permanentemente
 // trancados em modo Campanha (`unlockCampaignSpell` só estava ligado ao
 // blood_bolt/altar). Não existe conteúdo de Capítulo 2+ ainda (quests/zonas/
@@ -402,7 +401,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
     }));
   },
-  // Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md — "gatilhos" do
+  // "Gatilhos" do
   // Capítulo 1 (baú/scout/altar): `objectiveId === 'start'` continua sendo o
   // pseudo-id usado pela escolha de diálogo `give_quest` pra ativar a quest
   // (ver `selectDialogueChoice`); qualquer outro `objectiveId` agora incrementa
@@ -509,7 +508,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }));
     persistCampaignSnapshot(get().gameMode, get().campaignState);
   },
-  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero).
+  // Zero-to-Hero.
   unlockCampaignSpell: (spellId) => {
     const alreadyUnlocked = get().campaignState.unlockedSpellIds.includes(spellId);
     set((state) => {
@@ -533,7 +532,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (state.gameMode !== 'campaign') return true;
     return state.campaignState.unlockedSpellIds.includes(spellId);
   },
-  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (27/08) — ver
+  // 27/08 — ver
   // CAMPAIGN_SPELL_UNLOCK_LEVEL acima. Fora do modo Campanha é sempre um
   // no-op que devolve `[]` (não há o que destravar — `isCampaignSpellUnlocked`
   // já libera tudo direto fora da Campanha).

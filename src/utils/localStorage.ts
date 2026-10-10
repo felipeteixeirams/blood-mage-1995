@@ -737,7 +737,7 @@ export function saveRunStats(stats: RunStats): void {
   }
 }
 
-// Persistência do progresso de campanha — docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md.
+// Persistência do progresso de campanha.
 // Só a parte "de save" de `CampaignState` é persistida aqui: zona atual, capítulo,
 // flags de história, quests (com progresso real de objetivos), zonas descobertas e
 // magias desbloqueadas — além do `gameMode` (nível superior na store, não dentro de
@@ -824,7 +824,7 @@ export function saveCampaignState(state: PersistedCampaignState): void {
   }
 }
 
-// Auditoria de 27/08 (docs/product/ROADMAP.md, Fase 0) — `AchievementSystem.ts`
+// Auditoria de 27/08 — `AchievementSystem.ts`
 // (usado por `GameScene.ts`) é um sistema de conquistas SEPARADO do baseado em
 // store (`gameStore.ts` + `data/achievements.json` + `AchievementsModal.tsx`,
 // já persistido via `loadAchievements`/`saveAchievements` acima, chave

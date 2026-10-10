@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
 /**
- * Setup global do Vitest (quick win #1 de `docs/reviews/AUDIT_REPORT_QUALIDADE_CODIGO_2026.md`,
+ * Setup global do Vitest (quick win #1 da auditoria de código,
  * seção 6.1 — "Configuração Global de Mock Phaser no Vitest"), registrado
  * via `vitest.config.ts`'s `test.setupFiles`.
  *
@@ -9,9 +9,8 @@ import { vi } from 'vitest';
  * assim que qualquer submódulo do namespace (`Phaser.Math`, `Phaser.Geom`,
  * `new Phaser.Physics.Arcade.Sprite`, etc.) é acessado em RUNTIME — não só
  * como tipo TypeScript — o que quebra em jsdom sem o pacote opcional
- * `canvas` instalado (achado real, 27/08, rodando `pnpm test` de verdade —
- * ver changelog de `docs/specs/11_VISUAL_POLISH_FRONTS.md`, Frente 1/8, e
- * `docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md`). Isso força TODO arquivo
+ * `canvas` instalado (achado real, 27/08, rodando `pnpm test` de verdade).
+ * Isso força TODO arquivo
  * de teste que importa (direta ou transitivamente) algo que faz `import
  * Phaser from 'phaser'` a mockar o módulo, mesmo quando o teste em si nunca
  * chama nada do Phaser — cada suíte reinventava o mesmo stub mínimo

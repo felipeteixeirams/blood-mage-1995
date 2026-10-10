@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 /**
- * Frente 6 (docs/specs/11_VISUAL_POLISH_FRONTS.md — 27/08): Pitch Shifting
+ * Frente 6 (27/08): Pitch Shifting
  * aleatório em SFX repetitivos + drone dinâmico de sub-grave pra tensão.
  *
  * `soundEngine` é um singleton (só a instância é exportada, não a classe),

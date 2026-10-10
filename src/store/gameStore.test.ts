@@ -471,7 +471,7 @@ describe('gameStore', () => {
     });
   });
 
-  describe('minimap (docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md)', () => {
+  describe('minimap', () => {
     it('setMinimapRooms starts empty and stores the full snapshot GameScene pushes', () => {
       expect(useGameStore.getState().minimapRooms).toEqual([]);
 
@@ -486,7 +486,7 @@ describe('gameStore', () => {
     });
   });
 
-  describe('campaign quests (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md)', () => {
+  describe('campaign quests', () => {
     const QUEST_ID = 'quest_ch1_first_steps';
 
     it('advanceQuestObjective("start") activates the quest with zero progress', () => {
@@ -546,7 +546,7 @@ describe('gameStore', () => {
     });
   });
 
-  describe('campaign spell unlocks — Frente 3 Zero-to-Hero (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md)', () => {
+  describe('campaign spell unlocks — Frente 3 Zero-to-Hero', () => {
     it('treats every spell as unlocked outside campaign mode (arcade)', () => {
       useGameStore.getState().setGameMode('arcade');
       expect(useGameStore.getState().isCampaignSpellUnlocked('blood_bolt')).toBe(true);
@@ -628,7 +628,7 @@ describe('gameStore', () => {
     });
   });
 
-  describe('campaign state persistence (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md)', () => {
+  describe('campaign state persistence', () => {
     const CAMPAIGN_STATE_KEY = 'bloodmage_1995_campaign_state';
     const QUEST_ID = 'quest_ch1_first_steps';
 
@@ -680,7 +680,7 @@ describe('gameStore', () => {
     });
   });
 
-  describe('dialogue actions beyond give_quest (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md — gap da Frente 2)', () => {
+  describe('dialogue actions beyond give_quest (gap da Frente 2)', () => {
     // Nenhum diálogo real hoje usa give_spell/open_shop/heal_player/give_weapon
     // (só safe_house_maelen_intro > give_quest) — injeta uma árvore sintética
     // direto no campaignState pra exercitar o handler de cada ação.
@@ -736,7 +736,7 @@ describe('gameStore', () => {
     });
   });
 
-  describe('recompensa de quest — XP e spellUnlockId (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md — gap da Frente 2)', () => {
+  describe('recompensa de quest — XP e spellUnlockId (gap da Frente 2)', () => {
     const QUEST_ID = 'quest_ch1_first_steps';
 
     it('concede XP (via CampaignEffect) e desbloqueia a magia da recompensa ao completar a quest', () => {
@@ -754,7 +754,7 @@ describe('gameStore', () => {
     });
   });
 
-  describe("resetCampaignProgress — reset real de \"Nova Campanha\" (docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md)", () => {
+  describe("resetCampaignProgress — reset real de \"Nova Campanha\"", () => {
     it('limpa quests, magias desbloqueadas e zona de volta pro estado inicial, e persiste o reset', () => {
       useGameStore.getState().setGameMode('campaign');
       useGameStore.getState().setCampaignZone('gloomy_woods');
@@ -779,7 +779,7 @@ describe('gameStore', () => {
   });
 
   // Cobertura adicionada em 2026-09 (auditoria encontrou zero testes pra
-  // este sistema — ver docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md).
+  // este sistema).
   describe('prestige system (Blood Seal)', () => {
     it('canPrestige() é falso por padrão (nível 1, andar 1, 0 abates)', () => {
       expect(useGameStore.getState().canPrestige()).toBe(false);

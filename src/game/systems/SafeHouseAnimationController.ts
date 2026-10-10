@@ -233,7 +233,7 @@ export class SafeHouseAnimationController {
    */
   /**
    * `scene.portalSprite` deixou de ser um portal mágico giratório — desde a
-   * Fase D de `docs/specs/backlog/25_MUNDO_CONTINUO_CHUNK_STREAMING.md`
+   * Fase D do mundo contínuo
    * (`DungeonFlowController.revealDescentDoor()`) é uma porta física com luz
    * de tocha quente própria. Um scale-pulse + glow roxo etéreo (tratamento
    * antigo do portal giratório) ficaria errado numa porta de madeira/pedra

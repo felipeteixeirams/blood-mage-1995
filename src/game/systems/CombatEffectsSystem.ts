@@ -115,7 +115,7 @@ export class CombatEffectsSystem {
     // Conquistas unificadas: incrementa as métricas na store unificada (dispara
     // first_blood/slayer_10/slayer_50 via gameStore.incrementRunStat — o wiring
     // antigo direto em scene.achievements/achievementNotification foi removido
-    // daqui por ser um sistema paralelo e redundante, ver docs/archive/gameplay/06_ACHIEVEMENT_NOTIFICATIONS.md)
+    // daqui por ser um sistema paralelo e redundante)
     useGameStore.getState().incrementRunStat('kills_total', 1);
     if (enemy.config?.id === 'gargoyle' || enemy.config?.id === 'stone_gargoyle') {
       useGameStore.getState().incrementRunStat('kills_gargoyle', 1);

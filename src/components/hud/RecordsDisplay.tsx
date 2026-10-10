@@ -19,7 +19,7 @@ const DEMO: RecordEntry[] = [
   { name: 'NYX', score: 21050, level: 4 },
 ];
 
-// Auditoria de 27/08 (docs/product/ROADMAP.md, Fase 0): esta função lia direto
+// Auditoria de 27/08: esta função lia direto
 // da chave de localStorage "bloodmage.records", que nunca era escrita em lugar
 // nenhum — o "Salão dos Recordes" do menu de pausa sempre mostrava a lista DEMO,
 // nunca os recordes reais do jogador. Os recordes reais são salvos por

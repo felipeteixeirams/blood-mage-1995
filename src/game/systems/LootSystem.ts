@@ -30,7 +30,7 @@ export class LootSystem {
     // 25% chance to drop loot on monster kill, escalado por dropMult (ex:
     // selo de prestígio "macabre_fortune" — bug corrigido em 2026-09: o
     // bônus era calculado em getPrestigeModifiers().dropMult mas nunca era
-    // lido em lugar nenhum, ver docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md)
+    // lido em lugar nenhum)
     return Math.random() < 0.25 * dropMult;
   }
 

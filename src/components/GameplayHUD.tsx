@@ -281,7 +281,6 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
       {/* ── TOP RIGHT PANEL: Adaptive Minimap & Actions (Spec 16 Safe Area) ── */}
       <div className="absolute top-2 right-2 safe-area-right safe-area-top flex flex-col items-end gap-2 z-30 pointer-events-auto">
 
-        {/* Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md */}
         <Minimap />
 
         {/* Console de Botões de Ação Forjados alinhados à largura do Minimapa */}
@@ -290,7 +289,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
           onQuickSettingsToggle={() => setQuickSettingsOpen(!isQuickSettingsOpen)}
         />
 
-        {/* Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md — só aparece com quest ativa */}
+        {/* Só aparece com quest ativa */}
         <QuestTracker />
 
         {/* Run contracts panel (Retractile / Compact) */}
@@ -639,7 +638,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
               e.preventDefault();
               e.stopPropagation();
               soundEngine.playButtonClick();
-              // Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: Maelen abre a
+              // Maelen abre a
               // árvore de diálogo de campanha; os outros NPCs continuam no modal de loja.
               if (closestNPCType === 'maelen') {
                 startDialogue(getMaelenDialogueTreeId(campaignState.quests));
@@ -654,7 +653,7 @@ export const GameplayHUD: React.FC<GameplayHUDProps> = ({
         </div>
       )}
 
-      {/* ── Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: Diálogo de Campanha ── */}
+      {/* ── Diálogo de Campanha ── */}
       <DialogueModal />
 
       {/* ── NPC Dialogue Modal ── */}

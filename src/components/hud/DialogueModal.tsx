@@ -5,7 +5,6 @@ import { soundEngine } from '../../utils/soundEngine';
 import { useGamepadUINavigation } from '../../hooks/useGamepadUINavigation';
 
 /**
- * Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md:
  * Interface CRPG do diálogo de campanha — lê `campaignState.activeDialogueTree` /
  * `activeDialogueNodeId` (já preenchidos por `startDialogue`/`selectDialogueChoice` na
  * store) e renderiza o nó atual com efeito de máquina de escrever + escolhas ramificadas.

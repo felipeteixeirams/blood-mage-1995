@@ -138,7 +138,7 @@ export class AchievementSystem {
 
   /**
    * Carregar progresso de achievements do localStorage (via utils/localStorage.ts,
-   * validado com Zod e namespaceado — docs/product/ROADMAP.md, Fase 0, auditoria 27/08).
+   * validado com Zod e namespaceado, auditoria 27/08).
    */
   private loadProgress(): void {
     try {

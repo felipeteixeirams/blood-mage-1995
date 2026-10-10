@@ -3,7 +3,7 @@ import { Player } from './Player';
 import { useGameStore } from '../../store/gameStore';
 
 /**
- * Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero) —
+ * Zero-to-Hero —
  * fechamento do gap descrito na "Observação de escopo" (27/08): antes desta
  * correção, `castDaggerStrike` disparava sempre que `blood_bolt` estivesse
  * trancado em modo Campanha, mesmo que o jogador nunca tivesse aberto o baú
@@ -18,7 +18,7 @@ import { useGameStore } from '../../store/gameStore';
  * (`export class Player extends Phaser.Physics.Arcade.Sprite`) roda no
  * carregamento do módulo e precisa que `Phaser.Physics.Arcade.Sprite`
  * resolva pra um construtor válido — o default global de `tests/setup.ts`
- * (quick win #1 de docs/reviews/AUDIT_REPORT_QUALIDADE_CODIGO_2026.md,
+ * (quick win #1 da auditoria de
  * 27/08) é só `{ default: {} }`, que quebraria esse `extends` com "Class
  * extends value undefined is not a constructor or null". Por isso este
  * arquivo precisa do próprio override local (documentado em

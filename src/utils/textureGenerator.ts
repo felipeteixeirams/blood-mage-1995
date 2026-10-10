@@ -428,7 +428,6 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   };
 
   // 3. Skeleton Warrior (32x40)
-  // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
   // crânio e caixa torácica reescritos com elipses/curvas + degradê em vez de blocos
   // retangulares empilhados — o vestuário do quadril e a espada continuam retos (fazem
   // sentido: pano rústico cortado e lâmina reta), só a anatomia deixa de ser "bloco".
@@ -515,7 +514,6 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   addTextureWithNormalMap('spr_skeleton', skeletonCanvas);
 
   // 4. Cultist Acolyte (32x40)
-  // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
   // robe reescrita como silhueta em sino via quadraticCurveTo + degradê linear,
   // capuz como elipse com degradê radial + sombra interna, olhos como elipses,
   // mangas como paths afunilados. Ganhou normal map (Fase 3.1).
@@ -580,7 +578,6 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   addTextureWithNormalMap('spr_cultist', cultistCanvas);
 
   // 5. Hell Hound (36x28)
-  // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
   // torso e cabeça reescritos com curvas + degradê em vez de blocos + tarjas retas;
   // pernas viraram paths afunilados; já tinha normal map (mantido).
   const houndCanvas = createPixelCanvas(36, 28, (ctx) => {
@@ -663,7 +660,6 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   addTextureWithNormalMap('spr_hound', houndCanvas);
 
   // 6. Flesh Golem (48x56)
-  // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
   // corpo e cabeça reescritos com curvas + degradê linear/radial em vez de bloco + 2
   // tarjas retas; ganhou normal map (Fase 3.1) já que estava sendo redesenhado mesmo.
   const golemCanvas = createPixelCanvas(48, 56, (ctx) => {
@@ -749,7 +745,6 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   addTextureWithNormalMap('spr_specter', specterCanvas);
 
   // 8. Necro Lord Boss (64x72)
-  // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
   // armadura e chifres reescritos com curvas + degradê; capa ganha leve afunilamento
   // nas pontas em vez de faixas retangulares retas. Normal map (Fase 3.1) adicionado.
   const bossCanvas = createPixelCanvas(64, 72, (ctx) => {
@@ -821,7 +816,6 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   addTextureWithNormalMap('spr_boss', bossCanvas);
 
   // 8b. Zombie Shambler (32x40) - Classic Rotting Corpse
-  // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
   // torso reescrito com curvas + degradê linear, cabeça como elipse, ferida como
   // elipse com degradê radial. Ganhou normal map (Fase 3.1).
   const zombieCanvas = createPixelCanvas(32, 40, (ctx) => {
@@ -886,7 +880,6 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   addTextureWithNormalMap('spr_zombie_shambler', zombieCanvas);
 
   // 8c. Vampire Stalker (32x44) - Aristocratic Blood Predator
-  // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
   // cape reescrita como paths afunilados, casaco como silhueta curva com degradê
   // linear, cabeça como elipse. Ganhou normal map (Fase 3.1).
   const vampireCanvas = createPixelCanvas(32, 44, (ctx) => {
@@ -951,7 +944,6 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   addTextureWithNormalMap('spr_vampire_stalker', vampireCanvas);
 
   // 8d. Werewolf Lycan (38x44) - Feral Beast
-  // Fase 2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
   // torso encurvado (peito estufado, cintura fina) via curvas + degradê, cabeça
   // como elipse, orelhas como triângulos. Ganhou normal map (Fase 3.1).
   const lycanCanvas = createPixelCanvas(38, 44, (ctx) => {
@@ -1213,7 +1205,6 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   addTexture('gem_xp', gemCanvas);
 
   // 14. Particle Blood Drop (8x8)
-  // Fase 1 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
   // era um fillRect cru (quadrado sólido sem sombreamento) — agora um degradê radial,
   // então em emissores com partículas grandes/lentas lê como gota, não como quadrado.
   const bloodPartCanvas = createPixelCanvas(8, 8, (ctx) => {
@@ -1526,8 +1517,7 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   });
   addTexture('particle_bone_dust', boneDustCanvas);
 
-  // 15g. Pegada Ensanguentada (docs/specs/11_VISUAL_POLISH_FRONTS.md, Frente 3
-  // — 27/08): silhueta simples de bota, usada em trilha decrescente atrás do
+  // 15g. Pegada Ensanguentada (27/08): silhueta simples de bota, usada em trilha decrescente atrás do
   // jogador logo após pisar perto de sangue fresco (ver `BloodSplatterSystem.
   // addFootprintDecal` / `GameScene.ts`, gatilho no mesmo timer de cadência de
   // passos que já emite o ruído de "correndo"). 12x18, pequena o bastante pra
@@ -2723,10 +2713,10 @@ export function generateGameTextures(scene: Phaser.Scene, options: TextureGenera
   addTexture('portrait_maelen', maelenPortraitCanvas);
 
   // 32. Altar Ancestral Sombrio (Crimson Altar) — 56x48
-  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: marco descobrível
+  // marco descobrível
   // em gloomy_woods onde a quest_ch1_first_steps é concluída (obj_find_altar).
-  // Curvas + degradê desde o início, no mesmo padrão orgânico validado na Fase 2
-  // de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md.
+  // Curvas + degradê desde o início, no mesmo padrão orgânico validado nas demais
+  // texturas orgânicas deste arquivo.
   const altarCanvas = createPixelCanvas(56, 48, (ctx) => {
     drawShadow(ctx, 28, 44, 20, 4);
 

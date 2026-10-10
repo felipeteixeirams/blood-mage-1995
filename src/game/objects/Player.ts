@@ -13,7 +13,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private aimVector: Phaser.Math.Vector2 = new Phaser.Math.Vector2(1, 0);
   private manualAimTimer: number = 0;
   private lastAutoShootTime: number = 0;
-  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero):
+  // Zero-to-Hero:
   // ataque físico de adaga — curto alcance, sem custo de HP/mana, usado no
   // lugar do blood_bolt enquanto o feitiço ainda não foi descoberto no modo
   // campanha. `pendingMeleeHitTarget` é consumido por GameScene.update() logo
@@ -560,7 +560,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
     });
 
-    // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero):
+    // Zero-to-Hero:
     // no modo campanha, antes do blood_bolt ser descoberto (Altar Ancestral),
     // o "ataque automático" primário é a adaga — curto alcance, sem projétil,
     // sem custo. Fora da campanha (ou já com blood_bolt desbloqueado) o
@@ -936,7 +936,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   /**
-   * Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero):
+   * Zero-to-Hero:
    * ataque físico de adaga — sem custo de HP/mana, curto alcance, sem
    * projétil. Não aplica dano diretamente (Player não deve conhecer
    * gore/blood-splatter/dismemberment); só valida elegibilidade, marca o

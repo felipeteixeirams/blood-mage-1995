@@ -30,7 +30,7 @@ class SoundEngine {
   private masterLowPassFilter: BiquadFilterNode | null = null;
   private isTinnitusActive: boolean = false;
 
-  // Tension Drone (docs/specs/11_VISUAL_POLISH_FRONTS.md, Frente 6 — 27/08):
+  // Tension Drone (27/08):
   // drone contínuo de sub-grave cuja intensidade/frequência reagem à "tensão
   // do ambiente" (nº de inimigos hostis próximos + HP baixo), distinto do
   // Tinnitus (agudo, só dispara perto da morte/elite) — os dois podem tocar

@@ -162,8 +162,8 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
     }
   }, [respawnRequested]);
 
-  // Handle prestige reset sync (ver docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md
-  // e docs/architecture/state-management.md) — mesmo padrão de respawnRequested.
+  // Handle prestige reset sync (ver
+  // docs/architecture/state-management.md) — mesmo padrão de respawnRequested.
   useEffect(() => {
     if (!gameSceneRef.current && phaserGameRef.current?.scene) {
       const scene = phaserGameRef.current.scene.getScene('GameScene') as GameScene;

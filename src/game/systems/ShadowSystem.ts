@@ -24,7 +24,6 @@ export interface ShadowEntity extends Phaser.GameObjects.GameObject {
  * - Projeta a sombra na direção oposta com escala e achatamento elíptico proporcional à distância.
  * - Suporta fallback suave para sombra de contato estática em áreas escuras ou iluminação zenital.
  */
-// Fase 1 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
 // chave da textura de fallback gerada na hora, caso 'spr_shadow_disc' não esteja
 // registrada quando a primeira entidade pedir sombra.
 const FALLBACK_SHADOW_TEXTURE_KEY = 'shadow_fallback_ellipse';

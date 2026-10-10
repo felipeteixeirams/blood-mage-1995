@@ -111,22 +111,20 @@ export class GameScene extends Phaser.Scene {
   public isPortalActive: boolean = false; // público: usado por DungeonFlowController
   private corpsePointer?: Phaser.GameObjects.Sprite;
 
-  // Fase 1 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
   // marcador flutuante ("!") sobre NPCs interagíveis, procedural (sem sprite novo).
   private npcMarkers: { npcType: string; container: Phaser.GameObjects.Container; baseY: number }[] = []; // público via métodos: usado por DungeonFlowController
 
-  // Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
   // minimap mínimo — rastreia por índice do array `rooms` (layout orgânico
   // desde a Frente 1 da spec 11, 27/08: número/tamanho de salas varia por
   // andar, não é mais uma grade fixa).
   private exploredRoomIndices: Set<number> = new Set();
   private minimapPushAccumMs: number = 0;
 
-  // Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: marcos descobríveis
+  // marcos descobríveis
   // da campanha (ex.: Altar Ancestral em gloomy_woods) — checados por proximidade
   // em update(), público: preenchido por DungeonFlowController.
   public campaignDiscoverables: Phaser.GameObjects.Image[] = [];
-  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (27/08): último
+  // 27/08: último
   // `player.stats.level` já checado pra desbloqueio de feitiço por nível
   // (ver `checkLevelSpellUnlocks` em gameStore.ts) — evita rechecar todo
   // frame sem um level-up de verdade ter acontecido.
@@ -332,7 +330,6 @@ export class GameScene extends Phaser.Scene {
     this.darknessOverlay.fillStyle(0x050510, 0.32);
     this.darknessOverlay.fillRect(0, 0, mapW, mapH);
 
-    // Fase 3.2 de docs/archive/specs/propostas/10_POLIMENTO_VISUAL_PROCEDURAL_LUZ_E_CENARIO.md:
     // hash determinístico simples (sem lib de RNG com seed) pra dar uma variação pequena
     // e reproduzível por sala, quebrando a grade perfeita sem perder consistência visual.
     const roomJitter = (roomIndex: number, salt: number, range: number): number => {
@@ -822,7 +819,7 @@ export class GameScene extends Phaser.Scene {
   /**
    * Sincroniza o reset de estatísticas de performPrestige() (gameStore.ts)
    * com a instância viva do Player. Bug encontrado em auditoria
-   * (2026-09-06, ver docs/reviews/03_AUDITORIA_BASE_DOCUMENTAL_2026_09.md):
+   * (2026-09-06):
    * performPrestige() só mutava a store — a instância viva (this.player.stats)
    * nunca era tocada, então o "sacrifício" (reset de nível/andar/HP) não
    * surtia efeito nenhum no jogo rodando; o próximo evento natural de sync
@@ -862,7 +859,6 @@ export class GameScene extends Phaser.Scene {
   /**
    * Remove todos os marcadores flutuantes de NPC atualmente na cena. Chamado
    * por DungeonFlowController antes de recriar os NPCs de cada andar/piso.
-   * Ver docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md.
    */
   public clearNpcMarkers() { // público: chamado por DungeonFlowController
     this.npcMarkers.forEach((m) => m.container.destroy());
@@ -895,7 +891,6 @@ export class GameScene extends Phaser.Scene {
   }
 
   /**
-   * Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
    * reseta o rastreamento de exploração (a sala de spawn começa sempre
    * revelada) e empurra o primeiro snapshot pro store. Chamado por
    * DungeonFlowController logo depois de `scene.rooms = rooms`.
@@ -1189,7 +1184,6 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    // Fase 1 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
     // bob suave + esconde o marcador do NPC com quem o jogador está conversando agora
     if (this.npcMarkers.length > 0) {
       const bob = Math.sin(time * 0.004) * 3;
@@ -1200,7 +1194,7 @@ export class GameScene extends Phaser.Scene {
       });
     }
 
-    // Frente 2/3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: checa proximidade
+    // checa proximidade
     // com marcos descobríveis da campanha (ex.: Altar Ancestral) e avança o
     // objetivo discover_zone correspondente uma única vez por marco.
     if (this.campaignDiscoverables.length > 0 && this.player && this.player.active) {
@@ -1222,7 +1216,7 @@ export class GameScene extends Phaser.Scene {
           soundEngine.playOrbPickup();
           this.spawnFloatingText(marker.x, marker.y - 30, 'ALTAR DESCOBERTO', '#990000', true);
 
-          // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero):
+          // Zero-to-Hero:
           // o Altar Ancestral é onde o jogador desarmado ganha seu primeiro
           // feitiço — desbloqueio imediato na descoberta, não só quando a quest
           // inteira (baú + batedores) fecha.
@@ -1238,7 +1232,7 @@ export class GameScene extends Phaser.Scene {
       });
     }
 
-    // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (27/08): fecha
+    // 27/08: fecha
     // o gap dos 6 feitiços sem gatilho de desbloqueio (ver
     // CAMPAIGN_SPELL_UNLOCK_LEVEL em gameStore.ts) — checa a cada frame se o
     // nível do jogador subiu desde a última checagem (mesmo padrão de "campo
@@ -1265,7 +1259,6 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    // Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
     // throttled a ~400ms — não precisa ser por frame, é só um mapa esquemático
     this.minimapPushAccumMs += delta;
     if (this.minimapPushAccumMs >= 400) {
@@ -1428,7 +1421,7 @@ export class GameScene extends Phaser.Scene {
       if (Phaser.Input.Keyboard.JustDown(this.keys.E)) {
         if (closestNPC) {
           const type = (closestNPC as Phaser.Physics.Arcade.Sprite).getData('npcType');
-          // Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: Maelen abre a
+          // Maelen abre a
           // árvore de diálogo de campanha (mesma rota do botão "FALAR COM NPC" no HUD);
           // os outros NPCs continuam no modal de loja via setActiveNPC.
           if (type === 'maelen') {
@@ -1519,7 +1512,7 @@ export class GameScene extends Phaser.Scene {
       this.emitSound(this.player.x, this.player.y, 360); // Firing spell noise!
     }
 
-    // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero):
+    // Zero-to-Hero:
     // updatePlayer() marcou um golpe de adaga elegível — aplica o dano aqui
     // (fora do Player, que não deve conhecer gore/blood-splatter) e limpa o
     // sinalizador, no mesmo espírito do delta de mana do blood_bolt acima.
@@ -1530,7 +1523,7 @@ export class GameScene extends Phaser.Scene {
       this.emitSound(this.player.x, this.player.y, 180); // Golpe curto — bem mais discreto que magia
     }
 
-    // Fecha os gaps da Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md:
+    // Fecha os gaps do diálogo de campanha:
     // ações de diálogo (heal_player/give_weapon) e recompensas de quest (XP)
     // que dependem de `scene.player` — a store só enfileira, quem aplica é aqui
     // (mesmo motivo do bloco de golpe de adaga acima).

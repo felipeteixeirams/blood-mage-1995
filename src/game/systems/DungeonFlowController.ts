@@ -15,8 +15,7 @@ import type { GameScene } from '../scenes/GameScene';
 /**
  * Encadeamento real da campanha, na mesma ordem que existia como if/else
  * hardcoded (ver histórico de `getNextCampaignZone` abaixo). Vira dado —
- * consumido pelo `ChunkStreamer` (Fase A, `docs/specs/in-progress/
- * 25_MUNDO_CONTINUO_CHUNK_STREAMING.md`) só para decidir o PRÓXIMO bioma
+ * consumido pelo `ChunkStreamer` (Fase A) só para decidir o PRÓXIMO bioma
  * por enquanto (Fase B — "encanamento interno": o GATILHO continua sendo
  * colidir com o portal, comportamento do jogador idêntico ao de antes).
  * `width` é simbólico (1 unidade por bioma) — os world bounds ainda são
@@ -294,7 +293,7 @@ export class DungeonFlowController {
     this.builtChunkIndices.clear();
     // Clear pending spawns
     scene.pendingEnemySpawns = [];
-    // Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: descarta marcos
+    // descarta marcos
     // descobríveis do andar anterior (os sprites já foram destruídos junto com o
     // resto do cenário — aqui só limpamos a lista pra não checar objetos mortos)
     scene.campaignDiscoverables = [];
@@ -359,7 +358,6 @@ export class DungeonFlowController {
 
     const rooms = scene.dungeonGenerator.generate(mapW, mapH, biome);
     scene.rooms = rooms;
-    // Fase 2 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md
     scene.initMinimap();
 
     telemetry.trackEvent('floor_start', { floor: floorDepth, biome, rooms: rooms.length });
@@ -390,7 +388,6 @@ export class DungeonFlowController {
 
     // Clear old NPCs
     scene.npcsGroup.clear(true, true);
-    // Fase 1 de docs/archive/specs/propostas/09_HUD_REFERENCIAS_VISUAIS_DIABLO_DUNGEON_SIEGE.md:
     // limpa os marcadores flutuantes do andar anterior antes de recriar os NPCs
     scene.clearNpcMarkers();
 
@@ -406,7 +403,7 @@ export class DungeonFlowController {
       const bed = scene.wallsGroup.create(spawnRoom.x + 60, spawnRoom.y + 90, 'spr_straw_bed');
       bed.setDepth(spawnRoom.y + 90);
 
-      // Frente 1/2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: baú inicial
+      // baú inicial
       // de suprimentos — abrir dá a Adaga de Aço garantida e avança o objetivo
       // obj_loot_chest de quest_ch1_first_steps (ver CollisionHandlers.ts).
       const suppliesChest = scene.chestsGroup.create(
@@ -474,7 +471,7 @@ export class DungeonFlowController {
 
       const currentWave = scene.waveConfigs[Math.min(floorDepth - 1, scene.waveConfigs.length - 1)];
 
-      // Frente 2/3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md: gloomy_woods é
+      // gloomy_woods é
       // a "orla da floresta" logo após a Safe House — intro leve com só os
       // batedores corrompidos que o diálogo do Maelen menciona
       // (quest_ch1_first_steps > obj_clear_woods, 4 kills), sem chefe nem elite, e
@@ -780,8 +777,7 @@ export class DungeonFlowController {
     const currentZone = store.campaignState.currentZone;
 
     if (gameMode === 'campaign') {
-      // Fase B (mundo contínuo, ver docs/specs/in-progress/
-      // 25_MUNDO_CONTINUO_CHUNK_STREAMING.md): decisão de próximo bioma
+      // Fase B (mundo contínuo): decisão de próximo bioma
       // agora vem do ChunkStreamer (dado ordenado), não mais de if/else
       // hardcoded — mesma sequência, mesmo comportamento de saturar no
       // último bioma.

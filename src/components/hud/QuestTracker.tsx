@@ -8,7 +8,6 @@ import { QuestDefinition } from '../../types/campaign';
 const questDefs = campaignQuestsData as Record<string, QuestDefinition>;
 
 /**
- * Frente 2 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md:
  * Rastreador sutil de objetivos no canto superior direito, no mesmo estilo forjado
  * do Minimap.tsx. Mostra apenas quests com status 'active' em `campaignState.quests`.
  * Agora colapsável para preservar campo de visão em combates e mobile.

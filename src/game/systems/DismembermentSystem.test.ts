@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 
 // Mock global de `phaser` (o único que este arquivo precisava — nunca toca
-// Phaser em runtime) agora vem de tests/setup.ts (quick win #1 de
-// docs/reviews/AUDIT_REPORT_QUALIDADE_CODIGO_2026.md, 27/08).
+// Phaser em runtime) agora vem de tests/setup.ts (quick win #1 da
+// auditoria de 27/08).
 import { DismembermentSystem } from './DismembermentSystem';
 import monstersData from '../../data/monsters.json';
 import { MonsterConfig } from '../../types/game';

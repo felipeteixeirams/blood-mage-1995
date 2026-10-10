@@ -29,7 +29,7 @@ const DEMO: RecordEntry[] = [
   { name: "NYX", score: 21050, level: 4 },
 ];
 
-// Auditoria de 27/08 (docs/product/ROADMAP.md, Fase 0): esta função lia direto
+// Auditoria de 27/08: esta função lia direto
 // de duas chaves de localStorage ("bloodmage_1995_high_scores" e
 // "bloodmage.records") que nunca eram escritas em lugar nenhum — os recordes
 // reais são salvos por `saveHighScore`/`loadHighScores` (utils/localStorage.ts,

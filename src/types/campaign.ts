@@ -150,7 +150,7 @@ export interface CampaignState {
   activeDialogueTree: DialogueTree | null;
   activeDialogueNodeId: string | null;
   discoveredZones: ZoneType[];
-  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero):
+  // Zero-to-Hero:
   // no modo campanha o jogador começa sem magias — cada spellId aqui foi
   // conquistado por progressão de história (ex.: blood_bolt no Altar Ancestral).
   // Não confundir com `playerStats.unlockedSpells` (herança do modo arcade,

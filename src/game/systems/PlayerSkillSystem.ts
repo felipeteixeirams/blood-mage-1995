@@ -31,7 +31,7 @@ export class PlayerSkillSystem {
   private lastGamepadButtonStates: boolean[] = [];
   private boneShieldVisuals: Phaser.GameObjects.Sprite[] = [];
 
-  // Frente 3 de docs/specs/13_ARPG_CAMPAIGN_AND_SAFE_HOUSE.md (Zero-to-Hero):
+  // Zero-to-Hero:
   // mapeamento skillKey → spellId real, usado só pra checar
   // `isCampaignSpellUnlocked` — as demais habilidades (não o blood_bolt, que
   // é o ataque automático tratado em Player.ts) ficam bloqueadas por padrão

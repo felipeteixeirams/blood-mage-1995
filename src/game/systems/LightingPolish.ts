@@ -6,7 +6,7 @@ import { useGameStore } from '../../store/gameStore';
  * Efeitos de glow, flash de impacto crítico e iluminação refinada
  * Integra com LightingSystem e Phaser Light2D para criar atmosfera gótica imersiva.
  *
- * Bloom PostFX (docs/specs/11_VISUAL_POLISH_FRONTS.md, Frente 5 — 27/08): além
+ * Bloom PostFX (27/08): além
  * das luzes Light2D (que iluminam o CENÁRIO ao redor do sprite), objetos-chave
  * agora também recebem um filtro `Glow` (Phaser 4 Filters API,
  * `sprite.filters.internal.addGlow`) — o equivalente mais próximo a um Bloom
