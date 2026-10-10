@@ -124,8 +124,8 @@ Pela Seção 6 de `05_SPEC_AND_CONTEXT_DRIVEN_ENGINEERING.md` ("o que NÃO é um
 | D7 | Leitura por bioma (`safe_house`, `gloomy_woods`) | 35.05 | — (bloqueia 35.05) |
 | D8 | Luz do jogador: centro ou topo do cajado | 35.03, 35.05 | Centro |
 | D9 | Apagar o `25_*` duplicado da raiz | 5.1 | Não apagar |
-| D10 | Seção "Git remoto" do `AGENTS.md` da raiz (push em `main` com token na URL do remote) — remover, reescrever ou manter | ADR 2026-10-07 em `07_DECISION_LOG.md` | Manter sem alteração; Claude Code não a segue |
-| D11 | Unificar `.claude/skills/`, `.agents/skills/` e `skills/` (3 cópias) | ADR 2026-10-07 | Manter; `.claude/skills/` é a referência |
+| D10 | ✅ **Decidido 2026-10-10:** seção "Git remoto" do `AGENTS.md` da raiz é contorno do Google AI Studio; mantida só para ele, ignorada pelos demais | ADR 2026-10-07 | — |
+| D11 | ✅ **Decidido 2026-10-10:** skills unificadas em `.claude/skills/` | ADR 2026-10-07 | — |
 
 ## 6. Convenção EARS usada nos satélites
 

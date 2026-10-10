@@ -28,13 +28,14 @@ spec-driven, padrão de honestidade nos relatórios, checklist de conclusão, co
 4. **`docs/architecture/`** conforme a tarefa (`03_PHASER_PATTERNS.md` é crítico para performance; `04_STATE_MANAGEMENT.md` para a ponte React↔Phaser).
 5. **A spec relacionada** em `docs/specs/` (ver §3 abaixo) e a skill do domínio (§2).
 
-### 2. Skills (`.claude/skills/`)
+### 2. Skills (`.claude/skills/` — única cópia; não recrie `skills/` nem `.agents/skills/`)
 - `phaser-4-development`: WebGL2, baking pattern e shaders
 - `phaser-4-procedural-generation`: determinismo por seed (terreno/textura), autotiling por bitmask, normal maps, paleta/dithering e busca ativa na web quando a API do Phaser 4 for incerta
 - `phaser-4-animation-tweens`: animações, tweens encadeados e FSM de ataque
 - `phaser-4-physics-combat`: Arcade Physics, hitboxes e poda espacial
 - `phaser-4-fx-filters`: Beam Renderer, `enableFilters()`, auras e vinhetas
 - `phaser-4-playtest-harness`: verificação de runtime e testes de fumaça E2E
+- `spritecook-integration`: geração de sprites pixel art via API do SpriteCook.ai (ver `scripts/fetch-spritecook-sprite.cjs`)
 - `phaser4-ref-*` (referência oficial do Phaser 4, importada de `phaserjs/phaser`): documentação do engine, complementar às skills próprias. Cobrem `particles`, `physics-arcade`, `input-keyboard-mouse-touch`, `audio-and-sound`, `time-and-timers`, `cameras`, `groups-and-containers`, `render-textures`, `scale-and-responsive`, `tweens`. São referência de API, não substituem os padrões do projeto (pooling, extract/delegate, Zustand bridge) — usar em conjunto com as `phaser-4-*` próprias, nunca no lugar delas.
 
 ⚠️ **Duas skills oficiais do repo upstream NÃO foram instaladas de propósito:** `events-system` e `data-manager`. Ambas descrevem padrões nativos do Phaser (`EventEmitter`, `this.registry`, `sprite.setData()`) que competem diretamente com a ADR "Ponte Phaser↔React é 100% Zustand, zero CustomEvent" (`docs/architecture/07_DECISION_LOG.md`, 2026-08-25). Uso de eventos Phaser *internos* ao engine (`scene.events.on('shutdown', ...)`, animation-complete, física) continua permitido e necessário, mas não deve ser aprendido/instalado como skill, para não virar atalho de comunicação Phaser↔React nem estado paralelo ao Zustand. Se precisar desse padrão para algo puramente interno ao Phaser, consulte a documentação oficial sem instalar a skill.
@@ -218,9 +219,9 @@ Desenvolver em `claude/frentes-atuacao-projeto-qypbg3`:
 4. `git push -u origin claude/frentes-atuacao-projeto-qypbg3`
 5. **NÃO abrir PR** a menos que explicitamente solicitado. Nunca commitar em `main` sem autorização.
 
-> ⚠️ O `AGENTS.md` da raiz ainda traz um procedimento de push para `main` com token pessoal
-> embutido na URL do remote. **Para Claude Code vale este arquivo**, não aquele: nunca grave
-> token na URL do remote nem faça push para `main`.
+> O `AGENTS.md` da raiz traz um procedimento de push para `main` com token pessoal na URL do
+> remote — é um contorno exclusivo do **Google AI Studio**. **Ignore-o aqui**: nunca grave token
+> na URL do remote nem faça push para `main`.
 
 ---
 

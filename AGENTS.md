@@ -30,11 +30,11 @@ pnpm e2e               # Playwright
 
 O hook `pre-commit` executa `npm run verify`. Rode `pnpm test` você mesmo antes de commitar.
 
-## 🐙 Git remoto — ⚠️ pendente de decisão do Felipe
+## 🐙 Git remoto — somente Google AI Studio
 
-O procedimento abaixo **conflita** com o fluxo definido em `CLAUDE.md` (branch designada, sem push
-em `main`) e grava um token pessoal na URL do remote (`.git/config`). Foi mantido **sem alteração**
-porque ferramentas externas podem depender dele. **Claude Code não deve segui-lo.**
+O procedimento abaixo é um **contorno de uma limitação do Google AI Studio** (decisão do Felipe,
+2026-10-10): vale **apenas** para esse ambiente. **Claude Code e demais agentes ignoram esta seção** e
+seguem o fluxo do `CLAUDE.md` (branch designada, sem push em `main`, nunca token na URL do remote).
 
 ### Procedimento original (preservado sem alteração)
 
