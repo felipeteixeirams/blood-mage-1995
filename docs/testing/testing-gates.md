@@ -30,7 +30,7 @@ Não existe script `test:ui`.
 
 ## Pre-commit (Husky)
 
-- `.husky/pre-commit` contém uma única linha: `npm run verify`.
+- `.husky/pre-commit` contém duas linhas: `pnpm run docs:check` e `pnpm run verify`.
 - `package.json` tem `"prepare": "husky"`, que instala o hook ao rodar `pnpm install`.
 - Portanto, a cada commit roda: verificação de assets, `tsc` (typecheck) e `vite build`. **Testes unitários não rodam no commit.**
 - `package.json` define `lint-staged` (`*.{ts,tsx}` -> `vitest related`), mas o hook não chama `lint-staged`; essa configuração não é executada por nenhum hook.

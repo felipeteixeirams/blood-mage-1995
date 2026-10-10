@@ -78,7 +78,7 @@ public/              assets, fonts, audio_samples, ícones e manifest PWA
 | `vitest.config.ts` | `environment: 'jsdom'`, `globals: true`, `include: src/**/*.test.{ts,tsx}`, `setupFiles: ./tests/setup.ts` (mock global mínimo de `phaser`); cobertura v8 com limite de 80% (linhas, statements, funções) só para 7 arquivos listados |
 | `playwright.config.ts` | `testDir: ./tests/e2e`, 1 worker, projeto `chromium`, `baseURL` `http://localhost:3000`, sobe `npm run dev` se a porta estiver livre |
 | `vercel.json` | `buildCommand: pnpm run build`, `outputDirectory: dist`, `installCommand: pnpm install`; cabeçalhos de segurança (CSP, `X-Frame-Options: DENY` etc.) |
-| `.husky/pre-commit` | executa `npm run verify` |
+| `.husky/pre-commit` | executa `pnpm run docs:check` e depois `pnpm run verify` |
 | `.npmrc` | `auto-install-peers=false`, `strict-peer-dependencies=false` |
 | `pnpm-workspace.yaml` | `minimumReleaseAge: 1440` (pacotes precisam ter 1 dia de publicados); workspaces `artifacts/*`, `lib/*`, `lib/integrations/*`, `scripts` |
 | `.env.example` | `GEMINI_API_KEY`, `SPRITECOOK_API_KEY`, `PIXELLAB_API_KEY`, `APP_URL`; `VITE_SENTRY_DSN` é lida em `main.tsx` e não está no exemplo |

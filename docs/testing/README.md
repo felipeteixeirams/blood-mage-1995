@@ -5,7 +5,7 @@
 
 ## Em uma frase
 
-O pre-commit roda `npm run verify` (assets + typecheck + build); nem os testes unitários nem os e2e rodam automaticamente.
+O pre-commit roda `docs:check` e `verify` (assets + typecheck + build); nem os testes unitários nem os e2e rodam automaticamente.
 
 ## Satélites
 

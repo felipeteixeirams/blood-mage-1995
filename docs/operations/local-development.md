@@ -32,7 +32,7 @@ Verificação por leitura estática de `package.json`, `vite.config.ts`, `playwr
 
 ## Hook de commit
 
-`.husky/pre-commit` roda `npm run verify`.
+`.husky/pre-commit` roda `pnpm run docs:check` e depois `pnpm run verify`.
 
 ## Estrutura duplicada
 
