@@ -4,6 +4,8 @@ As regras do projeto estão em [`CLAUDE.md`](CLAUDE.md); a documentação, em [`
 
 ## 🐙 GitHub Repository & Git Integration
 
+> **Vale só para ambientes sem integração com o GitHub (hoje, apenas o Google AI Studio).** Nos demais ambientes, use a integração do próprio ambiente e não grave o token na URL do remote. Depois do push, volte o remote para a URL sem token: `git remote set-url origin https://github.com/felipeteixeirams/blood-mage-1995.git` (o token fica em texto no `.git/config`).
+
 When requested by the user to commit and push changes to the remote GitHub repository (`https://github.com/felipeteixeirams/blood-mage-1995.git`), use the personal access token stored in the environment variable `GITHUB_TOKEN_PERSONAL`.
 
 ### Git Remote Authentication & Push Workflow:
