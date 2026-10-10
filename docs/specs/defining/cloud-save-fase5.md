@@ -4,7 +4,7 @@
 **Estágio:** defining
 **Aprovação do responsável:** pendente
 
-**Estado vs código:** não verificado
+**Estado vs código:** verificado: não implementado (verificado em 2026-10-10). `grep -rniE "firebase|firestore|google.?sign|cloud.?save|playerId|supabase|oauth" src package.json public scripts vite.config.*` não retorna nada; o único armazenamento de progresso é `src/utils/localStorage.ts`. Ver também `docs/product/account-and-data.md`.
 
 ## Decisões a confirmar
 
@@ -17,24 +17,13 @@ Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aq
 ---
 
 ## Origem
-Item "Nice to Have" extraído de
-`in-progress/05_FASE5_POLIMENTO_PRODUCAO_PWA_STEAM.md`
-em 2026-09-07, durante triagem de impedimentos — todo o resto da Fase 5
-(Must-Have) já está `delivered/05_FASE5_POLIMENTO_PRODUCAO_COMPLETO.md`;
-só este item ficava preso em `in-progress/` sem próximo passo executável.
+Item "Nice to Have" da Fase 5, listado em [fase5-polimento-producao-pwa-steam.md](fase5-polimento-producao-pwa-steam.md).
 
-## Escopo (quando desbloqueado)
+## Escopo proposto (quando desbloqueado)
 - Provedor de identidade (ex: Google Sign-in) gerando `Player ID` único.
-- Salvamento em nuvem multiplataforma (Firebase/Firestore ou equivalente)
-  sincronizado com o `localStorage` local existente (`src/utils/localStorage.ts`),
-  sem quebrar o fluxo 100% offline atual como fallback.
-- Privacy Policy e fluxo de exclusão de dados (obrigação legal que acompanha
-  login — motivo pelo qual isso foi deliberadamente adiado desde o início,
-  ver `docs/product/ACCOUNT_AND_DATA.md`).
+- Salvamento em nuvem multiplataforma (Firebase/Firestore ou equivalente) sincronizado com o `localStorage` local existente (`src/utils/localStorage.ts`), mantendo o fluxo 100% offline atual como fallback.
+- Privacy Policy e fluxo de exclusão de dados (obrigação legal que acompanha login). Contexto: [product](../../product/README.md) (`account-and-data.md`).
 
-## Critério para desbloquear
-1. Felipe confirma explicitamente que quer avançar com Cloud Save.
-2. Validação de demanda real de jogadores (Beta) — conforme o próprio
-   `ACCOUNT_AND_DATA.md` prevê como pré-condição.
-
-Até lá, esta spec fica em `backlog/` sem ETA.
+## Critério proposto para desbloquear
+1. O responsável confirma explicitamente que quer avançar com Cloud Save.
+2. Validação de demanda real de jogadores (Beta).

@@ -4,7 +4,7 @@
 **Estágio:** defining
 **Aprovação do responsável:** pendente
 
-**Estado vs código:** não verificado
+**Estado vs código:** verificado em 2026-10-10 (leitura estática): parcial. Existe: síntese procedural de áudio como única fonte sonora (`src/utils/soundEngine.ts`, `src/utils/bgmSynthesizer.ts`, só `AudioContext`), `src/utils/telemetry.ts` e `src/utils/logger.ts`, `Sentry.init` em `src/main.tsx` (condicionado a DSN), fontes locais em `public/fonts/`, imagens de UI em `src/assets/ui/` e `public/assets/ui/` (usadas por `SettingsScene.ts` e `RecordsScene.ts`), `border-image` com SVG inline no `hud/DialogueModal.tsx`, cores de raridade em `InventoryModal.tsx`, tint de elite em `Enemy.ts`. Não existe: `HybridSoundEngine`/carga de áudio físico (nenhum `decodeAudioData` nem `new Audio`; `public/assets/audio` só tem `.gitkeep`), classe `.gothic-panel` e `gothic_border_slice.png`, `AssetLoader` centralizado, reporte de `loaderror` ao Sentry (o loader usa só `logger`), camadas de equipamento no sprite do jogador, retratos de NPC em pixel art (o diálogo usa ícones Lucide), tela de Créditos, sprites de inimigos/NPCs/tiles externos, medição do orçamento de 2,5 MB. Esta spec e `discovery-ui-assets-externos.md` têm o mesmo título e conteúdo quase idêntico.
 
 ## Decisões a confirmar
 
@@ -20,15 +20,11 @@ Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aq
 
 > Este documento detalha a viabilidade técnica, o design de arte, o plano de transição e o gerenciamento de recursos para evoluir o visual e a sonoplastia do **Bloodmage 1995** a partir de assets externos gratuitos ou licenciados. O objetivo é atingir a estética gótica sombria de meados dos anos 90 (estilo *Diablo I*, *Diablo II* e *Dungeon Siege 1*), no formato de **Pixel Art de Alta Resolução/Fidelidade** e sonorização imersiva, sem comprometer a robustez técnica do jogo.
 
-> **Nota de Implementação Real (Setembro 2026):** Partes do pipeline híbrido já se encontram ativas no código-fonte:
-> - **Sintetizador BGM & Procedural Audio Fallback:** Implementado em `src/utils/bgmSynthesizer.ts` e `src/utils/soundEngine.ts`.
-> - **Telemetria de Erros & Ingestão de Logs:** Implementado em `src/utils/telemetry.ts` e `src/utils/logger.ts`.
-
 ---
 
 ## 1. Visão Geral e Direcionamento Artístico
 
-O **Bloodmage 1995** opera hoje sob uma arquitetura puramente procedural (`textureGenerator.ts` para renderização em canvas HTML5 e `soundEngine.ts` para síntese via Web Audio API). Essa restrição foi essencial para garantir um carregamento instantâneo, leveza extrema e independência de rede.
+O **Bloodmage 1995** usa hoje `textureGenerator.ts` (canvas HTML5) como fallback de todas as texturas, com carga opcional de arquivos via `assetManifest.json` (só o jogador e o baú têm arte física), e `soundEngine.ts` para síntese via Web Audio API.
 
 Contudo, para atingir o nível de **imersão comercial e "game juice"** necessários para competir no mercado (como PWA Premium ou em lojas como Steam e Google Play Store), propõe-se uma transição para um **modelo híbrido de carregamento**:
 * **Assets Físicos Sombrios:** Utilizar recursos visuais (PNG/WebP compactados) e sonoros (MP3/OGG) de alta qualidade para focar o jogador em elementos cruciais (mago, monstros, runas, efeitos sonoros de feitiços e trilhas ambientais).
@@ -97,7 +93,7 @@ O **Bloodmage 1995** utiliza uma estrutura na qual o React gerencia a HUD, modai
 3. **Internacionalização (Localization):** Gerenciamento de strings de tradução do React é leve, permitindo transições suaves de idioma no inventário e caixas de diálogo.
 
 ### 3.2. Integração de Assets Estéticos na UI do React
-Para dar o visual gótico e sombrio de 1995 às bordas e painéis do React de forma extremamente leve, adota-se a técnica de **9-Slice Scaling (Fatiamento de Imagem)** por meio do CSS `border-image`.
+Para dar o visual gótico e sombrio de 1995 às bordas e painéis do React de forma extremamente leve, propõe-se a técnica de **9-Slice Scaling (Fatiamento de Imagem)** por meio do CSS `border-image`.
 
 ```
      FATIAMENTO 9-SLICE (Bordas de Pedra Escura e Cantos de Metal)
@@ -182,7 +178,7 @@ export const InventoryModal: React.FC<{ onClose: () => void }> = ({ onClose }) =
 
 ## 4. Eixo C - Transição Gradual de Áudio (SFX e BGM)
 
-Atualmente, o `soundEngine.ts` sintetiza ondas senoidais, dentes-de-serra e ruídos programáticos via Web Audio API. Para evoluir a experiência auditiva para algo digno de horror medieval, adotaremos um modelo de carregamento gradativo de arquivos físicos de áudio.
+Atualmente, o `soundEngine.ts` sintetiza ondas senoidais, dentes-de-serra e ruídos programáticos via Web Audio API. Para evoluir a experiência auditiva para algo digno de horror medieval, propõe-se um modelo de carregamento gradativo de arquivos físicos de áudio.
 
 ### 4.1. Estratégia de Transição Híbrida do SoundEngine
 Os efeitos de alta prioridade (conjuração de magias, impactos de foice, rugidos de monstros) e músicas de fundo serão migrados gradualmente para arquivos compactados (`.mp3` ou `.ogg`), mantendo o gerador Web Audio como fallback silencioso para evitar erros de execução.
@@ -301,7 +297,7 @@ Nenhum arquivo PNG bruto deve ser publicado em produção:
 
 ## 6. Telemetria de Falhas e Logs Estruturados
 
-A estabilidade em produção é nosso maior pilar. Para garantir que o jogo nunca "fique mudo" ou com "quadrados invisíveis" sem sabermos, implementaremos um validador no pipeline de carregamento que reportará falhas silenciosas de recursos externos ao Sentry.
+Para garantir que o jogo nunca "fique mudo" ou com "quadrados invisíveis" sem sabermos, propõe-se um validador no pipeline de carregamento que reportará falhas silenciosas de recursos externos ao Sentry.
 
 ### 6.1. Exemplo de Captura de Falha de Imagem no Phaser
 ```typescript

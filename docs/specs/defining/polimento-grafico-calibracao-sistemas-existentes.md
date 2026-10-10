@@ -4,7 +4,7 @@
 **Estágio:** defining
 **Aprovação do responsável:** pendente
 
-**Estado vs código:** não verificado
+**Estado vs código:** verificado em 2026-10-10 (leitura estática; `node_modules` ausente, nada executado): parcial. As correções de integração das Frentes A e B existem: `LightingPolish.applyBloomFilter` chama `enableFilters()` só uma vez por sprite, limpa o Glow anterior antes de reaplicar, remove no evento `destroy` e em `cleanup()`, com `MAX_ACTIVE_BLOOM_TARGETS = 16` e desligamento por `postProcessingEnabled === false` ou `lowPerformanceParticles`; `PostFXSystem.createFilters` usa `camera.filters.external` (com `internal` como alternativa), guarda `activeFloorDepth` e reaplica a matriz do bioma, e `PostFXSystem.test.ts` cobre callbacks tardios de `effectCriticalDamage`/`effectInfection` que não apagam tint mais novo. Existem os sistemas e testes citados (`LightingSystem`, `LightingPolish`, `PostFXSystem`, `AtmosphereSystem`, `ShadowSystem` com `footY = y + altura*0.38`, `ReflectionSystem` com `setFrame` sincronizado, `AdvancedParticles` com `lowPerformanceParticles`, `AtmosphericTreeShader`, `TerrainDetailFactory`). Não verificado: se `filters.external` é a coleção correta no Phaser 4.2.1 instalado; se o Glow aparece em WebGL real; se o Glow é removido ao reciclar sem destruir (hoje só em `destroy`/`cleanup`); toda a calibração visual das Frentes C a H e a validação antes/depois (precisa de playtest e screenshots humanos); orçamento de performance medido.
 
 ## Decisões a confirmar
 
@@ -17,8 +17,6 @@ Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aq
 
 ---
 
-> **Status:** Spec em andamento; implementação ainda não iniciada.  
-> **Data:** 5 de setembro de 2026  
 > **Domínio:** Renderização Phaser 4, iluminação, pós-processamento, atmosfera, sombras, reflexos, partículas e validação visual.  
 > **Princípio:** melhorar o que já existe antes de adicionar qualquer coisa.
 
@@ -105,14 +103,14 @@ Se uma melhoria exigir uma nova abstração, ela deve primeiro ser avaliada como
 
 ### 3.2 Problemas e riscos observados
 
-1. **Glow pode não ser aplicado em runtime**  
-   `LightingPolish.applyBloomFilter()` consulta `sprite.filters`, mas a inicialização do filtro precisa ser confirmada para os objetos reais. Se `enableFilters()` for necessário no Phaser 4.2.1, a ausência dessa chamada faz o sistema sair silenciosamente.
+1. **Glow em runtime ainda não confirmado**  
+   `LightingPolish.applyBloomFilter()` já chama `enableFilters()`; falta confirmar em WebGL real que o Glow aparece e é removido também ao reciclar sprites de pool (hoje só em `destroy` e `cleanup()`).
 
 2. **Escopo dos filtros de câmera precisa ser validado**  
-   `PostFXSystem` usa `camera.filters.internal`. A implementação deve confirmar se essa é a coleção correta para efeitos de tela inteira na versão instalada. Os testes atuais reproduzem a API usada, portanto implementação e mocks precisam evoluir juntos.
+   `PostFXSystem` usa `camera.filters.external` com `internal` como alternativa. Falta confirmar, contra o Phaser 4.2.1 instalado, que essa é a coleção correta para efeitos de tela inteira. Os testes atuais reproduzem a API usada, portanto implementação e mocks precisam evoluir juntos.
 
-3. **Gradação de bioma pode ser perdida após tint temporário**  
-   A matriz de cor por `floorDepth` é calculada em `applyBiomeMatrix(floorDepth)`, mas a reaplicação após um tint temporário precisa manter o bioma e a profundidade ativos. O retorno visual não pode cair silenciosamente nos valores padrão.
+3. **Gradação de bioma após tint temporário**  
+   `PostFXSystem` guarda `activeFloorDepth` e `applyBiomeMatrix` o usa por padrão; falta validar visualmente após dano, medo e level-up.
 
 4. **Efeitos temporários podem competir entre si**  
    Vignette, tint e displacement de dano, medo, level-up, boss e baixa vida podem ser acionados em sequência. A calibração deve impedir que uma transição deixe estado residual ou neutralize uma transição mais importante.
@@ -634,9 +632,3 @@ Se houver workflow ativo, reiniciar somente após a implementação do lote comp
 O esforço pode diminuir se os problemas de filtro forem apenas de inicialização. A estimativa não inclui produção de arte, migração de engine ou novas features.
 
 ---
-
-## 12. Registro de Mudanças
-
-| Data | Alteração | Autor |
-|---|---|---|
-| 2026-09-05 | Criação da spec de polimento por calibração dos sistemas gráficos existentes, com escopo explícito contra expansão de features | Replit Agent |

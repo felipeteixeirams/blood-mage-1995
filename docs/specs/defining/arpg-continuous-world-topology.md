@@ -4,30 +4,28 @@
 **Estágio:** defining
 **Aprovação do responsável:** pendente
 
-**Estado vs código:** não verificado
+**Estado vs código:** parcial (verificado em 2026-10-10, leitura estática + `grep`). Existe: `src/game/systems/PathDrivenGenerator.ts` (random walk Sul→Norte, trilha de largura variável, clareiras, preenchimento do espaço negativo, setpieces `injectCabin`/`injectLake`/`injectCaveEntrance`, zonas `PathZone` `forest_trail|lake|ruins|cave_entrance`, `isWaterTileAt`) com `PathDrivenGenerator.test.ts`; instanciado em `DungeonGenerator.pathDrivenGenerator`; lentidão de 30% em água em `Player.ts` (~l.282) e `Enemy.ts` (~l.618); mapeamento habitat→monstro em `DungeonFlowController.ts` (~l.491-515: `lake`→`gore_abomination`, `ruins`→`skeleton_warrior`, `cave_entrance`→`bat_swarm`, padrão `scout_beast`); `DungeonGenerator.hasLineOfSight` (raycast contra `wallsGroup`, usado em `GameScene` no aggro/ruído). Falta: nada chama `PathDrivenGenerator.generate()` fora dos testes (`grep -rn "pathDrivenGenerator\." src`), então `lastZones` fica sempre vazio, a lentidão em água nunca dispara e o mapeamento de habitat nunca escolhe outro monstro; `DungeonGenerator.generate()` usa `ProceduralForestGenerator` para `gloomy_woods` e BSP/autômato para os demais biomas; sem `injectSetpiece(x, y, type)` genérico, sem queda de iluminação na entrada do covil (só um arco de paredes), sem tabela de lobos/aquáticos além dos monstros acima; a oclusão de visão (tarefa 4) usa só o raycast existente.
 
 ## Decisões a confirmar
 
 Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aqui está decidido.
 
-1. Substituir/complementar o gerador atual por `PathDrivenGenerator` (a escolha para `gloomy_woods` está em aberto).
+1. Substituir/complementar o gerador atual por `PathDrivenGenerator` (a escolha para `gloomy_woods` está em aberto: hoje o código mantém os dois, e só o `ProceduralForestGenerator` é usado).
 2. Micro-ambientes (pontos de interesse) e ecologia de monstros por habitat.
 3. Oclusão de visão por linha de visão dinâmica.
-4. Relação com a abordagem de mundo contínuo já presente no código (bounds dinâmicos + porta física): o texto original cita decisão do responsável não registrada em doc de decisões.
+4. Relação com a abordagem de mundo contínuo já presente no código (`ChunkStreamer` + bounds dinâmicos em `DungeonFlowController`): o texto original cita decisão do responsável não registrada em doc de decisões.
+5. Redução de velocidade na água: a spec cita 15% (§3.B) e 30% (tarefa 2); o código aplica 30%. Valor a confirmar.
 
 ---
 
-> **Status:** Ativo
-> **Data:** 6 de setembro de 2026
 > **Domínio:** Geração Procedural, World Building, Level Design.
-> **Objetivo Final:** Transformar a geração de masmorras baseada em "arenas quadradas" em um mundo contínuo, orgânico e imprevisível, com transições fluídas entre interiores, exteriores e diferentes biomas, atrelando a ecologia de monstros a esses ambientes.
+> **Objetivo proposto:** transformar a geração de masmorras baseada em "arenas quadradas" em um mundo contínuo, orgânico e imprevisível, com transições fluidas entre interiores, exteriores e biomas, atrelando a ecologia de monstros a esses ambientes.
 
 ---
 
 ## 1. O Problema Atual (A Síndrome do "Caixote")
 
-Atualmente, o `DungeonGenerator.ts` constrói o mapa delimitando uma parede externa gigante (1920x1440) e jogando salas menores (ou árvores, no caso da floresta) de forma espalhada e desconectada no meio. 
-O resultado é que o jogo **não passa a sensação de jornada nem de exploração**, mas sim de uma arena de sobrevivência. O jogador sempre nasce em um quadrado grande, os monstros correm até ele, ele mata todos, acha um portal e vai para o próximo "quadrado".
+Hoje o `DungeonGenerator.ts` gera salas por BSP + autômato celular (e, em `gloomy_woods`, delega ao `ProceduralForestGenerator`), cada andar numa arena delimitada. Problema alegado pela proposta: o jogador nasce numa arena, elimina os monstros, acha o portal e segue para a próxima, sem sensação de jornada (avaliação de design não verificada).
 
 ## 2. A Visão Alvo (Referência: Dungeon Siege)
 
@@ -41,9 +39,9 @@ Características dessa visão:
 
 ## 3. Plano de Ação Incremental (O que podemos fazer *AGORA*)
 
-Chegar no nível de complexidade do *Dungeon Siege* exige um motor de mundo _seamless_ (sem telas de loading) e um sistema robusto de *chunks*. Como nossa base procedural atual ainda é primitiva (BSP/Cellular Automata basais), precisamos construir a ponte estrutural para isso.
+Chegar no nível de complexidade do *Dungeon Siege* exige um motor de mundo _seamless_ (sem telas de loading) e um sistema robusto de *chunks*. A base procedural atual é BSP/Cellular Automata; a proposta é construir a ponte estrutural para isso.
 
-Nesta Spec (Fase Atual), abandonaremos o "Quadrado Gigante" e implementaremos a base do **"Linearidade Orgânica"**.
+Proposta: abandonar o "Quadrado Gigante" e implementar a base da **"Linearidade Orgânica"**.
 
 ### A. Substituição do Algoritmo de Geração
 - **Remover as Parede Perimetrais Gigantes:** O mapa não será mais contido por um retângulo perfeito.
@@ -61,15 +59,15 @@ Nesta Spec (Fase Atual), abandonaremos o "Quadrado Gigante" e implementaremos a 
   - Ex: Se o gerador alocou um "Lago", existe uma chance de spawnar um tipo específico de inimigo aquático ou anjo de lodo ali.
   - Em clareiras, lobos. Nas cavernas estreitas, morcegos/aranhas.
 
-## 4. Roteiro Técnico para Implementação (Delegação para Jules)
+## 4. Roteiro Técnico proposto
 
-Este roteiro contém o passo a passo exato do que precisa ser refatorado para transformar a geração do jogo. **O código atual de geração de BSP/Celular Automata (DungeonGenerator.ts) e ProceduralForestGenerator deve ser deprecado/substituído por esta nova abordagem.**
+Passo a passo proposto para a geração. A proposta implica deprecar/substituir o BSP/Celular Automata (`DungeonGenerator.ts`) e o `ProceduralForestGenerator` (decisão 1 acima).
 
 ### Tarefa 1: Novo Algoritmo de Trilha Contínua (`PathDrivenGenerator`)
 O gerador antigo desenhava um perímetro gigante e sorteava cômodos dentro. O novo gerador deve construir "caminhos e nós".
 - **Objetivo:** O jogador deve sentir que está seguindo uma jornada semi-linear.
 - **Passos da Implementação:**
-  1. Criar `PathDrivenGenerator.ts` (ou refatorar intensamente o `ProceduralForestGenerator` atual).
+  1. `PathDrivenGenerator.ts` (já existe; alternativa: refatorar o `ProceduralForestGenerator`).
   2. Implementar um algoritmo de **Random Walk (Drunkard's Walk modificado)** ou **Nós de Voronoi** que traça uma espinha dorsal contínua (ex: do Sul indo para o Norte).
   3. Preencher **todo** o negativo do mapa com obstáculos sólidos (árvores aglomeradas invísiveis/colisores maciços ou paredes de pedra). O jogador não pode sair da trilha esculpida.
   4. Adicionar variação na espessura da trilha: às vezes é um corredor estreito de 2 tiles (gargalo), às vezes se abre numa clareira de 15x15 tiles (arena de combate natural).
@@ -100,5 +98,3 @@ Um fator crucial do Dungeon Siege é que você não vê o que está atrás da ca
 - **Passos da Implementação:**
   1. Garantir que as árvores espessas / paredes dos setpieces (cabana, ruínas) se registrem no `wallsGroup` ou no motor de Raycast existente.
   2. Inimigos dentro de estruturas (como a Cabana) ou do outro lado do labirinto florestal não devem "aggro" (alertar) no jogador se não houver linha de visão.
-
-> **Instrução Especial para o Jules:** Inicie criando o `PathDrivenGenerator` rodando paralelo ao antigo e conecte no `DungeonFlowController` apenas quando ele estiver instanciando uma trilha coerente de 1x1. Faça pequenos commits validados visualmente no navegador.

@@ -1,74 +1,24 @@
-# Fase 5: Polimento de Produção, Empacotamento Nativo (Play Store & Steam) e Imersão AAA
+# Fase 5: Polimento de Produção, Empacotamento Nativo (Play Store & Steam)
 
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
 
-**Estado vs código:** não verificado
+**Estado vs código:** parcial (verificado em 2026-10-10, leitura estática). Existem: `ObjectPool.ts`, `ViewportCuller.ts`, `PerformanceMonitor.ts`, `InputManager.ts` (Gamepad API; listeners em `src/App.tsx`), `src/utils/haptics.ts`, PWA (`vite-plugin-pwa` em `vite.config.ts`, `public/manifest.webmanifest`, registro em `src/main.tsx` e `src/App.tsx`), `scripts/build-pwa.sh`, `scripts/build-twa.sh`, `scripts/build-steam.sh`, `AdvancedParticles.ts`, `ScreenShake.ts`, `ScreenEffects.ts`, `AchievementSystem.ts` (16 conquistas em `src/data/achievements.json`) e i18n com `pt-BR` e `en-US` (`src/i18n/`, tipo `Language` em `src/types/game.ts`). Falta: idioma espanhol (`Language` só lista `pt-BR | en-US`); Cloud Save (`grep -rniE "firebase|firestore|supabase" src package.json` sem resultados; ver [cloud-save-fase5.md](cloud-save-fase5.md)); Electron e TWA efetivos (`electron` não está em `package.json`, `build-steam.sh` instala sob demanda; `build-twa.sh` exige Bubblewrap e `twa-manifest.json`, que não existe no repositório).
 
 ## Decisões a confirmar
 
 Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aqui está decidido.
 
 1. Alvos de empacotamento: Google Play (TWA) e Steam (Electron/web wrapper).
-2. Lista de itens "Must Have" e "Nice to Have" (i18n em EN/PT/ES; Cloud Save).
-3. Conjunto de 10 conquistas e suas recompensas.
+2. Idiomas além de pt-BR e en-US (espanhol) e Cloud Save.
+3. Conjunto de conquistas e recompensas (o código tem 16; a versão anterior desta spec dizia 10).
 
 ---
 
-> **Status:** 90% Implementado (Must Have 100% Entregue) | **Prioridade:** P1 (Crítica para Lançamento Comercial)
+## Pendente
 
----
-
-## 📋 Visão Geral
-
-**Objetivo:** Elevar o Blood Mage 1995 de um protótipo avançado/PWA para um padrão de qualidade **comercial AAA indie** pronto para lançamento em lojas oficiais (Google Play Store via TWA, Steam via Web Wrapper/Electron), garantindo fluidez a 60 FPS, suporte robusto a controles físicos (Gamepad API), feedback tátil (Haptics), polimento gráfico de partículas/gore, achievements e zero regressões.
-
----
-
-## 📝 Requisitos Funcionais
-
-### ✅ Must Have (100% Implementado & Entregue)
-
-- [x] **Performance Optimization & 60+ FPS**:
-  - `ObjectPool.ts`: Reutilização zero-GC de projéteis e partículas.
-  - `ViewportCuller.ts`: Culling espacial de entidades fora da câmera.
-  - `PerformanceMonitor.ts`: Monitoramento de FPS e métricas em tempo real.
-- [x] **Gamepad & Controles Físicos**:
-  - `InputManager.ts`: Suporte cross-platform a controles Xbox/PlayStation/Genéricos via Gamepad API.
-  - Sincronização em `PlayerSkillSystem.ts` e `App.tsx`.
-- [x] **Feedback Tátil (Haptics)**:
-  - `src/utils/haptics.ts`: Vibração tátil (`navigator.vibrate`) para impactos de dano, morte e críticos.
-- [x] **Empacotamento PWA & TWA**:
-  - Web Manifest completo (`public/manifest.webmanifest`), suporte offline com Service Worker via Vite PWA em `src/App.tsx` e `src/main.tsx`.
-  - Scripts de automação de build (`scripts/build-pwa.sh`, `scripts/build-twa.sh`, `scripts/build-steam.sh`).
-- [x] **Polimento Gráfico & Partículas**:
-  - `AdvancedParticles.ts`: Partículas avançadas para acertos, mortes espectrais, poeira óssea e acertos críticos.
-  - `ScreenShake.ts` e `ScreenEffects.ts`: Shakes contextuais, aberração cromática e vinhetas de dano.
-- [x] **Conquistas (Achievements)**:
-  - `AchievementSystem.ts`: 10 conquistas com persistência LocalStorage, rewards de cristais/pontos de talento e toasts em React (`AchievementToast.tsx`).
-
----
-
-### 🔍 Nice to Have (Pendente / Backlog Futuro)
-
-- [ ] **Suporte a múltiplos idiomas (i18n)**: Internacionalização da interface para Inglês, Português e Espanhol.
-- [ ] **Cloud Save automatizado (Firebase/Firestore)**: Salvamento em nuvem multiplataforma para sincronização de progresso.
-
----
-
-## 🏗️ Arquitetura e Estrutura Técnica
-
-### Arquivos Envolvidos
-- `src/game/systems/InputManager.ts`: Abstração unificada para Joystick Virtual, Teclado e Gamepad API.
-- `src/game/systems/ObjectPool.ts`: Pool genérico de objetos para zero GC pressure.
-- `src/game/systems/ViewportCuller.ts`: Culling espacial de renderização.
-- `src/game/systems/AchievementSystem.ts`: Engine de conquistas e rastreamento de métricas.
-- `src/game/systems/AdvancedParticles.ts`: Emissor de partículas visuais de combate.
-- `src/utils/haptics.ts`: Utilitário de vibração e feedback tátil.
-- `src/App.tsx` & `src/main.tsx`: Registro de Service Worker PWA e listeners de Gamepad.
-
----
-
-## 📊 Documentação de Referência
-- `docs/specs/delivered/05_FASE5_POLIMENTO_PRODUCAO_COMPLETO.md` — Relatório detalhado de entrega dos requisitos Must-Have da Fase 5.
+- Idioma espanhol na interface.
+- Cloud Save multiplataforma (spec própria: [cloud-save-fase5.md](cloud-save-fase5.md)).
+- Empacotamento efetivo para Play Store (TWA) e Steam (Electron): os scripts existem, mas não há projeto Electron nem `twa-manifest.json`.
+- Critérios de aceite: a definir (spec ainda sem EARS).

@@ -68,6 +68,11 @@ Os demais sistemas (renderização, iluminação, input, geração de mapa etc.)
 - `src/utils/logger.ts`, `src/utils/telemetry.ts`; modal `ObservabilityModal.tsx`; Sentry opcional (ver acima).
 - `GameScene` cria `PerformanceMonitor` quando a URL tem o parâmetro `?perf`.
 
+## Status de sobrevivência e prestígio
+Verificado em 2026-10-10 por leitura estática; valores são o que o código faz hoje, não balance ratificado. Não validado: precisa de playtest humano.
+- **Status de sobrevivência.** `statusEffectOnHit` em `src/data/monsters.json` está em 8 monstros (sangramento, infecção, veneno). `CollisionHandlers.playerHitByEnemy` rola a chance e chama `setStatusCondition`, só se a condição não estiver ativa e o jogador não estiver inconsciente nem morto. `Player.updateStatusConditions` roda a cada frame: sangramento drena 2% do `maxHp` por segundo só enquanto o jogador se move; veneno 1,5% por segundo; infecção limita o `hp` a 80% do `maxHp` e bloqueia a regeneração passiva durante a inconsciência. `applyStatusDamage` é separado de `takeDamage` (sem frames de invulnerabilidade) e reaproveita o fluxo de desmaio e morte. A cura usa `useCurative` no `gameStore` (atalhos Z/X/V em `components/hud/PlayerStatus.tsx`); o Clérigo em `GameplayHUD.tsx` limpa as 3 condições por 15 Cristais.
+- **Prestígio.** `PrestigeModal.tsx` (lazy em `App.tsx`) abre pela tecla P ou pelo botão em `hud/ActionButtons.tsx`, sobre `ModalBase`. `canPrestige`: nível >= 10, ou `floorDepth` >= 3, ou 30 abates. `performPrestige()` sobe o nível de prestígio (máx. 10) e dá 1 ponto de selo pendente em `unspentSealPoints`; `allocateBloodSeal` aloca (máx. 5 por selo) entre `carnage`, `dark_vitality`, `runic_flow`, `deep_vampirism` e `macabre_fortune`, que alimentam `getPrestigeModifiers()`. Dificuldades `nightmare` (prestígio 1) e `inferno` (prestígio 3). O reset da instância viva usa o comando `prestigeResetRequested`, tratado em `PhaserGame.tsx` por `GameScene.applyPrestigeReset()`.
+
 ## Limites da verificação
 
 - Contagens de linhas foram feitas por `wc -l` em 2026-10-10 e mudam a cada commit.

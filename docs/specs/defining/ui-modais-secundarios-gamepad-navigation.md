@@ -4,7 +4,7 @@
 **Estágio:** defining
 **Aprovação do responsável:** pendente
 
-**Estado vs código:** não verificado
+**Estado vs código:** verificado em 2026-10-10: parcial. Fase 1: `BestiaryModal.tsx` é só um wrapper de `CodexModal.tsx`; `CodexModal.tsx` e `AchievementsModal.tsx` usam `ui/ModalBase.tsx` (cantoneiras `#b8860b`, `max-h-[92vh] overflow-y-auto`, `stopPropagation` + `stopImmediatePropagation` no backdrop, no corpo e no botão fechar); `TalentsModal.tsx` replica o mesmo contêiner à mão (cantoneiras, `max-h-[92vh]`, blindagem); `HighScoresModal.tsx` só blinda o backdrop e renderiza uma `RecordsScene` Phaser (`Phaser.Game` próprio), sem cantoneiras DOM nem paleta de modal. Fase 2: `useGamepadUINavigation` está integrado em `ModalBase` (todos os modais que o usam), `hud/DialogueModal.tsx` e `InventoryModal.tsx` (com `onClose`); não há estilos `focus:ring-1 focus:ring-[#b8860b]` em nenhum dos dois (`DialogueModal` usa `focus:border-[#e8c76a]`; o hook marca `data-gamepad-focused`). Fase 3: `DialogueModal.tsx` tem `getSpeakerInfo` com paleta e ícone Lucide por facção (Maelen dourado, Ancião roxo, Mercador âmbar, Guarda cinza, Morte vermelho) e `drop-shadow` estático; faltam ornamentos forjados/relevo no retrato e o efeito de respiração/halo animado. Não verificado: a meta de 405+ testes (não executada; `pnpm test` não foi rodado, sem `node_modules`).
 
 ## Decisões a confirmar
 
@@ -17,58 +17,27 @@ Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aq
 
 ---
 
-> **Status:** Spec em andamento; execução dividida em 3 fases sequenciais.  
-> **Data:** 6 de setembro de 2026  
-> **Domínio:** Interface de usuário React, acessibilidade por controle/gamepad, blindagem de eventos de canvas e harmonia visual gótica.  
-> **Princípio:** Coerência estética total, zero vazamento de toques para o Phaser e navegabilidade completa sem mouse/touch.
+## 1. Objetivo (proposta)
 
----
+Padronizar visual e blindagem de ponteiro dos modais secundários, estender a navegação por gamepad ao diálogo e ao inventário e enriquecer o retrato do interlocutor, com coerência gótica (cantoneiras `#b8860b`, fundos `#0f0b09`/`#120a0e`) e nenhum vazamento de toque para o canvas do Phaser.
 
-## 1. Resumo Executivo & Justificativa
+## 2. Pendências por fase
 
-Com as interfaces principais do gameplay (`GameplayHUD`, `DialogueModal`, `InventoryModal`, `LevelUpModal`, `GameOverModal`) já refatoradas e calibradas com cantoneiras forjadas douradas (`#b8860b`), paleta gótica profunda e blindagem rigorosa de eventos (`stopPropagation` + `stopImmediatePropagation`), os modais secundários de apoio (`BestiaryModal`, `CodexModal`, `AchievementsModal`, `TalentsModal`, `HighScoresModal`) ainda mantêm resquícios do visual antigo com bordas simples e ausência de blindagem de ponteiro.
+### Fase 1: modais secundários
+- `HighScoresModal.tsx`: decidir se recebe contêiner DOM com cantoneiras e paleta (hoje o conteúdo é uma cena Phaser).
+- `BestiaryModal.tsx` depende de `CodexModal.tsx`; avaliar se continua wrapper.
+- Conferir alvos de toque mínimos de 40-44px nos botões dos modais (não verificado).
 
-Além disso, a acessibilidade por gamepad já presente no `LevelUpModal` e `GameOverModal` via hook `useGamepadUINavigation` deve ser estendida para o fluxo de diálogo (`DialogueModal`) e navegação do inventário (`InventoryModal`), proporcionando paridade de controle entre teclado, touch e gamepad físico/virtual.
+### Fase 2: gamepad
+- Estilos de foco `focus:border-[#e8c76a] focus:ring-1 focus:ring-[#b8860b]` em `DialogueModal.tsx` e `InventoryModal.tsx` (hoje só `focus:border-[#e8c76a]` no diálogo).
+- Definir o botão Start no `InventoryModal.tsx`: a proposta original fecha o modal com Start, mas `useGamepadUINavigation.ts` trata Start como confirmar (igual ao A) e só o B chama `onClose`.
 
----
+### Fase 3: retratos no `DialogueModal.tsx`
+- Ornamentos góticos forjados e relevo no contêiner do retrato.
+- Brasões de facção mais ricos que o ícone Lucide atual.
+- Efeito sutil de respiração/halo místico no retrato ativo (hoje `drop-shadow` estático).
+- Proposta a confirmar: Maelen em carmesim (código usa dourado `#e8c76a`).
 
-## 2. Divisão em Fases de Execução
+## 3. Critérios de aceite (provisórios)
 
-### Fase 1: Padronização Visual & Blindagem de Ponteiro nos Modais Secundários
-- **Alvos**:
-  - `src/components/BestiaryModal.tsx`
-  - `src/components/CodexModal.tsx`
-  - `src/components/AchievementsModal.tsx`
-  - `src/components/TalentsModal.tsx`
-  - `src/components/HighScoresModal.tsx`
-- **Diretrizes**:
-  1. Cantoneiras forjadas douradas (`#b8860b`) nos 4 cantos do contêiner modal.
-  2. Paleta gótica de fundo (`bg-[#0f0b09]/98` ou `bg-[#120a0e]/98`) com bordas `border-[#b8860b]/70` ou `border-red-900/60`.
-  3. Blindagem de ponteiro: `onPointerDown` e `onClick` com `e.stopPropagation()` e `e.nativeEvent?.stopImmediatePropagation?.()` no overlay backdrop, no corpo modal e em todos os botões/itens clicáveis.
-  4. Ergonomia mobile: `max-h-[92vh] overflow-y-auto` e alvos de toque mínimos de 40-44px.
-
-### Fase 2: Navegação Gamepad / D-Pad nos Modais Interativos
-- **Alvos**:
-  - `src/components/hud/DialogueModal.tsx`
-  - `src/components/InventoryModal.tsx`
-- **Diretrizes**:
-  1. Integrar `useGamepadUINavigation` no `DialogueModal` para alternar entre respostas com D-Pad Up/Down e confirmar com Botão A / Enter.
-  2. Integrar `useGamepadUINavigation` no `InventoryModal` para navegar entre as abas de filtro e cards de relíquia, com suporte a Botão B / Start para fechar o modal (`onClose`).
-  3. Adicionar estilos de foco nítidos (`focus:border-[#e8c76a] focus:ring-1 focus:ring-[#b8860b]`).
-
-### Fase 3: Retratos Rúnicos & Molduras Vivas no Diálogo
-- **Alvos**:
-  - `src/components/hud/DialogueModal.tsx`
-- **Diretrizes**:
-  1. Enriquecer o contêiner de retrato com ornamentos góticos forjados e relevo.
-  2. Retratos dinâmicos procedurais aprimorados com brasões de facção e paleta condizente com a personalidade do interlocutor (Maelen: Carmesim/Sangue; Elder/Sábio: Roxo Arcano; Sentinela: Aço/Ferro; Mercador: Ouro/Bronze).
-  3. Efeito sutil de respiração de luz/halo místico no retrato ativo.
-
----
-
-## 3. Critérios de Aceite & Gates de Verificação
-
-1. **Compilação**: `lint_applet` e `compile_applet` sem nenhum erro de tipo TypeScript.
-2. **Suíte de Testes**: `pnpm test` com 405+ testes aprovados (zero regressão).
-3. **Isolamento de Eventos**: Nenhum clique ou toque nos modais dispara disparos de projétil ou comandos de movimentação no canvas do Phaser.
-4. **Gamepad**: Foco visual e seleção funcional sem erros de console.
+Sem aprovação do responsável; critérios EARS a escrever. Gates propostos: `pnpm run typecheck` e `pnpm test` sem regressão (a meta numérica "405+ testes" é proposta e depende de contagem atual); nenhum clique/toque nos modais dispara projétil ou movimento no canvas; foco visual e seleção por gamepad sem erros de console (validação manual com gamepad).

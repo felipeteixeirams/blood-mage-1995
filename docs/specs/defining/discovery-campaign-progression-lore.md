@@ -4,7 +4,7 @@
 **Estágio:** defining
 **Aprovação do responsável:** pendente
 
-**Estado vs código:** não verificado
+**Estado vs código:** parcial (verificado em 2026-10-10, leitura estática + `grep`). Existe: modo campanha (`GameMode`, `campaignState` em `src/store/gameStore.ts`, `src/types/campaign.ts`); progressão por zonas em `DungeonFlowController.ts` (`CAMPAIGN_ZONE_CHUNKS`: safe_house, gloomy_woods, fosso_chagas, catacumbas_martires, santuario_sangue, via `ChunkStreamer` com bounds dinâmicos e transições entre biomas); início na Safe House (`currentZone: 'safe_house'`, cama `spr_straw_bed`) com diálogo de despertar do NPC Maelen (`src/data/dialogues.json`, `safe_house_maelen_intro`, "Ah... você finalmente acordou...") que cita a transferência compulsória do poder de sangue e a família levada ao norte; janela de diálogo com retrato (`src/components/hud/DialogueModal.tsx`); zero-to-hero (em campanha só `isCampaignSpellUnlocked` libera feitiços; `CAMPAIGN_SPELL_UNLOCK_LEVEL` destrava hellfire_nova nível 3 a blood_ritual_circle nível 13; fase de adaga corpo a corpo em `Player.ts` ~l.568); árvore de talentos com ramificação exclusiva (`exclusive_with` em `src/data/talents.json`); toggle `contentIntensity: 'full' | 'reduced'` (`SettingsScene.ts`, `DismembermentSystem.ts`); clima por partículas (`AtmosphereSystem`: spores, ash_embers, blood_rain). Falta ou diverge: o mundo ainda é montado por andar/zona, não um mapa único (o gerador híbrido interior/exterior de §3.3 não existe; `gloomy_woods` usa `ProceduralForestGenerator`); `WeatherType` em `types/campaign.ts` lista `thunderstorm` e `gentle_rain`, mas `grep -rniE "thunder|trov|lightning"` não acha trovões implementados; "Eco Vital" (kill sustain) não encontrado (`grep -rniE "eco.?vital|killSustain|lifeOnKill" src`); o vampirismo existe só como atributo (`getEffectiveVampirism`); ritmo de 4 a 5 golpes e ausência de stunlock não verificados (exigem execução/playtest).
 
 ## Decisões a confirmar
 
@@ -18,8 +18,6 @@ Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aq
 
 ---
 
-**Status:** Descoberta / Brainstorming Concluído & Consolidado
-**Data:** 2026-08-26
 **Referências:** Dungeon Siege 1, Diablo 2.
 
 ## 1. Visão Geral
@@ -59,7 +57,7 @@ Mudar o paradigma do *Blood Mage 1995* de um "Roguelite Arcade de arena/masmorra
 
 ---
 
-## 3. Diretrizes Técnicas para Implementação Futura
+## 3. Diretrizes técnicas propostas
 1. **Sistema de NPCs e Diálogos:** Janela de conversa estilo CRPG clássico (com portrait e texto formatado) disparada por proximidade e clique em NPCs na Safe House.
 2. **Desacoplamento de Habilidades Iniciais:** Permitir slots de magia vazios ao iniciar o jogo, exigindo a descoberta do primeiro grimório ou artefato.
 3. **Gerador de Mundo Híbrido:** Evoluir o DungeonGenerator para suportar áreas externas abertas (florestas/estradas) intercaladas com calabouços fechados.
@@ -73,10 +71,10 @@ Mudar o paradigma do *Blood Mage 1995* de um "Roguelite Arcade de arena/masmorra
 ### Proposta 1 — Tema "Sangue" é mantido; o risco real é intensidade visual, não nomenclatura
 - **Mantemos a lore e o vocabulário como estão** (Mago de Sangue, Cristais de Sangue, Selo de Sangue, etc.). Precedente de gênero: *Diablo* usa o mesmo padrão temático (orbes de vida vermelhos, "Blood Stone") e é M/16+ nas classificações — isso nunca foi um impeditivo de lançamento ou sucesso comercial.
 - **O que de fato influencia classificação indicativa é a intensidade visual da violência** (desmembramento gráfico, volume de partículas de gore), não o nome das mecânicas.
-- **Mitigação:** adicionar um toggle de "Intensidade de Conteúdo" nas configurações (ver `backlog/15_TOGGLE_INTENSIDADE_CONTEUDO_CLASSIFICACAO.md`) que suaviza o gore visual sem alterar a identidade temática do jogo. Essa é a alavanca real para uma classificação mais branda em lojas mais rígidas (Play Store/IARC), preservando a experiência completa pra quem optar por ela.
+- **Mitigação:** adicionar um toggle de "Intensidade de Conteúdo" nas configurações (o toggle `contentIntensity` já existe no código) que suaviza o gore visual sem alterar a identidade temática do jogo. Essa é a alavanca real para uma classificação mais branda em lojas mais rígidas (Play Store/IARC), preservando a experiência completa pra quem optar por ela.
 
 ### Proposta 2 — Identidade narrativa do protagonista permanece FIXA; a liberdade fica na árvore de talentos
 - **Não adotamos o sistema de progressão livre por uso do Dungeon Siege 1** (atributos sobem pelo tipo de ação/arma usada, sem classe fixa). Esse sistema faz sentido num jogo sem identidade narrativa de personagem — o oposto do Blood Mage 1995, cuja premissa inteira depende do protagonista **não ter escolhido** esse poder e ser obrigado a carregá-lo contra a própria vontade. Liberar o jogador pra ignorar magia inteiramente descaracterizaria o conflito central da história.
-- **Em vez disso:** a identidade do personagem (mago amaldiçoado, arma inicial física antes da primeira magia) permanece fixa, mas a **liberdade de build** é entregue via ramificação mutuamente exclusiva na árvore de talentos — o mesmo padrão usado pelo *Diablo 2* (classe fixa, build livre dentro dela). Ver expansão dessa ramificação em `backlog/12_PROGRESSAO_E_QUESTS_CONTRATOS.md` §3.1, agora também cobrindo arquétipos melee-pesado / híbrido / caster-puro, além dos exemplos de dano vs. utilidade já descritos.
+- **Em vez disso:** a identidade do personagem (mago amaldiçoado, arma inicial física antes da primeira magia) permanece fixa, mas a **liberdade de build** é entregue via ramificação mutuamente exclusiva na árvore de talentos — o mesmo padrão usado pelo *Diablo 2* (classe fixa, build livre dentro dela). A proposta inclui arquétipos melee-pesado / híbrido / caster-puro, além dos exemplos de dano vs. utilidade (o código já tem pares `exclusive_with` em `talents.json`).
 
-**Status:** proposta, não ratificada pelo responsável.
+Proposta, não ratificada pelo responsável.

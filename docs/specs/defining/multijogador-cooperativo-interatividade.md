@@ -4,7 +4,7 @@
 **Estágio:** defining
 **Aprovação do responsável:** pendente
 
-**Estado vs código:** não verificado
+**Estado vs código:** verificado em 2026-10-10: não implementado. `grep -rniE "webrtc|peerjs|RTCPeer|signaling|multiplayer|cooperativ|co-op" src public scripts package.json vite.config.ts` sem resultados; `DungeonGenerator.ts` não recebe seed (`grep -in seed` vazio); nenhuma dependência de rede P2P em `package.json`. O jogo segue offline-first (Zustand + `localStorage`).
 
 ## Decisões a confirmar
 
@@ -17,7 +17,7 @@ Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aq
 
 ---
 
-> 💡 **TIPO: DISCOVERY & EXPLORAÇÃO TÉCNICA (Backlog)**
+> **Tipo: discovery e exploração técnica**
 >
 > **Arquitetura Base Atual:** O projeto é estritamente **Offline-First**, com simulação local síncrona no Phaser e persistência validada via Zod no `localStorage`.
 >
@@ -38,7 +38,7 @@ Embora o combate PvP (Jogador vs. Jogador) seja um objetivo de longo prazo, a pr
 
 ## 2. Visão Geral da Jogabilidade Cooperativa
 
-O multijogador operará sob o conceito de **Sessões Compartilhadas (Co-op de até 4 Jogadores)**. Os jogadores poderão convidar amigos ou parear com aventureiros no vilarejo seguro (Room 0) para desbravar os biomas contínuos.
+Proposta: o multijogador operaria sob o conceito de **Sessões Compartilhadas (Co-op de até 4 Jogadores)**. Os jogadores poderão convidar amigos ou parear com aventureiros no vilarejo seguro (Room 0) para desbravar os biomas contínuos.
 
 ```
        [ Jogador 1 (Host) ]
@@ -92,7 +92,7 @@ Para eliminar os custos de manter servidores dedicados rodando loops de física 
 
 ## 4. UI/UX: Modais de Conectividade e Lobby
 
-A interface do multijogador cooperativo respeitará rigorosamente o design system clássico gótico de 1995 de *Bloodmage*:
+Proposta: a interface do multijogador cooperativo seguiria o estilo gótico já usado nos modais React:
 
 ### Tela de Aliança (Lobby de Conexão):
 *   Uma seção estilizada como um pergaminho rústico de pedra escura com bordas de ferro batido e ornamentos rúnicos dourados.
@@ -111,12 +111,4 @@ A interface do multijogador cooperativo respeitará rigorosamente o design syste
 
 ## Referências
 
-- `README.md` — Status de desenvolvimento
-- `03_PHASER_PATTERNS.md` — Integração com o loop do Phaser
-- `02_UI_PATTERNS.md` — Padrões visuais de UI/UX
-
-## Registro de mudanças
-
-| Data | O que mudou | Autor |
-|------|-------------|-------|
-| 2026-08-11 | Criação da proposta cooperativa de rede e interface | Jules (Google AI) |
+- [architecture](../../architecture/README.md) — padrões do Phaser e do store

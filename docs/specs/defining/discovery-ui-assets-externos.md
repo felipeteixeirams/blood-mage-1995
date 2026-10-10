@@ -4,7 +4,7 @@
 **Estágio:** defining
 **Aprovação do responsável:** pendente
 
-**Estado vs código:** não verificado
+**Estado vs código:** parcial (verificado em 2026-10-10, leitura estática + `grep`). Existe: modelo híbrido de sprites com fallback procedural (`src/game/assets/assetManifest.json` com 37 entradas, 19 `required: true` = `spr_bloodmage` + baús em 8 direções; `queueAssetLoading` com `loaderror` e métricas em `assetManifest.ts`; `src/utils/textureGenerator.ts`; `scripts/verify-assets.cjs`); assets físicos em `public/assets/sprites/{player,items}` e UI em `src/assets/ui/` (usados em `RecordsScene.ts`); fontes locais em `public/fonts/` (Cinzel, UnifrakturMaguntia, Press Start 2P, VT323; classe `.font-cinzel`); `border-image` em `DialogueModal.tsx` (SVG inline) e `src/index.css`; Sentry inicializado em `src/main.tsx`; React gerencia HUD e modais; tintas de elite. Falta: áudio híbrido (`soundEngine.ts` só sintetiza; `public/assets/audio/` só tem `.gitkeep`; `public/audio_samples/*.wav` são renders offline de `scripts/render_bgm_samples.cjs` para `SoundTestModal`); classe `.gothic-panel` e PNGs `gothic_border_slice.png`/`gold_runic_border.png`; envio de falhas de asset ao Sentry (o `loaderror` só usa `logger`); tela de Créditos (`grep -rni credit src` sem UI); `pngquant`, WebP e atlas de ícones; camadas de equipamento no sprite do jogador; inimigos físicos (`public/assets/sprites/enemies/` só tem `.gitkeep`); tilesets físicos (`public/assets/tilesets/` só `.gitkeep`); limite de 2,5 MB e lazy-loading por cena não verificados.
 
 ## Decisões a confirmar
 
@@ -23,7 +23,7 @@ Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aq
 
 ## 1. Visão Geral e Direcionamento Artístico
 
-O **Bloodmage 1995** opera hoje sob uma arquitetura puramente procedural (`textureGenerator.ts` para renderização em canvas HTML5 e `soundEngine.ts` para síntese via Web Audio API). Essa restrição foi essencial para garantir um carregamento instantâneo, leveza extrema e independência de rede.
+O **Bloodmage 1995** opera hoje sob uma arquitetura majoritariamente procedural (`textureGenerator.ts` para renderização em canvas HTML5 e `soundEngine.ts` para síntese via Web Audio API). Essa abordagem dá carregamento rápido e independência de rede.
 
 Contudo, para atingir o nível de **imersão comercial e "game juice"** necessários para competir no mercado (como PWA Premium ou em lojas como Steam e Google Play Store), propõe-se uma transição para um **modelo híbrido de carregamento**:
 * **Assets Físicos Sombrios:** Utilizar recursos visuais (PNG/WebP compactados) e sonoros (MP3/OGG) de alta qualidade para focar o jogador em elementos cruciais (mago, monstros, runas, efeitos sonoros de feitiços e trilhas ambientais).
@@ -177,7 +177,7 @@ export const InventoryModal: React.FC<{ onClose: () => void }> = ({ onClose }) =
 
 ## 4. Eixo C - Transição Gradual de Áudio (SFX e BGM)
 
-Atualmente, o `soundEngine.ts` sintetiza ondas senoidais, dentes-de-serra e ruídos programáticos via Web Audio API. Para evoluir a experiência auditiva para algo digno de horror medieval, adotaremos um modelo de carregamento gradativo de arquivos físicos de áudio.
+Hoje o `soundEngine.ts` sintetiza ondas senoidais, dentes-de-serra e ruídos programáticos via Web Audio API. Para evoluir a experiência auditiva para algo digno de horror medieval, propõe-se um modelo de carregamento gradativo de arquivos físicos de áudio.
 
 ### 4.1. Estratégia de Transição Híbrida do SoundEngine
 Os efeitos de alta prioridade (conjuração de magias, impactos de foice, rugidos de monstros) e músicas de fundo serão migrados gradualmente para arquivos compactados (`.mp3` ou `.ogg`), mantendo o gerador Web Audio como fallback silencioso para evitar erros de execução.
@@ -371,7 +371,7 @@ As fontes abaixo contêm acervos vastos de pixel art gratuita e compatível com 
 
 ---
 
-## 9. Plano de Transição e Próximos Passos
+## 9. Plano de transição proposto
 
 A migração de procedural para assets externos será modular e executada em etapas:
 

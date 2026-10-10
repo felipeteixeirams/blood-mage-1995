@@ -4,7 +4,7 @@
 **Estágio:** defining
 **Aprovação do responsável:** pendente
 
-**Estado vs código:** não verificado
+**Estado vs código:** verificado em 2026-10-10: não implementado. Grep usado: `grep -rniE "capacitor|cordova|admob|rewarded|survivalPass|battlePass" src package.json vite.config.ts scripts public` sem resultados relevantes (só acertos em nomes de imagens). Existem apenas o PWA (`vite-plugin-pwa`) e os scripts `scripts/build-twa.sh` e `scripts/build-steam.sh`; não há loja, passe, anúncios nem Capacitor.
 
 ## Decisões a confirmar
 
@@ -19,7 +19,7 @@ Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aq
 
 > 💡 **TIPO: DISCOVERY & EXPLORAÇÃO DE MERCADO (Backlog)**
 >
-> **Status Atual da Plataforma:** A plataforma mobile principal e ativa do projeto é o **PWA Offline-First** (concluído na Spec 15), que já provê suporte offline completo, baixo consumo de armazenamento e execução direta no navegador mobile.
+> **Status Atual da Plataforma:** A plataforma mobile principal e ativa do projeto é o **PWA Offline-First** , que já provê suporte offline completo, baixo consumo de armazenamento e execução direta no navegador mobile.
 >
 > **Propósito deste Discovery:** Avaliar caminhos futuros para distribuição em lojas oficiais (Google Play Store e Apple App Store) via wrappers nativos modernos (ex: CapacitorJS ou TWA), além de modelos de monetização ética não-intrusiva adequados para um desenvolvedor indie.
 
@@ -27,7 +27,7 @@ Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aq
 
 ## 1. Contexto & Objetivos
 
-Bloodmage 1995 já possui suporte parcial a PWA (Progressive Web App) e scripts automatizados de empacotamento TWA (Trusted Web Activity). No entanto, para alcançar o máximo potencial em plataformas móveis nativas e oferecer um aplicativo estável, fluido e totalmente integrável com serviços das lojas (notificações push, conquistas das lojas, faturamento), propomos a migração estruturada para um empacotador nativo de alto nível, juntamente com estratégias de monetização e marketing de baixo orçamento apropriadas para um criador solo de jogos indies.
+O código tem PWA (`vite-plugin-pwa`) e o script `scripts/build-twa.sh` (TWA via Bubblewrap). No entanto, para alcançar o máximo potencial em plataformas móveis nativas e oferecer um aplicativo estável, fluido e totalmente integrável com serviços das lojas (notificações push, conquistas das lojas, faturamento), propomos a migração estruturada para um empacotador nativo de alto nível, juntamente com estratégias de monetização e marketing de baixo orçamento apropriadas para um criador solo de jogos indies.
 
 ### Objetivos Principais:
 1.  **Wrapper Nativo de Alta Performance:** Substituir dependências web por um container nativo moderno que acesse as APIs de hardware (GPU, vibração, ciclo de vida do app) sem gargalos de desempenho.
@@ -106,14 +106,3 @@ Como um desenvolvedor com baixo orçamento de anúncios para marketing de massa,
     *   Lançar uma página de "Pré-Registro" na Google Play Store o quanto antes. O Google Play prioriza aplicativos com pré-registro ativo, garantindo visibilidade orgânica inicial no algoritmo de recomendação de lançamentos.
 
 ---
-
-## Referências
-
-- `05_SISTEMA_DE_SKINNING_E_CAMADAS_DINAMICAS.md` — Conexão com o sistema de cosméticos das skins
-- `FASE5_EMPACOTAMENTO_COMPLETO.md` — Configurações existentes de PWA/TWA
-
-## Registro de mudanças
-
-| Data | O que mudou | Autor |
-|------|-------------|-------|
-| 2026-08-11 | Criação da proposta de empacotamento, monetização e marketing móvel | Jules (Google AI) |

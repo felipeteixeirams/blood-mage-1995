@@ -4,7 +4,7 @@
 **Estágio:** defining
 **Aprovação do responsável:** pendente
 
-**Estado vs código:** não verificado
+**Estado vs código:** verificado: não implementado (verificado em 2026-10-10). `ls tools` (não existe); `grep -n "generate-prompt\|ingest-asset\|pngquant" package.json` (sem resultado); `find . -iname "*art_style*" -o -name "*.yaml"` (só `pnpm-workspace.yaml` e `lib/api-spec/openapi.yaml`, nenhum `spec.yaml` de inimigo nem `ART_STYLE.md`). Existe apenas ferramental correlato que não é o pipeline proposto: `src/game/assets/assetManifest.json` (campo `required`, 37 entradas, 19 `required: true`), `src/game/assets/assetManifest.ts` (`queueAssetLoading` com fallback procedural), `scripts/verify-assets.cjs` (valida cabeçalho e dimensões dos assets em `src/assets`, `public/assets`, `public/fonts`), `scripts/pixellab_client.cjs` e `scripts/fetch-spritecook-sprite.cjs` (clientes de geradores externos), `scripts/stitch_pixellab_bloodmage.cjs`. Risco encontrado: `scripts/pixellab_client.cjs` contém um token (`DEFAULT_TOKEN`) em texto no código.
 
 ## Decisões a confirmar
 
@@ -16,9 +16,6 @@ Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aq
 
 ---
 
-**Status:** Descoberta / Planejamento para Fase 3 (Escala de Produção)
-**Data:** 2026-08-26
-
 ## 1. O Conceito
 Estabelecer um pipeline híbrido (Scripts + IA + Intervenção Humana) para escalar a produção de assets (personagens, inimigos, props) mantendo coesão visual (Gothic Retro 16-bit) e automatizando a integração do asset com a engine (Phaser) e o controle de estado do jogo.
 
@@ -29,8 +26,8 @@ O foco é parar de tratar a IA como "geradora de assets prontos" e passar a usá
 ## 2. Por que Não 100% Automático? (Riscos Técnicos)
 IAs generativas atuais possuem três falhas críticas para pixel art funcional em engines de jogos:
 1. **Inconsistência de "Pixel" (Grid Snap):** IAs geram imagens em alta resolução simulando pixel art. Fazer downscale algorítmico automatizado borra a imagem ou destrói a silhueta.
-2. **Alinhamento de Frames (Jitter/Flicker):** Animações (SpriteSheets) precisam de âncoras perfeitas. Se o centro de massa variar 2 pixels de um frame para o outro, o personagem "tremerá" in-game (vide histórico do `bloodmage.png`).
-3. **Dimensões e VRAM:** Nossa engine exige assets rígidos (ex: 64x64) compactados agressivamente para rodar no navegador web. 
+2. **Alinhamento de Frames (Jitter/Flicker):** Animações (SpriteSheets) precisam de âncoras perfeitas. Se o centro de massa variar 2 pixels de um frame para o outro, o personagem "tremerá" in-game (exemplo citado pelo texto original, `bloodmage.png`; não verificado).
+3. **Dimensões e VRAM:** A engine hoje declara frames de tamanho fixo no manifesto (ex: 68x68 em `spr_bloodmage`; a proposta cita 64x64) compactados agressivamente para rodar no navegador web. 
 
 ---
 
@@ -57,9 +54,7 @@ A "Mágica" acontece aqui. O script `pnpm run ingest-asset <tipo> <nome>` faz o 
 
 ---
 
-## 4. Estrutura de Diretórios Futura
-
-Para suportar esta funcionalidade na Fase 3, sugerimos:
+## 4. Estrutura de diretórios proposta
 
 ```text
 /tools
@@ -76,5 +71,6 @@ Para suportar esta funcionalidade na Fase 3, sugerimos:
         blood_hound.yaml     # Ex: Definição (6 frames de walk, 4 de attack)
 ```
 
-## 5. Próximos Passos (Fase 1 e 2)
-Este documento fica congelado até a **Fase 3**. Durante a Fase 1 e 2 (provas de conceito e Vertical Slice), continuaremos usando assets limitados, shapes primitivos ou fallback procedural, focando o tempo de engenharia em Game Feel, Balanceamento e Estabilidade de Engine.
+## 5. Condição proposta de início
+
+Proposta: manter este pipeline congelado até a "Fase 3" (escala de produção), usando até lá assets limitados, shapes primitivos ou fallback procedural (ver decisão 3).

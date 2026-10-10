@@ -4,7 +4,7 @@
 **Estágio:** defining
 **Aprovação do responsável:** pendente
 
-**Estado vs código:** não verificado
+**Estado vs código:** verificado: não implementado (verificado em 2026-10-10). `grep -rniE "worldEvent|activeWorldEvent|eclipse|village.?siege|infection.?rift|halloween|solst|seasonal|sazonal" src public` não retorna nada relevante (única ocorrência de "necrose" é o upgrade "Necrose Vampírica" em `src/data/upgrades.json`); `src/data/worldEvents.json` não existe; não há leitura de cabeçalho `Date` do servidor.
 
 ## Decisões a confirmar
 
@@ -17,7 +17,7 @@ Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aq
 
 ---
 
-> Especificação conceitual e técnica para a criação de Eventos Mundiais e Sazonais dinâmicos em Bloodmage 1995. Inspirada em estratégias de engajamento de grandes RPGs de sobrevivência e ação como Dead Frontier 2 e Diablo, esta proposta define eventos globais temporais e comemorações sazonais que alteram a atmosfera, as mecânicas de combate e as recompensas para maximizar a retenção sem prejudicar o clima grimdark do jogo.
+> Proposta conceitual e técnica para a criação de Eventos Mundiais e Sazonais dinâmicos em Bloodmage 1995. Inspirada em estratégias de engajamento de grandes RPGs de sobrevivência e ação como Dead Frontier 2 e Diablo, esta proposta descreve eventos globais temporais e comemorações sazonais que alteram a atmosfera, as mecânicas de combate e as recompensas para maximizar a retenção sem prejudicar o clima grimdark do jogo.
 
 ---
 
@@ -91,21 +91,10 @@ Grandes datas comemorativas reais serão adaptadas e rebatizadas para se encaixa
 
 ## 4. Arquitetura Técnica de Sincronização de Calendário
 
-Para que os eventos sazonais e de hora em hora funcionem sem a necessidade de um servidor de tempo ultra-complexo, o jogo utilizará a API de tempo do navegador e checagens com o fuso horário internacional (UTC):
+Para que os eventos sazonais e de hora em hora funcionem sem a necessidade de um servidor de tempo ultra-complexo, propõe-se usar a API de tempo do navegador e checagens com o fuso horário internacional (UTC):
 
 1.  **Checagem de Tempo Confiável:** Ao iniciar o jogo, o cliente faz uma requisição HTTP simples de cabeçalho `Date` para o servidor backend ou de hospedagem (Vercel) para obter a data e hora mundiais confiáveis, evitando que o jogador manipule o relógio local do sistema operacional para burlar eventos.
 2.  **Ativação do Estado de Evento:** Se a data/hora coincidir com os intervalos definidos no arquivo de configuração do jogo `src/data/worldEvents.json`, o estado global do Zustand `activeWorldEvent` é definido para a ID correspondente.
 3.  **Gatilho das Cenas Phaser:** A `GameScene` escuta a mudança no Zustand e ativa os filtros de pós-processamento, os emissores de partículas climáticas (chuva de brasas, neve) e altera os multiplicadores de spawn e loot correspondentes ao evento em tempo real.
 
 ---
-
-## Referências
-
-- `04_MOBILE_APP_E_MONETIZACAO_INDIE.md` — Conexão com o Passe de Batalha de Sobrevivência
-- `04_FASE4_MUNDO_CONTINUO.md` — Configurações de iluminação e biomas contínuos
-
-## Registro de mudanças
-
-| Data | O que mudou | Autor |
-|------|-------------|-------|
-| 2026-08-11 | Criação da proposta conceitual e técnica de Eventos Mundiais e Sazonais | Jules (Google AI) |
