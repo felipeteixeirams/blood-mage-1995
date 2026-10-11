@@ -25,10 +25,10 @@ Proposta: uma única fonte para cada conhecimento, tudo que descreve o projeto e
 | # | Decisão | Opções | Recomendação |
 |---|---|---|---|
 | 1 | Qual cópia das skills fica | `.claude/skills/` (Claude Code), `skills/`, ambas | `.claude/skills/` como fonte única: é a que o `CLAUDE.md` cita; mover `spritecook-integration` para lá. |
-| 2 | `.agents/` e `.jules/` | manter, apagar | Apagar se não forem mais usados (outras ferramentas); só o responsável sabe se o AI Studio ou o Jules ainda leem. |
+| 2 | `.agents/` e `.jules/` | manter, apagar | Informado pelo responsável em 2026-10-11: o Google AI Studio é usado e o Jules só eventualmente. Recomendo manter `.jules/` e `.agents/` por ora e só apagar depois de confirmar o que o AI Studio lê. |
 | 3 | `.aistudio/.../implementation_plan.md` | apagar, mover para o Git history | Apagar: é relatório; o histórico fica no Git. |
 | 4 | `.claude/README.md` e `token-optimization.md` | reescrever curtos, apagar | Apagar o `token-optimization.md` e reduzir o README a um ponteiro para `docs/README.md`. |
-| 5 | `DEPLOYMENT.md` e `replit.md` | apagar, reduzir a ponteiro | Apagar `replit.md` se o Replit não for mais usado; `DEPLOYMENT.md` vira ponteiro para `docs/operations/`. |
+| 5 | `DEPLOYMENT.md` e `replit.md` | apagar, reduzir a ponteiro | Informado pelo responsável em 2026-10-11: o Replit não é usado. Recomendo apagar `replit.md` e reduzir `DEPLOYMENT.md` a ponteiro para `docs/operations/`. |
 
 ## Escopo
 Remover ou mover os itens da tabela conforme as decisões, corrigir `.claude/claude.json` e referências, e registrar em `docs/engineering/` quais pastas de ferramenta existem e o que cada uma é.
@@ -58,7 +58,7 @@ Alterar o conteúdo das skills, o procedimento do PAT em `AGENTS.md` e qualquer 
 | BD-5 | `test -e` sobre os caminhos citados no `CLAUDE.md` |
 
 ## Questões em aberto
-Quais ferramentas externas (Google AI Studio, Jules, Replit) ainda leem `.agents/`, `.jules/` e `replit.md`.
+O que o Google AI Studio lê (`.agents/`, `.aistudio/`, `AGENTS.md`) e se o Jules ainda usa `.jules/`. O Replit foi descartado pelo responsável. As decisões 1 a 5 seguem sem aprovação registrada.
 
 ## Referências
 [Documento mestre das specs](README.md); `docs/engineering/stack-and-conventions.md` (estrutura do repositório); ADR 0015 em `docs/decisions/`.
