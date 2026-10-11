@@ -6,6 +6,7 @@
 |---|---|
 | [architecture/](architecture/README.md) | for propor, criar ou refatorar feature (mapa do que o código faz hoje) |
 | [critical/](critical/README.md) | for mexer em arquivo crítico (`Player.ts`, `Enemy.ts`, `GameScene.ts`...), performance ou segurança |
+| [gameplay/](gameplay/README.md) | for entender como uma funcionalidade do jogo funciona hoje (combate, magias, talentos, loot, campanha, HUD...) sem ler o código |
 | [decisions/](decisions/README.md) | for escolher tecnologia ou serviço, definir regra de negócio ou depender de uma suposição |
 | [specs/](specs/README.md) | for definir, implementar ou consumir uma spec (`defining` → `backlog` → `in-progress`) |
 | [engineering/](engineering/README.md) | for escrever ou revisar código (stack, convenções) |
@@ -17,7 +18,7 @@
 ## Manutenção
 - Só este arquivo fica no primeiro nível; o resto vai em pasta de categoria.
 - Documento novo: liste no mestre da pasta. Categoria nova: liste aqui.
-- Nomes de arquivo em kebab-case. Documentos de referência (architecture, critical, engineering, operations, product, testing) levam `**Status:** verificado | não verificado | histórico` e `**Verificado em:**` no topo; só confie em `verificado`.
+- Nomes de arquivo em kebab-case. Documentos de referência (architecture, critical, engineering, gameplay, operations, product, testing) levam `**Status:** verificado | não verificado | histórico` e `**Verificado em:**` no topo; só confie em `verificado`.
 - Todo documento (exceto README) traz `**Mestre:** [pasta](README.md)` no topo; ADRs têm o mesmo status no registro de `decisions/` e no arquivo.
 - Specs levam `**Estágio:**` e `**Aprovação do responsável:**`; em `backlog/` e `in-progress/` a aprovação é obrigatória.
 - A documentação descreve o projeto como ele é hoje: sem relatórios de status, sem histórico (o histórico fica no Git).

@@ -96,7 +96,7 @@ for (const stage of ['backlog', 'in-progress']) {
 }
 
 // (f) cabeçalho de confiança nos documentos de referência
-const refCats = ['architecture', 'critical', 'engineering', 'operations', 'product', 'testing']
+const refCats = ['architecture', 'critical', 'engineering', 'gameplay', 'operations', 'product', 'testing']
 for (const cat of refCats) {
   const dir = join(docs, cat)
   if (!existsSync(dir)) continue
