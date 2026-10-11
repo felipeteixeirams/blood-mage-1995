@@ -11,7 +11,11 @@
 | [Discovery: Pipeline de Arte Semi-Automatizado via IA (HuggingFace / ChatGPT)](discovery-pipeline-de-arte-com-ia.md) | Discovery de pipeline semi-automático de arte com IA; nada do pipeline proposto existe (só manifesto, `verify-assets` e clientes PixelLab/SpriteCook). |
 | [Discovery: Transição para ARPG Clássico (Campanha, Lore e Atmosfera)](discovery-campanha-progressao-e-lore.md) | Discovery de ARPG de campanha: Safe House, despertar, zero-to-hero, destrave de feitiços por nível e talentos exclusivos existem; faltam mundo único contínuo, trovões e Eco Vital. |
 | [Eixo A — Gráficos Avançados (postFX, Iluminação Light2D e Normal Maps)](feature-graficos-avancados-eixo-a.md) | postFX, Light2D e normal maps existem; faltam normal map do jogador, fallback Canvas funcional (`ScreenEffects.render`, `darknessOverlay`) e toggle de UI para `postProcessingEnabled`. |
-| [GDD & Especificação: Eventos Mundiais e Sazonais (Atmosphere & Retention)](feature-eventos-mundiais-e-sazonais.md) | GDD de eventos mundiais (Eclipse de Sangue, Cerco, Rifts) e sazonais com sincronização por calendário; nada implementado. |
+| [feature-infraestrutura-de-eventos-mundiais](feature-infraestrutura-de-eventos-mundiais.md) | Agenda em `worldEvents.json`, fonte de tempo e estado `activeWorldEvent`, base dos eventos mundiais; nada implementado |
+| [feature-evento-eclipse-de-sangue](feature-evento-eclipse-de-sangue.md) | Eclipse de Sangue com luz -30%, inimigos em `frenzy` e drop +50% (valores provisórios); nada implementado |
+| [feature-evento-cerco-ao-vilarejo](feature-evento-cerco-ao-vilarejo.md) | Cerco com combate na Room 0 e efeitos nos NPCs; precisa de redesenho e de spec de Safe House com combate |
+| [feature-evento-rifts-de-infeccao](feature-evento-rifts-de-infeccao.md) | Rifts com aura de Infecção, dreno de MP e selagem em 5 s; sem critérios ainda |
+| [feature-eventos-sazonais](feature-eventos-sazonais.md) | Eventos por data real (Noite dos Ancestrais, Banquete do Gelo); dependem de arte, status de congelamento e feitiço novos |
 | [Spec — Evolução Gráfica & Auditiva (Quick Wins & Roadmap Completo)](feature-evolucao-grafica-e-audio-quick-wins.md) | Quick wins gráficos e auditivos: só falta a aura de inimigo (A.2); o resto existe no código. |
 | [discovery-evolucao-grafica-avancada/README.md](discovery-evolucao-grafica-avancada/README.md) | Índice da discovery de evolução gráfica em três eixos (4 partes) |
 | [Avaliação arquitetural (parte 1)](discovery-evolucao-grafica-avancada/01-visao-e-contexto.md) | Visão, decisões e contexto |
@@ -19,8 +23,14 @@
 | [Avaliação arquitetural (parte 3)](discovery-evolucao-grafica-avancada/03-eixos-b-e-c.md) | Eixos B e C: assets externos e áudio híbrido |
 | [Avaliação arquitetural (parte 4)](discovery-evolucao-grafica-avancada/04-matriz-riscos-referencias.md) | Matriz de priorização, riscos e referências |
 | [Evolução gráfica avançada (05-criterios-e-pendencias.md)](discovery-evolucao-grafica-avancada/05-criterios-e-pendencias.md) | Evolução gráfica avançada: critérios e pendências (parte 5) |
-| [Fase 5: Polimento de Produção, Empacotamento Nativo (Play Store & Steam) e Imersão AAA](feature-polimento-de-producao-pwa-e-steam.md) | Faltam espanhol, Cloud Save e empacotamento efetivo Electron/TWA; PWA, gamepad, haptics, conquistas e i18n pt/en existem. |
-| [Spec 16: Evolução Gráfica, Resolução Adaptativa UI & Terreno Procedural 2.5D/3D](feature-evolucao-de-ui-e-terreno.md) | Terreno por heightmap, zoom adaptativo e de chefe e joystick ajustável existem; faltam resolução virtual, escala/safe area completa do HUD, assistência de mira, rampas, A* 3D e escolha de motor. |
+| [feature-idioma-espanhol](feature-idioma-espanhol.md) | Terceiro idioma (espanhol) com dicionário de 147 chaves, registro no i18n, schema e seletor de idioma |
+| [feature-politica-de-privacidade](feature-politica-de-privacidade.md) | Página pública de política de privacidade, exigida pela Play Store e pela Steam |
+| [feature-empacotamento-twa-play-store](feature-empacotamento-twa-play-store.md) | `twa-manifest.json` versionado e `build-twa.sh` reprodutível para gerar o pacote Android |
+| [feature-empacotamento-steam-electron](feature-empacotamento-steam-electron.md) | `main.js`, `electron-builder.yml` e dependências Electron versionados para gerar o instalador da Steam |
+| [feature-camera-e-escala-de-entidades](feature-camera-e-escala-de-entidades.md) | Câmera por resolução lógica e proporção de tela, zoom de chefe suave e escala de entidades por ocupação vertical |
+| [feature-hud-escala-e-personalizacao](feature-hud-escala-e-personalizacao.md) | Escala global, opacidade, tamanho de botões e margens de safe area do HUD mobile, persistidos em `localStorage.ts` |
+| [feature-mira-e-alvo-inteligente](feature-mira-e-alvo-inteligente.md) | Hitbox de alvo +30% no toque e pontuação de alvo por distância, HP e ameaça |
+| [feature-terreno-rampas-e-estruturas](feature-terreno-rampas-e-estruturas.md) | Rampas, falésias, estruturas por carimbo e A* com custo de elevação no terreno 2.5D |
 | [HUD de Gameplay & Dinâmica de Combate: Diretrizes Diablo II & Dungeon Siege 1](feature-hud-referencias-visuais.md) | Tier A (barras, marcador de NPC, minimapa, curativos) existe; faltam menu contextual de mouse e Tier C (arte própria). |
 | [Mapeamento Completo de Sprites & Checklist de Substituição](feature-mapeamento-de-sprites.md) | Pipeline e fallback prontos; só jogador, baú e UI têm arte física, o resto segue procedural. |
 | [Discovery: Mobile App, Wrapper Nativo e Monetização Saudável](discovery-app-mobile-e-monetizacao.md) | Proposta de Capacitor, anúncios premiados, passe e loja de cosméticos; nada implementado. |
@@ -33,15 +43,11 @@
 | [Guia Direto para Pixel Lab (Bloodmage 1995) (parte 4)](feature-guia-pixel-lab/04-npcs-e-props.md) | Prompts dos NPCs do refúgio e dos props (baú, portal, ossada). |
 | [Guia Direto para Pixel Lab (Bloodmage 1995) (parte 5)](feature-guia-pixel-lab/05-tiles-e-tabela.md) | Prompts de tiles de ambiente e tabela resumo das opções. |
 | [Guia de prompts do Pixel Lab (critérios e pendências)](feature-guia-pixel-lab/06-criterios-e-pendencias.md) | Critérios EARS das entregas de arte (PL-1 a PL-14), plano de verificação, questões em aberto e pendências |
-| [feature-polimento-grafico-calibracao/README.md](feature-polimento-grafico-calibracao/README.md) | Índice da calibração visual dos sistemas gráficos (7 partes) |
-| [Spec 17 — Polimento Gráfico por Calibração dos Sistemas Existentes (parte 1)](feature-polimento-grafico-calibracao/01-visao-e-escopo.md) | Índice, decisões a confirmar, resumo executivo e escopo fechado da calibração gráfica. |
-| [Spec 17 — Polimento Gráfico por Calibração dos Sistemas Existentes (parte 2)](feature-polimento-grafico-calibracao/02-estado-atual-e-objetivos.md) | Sistemas existentes, problemas e riscos observados, e objetivos de qualidade visual. |
-| [Spec 17 — Polimento Gráfico por Calibração dos Sistemas Existentes (parte 3)](feature-polimento-grafico-calibracao/03-frentes-a-c.md) | Frentes A a C: Glow, pós-processamento (PostFX) e LightingSystem, com requisitos e critérios. |
-| [Spec 17 — Polimento Gráfico por Calibração dos Sistemas Existentes (parte 4)](feature-polimento-grafico-calibracao/04-frentes-d-f.md) | Frentes D a F: atmosfera, sombras e reflexos. |
-| [Spec 17 — Polimento Gráfico por Calibração dos Sistemas Existentes (parte 5)](feature-polimento-grafico-calibracao/05-frentes-g-i.md) | Frentes G a I: partículas, shader e terreno procedural, integração e lifecycle. |
-| [Spec 17 — Polimento Gráfico por Calibração dos Sistemas Existentes (parte 6)](feature-polimento-grafico-calibracao/06-estrategia-performance-testes.md) | Fases de implementação, orçamento de performance, testes e validação visual. |
-| [Spec 17 — Polimento Gráfico por Calibração dos Sistemas Existentes (parte 7)](feature-polimento-grafico-calibracao/07-prioridade-aceite-esforco.md) | Matriz de prioridade, critérios globais de aceite e estimativa de esforço. |
-| [Polimento gráfico por calibração dos sistemas existentes (critérios e pendências)](feature-polimento-grafico-calibracao/08-criterios-e-pendencias.md) | Critérios EARS (PG-1 a PG-30), plano de verificação, questões em aberto e pendências |
+| [feature-glow-e-pos-processamento-calibrados](feature-glow-e-pos-processamento-calibrados.md) | Glow e PostFX (vignette, ColorMatrix, displacement, tint) validados contra o Phaser 4.2.1 e calibrados, sem estado residual |
+| [feature-iluminacao-calibrada](feature-iluminacao-calibrada.md) | Calibração Light2D por bioma (ambiente, jogador, tocha, braseiro, flicker); depende do ADR 0005 |
+| [feature-atmosfera-sombras-reflexos-calibrados](feature-atmosfera-sombras-reflexos-calibrados.md) | Névoa, clima, sombras ancoradas nos pés e reflexos líquidos calibrados |
+| [feature-particulas-shader-e-terreno-calibrados](feature-particulas-shader-e-terreno-calibrados.md) | Emissores, shader de árvores e texturas assadas calibrados, sem novos assets |
+| [feature-validacao-grafica-e-lifecycle](feature-validacao-grafica-e-lifecycle.md) | Baseline, ordem de profundidade, limpeza em shutdown/reinício, orçamento de performance e antes/depois nas 10 cenas |
 | [Discovery: Eixo B — Pipeline de Integração de Assets Externos](discovery-assets-externos-e-sprites.md) | Pipeline de assets externos: manifesto, loader com fallback procedural e verificação existem; faltam carga por cena, atlas e normal maps externos, Sentry, compressão/CI e guia para artistas. |
 | [discovery-ui-e-assets-externos/README.md](discovery-ui-e-assets-externos/README.md) | Índice da spec de UI e assets externos góticos (5 partes) |
 | [Proposta de Discovery — Evolução de UI e Assets Externos Góticos (Pixel Art) (parte 1)](discovery-ui-e-assets-externos/01-visao-e-escopo-visual.md) | Índice, decisões, direção artística, paleta e escopo visual (versão "framework", redigida como proposta). |

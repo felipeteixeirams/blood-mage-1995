@@ -6,7 +6,7 @@
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): não implementado. Não há login, conta, identificador de jogador nem dependência de auth/nuvem em `package.json` e `src/`; o único armazenamento de progresso é `localStorage` via `src/utils/localStorage.ts` (15 chaves, ver `docs/architecture/persistence.md`). `src/utils/SaveMigration.ts` (envelope versionado) existe, mas nenhum arquivo de `src/` o importa. Falta tudo: identidade, armazenamento remoto, sincronização, política de privacidade e exclusão de dados.
 
 ## Contexto
-- Item "Nice to Have" da Fase 5 ([feature-polimento-de-producao-pwa-e-steam.md](feature-polimento-de-producao-pwa-e-steam.md)). O jogo é 100% offline e o progresso se perde ao limpar o navegador ou trocar de aparelho.
+- Item "Nice to Have" da Fase 5 ([feature-idioma-espanhol.md](feature-idioma-espanhol.md) (Fase 5, dividida)). O jogo é 100% offline e o progresso se perde ao limpar o navegador ou trocar de aparelho.
 - Proposta original: login com provedor de identidade gerando `Player ID`, save multiplataforma sincronizado com o `localStorage` e Privacy Policy com exclusão de dados. Contexto: [account-and-data.md](../../product/account-and-data.md) e [persistence.md](../../architecture/persistence.md).
 - O ADR 0011 compara manter só local (A), exportar/importar arquivo (B) e conta com nuvem (C). Está **Proposta**, com recomendação pela opção A. Esta spec só vale se o responsável escolher C.
 
@@ -82,4 +82,4 @@ Só se as decisões 1 a 5 forem aprovadas:
 
 ## Referências
 - [ADR 0011](../../decisions/0011-conta-e-dados-do-jogador.md), [account-and-data.md](../../product/account-and-data.md), [persistence.md](../../architecture/persistence.md)
-- [feature-polimento-de-producao-pwa-e-steam.md](feature-polimento-de-producao-pwa-e-steam.md)
+- [feature-idioma-espanhol.md](feature-idioma-espanhol.md) (Fase 5, dividida)

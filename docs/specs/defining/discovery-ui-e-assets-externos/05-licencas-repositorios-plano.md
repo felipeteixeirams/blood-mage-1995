@@ -34,5 +34,5 @@ Se aprovado:
 Critérios, verificação e pendências: [parte 6](06-criterios-e-pendencias.md).
 
 ## Referências
-- [Pipeline de arte com IA](../discovery-pipeline-de-arte-com-ia.md), [Polimento de produção PWA e Steam](../feature-polimento-de-producao-pwa-e-steam.md)
+- [Pipeline de arte com IA](../discovery-pipeline-de-arte-com-ia.md), [Empacotamento TWA](../feature-empacotamento-twa-play-store.md)
 - [ADR 0010](../../../decisions/0010-canais-de-distribuicao.md)

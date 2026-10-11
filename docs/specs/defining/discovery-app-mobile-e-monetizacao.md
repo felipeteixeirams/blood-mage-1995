@@ -102,4 +102,4 @@ Todos dependem de decisão aberta.
 ## Referências
 - [release-strategy](../../product/release-strategy.md), [account-and-data](../../product/account-and-data.md), [campaign](../../gameplay/campaign.md)
 - ADRs [0010](../../decisions/0010-canais-de-distribuicao.md), [0011](../../decisions/0011-conta-e-dados-do-jogador.md), [0012](../../decisions/0012-monetizacao-preco-e-metas-de-retencao.md)
-- [feature-polimento-de-producao-pwa-e-steam](feature-polimento-de-producao-pwa-e-steam.md), [feature-cloud-save](feature-cloud-save.md)
+- [feature-idioma-espanhol](feature-idioma-espanhol.md) e [feature-empacotamento-twa-play-store](feature-empacotamento-twa-play-store.md), [feature-cloud-save](feature-cloud-save.md)
