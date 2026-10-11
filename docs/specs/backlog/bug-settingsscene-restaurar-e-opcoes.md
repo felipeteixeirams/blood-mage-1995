@@ -1,8 +1,8 @@
 # Reset de opções pela SettingsScene e opções sem UI (bug)
 
-**Mestre:** [defining](README.md)
-**Estágio:** defining
-**Aprovação do responsável:** pendente
+**Mestre:** [backlog](README.md)
+**Estágio:** backlog
+**Aprovação do responsável:** aprovada por Felipe Teixeira em 2026-10-11, conforme conversa de 2026-10-11 (decisões conforme a coluna Recomendação)
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): bug confirmado em `src/game/scenes/SettingsScene.ts` (`buildButtons`, `setFromPointer`) e `src/utils/localStorage.ts` (`SettingsSchema.floatingStick`). Não validado em execução.
 
 ## Contexto
@@ -22,7 +22,9 @@
 ## Objetivo
 Proposta: RESTAURAR devolve `defaultSettings` completo (sem campos `undefined`); `floatingStick` tem um único padrão; a gravação deixa de ocorrer a cada `pointermove`; as opções hoje invisíveis ficam editáveis conforme as decisões abaixo.
 
-## Decisões a confirmar
+## Decisões aprovadas
+Aprovadas em 2026-10-11; a coluna Recomendação é a decisão.
+
 | # | Decisão | Opções | Recomendação |
 |---|---|---|---|
 | 1 | RESTAURAR preserva `language`, `hudLayout`, `activePaletteId`? | A: tudo volta ao padrão; B: preserva os três | B: são personalização, não "opções" |
@@ -64,7 +66,7 @@ Painel rápido do HUD, novas opções, novos idiomas, mudar outros valores de `d
 | SO-5, SO-6 | manual por opção; teste com registry vazio |
 
 ## Questões em aberto
-Decisões 1 a 7. Efeito visual das opções expostas: precisa de playtest humano.
+Nenhuma. As decisões 1 a 7 foram aprovadas conforme a Recomendação. Verificação: o efeito visual das opções expostas precisa de playtest humano.
 
 ## Referências
 [settings](../../ui/settings.md), [i18n](../../ui/i18n.md), [input-and-controls](../../ui/input-and-controls.md).

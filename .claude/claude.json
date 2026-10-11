@@ -30,7 +30,7 @@
     ]
   },
   "development": {
-    "branch": "claude/frentes-atuacao-projeto-qypbg3",
+    "branch": "main",
     "defaultVerifyCommand": "pnpm verify",
     "testCommand": "pnpm test",
     "buildCommand": "pnpm build",

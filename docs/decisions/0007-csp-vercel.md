@@ -1,9 +1,9 @@
 # 0007 — CSP do vercel.json: unsafe-inline, unsafe-eval e Google Fonts
 
 **Mestre:** [decisions](README.md)
-**Status:** Proposta
+**Status:** Aprovada
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
-**Aprovada por:**
+**Aprovada por:** Felipe Teixeira, 2026-10-11, conforme conversa de 2026-10-11 ("pode seguir pelo recomendado")
 
 ## Contexto
 `vercel.json` define para `/(.*)`: `script-src 'self' 'unsafe-inline' 'unsafe-eval'`, `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`, `font-src 'self' https://fonts.gstatic.com`, `connect-src 'self' https://*.sentry.io https://*.ingest.us.sentry.io`. `src/` e `index.html` não referenciam Google Fonts (fontes locais em `public/fonts/`), e `index.html` só tem o script de módulo `/src/main.tsx` (sem script inline). Nenhum comentário explica por que `unsafe-eval`/`unsafe-inline` entraram. Segurança é decisão do responsável.
@@ -32,7 +32,7 @@
 **Opção C**, validando em preview da Vercel antes de produção: remove o que não é usado e o item mais perigoso, sem o custo de nonces.
 
 ## Decisão
-_Em branco até o responsável decidir._
+Opção C: remover as origens do Google Fonts e `unsafe-eval` do `vercel.json`, validando em preview da Vercel antes de produção; `unsafe-inline` fica (opção D descartada por ora). Restrição: reteste de PWA, Sentry e Phaser em preview.
 
 ## Consequências
 - Edição de `vercel.json`; atualizar `docs/engineering/security.md`. Reteste de PWA, Sentry e Phaser em preview.

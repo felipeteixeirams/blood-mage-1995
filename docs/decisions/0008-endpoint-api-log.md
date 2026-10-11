@@ -1,9 +1,9 @@
 # 0008 — Endpoint /api/log: CORS aberto, sem autenticação nem limite
 
 **Mestre:** [decisions](README.md)
-**Status:** Proposta
+**Status:** Aprovada
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
-**Aprovada por:**
+**Aprovada por:** Felipe Teixeira, 2026-10-11, conforme conversa de 2026-10-11 ("pode seguir pelo recomendado")
 
 ## Contexto
 `api/log.ts` (função serverless) aceita POST de qualquer origem (`Access-Control-Allow-Origin: *`), sem autenticação, sem limite de taxa, sem limite de tamanho do corpo nem de entradas por requisição, e imprime cada entrada em `console.*` (`[VERCEL_RUNTIME]`). O cliente (`src/utils/logger.ts`) tem `remoteEnabled = true` por padrão e envia `ERROR`, `WARN` e namespaces `TELEMETRY*`/`EVENT:*` por `fetch` e `sendBeacon` para `/api/log` (mesma origem). O CSP do app só permite `connect-src 'self'` para essa rota, então o CORS `*` não é necessário para o próprio jogo.
@@ -32,7 +32,7 @@
 **Opção C.** Corrige o excesso de abertura sem perder telemetria; rate limit real fica fora até haver abuso observado.
 
 ## Decisão
-_Em branco até o responsável decidir._
+Opção C: remover os cabeçalhos CORS de `api/log.ts` e limitar tamanho do corpo, número de entradas e truncar campos; rate limit real fica fora até haver abuso observado.
 
 ## Consequências
 - Editar `api/log.ts`; teste do handler; atualizar `docs/engineering/security.md`.

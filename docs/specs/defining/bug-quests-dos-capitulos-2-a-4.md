@@ -15,7 +15,9 @@
 ## Objetivo (proposta)
 Ao entrar (ou alcançar) cada zona da Campanha, o objetivo `discover_zone` correspondente avança uma vez, de modo que as quests ch2 a ch4 possam ser concluídas.
 
-## Decisões a confirmar
+## Decisões
+Aprovadas em 2026-10-11 as decisões 1 a 3 (conforme a coluna Recomendação) e a questão 2 (só descoberta). Pendente: a questão em aberto 1.
+
 | # | Decisão | Opções | Recomendação |
 |---|---|---|---|
 | 1 | O que dispara a descoberta | A) entrar na zona (`advanceToNextFloor`/`setCampaignZone`); B) marco físico por bioma, como o altar | A: menor esforço, já existe o gancho em `setCampaignZone`; B só se quiser exploração ativa |
@@ -57,7 +59,7 @@ Ao entrar (ou alcançar) cada zona da Campanha, o objetivo `discover_zone` corre
 
 ## Questões em aberto
 1. Maelen (única fonte de `give_quest`) só existe na `safe_house` (andar 1), e não há caminho de volta. Se não houver retorno, as quests ch2 a ch4 nem ficam `active`, e este conserto sozinho não destrava a Campanha. Não verificado se `Continuar` reabre a Safe House. Recomendação: o responsável decidir se a quest é dada em outro ponto ou se há retorno à Safe House (spec separada).
-2. O marco por zona deve ser só descoberta ou também desbloquear algo (como o altar com `blood_bolt`)? Recomendação: só descoberta.
+2. Resolvida em 2026-10-11: o marco por zona é só descoberta, não desbloqueia nada.
 
 ## Referências
 - [Campanha e Safe House](../../gameplay/safe-house-and-quests.md) (seções Quests e Marcos descobríveis)

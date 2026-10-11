@@ -1,8 +1,8 @@
 # Dano por contato passivo de inimigos (bug)
 
-**Mestre:** [defining](README.md)
-**Estágio:** defining
-**Aprovação do responsável:** pendente
+**Mestre:** [backlog](README.md)
+**Estágio:** backlog
+**Aprovação do responsável:** aprovada por Felipe Teixeira em 2026-10-11, conforme conversa de 2026-10-11 (decisões conforme a coluna Recomendação)
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): bug confirmado em `src/game/scenes/GameScene.ts` (`physics.add.overlap(player, enemiesGroup)`) e `src/game/systems/CollisionHandlers.ts` (`handleEnemyTouchPlayer`). Não validado em execução.
 
 ## Contexto
@@ -15,7 +15,9 @@
 ## Objetivo (proposta)
 Encostar em um inimigo não causa dano nem aplica status; o jogador só é ferido por ataque telegrafado (FSM) ou projétil.
 
-## Decisões a confirmar
+## Decisões aprovadas
+Aprovadas em 2026-10-11; a coluna Recomendação é a decisão.
+
 | # | Decisão | Opções | Recomendação |
 |---|---|---|---|
 | 1 | O que fazer com o overlap | A) remover o overlap e o handler; B) manter só separação física (sem dano); C) manter com dano 0 e empurrão | A: a colisão sólida (collider) já impede atravessar; menos código |
@@ -51,7 +53,7 @@ Encostar em um inimigo não causa dano nem aplica status; o jogador só é ferid
 | Sensação de combate | Não validado: precisa de playtest humano |
 
 ## Questões em aberto
-1. Sem dano de contato, inimigos "colados" ainda ficam seguros se não atacarem (ex.: durante cooldown)? Decisão de balance do responsável.
+Nenhuma. A pergunta sobre inimigos "colados" fora do cooldown fica coberta pela decisão 3 (sem compensação de balance agora; revisar só após playtest).
 
 ## Referências
 - [Combate](../../gameplay/combat.md) (Toque passivo)
