@@ -67,4 +67,4 @@ async playSFX(key: string, fallbackSynthFn: () => void): Promise<void> {
 Critérios: [parte 6](06-criterios-e-pendencias.md) (`AAS-12` a `AAS-17`).
 
 ## Referências
-- [Áudio](../../../gameplay/audio.md), [ADR 0006](../../../decisions/0006-audio-e-conquistas.md), [Atmosfera e tensão](../feature-ui-atmosfera-e-tensao.md), [bug de áudio bgmGain e temas](../bug-audio-bgmgain-e-temas.md), [evolução gráfica](../discovery-grafico-evolucao-pendente.md)
+- [Áudio](../../../gameplay/audio.md), [ADR 0006](../../../decisions/0006-audio-e-conquistas.md), Atmosfera e tensão, [bug de áudio bgmGain e temas](../bug-audio-bgmgain-e-temas.md), [evolução gráfica](../discovery-grafico-evolucao-pendente.md)

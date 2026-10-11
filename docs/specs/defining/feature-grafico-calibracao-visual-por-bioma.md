@@ -8,7 +8,7 @@
 
 ## Contexto
 Frentes C, D, E, F, G e H do polimento gráfico. São subjetivas, dependem do mesmo baseline por bioma e do mesmo playtest humano, por isso numa spec só. A cascata ambiente, as luzes pontuais, o Glow e a ColorMatrix podem somar energia visual e lavar terreno e silhuetas; a atmosfera deve ficar subordinada ao gameplay (inimigos, projéteis, telégrafos, itens, jogador); sombras e reflexos são sensíveis a offsets (pés, profundidade, escala, alpha, rotação); os emissores têm velocidade, gravidade, escala, alpha e lifespan distintos, e o trabalho é harmonizar, não criar famílias novas. Padrão a manter: `bake once, render many`. O ADR 0005 registra que o `darknessOverlay` é limpo todo frame em `updateThreatIndicator()`; o alvo da calibração de luz depende dessa decisão.
-Satélites: [iluminação e efeitos](../../gameplay/lighting-and-effects.md), [sistemas de mundo](../../architecture/world-systems.md); bug relacionado: [bug-grafico-iluminacao-e-efeitos-sem-consumidor](bug-grafico-iluminacao-e-efeitos-sem-consumidor.md). Tema próximo, não duplicado: [feature-ui-atmosfera-e-tensao](feature-ui-atmosfera-e-tensao.md). Calibrar depois de [feature-grafico-glow-e-pos-processamento-calibrados](feature-grafico-glow-e-pos-processamento-calibrados.md) evita retrabalho de contraste; a Fase 0 (baseline), a ordem de profundidade global e a comparação final estão em [feature-grafico-validacao-e-lifecycle](feature-grafico-validacao-e-lifecycle.md). Implementável sem as outras.
+Satélites: [iluminação e efeitos](../../gameplay/lighting-and-effects.md), [sistemas de mundo](../../architecture/world-systems.md); bug relacionado: [bug-grafico-iluminacao-e-efeitos-sem-consumidor](bug-grafico-iluminacao-e-efeitos-sem-consumidor.md). Tema próximo, não duplicado: atmosfera e tensao. Calibrar depois de [feature-grafico-glow-e-pos-processamento-calibrados](feature-grafico-glow-e-pos-processamento-calibrados.md) evita retrabalho de contraste; a Fase 0 (baseline), a ordem de profundidade global e a comparação final estão em [feature-grafico-validacao-e-lifecycle](feature-grafico-validacao-e-lifecycle.md). Implementável sem as outras.
 
 ## Objetivo
 Refinar, só por parâmetros e timing, a iluminação, a atmosfera, as sombras, os reflexos, os emissores, o shader de árvores e as texturas assadas existentes, separando piso, entidades e efeitos sem lavar a imagem nem aumentar o custo por frame.
@@ -123,5 +123,5 @@ Todos provisórios.
 ## Referências
 - [Iluminação e efeitos](../../gameplay/lighting-and-effects.md), [sistemas de mundo](../../architecture/world-systems.md)
 - [ADR 0005](../../decisions/0005-iluminacao-escuridao-e-vinheta.md), [ADR 0013](../../decisions/0013-metas-de-performance.md)
-- [bug-grafico-iluminacao-e-efeitos-sem-consumidor](bug-grafico-iluminacao-e-efeitos-sem-consumidor.md), [feature-ui-atmosfera-e-tensao](feature-ui-atmosfera-e-tensao.md)
+- [bug-grafico-iluminacao-e-efeitos-sem-consumidor](bug-grafico-iluminacao-e-efeitos-sem-consumidor.md)
 - Skills `phaser-4-fx-filters`, `phaser-4-procedural-generation`

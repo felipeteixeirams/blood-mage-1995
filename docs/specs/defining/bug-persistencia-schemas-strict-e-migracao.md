@@ -33,7 +33,7 @@ Hoje (ver [persistência](../../architecture/persistence.md)):
 - Decisões 2, 3, 4 e 6.
 
 ## Fora de escopo
-- Conta, nuvem e cloud save ([feature-persistencia-cloud-save](feature-persistencia-cloud-save.md)).
+- Conta, nuvem e cloud save (ADR 0011).
 - Corrigir o conteúdo das conquistas ([bug-progressao-conquistas-e-codice-inalcancaveis](bug-progressao-conquistas-e-codice-inalcancaveis.md)).
 - Mudar valores de balance.
 

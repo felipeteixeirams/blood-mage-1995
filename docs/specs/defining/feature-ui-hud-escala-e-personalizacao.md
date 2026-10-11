@@ -7,7 +7,7 @@
 **Origem:** dividida da spec feature-evolucao-de-ui-e-terreno (2026-10-11)
 
 ## Contexto
-O HUD já respeita safe area e tem configurações de joystick, mas não há escala global nem posição livre. Controles e orientação: [ADR 0004](../../decisions/0004-controles-mobile-e-orientacao.md). Independente das specs irmãs ([câmera](feature-grafico-camera-e-escala-de-entidades.md), [mira](feature-controles-mira-e-alvo-inteligente.md), [terreno](feature-mundo-terreno-rampas-e-estruturas.md)).
+O HUD já respeita safe area e tem configurações de joystick, mas não há escala global nem posição livre. Controles e orientação: [ADR 0004](../../decisions/0004-controles-mobile-e-orientacao.md). Independente das specs irmãs ([câmera](feature-grafico-camera-e-escala-de-entidades.md), [mira](feature-controles-mira-e-alvo-inteligente.md), terreno).
 
 ## Objetivo
 Se aprovada, o jogador ajusta escala, opacidade, tamanho de botões e posição do HUD, com margens de safe area consistentes.

@@ -1,9 +1,9 @@
 # 0011 — Conta e dados: save local ou conta com nuvem
 
 **Mestre:** [decisions](README.md)
-**Status:** Proposta
+**Status:** Aprovada
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
-**Aprovada por:**
+**Aprovada por:** Felipe Teixeira, 2026-10-11, conforme conversa de 2026-10-11 ("sim aprovo, só cuidado para as alterações não afetarem a disposição que a aplicação funciona em produção")
 
 ## Contexto
 Hoje o progresso fica só no `localStorage` do navegador (prefixo `bloodmage_1995_`), acessado por `src/utils/localStorage.ts` (schemas Zod) e por `SaveMigration.ts` e `usePWA.ts`. Não há login, conta nem identificador de jogador na nuvem; o `package.json` não tem dependência de auth, Supabase, Firebase ou pagamento e `src/` não usa esses termos. Existem `lib/db` (Drizzle/PostgreSQL) e `artifacts/api-server` (Express) no workspace, que `src/` não importa. O recorde (alto escore) também é local. Documentos antigos citavam login (Google) e cloud save (Supabase) como fase futura; a spec `docs/specs/defining/feature-persistencia-cloud-save.md` não está aprovada.
@@ -20,7 +20,6 @@ Hoje o progresso fica só no `localStorage` do navegador (prefixo `bloodmage_199
 |---|---|---|
 | Persistência só em `localStorage` | `src/utils/localStorage.ts`; `grep` de `supabase\|firebase\|auth` em `src/` e `package.json` sem uso | 2026-10-10 |
 | `src/` não importa `lib/*` nem `@workspace/*` | `grep -rn "@workspace/" src` sem resultado | 2026-10-10 |
-| Spec de cloud save está em `defining/` | `docs/specs/defining/feature-persistencia-cloud-save.md` | 2026-10-10 |
 
 ## Suposições (não verificadas)
 - Que usuários precisam de sincronização entre aparelhos (sem dados de uso).
@@ -30,7 +29,7 @@ Hoje o progresso fica só no `localStorage` do navegador (prefixo `bloodmage_199
 **Opção A** (com B como melhoria barata se houver demanda): conta e nuvem são decisão de custo, privacidade e segurança, e nada no código as exige hoje. O `CLAUDE.md` já diz que só entram com sua confirmação.
 
 ## Decisão
-_Em branco até o responsável decidir._
+Opção A: save só local (`localStorage`); sem conta, login nem nuvem por ora (B só se houver demanda, com nova confirmação). Restrição: nenhuma mudança no que roda em produção.
 
 ## Consequências
 - Se A/B: nenhuma infraestrutura; B exige spec de exportação.

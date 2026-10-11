@@ -79,7 +79,7 @@ Todos provisórios (aprovação e decisão 2 pendentes).
 1. Valores calibrados de Glow, vignette, ColorMatrix, displacement, tint e CRT: "a definir" após o baseline.
 2. `filters.external` é a coleção correta no Phaser 4.2.1 instalado? Fato não verificado (`node_modules` ausente).
 3. O Glow aparece em WebGL real? Não verificado.
-4. O fallback Canvas do pós-processamento depende de [feature-grafico-avancado-eixo-a.md](feature-grafico-avancado-eixo-a.md) (`ScreenEffects.render`); fora desta spec até ser decidido.
+4. O fallback Canvas do pós-processamento depende da integração do fallback em `ScreenEffects.render`; fora desta spec até ser decidido.
 5. Metas de performance do Glow (depende do ADR 0013).
 
 ## Pendências para promover a backlog

@@ -61,4 +61,4 @@ Fatiamento 9-slice: cantos 16x16 fixos, bordas repetidas, centro de feltro escur
 Critérios: [parte 6](06-criterios-e-pendencias.md) (`AAS-10`, `AAS-11`).
 
 ## Referências
-- [HUD](../../../ui/hud.md), [Modais e telas](../../../ui/modals-and-screens.md), [Modais secundários e gamepad](../feature-ui-modais-secundarios-e-gamepad.md), [HUD com referências visuais](../feature-ui-hud-referencias-visuais.md)
+- [HUD](../../../ui/hud.md), [Modais e telas](../../../ui/modals-and-screens.md), [Modais secundários e gamepad](../feature-ui-modais-secundarios-e-gamepad.md), HUD com referências visuais

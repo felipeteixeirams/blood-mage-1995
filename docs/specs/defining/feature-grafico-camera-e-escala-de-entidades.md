@@ -7,7 +7,7 @@
 **Origem:** dividida da spec feature-evolucao-de-ui-e-terreno (2026-10-11)
 
 ## Contexto
-A câmera usa zoom por altura de tela, sem resolução lógica de UI. A escala dos monstros não tem relação com percentagem de tela. Esta spec cobre câmera e proporção visual das entidades. É independente das specs irmãs: [HUD](feature-ui-hud-escala-e-personalizacao.md), [mira](feature-controles-mira-e-alvo-inteligente.md) e [terreno](feature-mundo-terreno-rampas-e-estruturas.md). Orientação e controles: [ADR 0004](../../decisions/0004-controles-mobile-e-orientacao.md).
+A câmera usa zoom por altura de tela, sem resolução lógica de UI. A escala dos monstros não tem relação com percentagem de tela. Esta spec cobre câmera e proporção visual das entidades. É independente das specs irmãs: [HUD](feature-ui-hud-escala-e-personalizacao.md), [mira](feature-controles-mira-e-alvo-inteligente.md) e terreno. Orientação e controles: [ADR 0004](../../decisions/0004-controles-mobile-e-orientacao.md).
 
 ## Objetivo
 Se aprovada, a câmera se adapta por proporção e densidade de tela, o zoom de chefe é suave e entidades ocupam uma fração definida da altura da tela.

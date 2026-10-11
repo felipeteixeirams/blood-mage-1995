@@ -73,4 +73,3 @@ Se aprovado, o jogo identifica o evento ativo por janela de tempo definida em `s
 
 ## Referências
 - [world-generation.md](../../gameplay/world-generation.md), [lighting-and-effects.md](../../gameplay/lighting-and-effects.md)
-- [feature-ui-atmosfera-e-tensao.md](feature-ui-atmosfera-e-tensao.md)

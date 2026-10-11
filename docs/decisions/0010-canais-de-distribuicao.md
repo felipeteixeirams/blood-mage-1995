@@ -1,9 +1,9 @@
 # 0010 — Distribuição: PWA, depois TWA/Play Store e Steam
 
 **Mestre:** [decisions](README.md)
-**Status:** Proposta
+**Status:** Aprovada
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
-**Aprovada por:**
+**Aprovada por:** Felipe Teixeira, 2026-10-11, conforme conversa de 2026-10-11 ("sim aprovo, só cuidado para as alterações não afetarem a disposição que a aplicação funciona em produção")
 
 ## Contexto
 Documentos antigos tratavam como plano lançar primeiro como link PWA e depois em Play Store (TWA) e Steam (Electron). O que existe no repositório:
@@ -40,7 +40,7 @@ Não há decisão registrada sobre canais, ordem ou prazos.
 **Opção A** agora: é o único canal com implementação real; os demais dependem de decisões de negócio (contas, custo, privacidade) que são suas.
 
 ## Decisão
-_Em branco até o responsável decidir._
+Opção A: só PWA por ora; TWA/Play Store e Steam ficam fora de escopo até nova decisão. Restrição: nenhuma mudança no que roda em produção (Vercel, PWA, service worker) por conta desta decisão.
 
 ## Consequências
 - Se A: corrigir os arquivos ausentes do manifest, a rota `/share` (ou remover `share_target`) e montar ou remover `PWAInstallBanner`.

@@ -63,7 +63,7 @@ Os modais secundários compartilham a mesma moldura e a mesma blindagem de toque
 
 ## Fora de escopo
 - Mudar conteúdo, textos, dados ou balance dos modais; novos modais; i18n.
-- Arte própria dos retratos (Tier C de [feature-ui-hud-referencias-visuais.md](feature-ui-hud-referencias-visuais.md)); remapeamento de botões do gamepad em jogo (ver [bug-controles-joysticks-e-gamepad.md](bug-controles-joysticks-e-gamepad.md)).
+- Arte própria dos retratos; remapeamento de botões do gamepad em jogo (ver [bug-controles-joysticks-e-gamepad.md](bug-controles-joysticks-e-gamepad.md)).
 
 ## Arquivos e contratos
 - Alterar: `src/components/InventoryModal.tsx`, `src/components/TalentsModal.tsx`, `src/components/HighScoresModal.tsx` (se decisão 3 = A), `src/components/hud/DialogueModal.tsx`, `src/hooks/useGamepadUINavigation.ts` (só se necessário para a decisão 6), `src/components/ui/ModalBase.tsx` (props de largura, se a decisão 2 = A).

@@ -7,7 +7,7 @@
 **Origem:** consolidada de feature-empacotamento-twa-play-store, feature-empacotamento-steam-electron e feature-politica-de-privacidade (2026-10-11)
 
 ## Contexto
-Discovery de distribuição fora do PWA, congelada até o [ADR 0010](../../decisions/0010-canais-de-distribuicao.md) ser aprovado; a recomendação do ADR é só PWA por ora, então nada aqui é implementável antes disso. Três entregas: pacote TWA para a Play Store, instalador Electron para a Steam e página pública de política de privacidade (a Play Store exige a URL; a Steam pede uma para a página da loja, mas ela não bloqueia o instalador). Ordem se TWA for aprovado: privacidade antes do TWA; Steam independe das demais. O endpoint de log ([ADR 0008](../../decisions/0008-endpoint-api-log.md)) e o [Cloud Save](feature-persistencia-cloud-save.md) afetam o que a política declara. O PWA já existe ([pwa](../../operations/pwa.md)); seus defeitos estão em [bug-distribuicao-pwa-manifest-e-service-worker.md](bug-distribuicao-pwa-manifest-e-service-worker.md) e não se repetem aqui. Independe de [feature-ui-idioma-espanhol.md](feature-ui-idioma-espanhol.md).
+Discovery de distribuição fora do PWA, congelada até o [ADR 0010](../../decisions/0010-canais-de-distribuicao.md) ser aprovado; a recomendação do ADR é só PWA por ora, então nada aqui é implementável antes disso. Três entregas: pacote TWA para a Play Store, instalador Electron para a Steam e página pública de política de privacidade (a Play Store exige a URL; a Steam pede uma para a página da loja, mas ela não bloqueia o instalador). Ordem se TWA for aprovado: privacidade antes do TWA; Steam independe das demais. O endpoint de log ([ADR 0008](../../decisions/0008-endpoint-api-log.md)) e o Cloud Save afetam o que a política declara. O PWA já existe ([pwa](../../operations/pwa.md)); seus defeitos estão em [bug-distribuicao-pwa-manifest-e-service-worker.md](bug-distribuicao-pwa-manifest-e-service-worker.md) e não se repetem aqui. Independe de [feature-ui-idioma-espanhol.md](feature-ui-idioma-espanhol.md).
 
 ## Objetivo
 Existem, para cada canal aprovado, configuração versionada e reprodutível que gera o pacote (Android TWA ou instalador Electron) e uma política de privacidade em URL pública estável.
@@ -62,7 +62,7 @@ Se o ADR 0010 aprovar canais:
 ## Fora de escopo
 - Publicação nas lojas, preço, classificação etária; redação jurídica (do responsável), termos de uso, consentimento de cookies.
 - Manifest, ícones e service worker ([bug-distribuicao-pwa-manifest-e-service-worker.md](bug-distribuicao-pwa-manifest-e-service-worker.md)).
-- Integração Steamworks (decisão 5, opção A) e Cloud Save ([feature-persistencia-cloud-save.md](feature-persistencia-cloud-save.md)).
+- Integração Steamworks (decisão 5, opção A) e cloud save (ADR 0011).
 
 ## Arquivos e contratos
 - Criar: `public/privacy.html`, `twa-manifest.json` (raiz), `electron-builder.yml` e `main.js` (raiz), conforme os canais aprovados.

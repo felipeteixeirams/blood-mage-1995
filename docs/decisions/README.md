@@ -47,14 +47,14 @@ Quando um fato técnico verificado **contradiz** uma decisão já tomada, ele vi
 | [0007](0007-csp-vercel.md) | CSP do vercel.json: unsafe-inline, unsafe-eval, Google Fonts | **Aprovada** |
 | [0008](0008-endpoint-api-log.md) | Endpoint /api/log: CORS aberto, sem autenticação nem limite | **Aprovada** |
 | [0009](0009-testes-pre-commit-e-e2e.md) | Testes: pre-commit, CI e spec e2e quebrado | **Aprovada** |
-| [0010](0010-canais-de-distribuicao.md) | Distribuição: PWA, TWA/Play Store, Steam | **Proposta** |
-| [0011](0011-conta-e-dados-do-jogador.md) | Conta e dados: save local ou nuvem | **Proposta** |
-| [0012](0012-monetizacao-preco-e-metas-de-retencao.md) | Monetização, preço e metas de retenção | **Proposta** |
+| [0010](0010-canais-de-distribuicao.md) | Distribuição: PWA, TWA/Play Store, Steam | **Aprovada** |
+| [0011](0011-conta-e-dados-do-jogador.md) | Conta e dados: save local ou nuvem | **Aprovada** |
+| [0012](0012-monetizacao-preco-e-metas-de-retencao.md) | Monetização, preço e metas de retenção | **Aprovada** |
 | [0013](0013-metas-de-performance.md) | Metas de performance (FPS, memória, draw calls) | **Proposta** |
 | [0014](0014-arquivos-intocaveis-e-niveis-de-risco.md) | Arquivos críticos: classificação e força da regra | **Proposta** |
 | [0015](0015-estrutura-do-repositorio-e-dependencias.md) | Estrutura do repositório e dependências sem uso | **Proposta** |
 
-O que o código faz hoje está em [architecture](../architecture/README.md) como fato do código, não como decisão. Nenhum ADR foi aprovado.
+O que o código faz hoje está em [architecture](../architecture/README.md) como fato do código, não como decisão.
 
 ## Satélites
 
