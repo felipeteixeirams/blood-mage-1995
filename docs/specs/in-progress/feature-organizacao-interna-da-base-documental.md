@@ -3,7 +3,7 @@
 **Mestre:** [in-progress](README.md)
 **Estágio:** in-progress
 **Aprovação do responsável:** aprovada por Felipe Teixeira em 2026-10-11, conforme conversa de 2026-10-11 (as 5 decisões, conforme a coluna Recomendação, e a regra de tamanho também para specs)
-**Estado vs código:** verificado em 2026-10-11. Feito: pasta `ui/`, `critical/` dissolvida em `engineering/`, renomeações, prefixos de tipo e pastas das specs multi-parte (BV-1, BV-2, BV-8 a BV-11). Pendente: divisão dos 5 documentos (BV-12, BV-13), links entre categorias (BV-7) e regras novas do `docs:check` (BV-3 a BV-6).
+**Estado vs código:** verificado em 2026-10-11. Feito: pasta `ui/`, `critical/` dissolvida em `engineering/`, renomeações, prefixos de tipo, pastas das specs multi-parte e divisão dos 5 documentos (BV-1, BV-2, BV-8 a BV-13). Pendente: links entre categorias (BV-7) e regras novas do `docs:check` (BV-3 a BV-6).
 
 ## Contexto
 Medições em `docs/` (117 `.md`, 10 categorias, todas com mestre):
