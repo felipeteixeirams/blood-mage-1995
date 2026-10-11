@@ -61,6 +61,29 @@ Hoje (ver [persistência](../../architecture/persistence.md)):
 
 Rodar `pnpm run test`, `pnpm run typecheck`, `pnpm run docs:check`.
 
+## Fatos técnicos verificados
+Data de todas as verificações: 2026-10-11. Versões do `package.json`: `zod ^3.25.76`, `zustand ^5.0.14`. Fatos, não decisões.
+
+| # | Fato | Fonte | Data |
+|---|---|---|---|
+| 1 | Zustand `persist`: `version` é "a version number for the persisted state"; se a versão armazenada não bate, "it won't be used" | https://zustand.docs.pmnd.rs/reference/middlewares/persist | 2026-10-11 |
+| 2 | `migrate` roda quando há divergência de versão; assinatura `(persistedState: Object, version: number) => Object \| Promise<Object>`; deve retornar estado compatível com a versão atual; padrão `(persistedState) => persistedState` | https://github.com/pmndrs/zustand/blob/main/docs/reference/integrations/persisting-store-data.md | 2026-10-11 |
+| 3 | Sem `migrate`, o valor armazenado de versão diferente "won't be used" (o estado inicial do código prevalece; a doc só implica isso, não descreve passo a passo) | mesma fonte do item 2 | 2026-10-11 |
+| 4 | `partialize` filtra os campos persistidos (ex.: `(state) => ({ foo: state.foo })`) | mesma fonte do item 2 | 2026-10-11 |
+| 5 | `storage` aceita um `PersistStorage`; padrão `createJSONStorage(() => localStorage)`; o getter é avaliado de forma tardia (útil em SSR) | https://zustand.docs.pmnd.rs/reference/middlewares/persist | 2026-10-11 |
+| 6 | `merge` padrão da reidratação é shallow merge; `onRehydrateStorage` permite lógica antes e depois da reidratação | https://zustand.docs.pmnd.rs/reference/middlewares/persist | 2026-10-11 |
+| 7 | Web Storage (localStorage/sessionStorage): até 5 MiB cada por origem; limite de 10 MiB em todos os navegadores; ao estourar, lança `QuotaExceededError` (tratar com `try...catch`) | https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria | 2026-10-11 |
+| 8 | Cota de IndexedDB/Cache/OPFS (modo best-effort): Chromium até 60% do disco; Firefox o menor entre 10% do disco e 10 GiB (persistente: até 50% do disco, teto 8 TiB); Safari (macOS 14/iOS 17+) cerca de 60% do disco por origem (outros apps WebKit embutidos ~15%); Safari antigo: 1 GiB inicial | mesma fonte do item 7 | 2026-10-11 |
+| 9 | Dados são best-effort por padrão (podem ser removidos sob pressão de armazenamento, LRU por origem, sempre a origem inteira); `navigator.storage.persist()` pede modo persistente (Firefox pergunta; Safari e Chromium decidem pelo histórico de uso) | mesma fonte do item 7 | 2026-10-11 |
+| 10 | Safari com prevenção de rastreamento: dados criados por script de uma origem sem interação do usuário nos últimos 7 dias de uso são apagados | mesma fonte do item 7 | 2026-10-11 |
+| 11 | `zod@3.25.x`: a raiz `"zod"` e `"zod/v3"` exportam Zod 3; Zod 4 fica em `"zod/v4"` | https://zod.dev/v4/versioning | 2026-10-11 |
+| 12 | Documentação de Zod 4: chaves desconhecidas são removidas (strip) por padrão; `z.looseObject` deixa passar; `z.strictObject` (ou `.strict()`) rejeita. Isso é Zod 4, não a API da raiz `"zod"` instalada | https://zod.dev/api?id=objects | 2026-10-11 |
+
+**Não verificado em fonte primária:**
+- Se o localStorage é síncrono: a página MDN consultada não afirma isso.
+- Comportamento exato de `.strict()`, `.passthrough()`, `.strip()` e `safeParse` no Zod 3 (versão da raiz `"zod"`): as páginas v3 da doc e o README da tag v3.25.76 não puderam ser lidos pela ferramenta. Também não verificado se `.loose()` existe no Zod 3 (a doc consultada só cita `z.looseObject`, do Zod 4). `node_modules` não está instalado neste worktree, então os tipos instalados não foram conferidos.
+- Passo a passo do estado resultante em Zustand quando a versão diverge sem `migrate`, além do "won't be used".
+
 ## Questões em aberto
 - Há saves reais com chave extra em produção? (sem telemetria para saber)
 - Qual o teto de design de selos não gastos?
