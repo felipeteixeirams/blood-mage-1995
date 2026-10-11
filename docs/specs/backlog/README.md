@@ -4,6 +4,6 @@ Specs com escopo definido e **aprovadas pelo responsável**, prontas para serem 
 
 | Spec | Resumo |
 |---|---|
-| [feature-limpeza-de-docs-fora-de-docs.md](feature-limpeza-de-docs-fora-de-docs.md) | Remove skills duplicadas, relatórios e docs desatualizados fora de `docs/` e reduz docs de operação da raiz a ponteiros; aprovada em 2026-10-11 |
+| _Nenhuma no momento_ | Nenhuma spec cumpre a Definition of Ready com aprovação do responsável |
 
 Visão geral e ciclo de vida: [specs](../README.md).

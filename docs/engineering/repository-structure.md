@@ -47,3 +47,11 @@ public/              assets, fonts, audio_samples, ícones e manifest PWA
 ## Limites da verificação
 
 - A estrutura de diretórios foi lida diretamente.
+
+## Pastas de ferramenta
+| Pasta | Conteúdo |
+|---|---|
+| `.claude/` | Configuração do Claude Code: `claude.json`, `.claudeignore` e `skills/` (fonte única das skills do Phaser 4 e do SpriteCook) |
+| `.agents/memory/` | Memória de agente (Google AI Studio); mantida sem alteração |
+| `.jules/` | Diários de aprendizado do Jules (uso eventual); mantidos sem alteração |
+| `.husky/` | Hook de pre-commit (`docs:check` e `verify`) |

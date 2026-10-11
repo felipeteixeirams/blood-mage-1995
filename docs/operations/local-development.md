@@ -41,4 +41,4 @@ Além do app na raiz (`src/`, `vite.config.ts`), existe `artifacts/bloodmage/` c
 ## Não verificado
 
 - Se `pnpm dev`/`build`/testes passam hoje (nada foi executado).
-- Qual dos dois apps (raiz ou `artifacts/bloodmage`) o time considera canônico; `replit.md` descreve `artifacts/bloodmage/src/...`, enquanto o código real está em `src/` na raiz.
+- Qual dos dois apps (raiz ou `artifacts/bloodmage`) o time considera canônico.

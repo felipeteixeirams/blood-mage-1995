@@ -22,7 +22,7 @@ Entrada: `docs/README.md` (bootstrap → `README.md` mestre da categoria → sat
 - **Spritesheet do jogador:** a origem de `public/assets/sprites/player/bloodmage.png` é `scripts/build_bloodmage_spritesheet.cjs` (arte PixelLab). `generate_bloodmage_spritesheet.cjs` é procedural, só emergência: se virar a origem, o personagem vira placeholder sem o `verify` perceber.
 - **TypeScript strict, sem `any`.** Funções com mais de 3 parâmetros usam objeto nomeado.
 - Valores de cor/intensidade da iluminação: teste em mais de um bioma antes de alterar.
-- Skills do Phaser 4 em `.claude/skills/phaser-4-*/SKILL.md` (animation-tweens, development, fx-filters, physics-combat, playtest-harness, procedural-generation): consulte a que cobre a tarefa.
+- Skills do Phaser 4 em `.claude/skills/phaser-4-*/SKILL.md` (animation-tweens, development, fx-filters, physics-combat, playtest-harness, procedural-generation) e `.claude/skills/spritecook-integration/SKILL.md`: consulte a que cobre a tarefa.
 
 ## Respostas ao responsável
 - Seja sucinto e direto, mas **nunca corte dado necessário**: não há limite de tamanho. Se o conteúdo é grande, estruture (resumo primeiro, depois tabelas e seções) em vez de encurtar. Comece pelo resultado ou pelo que precisa dele.

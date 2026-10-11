@@ -7,6 +7,7 @@
 
 ## Contexto
 O `CLAUDE.md` fala em "alvo de 60 FPS, inclusive em mobile/touch". Não existe medição registrada nem outras metas: documentos antigos citavam FPS mínimo, heap abaixo de 150 MB e menos de 45 draw calls, sem teste que os sustentasse. O que o código mede: `PerformanceMonitor` (`src/game/systems/PerformanceMonitor.ts`) calcula FPS, mantém 300 amostras e mostra memória JS só quando o navegador expõe `performance.memory`; não conta draw calls. Só liga com `?perf` na URL (`GameScene.ts:480-482`). O teste e2e de FPS está no spec quebrado de `safe-house-animations` (ver 0009). Há configurações de degradação (`lowPerformanceParticles`, `postProcessingEnabled`, `types/game.ts:273-275`).
+O `DEPLOYMENT.md` (hoje só um ponteiro, removido em 2026-10-11) listava ainda metas de Web Vitals e bundle: TTI abaixo de 3 s, LCP abaixo de 2,5 s, CLS abaixo de 0,1, 60+ FPS e bundle abaixo de 2,5 MB. Nenhuma foi medida nem ratificada; ficam registradas aqui só como contexto da decisão.
 
 ## Opções
 | Opção | Prós | Contras |

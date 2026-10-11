@@ -40,4 +40,4 @@
 _Em branco até o responsável decidir._
 
 ## Consequências
-- Editar `.husky/pre-commit`; editar o spec e `skills/phaser-4-playtest-harness/SKILL.md` (e cópias em `.claude/skills`, `.agents/skills`); atualizar `docs/testing/`.
+- Editar `.husky/pre-commit`; editar o spec e `.claude/skills/phaser-4-playtest-harness/SKILL.md` (única cópia das skills); atualizar `docs/testing/`.

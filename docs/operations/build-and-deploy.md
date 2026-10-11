@@ -43,7 +43,6 @@ Ambos os scripts têm URL, `packageId` e IDs embutidos no texto; não foram exec
 
 - `.replit`: módulo `nodejs-24`, deploy `autoscale`, `postMerge` roda `scripts/post-merge.sh` (timeout 20000 ms).
 - `scripts/post-merge.sh`: `pnpm install --frozen-lockfile` e `pnpm --filter db push` (o pacote se chama `@workspace/db`; o filtro `db` pode não casar, não testado). Exige `DATABASE_URL`.
-- `replit.md` afirma que o PWA/service worker foi removido e `vite-plugin-pwa` dropado; o código atual contradiz (`vite.config.ts` usa `VitePWA`, `App.tsx` e `main.tsx` registram SW). Também descreve a estrutura `artifacts/bloodmage/`. Trate `replit.md` como desatualizado nesses pontos.
 
 ## Não verificado
 

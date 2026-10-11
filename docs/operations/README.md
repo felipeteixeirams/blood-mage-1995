@@ -13,4 +13,4 @@
 | [pwa.md](pwa.md) | VitePWA, manifest, registro duplicado do service worker, ícones ausentes, banner/hook não montados e cache offline | verificado |
 | [telemetry-and-logging.md](telemetry-and-logging.md) | Logger, telemetria, handlers globais, Sentry e a rota `/api/log` | verificado |
 
-`DEPLOYMENT.md` na raiz é a fonte antiga e não foi alterada; este conjunto a substitui como referência. Itens dele sem evidência no repositório (URL de produção, preço, e-mail de suporte, "Ready for Production") não foram carregados.
+`DEPLOYMENT.md` na raiz é só um ponteiro para este índice.
