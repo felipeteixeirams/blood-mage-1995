@@ -1,4 +1,4 @@
-# Spec 25 — Padronização de Modais Secundários, Navegação Gamepad & Retratos Rúnicos
+# Padronização de Modais Secundários, Navegação Gamepad & Retratos Rúnicos
 
 **Mestre:** [defining](README.md)
 **Estágio:** defining

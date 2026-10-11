@@ -59,7 +59,7 @@ A spec deve poder ser implementada por **qualquer modelo de capacidade intermedi
 7. Há *Plano de verificação* ligando cada critério a um teste ou passo manual?
 
 **Consistência e tamanho**
-8. Não contradiz outra spec, o `architecture.md` nem o código existente (ou a divergência foi decidida e registrada)?
+8. Não contradiz outra spec, o [architecture.md](../architecture/architecture.md) nem o código existente (ou a divergência foi decidida e registrada)?
 9. A spec reaproveita o que já existe no código (sistemas, utilitários, store) em vez de reimplementar, e diz o que é novo e o que é reuso?
 10. As dependências de outras specs estão listadas e resolvidas ou também em `backlog/`/`in-progress/`?
 11. É pequena o bastante para ser implementada e validada como uma unidade (não é um épico)?

@@ -1,4 +1,4 @@
-# Spec 17 — Polimento Gráfico por Calibração dos Sistemas Existentes (parte 2: Estado atual, problemas e objetivos de qualidade)
+# Polimento Gráfico por Calibração dos Sistemas Existentes (parte 2: Estado atual, problemas e objetivos de qualidade)
 
 **Mestre:** [feature-polimento-grafico-calibracao](README.md)
 **Estágio:** defining

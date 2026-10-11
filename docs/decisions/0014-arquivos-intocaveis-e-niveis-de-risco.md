@@ -24,10 +24,10 @@ O código mostra o que torna esses arquivos sensíveis: tamanhos (`Player.ts` 13
 | Tamanhos dos 6 arquivos | `wc -l` | 2026-10-10 |
 | Testes existem para 5 dos 6 arquivos; `GameScene.ts` sem teste | `ls src/**` | 2026-10-10 |
 | Cobertura configurada cobre só 7 arquivos (inclui `localStorage.ts` e `gameStore.ts`) | `vitest.config.ts:26` | 2026-10-10 |
-| Níveis de `risky-files.md` são "classificação de cautela, não regra" | `docs/engineering/risky-files.md` (cabeçalho) | 2026-10-10 |
+| Níveis de [risky-files.md](../engineering/risky-files.md) são "classificação de cautela, não regra" | `docs/engineering/risky-files.md` (cabeçalho) | 2026-10-10 |
 
 ## Suposições (não verificadas)
-- Que os testes existentes cobrem os contratos descritos em `risky-files.md` (não foram executados nem auditados).
+- Que os testes existentes cobrem os contratos descritos em [risky-files.md](../engineering/risky-files.md) (não foram executados nem auditados).
 - Que o histórico de regressões justifica cada nível (não consultado).
 
 ## Recomendação

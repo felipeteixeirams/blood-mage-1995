@@ -104,3 +104,5 @@ Três sistemas independentes, todos indexados por `BiomeType`.
 | `src/game/systems/WorldManager.ts` | `worldManager`, `BiomeEnvironmentConfig` |
 | `src/game/systems/LightingSystem.ts`, `AtmosphereSystem.ts` | `BIOME_LIGHTING`, `biomeAtmosphereConfigs` |
 | `src/game/objects/Traps.ts`, `Scavengeable.ts`; `src/game/systems/ScavengingSystem.ts` | `SpikeTrap`, `ExplosiveBarrel`, `Scavengeable`, `completeScavenging` |
+
+Relacionados: [campaign](campaign.md); [world-systems](../architecture/world-systems.md), [risky-files](../engineering/risky-files.md); ADRs [0002](../decisions/0002-geracao-de-terreno-e-piso.md) e [0003](../decisions/0003-mundo-continuo-e-geradores-de-floresta.md).

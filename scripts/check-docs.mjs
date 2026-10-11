@@ -162,9 +162,55 @@ for (const f of listFiles(docs).filter((f) => f.endsWith('.md'))) {
   if (m && (today - Date.parse(m[1])) / 86400000 > 30) warnings.push(`${rel(f)} verificado em ${m[1]} (há mais de 30 dias): reverifique contra o código`)
 }
 
+// (k) menção `nome.md` a um documento que existe em docs/, sem link no mesmo arquivo (aviso)
+const byBase = new Map()
+for (const f of listFiles(docs).filter((f) => f.endsWith('.md'))) {
+  const b = f.split(sep).pop()
+  if (b !== 'README.md') byBase.set(b, [...(byBase.get(b) || []), f])
+}
+for (const f of listFiles(docs).filter((f) => f.endsWith('.md'))) {
+  const raw = readFileSync(f, 'utf8').replace(/```[\s\S]*?```/g, '')
+  const linked = new Set(linksOf(f).map((t) => t.split('/').pop()))
+  const self = f.split(sep).pop()
+  const seen = new Set()
+  for (const m of raw.matchAll(/`([a-z0-9][a-z0-9-]*\.md)`/g)) {
+    const name = m[1]
+    if (name === self || seen.has(name) || !byBase.has(name) || linked.has(name)) continue
+    seen.add(name)
+    warnings.push(`(k) ${rel(f)} menciona \`${name}\` sem link`)
+  }
+}
+
+// (l) tamanho de documento de referência e de spec: aviso acima de 150 linhas, erro acima de 300
+const sized = []
+for (const cat of refCats) {
+  const dir = join(docs, cat)
+  if (existsSync(dir)) sized.push(...listFiles(dir))
+}
+for (const stage of stages) {
+  const dir = join(docs, 'specs', stage)
+  if (existsSync(dir)) sized.push(...listFiles(dir))
+}
+for (const f of sized.filter((f) => f.endsWith('.md') && !f.endsWith(sep + 'README.md'))) {
+  const n = readFileSync(f, 'utf8').replace(/\n+$/, '').split('\n').length
+  if (n > 300) err(`(l) ${rel(f)} tem ${n} linhas (máximo 300): divida em satélites menores`)
+  else if (n > 150) warnings.push(`(l) ${rel(f)} tem ${n} linhas (alvo até 150): considere dividir`)
+}
+
+// (n) título (H1) de spec sem numeração antiga: "Spec NN", "Spec:"/"Spec —" ou "Fase N"
+for (const stage of stages) {
+  const dir = join(docs, 'specs', stage)
+  if (!existsSync(dir)) continue
+  for (const f of listFiles(dir).filter((f) => f.endsWith('.md') && !f.endsWith(sep + 'README.md'))) {
+    const h1 = readFileSync(f, 'utf8').split('\n').find((l) => l.startsWith('# ')) || ''
+    if (/^#\s+(Spec\s*(\d+|[:—-])|Fase\s+\d+)/.test(h1)) err(`(n) ${rel(f)}: título começa com "Spec NN", "Spec:" ou "Fase N" (${h1.slice(0, 50)})`)
+  }
+}
+
 if (errors.length) {
   console.error(`docs:check falhou (${errors.length} problema(s)):\n`)
   for (const e of errors) console.error(`  - ${e}`)
+  for (const w of warnings) console.warn(`  aviso: ${w}`)
   process.exit(1)
 }
 for (const w of warnings) console.warn(`  aviso: ${w}`)

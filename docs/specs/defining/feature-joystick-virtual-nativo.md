@@ -1,4 +1,4 @@
-# Spec 11: Touchpad & Joystick Virtual Nativo no Phaser (Padrão Mobile Legends / Diablo Immortal)
+# Touchpad & Joystick Virtual Nativo no Phaser (Padrão Mobile Legends / Diablo Immortal)
 
 **Mestre:** [defining](README.md)
 **Estágio:** defining

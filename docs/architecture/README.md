@@ -10,5 +10,6 @@
 | [phaser-patterns.md](phaser-patterns.md) | Pooling, IA de inimigos, extração/delegação de `GameScene`, texturas procedurais | verificado |
 | [game-systems.md](game-systems.md) | Inventário dos 41 módulos de `src/game/systems/`: ordem de `create()`, combate, feedback, entrada, dados e código morto | verificado |
 | [world-systems.md](world-systems.md) | Módulos de mundo, geração, iluminação e pós-processamento; streaming de chunks da campanha | verificado |
+| [persistence.md](persistence.md) | Chaves, schemas Zod, safe-parse e fallbacks do `localStorage`, `SaveMigration.ts` (sem uso) e acessos diretos fora do módulo | verificado |
 
 Relacionados: [../engineering/README.md](../engineering/README.md) (stack, estrutura de diretórios, scripts) e [../engineering/risky-files.md](../engineering/risky-files.md) (arquivos de risco).

@@ -22,4 +22,6 @@
 - Todo documento (exceto README) traz `**Mestre:** [pasta](README.md)` no topo; ADRs têm o mesmo status no registro de `decisions/` e no arquivo.
 - Specs levam `**Estágio:**` e `**Aprovação do responsável:**`; em `backlog/` e `in-progress/` a aprovação é obrigatória.
 - A documentação descreve o projeto como ele é hoje: sem relatórios de status, sem histórico (o histórico fica no Git).
-- `pnpm run docs:check` valida tudo isso, mais estrutura, links e critérios EARS (roda no pre-commit).
+- Tamanho: documento de referência e spec com até ~100 linhas e um único assunto; o `docs:check` avisa acima de 150 linhas e falha acima de 300. Título de spec sem numeração antiga (`Spec NN`, `Fase N`).
+- Cada documento de `gameplay/` termina com uma linha `Relacionados:` com links para os satélites de `architecture/` e `engineering/` que cita. Mencionar `nome.md` de um documento existente sem link gera aviso.
+- `pnpm run docs:check` valida tudo isso, mais estrutura, links, frescor (aviso após 30 dias) e critérios EARS (roda no pre-commit).

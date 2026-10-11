@@ -70,7 +70,7 @@ Toque: `showTouchControls = !gamepadConnected && (controlsMode === 'touch' || (c
 
 ## i18n (`src/i18n/`)
 
-`ptBR.ts` e `enUS.ts` (194 linhas cada), grupos: `common, mainMenu, settings, hud, status, achievements, codex, talents, highScores, gameOver, pwa`. `t(chave, params?, lang?)` cai para pt-BR se a chave faltar e devolve a chave se não achar; `useTranslation()` assina `settings.language`. Só `PWAInstallBanner`, `GameOverModal`, `AchievementsModal`, `TalentsModal` e `CodexModal` usam i18n; o HUD (`GameplayHUD` e `hud/*`) tem textos pt-BR fixos no código.
+`ptBR.ts` e `enUS.ts` (194 linhas cada), grupos: `common, mainMenu, settings, hud, status, achievements, codex, talents, highScores, gameOver, pwa`. `t(chave, params?, lang?)` cai para pt-BR se a chave faltar e devolve a chave se não achar; `useTranslation()` assina `settings.language`. Só `PWAInstallBanner`, `GameOverModal`, `AchievementsModal`, `TalentsModal` e `CodexModal` usam i18n (e a `SettingsScene`, dentro do Phaser; detalhes em [i18n](i18n.md)); o HUD (`GameplayHUD` e `hud/*`) tem textos pt-BR fixos no código.
 
 ## Onde fica no código
 

@@ -107,3 +107,5 @@ Outros: separação entre inimigos (raio 34 px), x0.70 de velocidade em tiles de
 - `src/game/systems/DungeonFlowController.ts`: `buildDungeonMap`, `checkAndSpawnPendingEnemies`, `getActiveEnemyCap`.
 - `src/game/systems/CombatEffectsSystem.ts`: `handleEnemyDeath` (habilidades de morte, recompensa de elite).
 - `src/game/scenes/GameScene.ts`: loop `enemiesGroup`, `emitSound`, `hasLineOfSight`.
+
+Relacionados: [combat](combat.md), [status-and-feedback](status-and-feedback.md); [phaser-patterns](../architecture/phaser-patterns.md) (IA e pooling), [risky-files](../engineering/risky-files.md).

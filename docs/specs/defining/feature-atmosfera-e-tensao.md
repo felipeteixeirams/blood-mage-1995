@@ -1,4 +1,4 @@
-# Spec 11: Atmosfera, Tensão e Indicadores de Ameaça
+# Atmosfera, Tensão e Indicadores de Ameaça
 
 **Mestre:** [defining](README.md)
 **Estágio:** defining

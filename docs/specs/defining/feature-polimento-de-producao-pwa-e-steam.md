@@ -1,4 +1,4 @@
-# Fase 5: Polimento de Produção, Empacotamento Nativo (Play Store & Steam)
+# Polimento de Produção, Empacotamento Nativo (Play Store & Steam)
 
 **Mestre:** [defining](README.md)
 **Estágio:** defining

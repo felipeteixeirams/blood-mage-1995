@@ -74,3 +74,5 @@ Fontes de desbloqueio na campanha:
 - `SkillsOverlay.checkCanCast` exige mana, mas `Player.cast*` não gasta mana.
 - `GameScene.triggerSkill` tem tipo restrito a 6 skills; blood_tendrils e corpse_burst só disparam pelo HUD/`PlayerSkillSystem`, sem tecla.
 - O campo `hotkey` de blood_ritual_circle diz Shift, mas Shift é dash (ritual = C/5).
+
+Relacionados: [combat](combat.md), [talents](talents.md); [hud](../ui/hud.md) (slots e atalhos), [risky-files](../engineering/risky-files.md).

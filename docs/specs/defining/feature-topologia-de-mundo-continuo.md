@@ -1,4 +1,4 @@
-# Spec 18 — Topologia de Mundo Contínuo e Variedade Orgânica (Padrão Dungeon Siege)
+# Topologia de Mundo Contínuo e Variedade Orgânica (Padrão Dungeon Siege)
 
 **Mestre:** [defining](README.md)
 **Estágio:** defining

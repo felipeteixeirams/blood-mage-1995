@@ -1,4 +1,4 @@
-# Spec 17 — Polimento Gráfico por Calibração dos Sistemas Existentes (parte 3: Frentes A a C: Glow, pós-processamento e LightingSystem)
+# Polimento Gráfico por Calibração dos Sistemas Existentes (parte 3: Frentes A a C: Glow, pós-processamento e LightingSystem)
 
 **Mestre:** [feature-polimento-grafico-calibracao](README.md)
 **Estágio:** defining

@@ -1,4 +1,4 @@
-# Spec 16: Resolução Adaptativa, UI Mobile e Terreno 2.5D
+# Resolução Adaptativa, UI Mobile e Terreno 2.5D
 
 **Mestre:** [defining](README.md)
 **Estágio:** defining

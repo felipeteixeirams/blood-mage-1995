@@ -73,3 +73,5 @@ Separados dos talentos: 13 opções de level-up em `src/data/upgrades.json` (cat
 - `sacrificeDiscount` é gravado em `stats` mas nenhum código o consome: `escudo_ossos_aprimorado` não tem efeito observável.
 - Descrições divergem dos valores: `tempestade_continua` diz "10% por nível" (valor: +16 de velocidade); `abyssal_haste` e `martyr_vitality` citam velocidade/regeneração que o `statKey` único não aplica (`hpRegen` existe no tipo, mas nenhum nó o usa).
 - `upgradeTalent` não valida `maxLevel` nem recalcula custo.
+
+Relacionados: [spells-and-skills](spells-and-skills.md), [progression-and-prestige](progression-and-prestige.md); [state-management](../architecture/state-management.md), [risky-files](../engineering/risky-files.md) (schemas de `localStorage.ts`).

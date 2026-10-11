@@ -1,4 +1,4 @@
-# Spec — Evolução Gráfica & Auditiva (Quick Wins & Roadmap)
+# Evolução Gráfica & Auditiva (Quick Wins & Roadmap)
 
 **Mestre:** [defining](README.md)
 **Estágio:** defining

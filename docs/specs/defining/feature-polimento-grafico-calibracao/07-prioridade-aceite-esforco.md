@@ -1,4 +1,4 @@
-# Spec 17 — Polimento Gráfico por Calibração dos Sistemas Existentes (parte 7: Prioridade, critérios globais e esforço)
+# Polimento Gráfico por Calibração dos Sistemas Existentes (parte 7: Prioridade, critérios globais e esforço)
 
 **Mestre:** [feature-polimento-grafico-calibracao](README.md)
 **Estágio:** defining

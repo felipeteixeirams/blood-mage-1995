@@ -17,5 +17,7 @@
 | [world-generation.md](world-generation.md) | Quem chama quem na geração, mapa BSP+autômato, ChunkStreamer, portais e andares, ambiente por bioma, armadilhas | verificado |
 | [achievements.md](achievements.md) | 16 conquistas (runStats, desbloqueio x resgate de cristais, AchievementsModal) e as inalcançáveis | verificado |
 | [codex.md](codex.md) | Códice de 17 entradas (marcos de abate, CodexSystem, CodexModal, entradas sem desbloqueio) | verificado |
+| [audio.md](audio.md) | Áudio sintetizado em Web Audio (29 SFX, tinnitus, 4 temas de BGM, mixagem, flags e WAVs só de teste) | verificado |
+| [lighting-and-effects.md](lighting-and-effects.md) | Light2D, PostFX, Glow, névoa/clima, sombras, reflexos, partículas e shake: flags e valores por bioma | verificado |
 
 Telas e HUD: [ui](../ui/README.md).

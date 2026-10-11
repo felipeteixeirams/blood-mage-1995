@@ -4,6 +4,6 @@ Specs que estão sendo implementadas agora, com critérios [EARS](../ears.md) e 
 
 | Spec | Resumo |
 |---|---|
-| [feature-organizacao-interna-da-base-documental.md](feature-organizacao-interna-da-base-documental.md) | Organização da base documental (pasta `ui/`, `critical/` dissolvida, nomes, divisão de documentos) e novas regras do `docs:check`; parte documental em andamento, regras do script pendentes |
+| _Nenhuma no momento_ | Nenhuma spec aprovada em implementação |
 
 Visão geral e ciclo de vida: [specs](../README.md).

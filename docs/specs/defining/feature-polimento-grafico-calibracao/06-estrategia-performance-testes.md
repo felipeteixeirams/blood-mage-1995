@@ -1,4 +1,4 @@
-# Spec 17 — Polimento Gráfico por Calibração dos Sistemas Existentes (parte 6: Estratégia, orçamento de performance e testes)
+# Polimento Gráfico por Calibração dos Sistemas Existentes (parte 6: Estratégia, orçamento de performance e testes)
 
 **Mestre:** [feature-polimento-grafico-calibracao](README.md)
 **Estágio:** defining

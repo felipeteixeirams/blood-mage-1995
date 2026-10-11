@@ -79,3 +79,5 @@ Objeto indexado por id, 1 registro: `starter_dagger` (Adaga de Aço, weapon, com
 - `src/store/gameStore.ts`: `equipment`, `equipItem`, `equipRelicById`, `getRelicModifiers`, `addBloodCrystals`, `clearInventoryOnDeath`, `retrieveCorpseLoot`, `addLootLog`.
 - `src/utils/localStorage.ts`: `loadUnlockedRelics`, `loadEquippedRelicIds` e savers.
 - `src/components/InventoryModal.tsx`, `src/components/hud/LootLog.tsx`; tipos em `src/types/game.ts` (`LootItem`, `RelicItem`, `RelicEffect`, `EquipmentSlots`).
+
+Relacionados: [progression-and-prestige](progression-and-prestige.md), [talents](talents.md); [state-management](../architecture/state-management.md), [modals-and-screens](../ui/modals-and-screens.md) (inventário).

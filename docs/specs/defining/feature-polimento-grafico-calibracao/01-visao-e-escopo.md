@@ -1,4 +1,4 @@
-# Spec 17 — Polimento Gráfico por Calibração dos Sistemas Existentes (parte 1: Resumo executivo e escopo fechado)
+# Polimento Gráfico por Calibração dos Sistemas Existentes (parte 1: Resumo executivo e escopo fechado)
 
 **Mestre:** [feature-polimento-grafico-calibracao](README.md)
 **Estágio:** defining

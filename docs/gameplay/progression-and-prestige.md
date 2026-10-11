@@ -75,3 +75,5 @@ Conferido em `gameStore.ts`, `localStorage.ts` e `PrestigeModal.tsx`; valores s�
 - `src/utils/localStorage.ts`: `loadPrestigeData`, `loadHighScores`, `saveHighScore`, `loadRunStats`.
 - `src/components/LevelUpModal.tsx`, `PrestigeModal.tsx`, `hud/ContractHUD.tsx`, `hud/GameStats.tsx`, `hud/RecordsDisplay.tsx`, `HighScoresModal.tsx`, `GameOverModal.tsx`.
 - Dados: `src/data/upgrades.json`, `contracts.json`, `runModifiers.json`, `achievements.json`.
+
+Relacionados: [talents](talents.md), [loot-and-items](loot-and-items.md), [achievements](achievements.md); [state-management](../architecture/state-management.md), [modals-and-screens](../ui/modals-and-screens.md) (nível, prestígio e recordes).

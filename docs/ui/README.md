@@ -8,3 +8,6 @@
 | [hud.md](hud.md) | Componentes do HUD em jogo, atalhos de teclado, gamepad, joystick flutuante, hooks e i18n | verificado |
 | [modals-and-screens.md](modals-and-screens.md) | Modais e telas fora do HUD (ModalBase, cenas Phaser embutidas) e componentes não montados | verificado |
 | [accessibility.md](accessibility.md) | Ajustes de acessibilidade que existem no código; o que não existe | verificado |
+| [input-and-controls.md](input-and-controls.md) | Teclado, gamepad, toque e joystick virtual: mapa de entradas em jogo e nos menus, hooks e haptics | verificado |
+| [settings.md](settings.md) | Tela de opções: cada opção com chave, padrão, onde é lida e persistência | verificado |
+| [i18n.md](i18n.md) | Idiomas, chaves, quem usa `t()` e textos fixos fora do i18n | verificado |

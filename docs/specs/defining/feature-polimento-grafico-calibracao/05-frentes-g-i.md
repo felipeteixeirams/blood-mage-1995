@@ -1,4 +1,4 @@
-# Spec 17 — Polimento Gráfico por Calibração dos Sistemas Existentes (parte 5: Frentes G a I: partículas, shader/terreno e lifecycle)
+# Polimento Gráfico por Calibração dos Sistemas Existentes (parte 5: Frentes G a I: partículas, shader/terreno e lifecycle)
 
 **Mestre:** [feature-polimento-grafico-calibracao](README.md)
 **Estágio:** defining

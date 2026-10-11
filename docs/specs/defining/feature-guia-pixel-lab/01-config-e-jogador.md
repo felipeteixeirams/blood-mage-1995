@@ -24,7 +24,7 @@ Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aq
 
 1. Ferramenta Pixel Lab e os parâmetros globais recomendados (dropdowns, tamanho, paleta).
 2. Descrição visual de cada personagem, inimigo, NPC, prop e tile (identidade visual).
-3. Condição para uso do guia: produção de sprites físicos retomada (ver `feature-mapeamento-de-sprites.md`).
+3. Condição para uso do guia: produção de sprites físicos retomada (ver [feature-mapeamento-de-sprites.md](../feature-mapeamento-de-sprites.md)).
 
 ---
 

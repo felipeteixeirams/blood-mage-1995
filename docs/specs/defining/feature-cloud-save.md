@@ -22,7 +22,7 @@ Item "Nice to Have" da Fase 5, listado em [feature-polimento-de-producao-pwa-e-s
 ## Escopo proposto (quando desbloqueado)
 - Provedor de identidade (ex: Google Sign-in) gerando `Player ID` único.
 - Salvamento em nuvem multiplataforma (Firebase/Firestore ou equivalente) sincronizado com o `localStorage` local existente (`src/utils/localStorage.ts`), mantendo o fluxo 100% offline atual como fallback.
-- Privacy Policy e fluxo de exclusão de dados (obrigação legal que acompanha login). Contexto: [product](../../product/README.md) (`account-and-data.md`).
+- Privacy Policy e fluxo de exclusão de dados (obrigação legal que acompanha login). Contexto: [product](../../product/README.md) ([account-and-data.md](../../product/account-and-data.md)).
 
 ## Critério proposto para desbloquear
 1. O responsável confirma explicitamente que quer avançar com Cloud Save.

@@ -1,4 +1,4 @@
-# Spec 17 — Polimento Gráfico por Calibração dos Sistemas Existentes (parte 4: Frentes D a F: atmosfera, sombras e reflexos)
+# Polimento Gráfico por Calibração dos Sistemas Existentes (parte 4: Frentes D a F: atmosfera, sombras e reflexos)
 
 **Mestre:** [feature-polimento-grafico-calibracao](README.md)
 **Estágio:** defining
