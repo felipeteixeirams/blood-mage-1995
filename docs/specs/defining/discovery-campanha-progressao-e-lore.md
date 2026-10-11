@@ -8,9 +8,9 @@
 ## Contexto
 - Discovery: o que seria entregue se aprovado; nada aqui é decisão. Referências de gênero: Dungeon Siege 1, Diablo 2.
 - Premissa proposta: o protagonista é um homem comum cuja vila foi massacrada por um senhor da guerra de magia de sangue; derrotá-lo transferiu o poder a ele; esposa e filha desaparecidas. A abertura (despertar na Safe House, Maelen citando rastros de carruagens ao norte) já está no código.
-- O mundo ainda é montado por zona/andar ([campaign](../../gameplay/campaign.md), [world-generation](../../gameplay/world-generation.md)); `gloomy_woods` usa `ProceduralForestGenerator`; o mundo contínuo tem spec própria: [feature-topologia-de-mundo-continuo](feature-topologia-de-mundo-continuo.md).
+- O mundo ainda é montado por zona/andar ([campaign](../../gameplay/campaign.md), [world-generation](../../gameplay/world-generation.md)); `gloomy_woods` usa `ProceduralForestGenerator`; o mundo contínuo tem spec própria: [feature-mundo-topologia-continua](feature-mundo-topologia-continua.md).
 - `WorldZoneConfig.weather` (`gentle_rain`, `thunderstorm`, `thick_fog`, `blood_mist`) existe só no tipo: nenhum código o lê.
-- As quests dos capítulos 2 a 4 não avançam: ver [bug-quests-dos-capitulos-2-a-4](bug-quests-dos-capitulos-2-a-4.md) (não duplicado aqui).
+- As quests dos capítulos 2 a 4 não avançam: ver [bug-campanha-quests-dos-capitulos-2-a-4](bug-campanha-quests-dos-capitulos-2-a-4.md) (não duplicado aqui).
 - O toggle de intensidade de conteúdo é desenhado em cena Phaser (`SettingsScene`), o que contraria "UI só em React": ver [bug-ui-fora-do-react-e-codigo-morto](bug-ui-fora-do-react-e-codigo-morto.md).
 
 ## Objetivo
@@ -102,4 +102,4 @@ Condicional às decisões 6 a 10.
 
 ## Referências
 - [campaign](../../gameplay/campaign.md), [safe-house-and-quests](../../gameplay/safe-house-and-quests.md), [world-generation](../../gameplay/world-generation.md)
-- [feature-topologia-de-mundo-continuo](feature-topologia-de-mundo-continuo.md), [bug-quests-dos-capitulos-2-a-4](bug-quests-dos-capitulos-2-a-4.md), [bug-ui-fora-do-react-e-codigo-morto](bug-ui-fora-do-react-e-codigo-morto.md)
+- [feature-mundo-topologia-continua](feature-mundo-topologia-continua.md), [bug-campanha-quests-dos-capitulos-2-a-4](bug-campanha-quests-dos-capitulos-2-a-4.md), [bug-ui-fora-do-react-e-codigo-morto](bug-ui-fora-do-react-e-codigo-morto.md)

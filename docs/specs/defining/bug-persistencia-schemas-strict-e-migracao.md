@@ -11,7 +11,7 @@ Hoje (ver [persistência](../../architecture/persistence.md)):
 - **`SaveMigration.ts` sem uso.** Nenhum arquivo de `src/`, `scripts/`, `tests/` ou `api/` importa `loadWithMigration` ou `saveWithEnvelope` (grep). Nenhuma área tem versão de save. `saveWithEnvelope` grava `{...valor, version, payload: valor}` para objetos (dado duplicado na raiz e no `payload`) e acessa `localStorage` fora do módulo principal.
 - **Gravações sem schema.** `saveOnboarding(state: any)` grava direto, sem `OnboardingSchema`. `saveDroppedCorpseState(corpse: any)` grava o objeto original se o parse falhar (`validated.success ? validated.data : corpse`), contrariando o padrão "inválido grava o padrão" dos demais.
 - **Conquistas em duas chaves.** `bloodmage_1995_achievements` (store: `loadAchievements`, formato `{id, unlocked, redeemed}`) e `bloodmage_1995_achievements_progress` (`AchievementSystem.ts`: `loadAchievementProgress`, formato `{id, unlockedAt, progress, complete}`). O comentário no código admite a coexistência e deixa a unificação fora de escopo. Há ainda a chave legada `achievements_progress`, migrada no load.
-- **`usePWA` direto.** `src/hooks/usePWA.ts` lê, grava e remove `bloodmage_pwa_install_dismissed` com `localStorage` direto, sem Zod (regra do CLAUDE.md: todo acesso passa por `localStorage.ts`). O hook não está montado (ver [bug-pwa-manifest-e-service-worker](bug-pwa-manifest-e-service-worker.md)).
+- **`usePWA` direto.** `src/hooks/usePWA.ts` lê, grava e remove `bloodmage_pwa_install_dismissed` com `localStorage` direto, sem Zod (regra do CLAUDE.md: todo acesso passa por `localStorage.ts`). O hook não está montado (ver [bug-distribuicao-pwa-manifest-e-service-worker](bug-distribuicao-pwa-manifest-e-service-worker.md)).
 - **Prestígio.** `PrestigeDataSchema.unspentSealPoints` tem `.max(10).catch(0)`. `performPrestige` (`gameStore.ts` l.823) soma 1 por prestígio e `level` é limitado a 10, mas nada limita `unspent`: sem alocar selo, o valor passa de 10 e o load seguinte zera os pontos. Alcance prático baixo (exige mais de 10 prestígios sem alocar); não validado em execução.
 
 ## Objetivo
@@ -33,8 +33,8 @@ Hoje (ver [persistência](../../architecture/persistence.md)):
 - Decisões 2, 3, 4 e 6.
 
 ## Fora de escopo
-- Conta, nuvem e cloud save ([feature-cloud-save](feature-cloud-save.md)).
-- Corrigir o conteúdo das conquistas ([bug-conquistas-e-codice-inalcancaveis](bug-conquistas-e-codice-inalcancaveis.md)).
+- Conta, nuvem e cloud save ([feature-persistencia-cloud-save](feature-persistencia-cloud-save.md)).
+- Corrigir o conteúdo das conquistas ([bug-progressao-conquistas-e-codice-inalcancaveis](bug-progressao-conquistas-e-codice-inalcancaveis.md)).
 - Mudar valores de balance.
 
 ## Arquivos e contratos

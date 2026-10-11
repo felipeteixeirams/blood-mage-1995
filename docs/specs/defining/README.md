@@ -3,70 +3,105 @@
 **Contexto:** specs de features e discoveries ainda sem aprovação do responsável; nenhuma está em `backlog/` ou `in-progress/`. O estado de cada uma contra o código foi verificado em 2026-10-10 por leitura estática (linha "Estado vs código" de cada spec); nada foi executado.
 **Leia quando:** for propor, refinar ou pedir aprovação de uma spec, ou antes de implementar algo que possa já ter spec aqui. Mestre de specs: [specs](../README.md).
 
+
+## Gráfico
+
 | Spec | Resumo |
 |---|---|
-| [Spec 18 — Topologia de Mundo Contínuo e Variedade Orgânica (Padrão Dungeon Siege)](feature-topologia-de-mundo-continuo.md) | Mundo contínuo estilo Dungeon Siege: gerador por trilha, setpieces e ecologia por habitat existem no código, mas não são chamados em produção; falta decidir qual gerador vale. |
-| [Spec 11: Atmosfera, Tensão e Indicadores de Ameaça](feature-atmosfera-e-tensao.md) | Atmosfera e tensão: indicador de borda, áudio espacial, vinheta por perigo, zumbido, luz por HP e reforços em `flee` existem; faltam vinheta desligável e alinhar os valores da lanterna. |
-| [Cloud Save Automatizado (Extraído da Fase 5)](feature-cloud-save.md) | Proposta de save em nuvem (login, sincronização com `localStorage`, privacidade); não implementada e sem aprovação. |
-| [Discovery: Pipeline de Arte Semi-Automatizado via IA (HuggingFace / ChatGPT)](discovery-pipeline-de-arte-com-ia.md) | Discovery de pipeline semi-automático de arte com IA; nada do pipeline proposto existe (só manifesto, `verify-assets` e clientes PixelLab/SpriteCook). |
-| [Discovery: Transição para ARPG Clássico (Campanha, Lore e Atmosfera)](discovery-campanha-progressao-e-lore.md) | Discovery de ARPG de campanha: Safe House, despertar, zero-to-hero, destrave de feitiços por nível e talentos exclusivos existem; faltam mundo único contínuo, trovões e Eco Vital. |
-| [Eixo A — Gráficos Avançados (postFX, Iluminação Light2D e Normal Maps)](feature-graficos-avancados-eixo-a.md) | postFX, Light2D e normal maps existem; faltam normal map do jogador, fallback Canvas funcional (`ScreenEffects.render`, `darknessOverlay`) e toggle de UI para `postProcessingEnabled`. |
-| [feature-infraestrutura-de-eventos-mundiais](feature-infraestrutura-de-eventos-mundiais.md) | Agenda em `worldEvents.json`, fonte de tempo e estado `activeWorldEvent`, base dos eventos mundiais; nada implementado |
-| [feature-evento-eclipse-de-sangue](feature-evento-eclipse-de-sangue.md) | Eclipse de Sangue com luz -30%, inimigos em `frenzy` e drop +50% (valores provisórios); nada implementado |
-| [feature-evento-cerco-ao-vilarejo](feature-evento-cerco-ao-vilarejo.md) | Cerco com combate na Room 0 e efeitos nos NPCs; precisa de redesenho e de spec de Safe House com combate |
-| [feature-evento-rifts-de-infeccao](feature-evento-rifts-de-infeccao.md) | Rifts com aura de Infecção, dreno de MP e selagem em 5 s; sem critérios ainda |
-| [feature-eventos-sazonais](feature-eventos-sazonais.md) | Eventos por data real (Noite dos Ancestrais, Banquete do Gelo); dependem de arte, status de congelamento e feitiço novos |
-| [Spec — Evolução Gráfica & Auditiva (Quick Wins & Roadmap Completo)](feature-evolucao-grafica-e-audio-quick-wins.md) | Quick wins gráficos e auditivos: só falta a aura de inimigo (A.2); o resto existe no código. |
-| [discovery-evolucao-grafica-avancada/README.md](discovery-evolucao-grafica-avancada/README.md) | Índice da discovery de evolução gráfica em três eixos (4 partes) |
-| [Avaliação arquitetural (parte 1)](discovery-evolucao-grafica-avancada/01-visao-e-contexto.md) | Visão, decisões e contexto |
-| [Avaliação arquitetural (parte 2)](discovery-evolucao-grafica-avancada/02-eixo-a-graficos.md) | Eixo A: gráficos avançados procedurais |
-| [Avaliação arquitetural (parte 3)](discovery-evolucao-grafica-avancada/03-eixos-b-e-c.md) | Eixos B e C: assets externos e áudio híbrido |
-| [Avaliação arquitetural (parte 4)](discovery-evolucao-grafica-avancada/04-matriz-riscos-referencias.md) | Matriz de priorização, riscos e referências |
-| [Evolução gráfica avançada (05-criterios-e-pendencias.md)](discovery-evolucao-grafica-avancada/05-criterios-e-pendencias.md) | Evolução gráfica avançada: critérios e pendências (parte 5) |
-| [feature-idioma-espanhol](feature-idioma-espanhol.md) | Terceiro idioma (espanhol) com dicionário de 147 chaves, registro no i18n, schema e seletor de idioma |
-| [feature-politica-de-privacidade](feature-politica-de-privacidade.md) | Página pública de política de privacidade, exigida pela Play Store e pela Steam |
-| [feature-empacotamento-twa-play-store](feature-empacotamento-twa-play-store.md) | `twa-manifest.json` versionado e `build-twa.sh` reprodutível para gerar o pacote Android |
-| [feature-empacotamento-steam-electron](feature-empacotamento-steam-electron.md) | `main.js`, `electron-builder.yml` e dependências Electron versionados para gerar o instalador da Steam |
-| [feature-camera-e-escala-de-entidades](feature-camera-e-escala-de-entidades.md) | Câmera por resolução lógica e proporção de tela, zoom de chefe suave e escala de entidades por ocupação vertical |
-| [feature-hud-escala-e-personalizacao](feature-hud-escala-e-personalizacao.md) | Escala global, opacidade, tamanho de botões e margens de safe area do HUD mobile, persistidos em `localStorage.ts` |
-| [feature-mira-e-alvo-inteligente](feature-mira-e-alvo-inteligente.md) | Hitbox de alvo +30% no toque e pontuação de alvo por distância, HP e ameaça |
-| [feature-terreno-rampas-e-estruturas](feature-terreno-rampas-e-estruturas.md) | Rampas, falésias, estruturas por carimbo e A* com custo de elevação no terreno 2.5D |
-| [HUD de Gameplay & Dinâmica de Combate: Diretrizes Diablo II & Dungeon Siege 1](feature-hud-referencias-visuais.md) | Tier A (barras, marcador de NPC, minimapa, curativos) existe; faltam menu contextual de mouse e Tier C (arte própria). |
-| [Mapeamento Completo de Sprites & Checklist de Substituição](feature-mapeamento-de-sprites.md) | Pipeline e fallback prontos; só jogador, baú e UI têm arte física, o resto segue procedural. |
-| [Discovery: Mobile App, Wrapper Nativo e Monetização Saudável](discovery-app-mobile-e-monetizacao.md) | Proposta de Capacitor, anúncios premiados, passe e loja de cosméticos; nada implementado. |
-| [Discovery: Multijogador Cooperativo e Interatividade (P2P WebRTC)](discovery-multijogador-cooperativo.md) | Discovery de cooperativo P2P via WebRTC com broker de sinalização, lobby e mitigação de latência; verificado: não implementado. |
-| [Spec 11: Touchpad & Joystick Virtual Nativo no Phaser (Padrão Mobile Legends / Diablo Immortal)](feature-joystick-virtual-nativo.md) | Joystick virtual nativo no Phaser existe (movimento e mira, multi-touch, curva, deadzone); faltam remover o joystick DOM do HUD, tratar pausa e resize e confirmar valores finais. |
-| [feature-guia-pixel-lab/README.md](feature-guia-pixel-lab/README.md) | Índice do guia de prompts do Pixel Lab (5 partes) |
-| [Guia Direto para Pixel Lab (Bloodmage 1995) (parte 1)](feature-guia-pixel-lab/01-config-e-jogador.md) | Índice, decisões, configuração global do Pixel Lab e prompts do Bloodmage. |
-| [Guia Direto para Pixel Lab (Bloodmage 1995) (parte 2)](feature-guia-pixel-lab/02-bestiario-1.md) | Prompts do bestiário, inimigos 1 a 6. |
-| [Guia Direto para Pixel Lab (Bloodmage 1995) (parte 3)](feature-guia-pixel-lab/03-bestiario-2.md) | Prompts do bestiário, inimigos 7 a 11. |
-| [Guia Direto para Pixel Lab (Bloodmage 1995) (parte 4)](feature-guia-pixel-lab/04-npcs-e-props.md) | Prompts dos NPCs do refúgio e dos props (baú, portal, ossada). |
-| [Guia Direto para Pixel Lab (Bloodmage 1995) (parte 5)](feature-guia-pixel-lab/05-tiles-e-tabela.md) | Prompts de tiles de ambiente e tabela resumo das opções. |
-| [Guia de prompts do Pixel Lab (critérios e pendências)](feature-guia-pixel-lab/06-criterios-e-pendencias.md) | Critérios EARS das entregas de arte (PL-1 a PL-14), plano de verificação, questões em aberto e pendências |
-| [feature-glow-e-pos-processamento-calibrados](feature-glow-e-pos-processamento-calibrados.md) | Glow e PostFX (vignette, ColorMatrix, displacement, tint) validados contra o Phaser 4.2.1 e calibrados, sem estado residual |
-| [feature-iluminacao-calibrada](feature-iluminacao-calibrada.md) | Calibração Light2D por bioma (ambiente, jogador, tocha, braseiro, flicker); depende do ADR 0005 |
-| [feature-atmosfera-sombras-reflexos-calibrados](feature-atmosfera-sombras-reflexos-calibrados.md) | Névoa, clima, sombras ancoradas nos pés e reflexos líquidos calibrados |
-| [feature-particulas-shader-e-terreno-calibrados](feature-particulas-shader-e-terreno-calibrados.md) | Emissores, shader de árvores e texturas assadas calibrados, sem novos assets |
-| [feature-validacao-grafica-e-lifecycle](feature-validacao-grafica-e-lifecycle.md) | Baseline, ordem de profundidade, limpeza em shutdown/reinício, orçamento de performance e antes/depois nas 10 cenas |
-| [Discovery: Eixo B — Pipeline de Integração de Assets Externos](discovery-assets-externos-e-sprites.md) | Pipeline de assets externos: manifesto, loader com fallback procedural e verificação existem; faltam carga por cena, atlas e normal maps externos, Sentry, compressão/CI e guia para artistas. |
-| [discovery-ui-e-assets-externos/README.md](discovery-ui-e-assets-externos/README.md) | Índice da spec de UI e assets externos góticos (5 partes) |
-| [Proposta de Discovery — Evolução de UI e Assets Externos Góticos (Pixel Art) (parte 1)](discovery-ui-e-assets-externos/01-visao-e-escopo-visual.md) | Índice, decisões, direção artística, paleta e escopo visual (versão "framework", redigida como proposta). |
-| [Proposta de Discovery — Evolução de UI e Assets Externos Góticos (Pixel Art) (parte 2)](discovery-ui-e-assets-externos/02-ui-react-9slice.md) | Eixo B: UI híbrida React + Phaser e 9-slice com `border-image`. |
-| [Proposta de Discovery — Evolução de UI e Assets Externos Góticos (Pixel Art) (parte 3)](discovery-ui-e-assets-externos/03-audio.md) | Eixo C: transição gradual de áudio e formatos. |
-| [Proposta de Discovery — Evolução de UI e Assets Externos Góticos (Pixel Art) (parte 4)](discovery-ui-e-assets-externos/04-orcamento-e-telemetria.md) | Resoluções máximas, orçamento de 2,5 MB, compactação e telemetria no Sentry. |
-| [Proposta de Discovery — Evolução de UI e Assets Externos Góticos (Pixel Art) (parte 5)](discovery-ui-e-assets-externos/05-licencas-repositorios-plano.md) | Licenças, créditos, repositórios de arte e plano de transição. |
-| [UI e assets externos góticos (06-criterios-e-pendencias.md)](discovery-ui-e-assets-externos/06-criterios-e-pendencias.md) | Evolução de UI e assets externos góticos: critérios e pendências (parte 6) |
-| [Spec 25 — Padronização de Modais Secundários, Navegação Gamepad & Retratos Rúnicos](feature-modais-secundarios-e-gamepad.md) | Modais secundários: maioria padronizada via `ModalBase` e gamepad integrado; faltam `HighScoresModal` com visual padrão, estilos de foco e ornamentos/halo nos retratos. |
-| [Bug: campanha trava no capítulo 2](bug-quests-dos-capitulos-2-a-4.md) | O objetivo `discover_zone` dos capítulos 2 a 4 nunca avança (só existe o marco `altar_crimson`); proposta de disparo por zona. |
-| [Bug: status de sobrevivência duplicado e inconsistências de combate](bug-status-duplicado-e-combate.md) | Status aplicado em dobro (% do HP máximo + tick fixo com i-frames), projétil ignora a escala por andar/afixo e ramo `boss_slam` morto por id errado. |
-| [Bug: bônus de equipamento acumulam e atributos sem efeito](bug-bonus-de-equipamento-acumulam.md) | Bônus de armas, armaduras e relíquias acumulam a cada pickup; crítico, regeneração e redução de cooldown gerados não têm efeito. |
-| [Bug: orbes, modificadores de run e relíquias desconectados](bug-orbes-modificadores-e-reliquias.md) | Orbes de HP/mana nunca são criados, modificadores de run não podem ser ativados e 5 relíquias não têm como ser desbloqueadas. |
-| [Bug: custo de skill duplicado e inconsistências de progressão](bug-custo-de-skill-duplicado.md) | Skill cobra custo duas vezes; `blood_tendrils` sem desbloqueio, textos de talentos e prestígio errados, nível sobe sem abrir o `LevelUpModal`. |
-| [Bug: chunks gerados sobre a Safe House e o fosso](bug-chunks-sobre-safe-house-e-fosso.md) | `loadChunkBiome` gera chunks vizinhos sem deslocamento sobre a Safe House e o fosso; precisa de playtest para confirmar o efeito. |
-| [Bug: conquistas e codex inalcançáveis](bug-conquistas-e-codice-inalcancaveis.md) | 3 conquistas sem escritor, `gargoyle_hunter` e `all_spells` com meta errada, 4 entradas do Códice sem desbloqueio, `scout_beast` sem entrada e resgate sem multiplicador de relíquia. |
-| [Bug: UI fora do React, código morto e `onRestart` ignorado](bug-ui-fora-do-react-e-codigo-morto.md) | UI desenhada em cenas Phaser contra a regra "UI só em React", `onRestart` ignorado, componentes e código morto, `framer-motion` solto, textos sem i18n. |
-| [Joysticks duplicados e gamepad inconsistente (bug)](bug-joysticks-duplicados-e-gamepad.md) | Dois joysticks de movimento (Phaser e React), mira sem joystick ligado, `useJoystick` morto, gamepad lido de slots diferentes, desconexão sem checar outros pads e vibração sem opção para desligar. |
-| [Persistência: schemas estritos e migração (bug)](bug-persistencia-schemas-strict-e-migracao.md) | Schemas `.strict()` descartam o save inteiro por uma chave a mais, `SaveMigration.ts` é código morto, saves sem schema, conquistas em duas chaves, `usePWA` fora do módulo e teto de 10 em `unspentSealPoints`. |
-| [PWA: manifest e service worker (bug)](bug-pwa-manifest-e-service-worker.md) | Manifest cita ícones e screenshots inexistentes e `/share` sem rota; service worker registrado duas vezes e atualizando sem aviso apesar de `registerType: prompt`; banner e hook não montados; replay e plugin do Sentry sem efeito. |
-| [Áudio: `bgmGain` nunca criado e temas de BGM (bug)](bug-audio-bgmgain-e-temas.md) | `bgmGain` nunca é atribuído (ambiente e reverb inertes), o passa-baixas do tinnitus fica sem sinal, o contador de vozes é sempre 0, sinos 32/48 inalcançáveis e a BGM nunca volta a `safe_house`. |
-| [Iluminação e efeitos sem consumidor (bug)](bug-iluminacao-e-efeitos-sem-consumidor.md) | `ambientColor` por bioma e campos do `WorldManager` sem consumidor, `postProcessingEnabled` sem toggle e lido só na criação, `screenShakeEnabled` ignorado por `ScreenShake` e por ~10 chamadas de `cameras.main.shake`, e `startAmbient` sem chamada. |
+| [bug-grafico-iluminacao-e-efeitos-sem-consumidor](bug-grafico-iluminacao-e-efeitos-sem-consumidor.md) | `ambientColor` por bioma e campos do `WorldManager` sem consumidor, `postProcessingEnabled` sem toggle e lido só na criação, `screenShakeEnabled` ignorado por `ScreenShake` e por ~10 chamadas de `cameras.main.shake`, e `startAmbient` sem chamada. |
+| [discovery-grafico-evolucao-pendente](discovery-grafico-evolucao-pendente.md) | O que falta da evolução gráfica (Pixelate, bloom por evento, Light2D em mais objetos, self-shadow, `maxLights`, normal map do jogador, fallback sem WebGL) e do mixer dinâmico de áudio |
+| [feature-grafico-avancado-eixo-a](feature-grafico-avancado-eixo-a.md) | postFX, Light2D e normal maps existem; faltam normal map do jogador, fallback Canvas funcional (`ScreenEffects.render`, `darknessOverlay`) e toggle de UI para `postProcessingEnabled`. |
+| [feature-grafico-calibracao-visual-por-bioma](feature-grafico-calibracao-visual-por-bioma.md) | Calibração por bioma de luz Light2D, atmosfera, sombras, reflexos, partículas, shader de árvores e terreno; depende do ADR 0005 e de playtest humano |
+| [feature-grafico-camera-e-escala-de-entidades](feature-grafico-camera-e-escala-de-entidades.md) | Câmera por resolução lógica e proporção de tela, zoom de chefe suave e escala de entidades por ocupação vertical |
+| [feature-grafico-glow-e-pos-processamento-calibrados](feature-grafico-glow-e-pos-processamento-calibrados.md) | Glow e PostFX (vignette, ColorMatrix, displacement, tint) validados contra o Phaser 4.2.1 e calibrados, sem estado residual |
+| [feature-grafico-validacao-e-lifecycle](feature-grafico-validacao-e-lifecycle.md) | Baseline, ordem de profundidade, limpeza em shutdown/reinício, orçamento de performance e antes/depois nas 10 cenas |
+
+## Áudio
+
+| Spec | Resumo |
+|---|---|
+| [bug-audio-bgmgain-e-temas](bug-audio-bgmgain-e-temas.md) | `bgmGain` nunca é atribuído (ambiente e reverb inertes), o passa-baixas do tinnitus fica sem sinal, o contador de vozes é sempre 0, sinos 32/48 inalcançáveis e a BGM nunca volta a `safe_house`. |
+
+## Controles
+
+| Spec | Resumo |
+|---|---|
+| [bug-controles-joysticks-e-gamepad](bug-controles-joysticks-e-gamepad.md) | Joysticks duplicados, mira sem joystick, gamepad lido de slot fixo e joystick virtual nativo (CJG) |
+| [feature-controles-mira-e-alvo-inteligente](feature-controles-mira-e-alvo-inteligente.md) | Hitbox de alvo +30% no toque e pontuação de alvo por distância, HP e ameaça |
+
+## UI
+
+| Spec | Resumo |
+|---|---|
+| [bug-ui-fora-do-react-e-codigo-morto](bug-ui-fora-do-react-e-codigo-morto.md) | UI desenhada em cenas Phaser contra a regra "UI só em React", `onRestart` ignorado, componentes e código morto, `framer-motion` solto, textos sem i18n. |
+| [feature-ui-atmosfera-e-tensao](feature-ui-atmosfera-e-tensao.md) | Atmosfera e tensão: indicador de borda, áudio espacial, vinheta por perigo, zumbido, luz por HP e reforços em `flee` existem; faltam vinheta desligável e alinhar os valores da lanterna. |
+| [feature-ui-hud-escala-e-personalizacao](feature-ui-hud-escala-e-personalizacao.md) | Escala global, opacidade, tamanho de botões e margens de safe area do HUD mobile, persistidos em `localStorage.ts` |
+| [feature-ui-hud-referencias-visuais](feature-ui-hud-referencias-visuais.md) | Tier A (barras, marcador de NPC, minimapa, curativos) existe; faltam menu contextual de mouse e Tier C (arte própria). |
+| [feature-ui-idioma-espanhol](feature-ui-idioma-espanhol.md) | Terceiro idioma (espanhol) com dicionário de 147 chaves, registro no i18n, schema e seletor de idioma |
+| [feature-ui-modais-secundarios-e-gamepad](feature-ui-modais-secundarios-e-gamepad.md) | Modais secundários: maioria padronizada via `ModalBase` e gamepad integrado; faltam `HighScoresModal` com visual padrão, estilos de foco e ornamentos/halo nos retratos. |
+
+## Mundo
+
+| Spec | Resumo |
+|---|---|
+| [bug-mundo-chunks-sobre-safe-house-e-fosso](bug-mundo-chunks-sobre-safe-house-e-fosso.md) | `loadChunkBiome` gera chunks vizinhos sem deslocamento sobre a Safe House e o fosso; precisa de playtest para confirmar o efeito. |
+| [feature-mundo-terreno-rampas-e-estruturas](feature-mundo-terreno-rampas-e-estruturas.md) | Rampas, falésias, estruturas por carimbo e A* com custo de elevação no terreno 2.5D |
+| [feature-mundo-topologia-continua](feature-mundo-topologia-continua.md) | Mundo contínuo estilo Dungeon Siege: gerador por trilha, setpieces e ecologia por habitat existem no código, mas não são chamados em produção; falta decidir qual gerador vale. |
+
+## Campanha
+
+| Spec | Resumo |
+|---|---|
+| [bug-campanha-quests-dos-capitulos-2-a-4](bug-campanha-quests-dos-capitulos-2-a-4.md) | O objetivo `discover_zone` dos capítulos 2 a 4 nunca avança (só existe o marco `altar_crimson`); proposta de disparo por zona. |
+| [discovery-campanha-progressao-e-lore](discovery-campanha-progressao-e-lore.md) | Discovery de ARPG de campanha: Safe House, despertar, zero-to-hero, destrave de feitiços por nível e talentos exclusivos existem; faltam mundo único contínuo, trovões e Eco Vital. |
+
+## Eventos
+
+| Spec | Resumo |
+|---|---|
+| [feature-eventos-eclipse-de-sangue](feature-eventos-eclipse-de-sangue.md) | Eclipse de Sangue com luz -30%, inimigos em `frenzy` e drop +50% (valores provisórios); nada implementado |
+| [feature-eventos-infraestrutura-mundial](feature-eventos-infraestrutura-mundial.md) | Agenda em `worldEvents.json`, fonte de tempo e estado `activeWorldEvent`, base dos eventos mundiais; nada implementado |
+
+## Assets
+
+| Spec | Resumo |
+|---|---|
+| [discovery-assets-arte-ui-audio-e-sprites](discovery-assets-arte-ui-audio-e-sprites/README.md) | Carga de assets (loader por cena, atlas, normal maps, Sentry), direção artística, 9-slice, áudio híbrido, orçamento, licenças, créditos e critérios de entrega de arte (AAS-1..37) |
+| [parte 01](discovery-assets-arte-ui-audio-e-sprites/01-visao-e-direcao-artistica.md) | Visão e direção artística (paleta, escopo, decisões) |
+| [parte 02](discovery-assets-arte-ui-audio-e-sprites/02-carga-atlas-e-normal-maps.md) | Manifesto, loader por cena, atlas, normal maps, Sentry |
+| [parte 03](discovery-assets-arte-ui-audio-e-sprites/03-ui-9slice.md) | UI com 9-slice |
+| [parte 04](discovery-assets-arte-ui-audio-e-sprites/04-audio-hibrido.md) | Áudio físico híbrido |
+| [parte 05](discovery-assets-arte-ui-audio-e-sprites/05-orcamento-licencas-creditos.md) | Orçamento, licenças e créditos |
+| [parte 06](discovery-assets-arte-ui-audio-e-sprites/06-criterios-e-pendencias.md) | Critérios EARS, plano de verificação, questões em aberto |
+| [discovery-assets-pipeline-de-arte-com-ia](discovery-assets-pipeline-de-arte-com-ia.md) | Discovery de pipeline semi-automático de arte com IA; nada do pipeline proposto existe (só manifesto, `verify-assets` e clientes PixelLab/SpriteCook). |
+| [feature-assets-mapeamento-de-sprites](feature-assets-mapeamento-de-sprites.md) | Pipeline e fallback prontos; só jogador, baú e UI têm arte física, o resto segue procedural. |
+
+## Distribuição
+
+| Spec | Resumo |
+|---|---|
+| [bug-distribuicao-pwa-manifest-e-service-worker](bug-distribuicao-pwa-manifest-e-service-worker.md) | Manifest cita ícones e screenshots inexistentes e `/share` sem rota; service worker registrado duas vezes e atualizando sem aviso apesar de `registerType: prompt`; banner e hook não montados; replay e plugin do Sentry sem efeito. |
+| [discovery-distribuicao-app-mobile-e-monetizacao](discovery-distribuicao-app-mobile-e-monetizacao.md) | Proposta de Capacitor, anúncios premiados, passe e loja de cosméticos; nada implementado. |
+| [discovery-distribuicao-canais-e-pacotes](discovery-distribuicao-canais-e-pacotes.md) | TWA/Play Store, Steam/Electron e política de privacidade; congelada até o ADR 0010 ser aprovado |
+
+## Persistência
+
+| Spec | Resumo |
+|---|---|
+| [bug-persistencia-schemas-strict-e-migracao](bug-persistencia-schemas-strict-e-migracao.md) | Schemas `.strict()` descartam o save inteiro por uma chave a mais, `SaveMigration.ts` é código morto, saves sem schema, conquistas em duas chaves, `usePWA` fora do módulo e teto de 10 em `unspentSealPoints`. |
+| [feature-persistencia-cloud-save](feature-persistencia-cloud-save.md) | Proposta de save em nuvem (login, sincronização com `localStorage`, privacidade); não implementada e sem aprovação. |
+
+## Combate
+
+| Spec | Resumo |
+|---|---|
+| [bug-combate-custo-de-skill-duplicado](bug-combate-custo-de-skill-duplicado.md) | Skill cobra custo duas vezes; `blood_tendrils` sem desbloqueio, textos de talentos e prestígio errados, nível sobe sem abrir o `LevelUpModal`. |
+| [bug-combate-status-duplicado](bug-combate-status-duplicado.md) | Status aplicado em dobro (% do HP máximo + tick fixo com i-frames), projétil ignora a escala por andar/afixo e ramo `boss_slam` morto por id errado. |
+
+## Progressão
+
+| Spec | Resumo |
+|---|---|
+| [bug-progressao-bonus-de-equipamento-acumulam](bug-progressao-bonus-de-equipamento-acumulam.md) | Bônus de armas, armaduras e relíquias acumulam a cada pickup; crítico, regeneração e redução de cooldown gerados não têm efeito. |
+| [bug-progressao-conquistas-e-codice-inalcancaveis](bug-progressao-conquistas-e-codice-inalcancaveis.md) | 3 conquistas sem escritor, `gargoyle_hunter` e `all_spells` com meta errada, 4 entradas do Códice sem desbloqueio, `scout_beast` sem entrada e resgate sem multiplicador de relíquia. |
+| [bug-progressao-orbes-modificadores-e-reliquias](bug-progressao-orbes-modificadores-e-reliquias.md) | Orbes de HP/mana nunca são criados, modificadores de run não podem ser ativados e 5 relíquias não têm como ser desbloqueadas. |
