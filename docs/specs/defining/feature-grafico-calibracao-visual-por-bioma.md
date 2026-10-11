@@ -30,6 +30,9 @@ Refinar, só por parâmetros e timing, a iluminação, a atmosfera, as sombras, 
 | Existem testes dos três sistemas de atmosfera/sombra/reflexo; o de `ReflectionSystem` tem 2 casos | `src/game/systems/*.test.ts` | 2026-10-11 |
 | `AdvancedParticles` lê `lowPerformanceParticles` do store | `src/game/systems/AdvancedParticles.ts` (linha 101) | 2026-10-11 |
 | Existem testes de `AdvancedParticles`, `AtmosphericTreeShader` e `TerrainDetailFactory` | `src/game/systems/*.test.ts`, `src/game/shaders/AtmosphericTreeShader.test.ts` | 2026-10-11 |
+| Em 4.x: `gameObject.setLighting(true)` (sem pipeline), `lights.enable` ainda necessário, `Light.z` explícito, self-shadow global ou por objeto, filtro `NormalTools` para normal maps; iluminar quebra batch. Nome exato da API de self-shadow não consta nas fontes lidas (não verificado) | https://github.com/phaserjs/phaser/blob/master/changelog/v4/4.0/CHANGELOG-v4.0.0.md | 2026-10-11 |
+| `LightsManager`: `enable()`; `shutdown()` limpa as luzes (chamado no shutdown da Scene); `destroy()` chama `shutdown()`; `maxLights` é propriedade definida no game config, sem mudança em runtime; valor padrão não consta na página (não verificado) | https://docs.phaser.io/api-documentation/class/gameobjects-lightsmanager | 2026-10-11 |
+| Glow existe em 4.x (changelog cita `Glow` com `knockout`); Bloom vem por `Phaser.Actions.AddEffectBloom()` (conjunto de filtros); Vignette existe (borda com cor configurável); Pixelate não consta, há `Blocky` (cor única por bloco) | https://github.com/phaserjs/phaser/blob/master/changelog/v4/4.0/CHANGELOG-v4.0.0.md | 2026-10-11 |
 
 ## Decisões a confirmar
 | # | Decisão | Opções | Recomendação |
