@@ -1,8 +1,12 @@
 # Pixel Lab: global configuration
 
 **Mestre:** [operations](README.md)
-**Status:** não verificado (depende de ferramenta externa: a interface do Pixel Lab não foi conferida)
+**Status:** não verificado
 **Verificado em:** —
+**Método:** não verificado
+**Fonte:** —
+
+Nota de verificação: depende de ferramenta externa: a interface do Pixel Lab não foi conferida.
 
 Reference for the settings used when generating Bloodmage 1995 art in Pixel Lab (external tool). The prompts per subject live in [pixel-lab-player-prompts.md](pixel-lab-player-prompts.md), [pixel-lab-bestiary-prompts.md](pixel-lab-bestiary-prompts.md), [pixel-lab-npc-and-prop-prompts.md](pixel-lab-npc-and-prop-prompts.md) and [pixel-lab-tile-prompts.md](pixel-lab-tile-prompts.md). Scripts that import the output: [asset-scripts.md](asset-scripts.md). Each prompt fills these fields: **Character Type**, **Generation Mode**, **Camera View**, **Character Size**, **Detail**, **Outline**, **Character Description**.
 

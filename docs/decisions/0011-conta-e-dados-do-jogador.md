@@ -4,6 +4,7 @@
 **Status:** Aprovada
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
 **Aprovada por:** Felipe Teixeira, 2026-10-11, conforme conversa de 2026-10-11 ("sim aprovo, só cuidado para as alterações não afetarem a disposição que a aplicação funciona em produção")
+**Specs afetadas:** [discovery-distribuicao-canais-e-pacotes](../specs/defining/discovery-distribuicao-canais-e-pacotes.md)
 
 ## Contexto
 Hoje o progresso fica só no `localStorage` do navegador (prefixo `bloodmage_1995_`), acessado por `src/utils/localStorage.ts` (schemas Zod) e por `SaveMigration.ts` e `usePWA.ts`. Não há login, conta nem identificador de jogador na nuvem; o `package.json` não tem dependência de auth, Supabase, Firebase ou pagamento e `src/` não usa esses termos. Existem `lib/db` (Drizzle/PostgreSQL) e `artifacts/api-server` (Express) no workspace, que `src/` não importa. O recorde (alto escore) também é local. Documentos antigos citavam login (Google) e cloud save (Supabase) como fase futura; a spec `docs/specs/defining/feature-persistencia-cloud-save.md` não está aprovada.

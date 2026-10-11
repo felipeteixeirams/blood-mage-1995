@@ -3,6 +3,8 @@
 **Mestre:** [specs](README.md)
 **Estágio:** defining | backlog | in-progress
 **Aprovação do responsável:** pendente | aprovada por <nome> em <data>
+**Classe:** A | B | C | D | E (A técnica, B regra de negócio, C aguarda ADR proposto, D discovery, E congelada)
+**Depende de:** ADR NNNN, ADR NNNN | nenhum
 
 > Os links relativos abaixo valem para este arquivo; ao copiar a spec para uma pasta de estágio, acrescente um `../`. Uma spec em `backlog/` ou `in-progress/` precisa ter **aprovação registrada**. Ela deve ser completa o bastante para que qualquer modelo de capacidade intermediária a implemente **sem decidir nada**: toda decisão já está tomada, todo fato técnico está verificado e todo comportamento está escrito.
 

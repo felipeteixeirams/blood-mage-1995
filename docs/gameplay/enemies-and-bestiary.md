@@ -3,6 +3,8 @@
 **Mestre:** [gameplay](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/data/monsters.json`, `src/data/waves.json`, `src/game/objects/Enemy.ts`, `src/game/scenes/GameScene.ts`
 
 Classe `Enemy`, IA, bestiário (`src/data/monsters.json`), chefe, afixos de elite e ondas (`src/data/waves.json`). Leitura estática; contagens feitas por script sobre os JSONs. Ataque, dano e gibs: ver `combat`.
 

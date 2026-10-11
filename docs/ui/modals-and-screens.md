@@ -3,6 +3,8 @@
 **Mestre:** [ui](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/components/ui/`, `src/App.tsx`, `src/components/ui/ModalBase.tsx`, `src/data/talents.json`
 
 Inventário das telas e modais fora do HUD de jogo: `src/components/*.tsx` e `src/components/ui/`. HUD, controles e hooks estão em hud.md; Conquistas e Códice em achievements.md. Leitura estática.
 

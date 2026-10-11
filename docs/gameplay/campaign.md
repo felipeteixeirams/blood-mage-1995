@@ -3,6 +3,8 @@
 **Mestre:** [gameplay](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/utils/localStorage.ts`, `src/components/`, `src/game/scenes/GameScene.ts`, `src/game/systems/DungeonFlowController.ts`
 
 Leitura estática do código (nada foi executado). A geração dos mapas está em world-generation (texto, sem link).
 

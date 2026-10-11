@@ -3,6 +3,8 @@
 **Mestre:** [engineering](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `src/game/systems/PerformanceMonitor.test.ts`, `src/game/systems/PerformanceMonitor.ts`, `tests/e2e/safe-house-animations.spec.ts`
 
 O projeto não tem medições de performance registradas. As metas numéricas que existiam neste documento (FPS mínimo, heap abaixo de 150 MB, menos de 45 draw calls) não tinham medição nem teste que as sustentasse e foram removidas. Definir metas é decisão do responsável.
 

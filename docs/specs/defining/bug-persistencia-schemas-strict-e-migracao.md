@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** A
+**Depende de:** nenhum
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): bug confirmado em `src/utils/localStorage.ts` (`SettingsSchema`, `TalentLevelsSchema`, `OnboardingSchema`, `CodexStateSchema`, `CampaignStateSchema`, `AchievementProgressRecordSchema`, `saveOnboarding`, `saveDroppedCorpseState`, `PrestigeDataSchema`) e `src/utils/SaveMigration.ts`. Não validado em execução.
 
 ## Contexto

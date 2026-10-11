@@ -3,6 +3,8 @@
 **Mestre:** [engineering](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `src/`, `.agents/memory/`, `.claude/`, `.husky/`
 
 Verificado por leitura dos diretórios. Nenhum script foi executado.
 

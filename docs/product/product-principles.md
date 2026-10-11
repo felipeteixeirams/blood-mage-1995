@@ -1,8 +1,12 @@
 # Princípios Mobile-First
 
 **Mestre:** [product](README.md)
-**Status:** verificado (somente a seção "O que o código faz hoje"; princípios e metas: não verificado)
+**Status:** verificado
 **Verificado em:** 2026-10-11 (só a seção "O que o código faz hoje")
+**Método:** estático
+**Fonte:** `public/manifest.webmanifest`, `src/App.tsx`, `src/game/systems/CombatFeel.ts`, `src/game/systems/ObjectPool.ts`
+
+Nota de verificação: somente a seção "O que o código faz hoje"; princípios e metas: não verificado.
 
 Este documento separa o que o código faz hoje (fato) do que seriam princípios ou metas de produto. Os princípios e metas **não têm fonte ratificada** no repositório: não são regra nem critério de aprovação de features. O ADR [0012](../decisions/0012-monetizacao-preco-e-metas-de-retencao.md) (aprovado) adotou "sem metas de retenção definidas por ora"; o ADR [0013](../decisions/0013-metas-de-performance.md) (metas de performance) está como Proposta, sem decisão.
 

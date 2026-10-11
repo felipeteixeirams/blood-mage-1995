@@ -3,6 +3,8 @@
 **Mestre:** [architecture](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `src/`, `src/game/scenes/GameScene.ts`, `src/game/systems/`
 
 Inventário dos 41 módulos de produção de `src/game/systems/` (fora `*.test.ts`), por leitura estática do código e de quem o instancia e chama (`grep` em `src/`). Esta página cobre combate, UI/feedback, entrada, dados/persistência e utilitários, mais a ordem de `create()`. Mundo, iluminação e pós-processamento: [world-systems.md](world-systems.md). Nenhum teste ou build foi executado; "sem chamada" significa nenhuma chamada em código de produção (testes não contam).
 

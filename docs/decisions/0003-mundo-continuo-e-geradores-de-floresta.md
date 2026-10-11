@@ -4,6 +4,7 @@
 **Status:** Proposta
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
 **Aprovada por:**
+**Specs afetadas:** [feature-mundo-topologia-continua](../specs/defining/feature-mundo-topologia-continua.md)
 
 ## Contexto
 **Streaming de chunks.** `ChunkStreamer` (`src/game/systems/ChunkStreamer.ts`) é uma janela deslizante de chunks ordenados. `DungeonFlowController` o instancia com 5 chunks de 1920x1440 (`safe_house`, `gloomy_woods`, `fosso_chagas`, `catacumbas_martires`, `santuario_sangue`). O que o código faz hoje **contradiz os próprios comentários**:

@@ -3,6 +3,8 @@
 **Mestre:** [operations](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/main.tsx`, `api/log.ts`, `src/utils/logger.ts`, `src/utils/telemetry.ts`
 
 Logs, telemetria, Sentry e a rota `/api/log`, por leitura estática. Variáveis de ambiente: [environment-variables](environment-variables.md). Segurança: [security](../engineering/security.md).
 

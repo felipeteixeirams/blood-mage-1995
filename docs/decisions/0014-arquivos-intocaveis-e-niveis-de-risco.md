@@ -4,6 +4,7 @@
 **Status:** Proposta
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
 **Aprovada por:**
+**Specs afetadas:** [feature-ui-modais-secundarios-e-gamepad](../specs/defining/feature-ui-modais-secundarios-e-gamepad.md)
 
 ## Contexto
 O `CLAUDE.md` manda ler `docs/critical/README.md` antes de mexer em `Player.ts`, `Enemy.ts`, `GameScene.ts`, `DungeonGenerator.ts`, `gameStore.ts` e `localStorage.ts`. A lista de níveis em `docs/engineering/risky-files.md` (Nível 1: Player, Enemy, GameScene, DungeonGenerator; Nível 2: gameStore, localStorage, PhaserGame.tsx; Nível 3: GameplayHUD.tsx) é uma classificação de cautela escrita por agentes, não uma regra ratificada. Versões antigas do `CLAUDE.md` diziam "NUNCA" modificar a física do `Player` ou a FSM de `Enemy`; o atual só pede leitura prévia.

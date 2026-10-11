@@ -4,6 +4,7 @@
 **Status:** Aprovada
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
 **Aprovada por:** Felipe Teixeira, 2026-10-11, conforme conversa de 2026-10-11 ("sim aprovo, só cuidado para as alterações não afetarem a disposição que a aplicação funciona em produção")
+**Specs afetadas:** [discovery-assets-direcao-artistica-e-escopo-visual](../specs/defining/discovery-assets-direcao-artistica-e-escopo-visual.md), [discovery-assets-orcamento-licencas-e-creditos](../specs/defining/discovery-assets-orcamento-licencas-e-creditos.md), [discovery-distribuicao-canais-e-pacotes](../specs/defining/discovery-distribuicao-canais-e-pacotes.md), [feature-assets-carga-atlas-e-normal-maps](../specs/defining/feature-assets-carga-atlas-e-normal-maps.md)
 
 ## Contexto
 Documentos antigos tratavam como plano lançar primeiro como link PWA e depois em Play Store (TWA) e Steam (Electron). O que existe no repositório:

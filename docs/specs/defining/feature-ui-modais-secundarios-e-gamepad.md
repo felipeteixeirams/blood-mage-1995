@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** C
+**Depende de:** ADR 0001, ADR 0014
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): parcial. Existem `src/components/ui/ModalBase.tsx` (cantoneiras `#b8860b`, `max-h-[92vh]`, blindagem de ponteiro, Esc e `useGamepadUINavigation`), `src/hooks/useGamepadUINavigation.ts`, estilo global de foco em `src/index.css:249` (`[data-gamepad-focused]`, contorno âmbar de 3 px), e `src/components/hud/DialogueModal.tsx` com `getSpeakerInfo` (ícone e paleta por facção) e `drop-shadow` estático. O hook é usado por `ModalBase`, `DialogueModal`, `InventoryModal`, `TalentsModal`, `LevelUpModal` e `GameOverModal`. Faltam: contêiner único para `InventoryModal`/`TalentsModal` (replicam o de `ModalBase` à mão), decisão sobre `HighScoresModal` (cena Phaser), o botão Start no inventário, gamepad durante a digitação do diálogo e o enriquecimento do retrato. Testes de componente dos modais não foram rodados (sem `node_modules`). Não validado em execução.
 
 ## Contexto

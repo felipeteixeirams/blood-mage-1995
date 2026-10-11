@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** A
+**Depende de:** nenhum
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): bug confirmado em `src/game/systems/LightingSystem.ts` (`BIOME_LIGHTING`, `enable`), `src/game/systems/WorldManager.ts`, `src/game/systems/AtmosphereSystem.ts`, `src/game/systems/ScreenShake.ts` e `src/game/systems/AdvancedParticles.ts` (`startAmbient`). Não validado em execução.
 
 ## Contexto

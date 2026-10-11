@@ -4,6 +4,7 @@
 **Status:** Aprovada
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
 **Aprovada por:** Felipe Teixeira, 2026-10-11, conforme conversa de 2026-10-11 ("pode seguir pelo recomendado")
+**Specs afetadas:** nenhuma
 
 ## Contexto
 `vercel.json` define para `/(.*)`: `script-src 'self' 'unsafe-inline' 'unsafe-eval'`, `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`, `font-src 'self' https://fonts.gstatic.com`, `connect-src 'self' https://*.sentry.io https://*.ingest.us.sentry.io`. `src/` e `index.html` não referenciam Google Fonts (fontes locais em `public/fonts/`), e `index.html` só tem o script de módulo `/src/main.tsx` (sem script inline). Nenhum comentário explica por que `unsafe-eval`/`unsafe-inline` entraram. Segurança é decisão do responsável.

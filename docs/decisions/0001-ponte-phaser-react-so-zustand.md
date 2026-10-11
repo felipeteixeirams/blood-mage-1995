@@ -4,6 +4,7 @@
 **Status:** Proposta
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
 **Aprovada por:**
+**Specs afetadas:** [bug-controles-joysticks-e-gamepad](../specs/defining/bug-controles-joysticks-e-gamepad.md), [feature-eventos-eclipse-de-sangue](../specs/defining/feature-eventos-eclipse-de-sangue.md), [feature-eventos-infraestrutura-mundial](../specs/defining/feature-eventos-infraestrutura-mundial.md), [feature-ui-modais-secundarios-e-gamepad](../specs/defining/feature-ui-modais-secundarios-e-gamepad.md)
 
 ## Contexto
 O `CLAUDE.md` diz que a comunicação React-Phaser é "só Zustand (`src/store/gameStore.ts`); sem `CustomEvent`/`window.dispatchEvent` para gameplay". O código cumpre a parte do `CustomEvent`, mas o Phaser fala com o React por **três** caminhos, não um:

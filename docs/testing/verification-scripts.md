@@ -3,6 +3,8 @@
 **Mestre:** [testing](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `.husky/pre-commit`, `scripts/verify-assets.cjs`, `artifacts/bloodmage`, `public/`
 
 O que cada script do `package.json` faz hoje e o que o hook de pre-commit executa. Conferido por leitura de `package.json`, `.husky/pre-commit`, `scripts/verify-assets.cjs`, `vitest.config.ts` e `playwright.config.ts`. Executado de fato apenas `node scripts/verify-assets.cjs` (terminou sem falhas obrigatórias); `typecheck`, `build`, `test` e `e2e` não foram executados porque o worktree não tinha `node_modules`.
 

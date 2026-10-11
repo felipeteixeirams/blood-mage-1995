@@ -1,8 +1,12 @@
 # Scripts de Arte, Sprites e Áudio
 
 **Mestre:** [operations](README.md)
-**Status:** verificado por leitura estática do código, `package.json`, `.husky/pre-commit` e `.gitignore`. Nenhum script foi executado: comportamento em execução, créditos consumidos e dependência do ImageMagick/`unzip` no ambiente: não verificados
+**Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `.claude/skills/spritecook-integration/SKILL.md`, `.husky/pre-commit`, `public/audio_samples/`, `scripts/`
+
+Nota de verificação: por leitura estática do código, `package.json`, `.husky/pre-commit` e `.gitignore`. Nenhum script foi executado: comportamento em execução, créditos consumidos e dependência do ImageMagick/`unzip` no ambiente: não verificados.
 
 Scripts de `scripts/` que geram ou importam assets. Todos são manuais, exceto `render_bgm_samples.cjs` (`pnpm run audio:render`). Os demais arquivos de `scripts/` (verificação, build, docs, `find_dead_code.cjs`, `post-merge.sh`, `.py`) não geram assets e estão em [build-scripts.md](build-scripts.md). O hook `.husky/pre-commit` roda só `docs:check` e `verify`; nenhum script deste doc roda em hook. Regras de binários e spritesheet: `CLAUDE.md` e [../troubleshooting/spritesheet-jogador-celulas-48-vs-68.md](../troubleshooting/spritesheet-jogador-celulas-48-vs-68.md).
 

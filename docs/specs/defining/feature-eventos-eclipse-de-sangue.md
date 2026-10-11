@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** B
+**Depende de:** ADR 0001, ADR 0005, ADR 0012
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): não implementado. Reaproveitáveis: `frenzy` como `AIState` em `src/types/game.ts` e `src/game/objects/Enemy.ts` (estado de IA, não modificador passivo); raio de luz por bioma (`lightRadius`) em `src/game/systems/WorldManager.ts`; `LightingSystem.ts`, `AtmosphereSystem.ts`, `LootSystem` e `soundEngine`.
 **Origem:** dividida da spec feature-eventos-mundiais-e-sazonais (2026-10-11)
 

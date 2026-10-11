@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** D
+**Depende de:** ADR 0010, ADR 0013
 **Origem:** dividida de discovery-assets-arte-ui-audio-e-sprites (parte 05 e critérios AAS-20..23), 2026-10-11 (ex-UIA, partes 4 e 5)
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): parcial. Existe: `PerformanceMonitor` (`?perf`), `src/utils/logger.ts` (envia ao `/api/log`), `Sentry.init` em `src/main.tsx` (só com `VITE_SENTRY_DSN`), CSP com `connect-src` para Sentry em `vercel.json`, `vite-plugin-pwa` com `globPatterns` `**/*.{js,css,html,woff2,png,svg}` e limite de 5 MB por arquivo em `vite.config.ts`; arte do jogador e do baú gerada por scripts do projeto (`scripts/build_bloodmage_spritesheet.cjs`, `scripts/generate_chest_assets.cjs`), fontes locais, modal de configurações em React que hospeda `SettingsScene`. Falta: medição do pacote inicial ou da VRAM, script ou teste que imponha os limites, tamanho máximo de frame validado, `webp`/`json`/`mp3` no precache do PWA, tela de Créditos (nenhuma ocorrência em `src/`), registro de origem e licenças, qualquer asset de terceiros. Nenhum critério abaixo está implementado.
 

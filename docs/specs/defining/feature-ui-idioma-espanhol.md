@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** B
+**Depende de:** nenhum
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): só existem `pt-BR` e `en-US` (`src/types/game.ts:250`, `src/i18n/ptBR.ts`, `enUS.ts`). Faltam o dicionário espanhol, o registro em `translations`, o valor em `Language`/`SettingsSchema.language` e a opção no seletor da `SettingsScene`. Não validado em execução.
 **Origem:** dividida da spec feature-polimento-de-producao-pwa-e-steam (2026-10-11)
 

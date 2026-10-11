@@ -3,6 +3,8 @@
 **Mestre:** [engineering](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `api/log.ts`, `src/`, `src/main.tsx`, `src/utils/localStorage.ts`
 
 Superfície de segurança do projeto como está hoje. Conferido contra `vercel.json`, `src/utils/localStorage.ts`, `src/utils/logger.ts`, `api/log.ts` e `src/main.tsx` (leitura estática).
 

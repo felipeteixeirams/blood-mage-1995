@@ -3,6 +3,8 @@
 **Mestre:** [product](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `src/`, `public/`, `public/manifest.webmanifest`, `scripts/build-steam.sh`
 
 Descreve o que existe no repositório hoje. Detalhes de build e deploy: [operations](../operations/README.md). Estratégia de lançamento não está ratificada.
 

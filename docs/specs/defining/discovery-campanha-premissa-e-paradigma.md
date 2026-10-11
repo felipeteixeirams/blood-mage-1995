@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** D
+**Depende de:** nenhum
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): parcial. Existem: modo Campanha (`gameMode`, `campaignState` em `src/store/gameStore.ts`; `src/types/campaign.ts`), progressão por zonas em fatias (`CAMPAIGN_ZONE_CHUNKS` e `ChunkStreamer` em `src/game/systems/DungeonFlowController.ts`), início na Safe House com o diálogo de despertar de Maelen (`src/data/dialogues.json`, `safe_house_maelen_intro`, com família levada às catacumbas do norte), `DialogueModal.tsx`, toggle `contentIntensity` (`SettingsScene.ts`, `DismembermentSystem.ts`, `BloodSplatterSystem.ts`). Faltam: mapa único contínuo e gerador híbrido interior/exterior (spec própria).
 
 **Origem:** dividida de `discovery-campanha-progressao-e-lore` (removida em 2026-10-11; pendência "dividir por tema"). Irmãs: [discovery-progressao-identidade-e-build](discovery-progressao-identidade-e-build.md), [feature-mundo-clima-dinamico](feature-mundo-clima-dinamico.md), [feature-progressao-eco-vital](feature-progressao-eco-vital.md), [feature-combate-ritmo-inicial](feature-combate-ritmo-inicial.md).

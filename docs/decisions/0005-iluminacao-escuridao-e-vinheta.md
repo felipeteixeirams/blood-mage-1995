@@ -4,6 +4,7 @@
 **Status:** Proposta
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
 **Aprovada por:**
+**Specs afetadas:** [feature-eventos-eclipse-de-sangue](../specs/defining/feature-eventos-eclipse-de-sangue.md), [feature-grafico-calibracao-visual-por-bioma](../specs/defining/feature-grafico-calibracao-visual-por-bioma.md), [feature-grafico-efeitos-restantes](../specs/defining/feature-grafico-efeitos-restantes.md), [feature-grafico-validacao-e-lifecycle](../specs/defining/feature-grafico-validacao-e-lifecycle.md)
 
 ## Contexto
 O `LightingSystem` (Light2D do Phaser 4) descreve, no cabeçalho do arquivo, que em Canvas ou com `postProcessingEnabled` desligado ele vira no-op "e o fallback (`darknessOverlay`) permanece ativo". O código de `GameScene` faz outra coisa:

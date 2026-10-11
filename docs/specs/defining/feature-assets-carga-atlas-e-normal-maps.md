@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** C
+**Depende de:** ADR 0008, ADR 0010, ADR 0013
 **Origem:** dividida de discovery-assets-arte-ui-audio-e-sprites (parte 02 e critérios AAS-1..9), 2026-10-11 (ex-AES)
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): parcial. Existe: manifesto `src/game/assets/assetManifest.json` + `assetManifest.ts` (`queueAssetLoading`, chamado em `BootScene.preload`, enfileira o manifesto inteiro; spritesheet do jogador e imagens do baú com `required: true`; inimigos, projéteis, itens e tiles com `required: false`, sem arquivo em `public/`); fallback procedural por chave (`generateGameTextures(this, { force: false })` em `BootScene.create`, que só gera se `textures.exists(key)` é falso); `loaderror` tratado só com `logger` (também em `TitleScene`, `SettingsScene`, `RecordsScene`); `generateNormalMap` em `src/utils/textureGenerator.ts`; `scripts/verify-assets.cjs` e `src/game/assets/assetIntegrity.test.ts` (cabeçalhos binários). Falta: `AssetLoader` com `loadScene`, mapa cena -> chaves, carga de atlas JSON, consumidor do `normalMapPath` (declarado, sem uso), reporte de falha ao Sentry (`Sentry.init` só em `src/main.tsx`), compressão `pngquant`/`cwebp`, CI (`.github/` ausente), guia para artistas. Aura de inimigo não implementada (`Enemy.applyEliteGlow` cobre só elites). Nenhum critério abaixo está implementado.
 

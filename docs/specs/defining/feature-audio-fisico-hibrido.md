@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** C
+**Depende de:** ADR 0006, ADR 0008
 **Origem:** dividida de discovery-assets-arte-ui-audio-e-sprites (parte 04 e critérios AAS-12..17), 2026-10-11 (ex-UIA, parte 3)
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): parcial. Existe: todo o som sintetizado por `src/utils/soundEngine.ts` (29 métodos `play*`, `AudioContext` sob demanda, `sfxVolume`, `bgmVolume`, mute) e `src/utils/bgmSynthesizer.ts` (4 temas); Phaser com `audio.noAudio: true` nas quatro instâncias de `Phaser.Game`; 5 WAVs em `public/audio_samples/` referenciados só por `SoundTestModal.tsx`; `public/assets/audio/` vazio. Falta: carga de áudio físico (nenhum `decodeAudioData` nem `new Audio` em `src/`), `HybridSoundEngine`, telemetria de falha de áudio. Nenhum critério abaixo está implementado. Ver [audio](../../gameplay/audio.md).
 

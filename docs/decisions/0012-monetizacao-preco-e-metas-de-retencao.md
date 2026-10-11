@@ -4,6 +4,7 @@
 **Status:** Aprovada
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
 **Aprovada por:** Felipe Teixeira, 2026-10-11, conforme conversa de 2026-10-11 ("sim aprovo, só cuidado para as alterações não afetarem a disposição que a aplicação funciona em produção")
+**Specs afetadas:** [discovery-distribuicao-canais-e-pacotes](../specs/defining/discovery-distribuicao-canais-e-pacotes.md), [feature-eventos-eclipse-de-sangue](../specs/defining/feature-eventos-eclipse-de-sangue.md), [feature-eventos-infraestrutura-mundial](../specs/defining/feature-eventos-infraestrutura-mundial.md)
 
 ## Contexto
 Documentos antigos traziam preço (US$ 4,99), compras no app (IAP), metas de retenção (D1/D7/D30), duração de sessão, taxa de crash e um "filtro de 5 perguntas" (KPI, simplicidade, ergonomia, performance, ROI) para aprovar features. Nenhum foi ratificado. No estado atual:

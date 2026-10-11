@@ -3,6 +3,8 @@
 **Mestre:** [ui](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/App.tsx`, `src/components/GameplayHUD.tsx`, `src/components/hud/`, `src/game/scenes/GameScene.ts`
 
 HUD em jogo (`GameplayHUD` e `src/components/hud/`), controles (teclado, gamepad, toque), hooks e i18n. Os modais e telas estão em modals-and-screens.md. Leitura estática; nada foi executado ou jogado (feeling de controle touch: não validado, precisa de playtest humano).
 

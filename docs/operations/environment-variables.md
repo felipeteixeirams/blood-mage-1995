@@ -3,6 +3,8 @@
 **Mestre:** [operations](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `api/`, `lib/`, `lib/db`, `scripts/`
 
 Verificação: `grep` de `process.env.*` e `import.meta.env.*` em `src/`, `api/`, `lib/`, `scripts/`, `artifacts/api-server/src` e configs. Valores reais nunca entram na documentação.
 

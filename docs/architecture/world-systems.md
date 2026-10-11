@@ -3,6 +3,8 @@
 **Mestre:** [architecture](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `src/game/systems/`
 
 Continuação de [game-systems.md](game-systems.md) (que traz a ordem de `create()`, combate, feedback e entrada). Cobre os módulos de `src/game/systems/` de geração de mundo, fluxo de piso, iluminação, atmosfera e pós-processamento. Verificação por leitura estática; nenhum teste ou build foi executado.
 

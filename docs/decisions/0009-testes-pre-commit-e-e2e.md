@@ -4,6 +4,7 @@
 **Status:** Aprovada
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
 **Aprovada por:** Felipe Teixeira, 2026-10-11, conforme conversa de 2026-10-11 ("pode seguir pelo recomendado")
+**Specs afetadas:** nenhuma
 
 ## Contexto
 `.husky/pre-commit` roda `pnpm run docs:check` e `pnpm run verify`; `verify` = `verify-assets.cjs` + `typecheck` + `build` e **não** roda testes unitários (54 arquivos `*.test.ts(x)` em `src/`) nem e2e. O `package.json` tem `lint-staged` (`vitest related`) que nenhum hook chama. Não existe `.github/` nem outro CI.

@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** C
+**Depende de:** ADR 0002, ADR 0003
 **Estado vs código:** verificado em 2026-10-11 (leitura estática + `grep`): existe `src/game/systems/PathDrivenGenerator.ts` (random walk Sul->Norte, trilha de largura variável, clareiras, preenchimento do negativo, `injectCabin`/`injectLake`/`injectCaveEntrance`, `PathZone` `forest_trail|lake|ruins|cave_entrance`, `isWaterTileAt`) com `PathDrivenGenerator.test.ts`, instanciado em `DungeonGenerator.pathDrivenGenerator` (l.68); lentidão de 30% em água em `Player.ts` (~l.282) e `Enemy.ts` (~l.618); mapeamento habitat->monstro em `DungeonFlowController.ts` (~l.489-510); `hasLineOfSight` (`DungeonGenerator`, `GameScene.ts` l.958, usado no aggro). Falta: nada chama `PathDrivenGenerator.generate()` fora dos testes, então `lastZones` fica vazio, a lentidão em água nunca dispara e o mapeamento nunca escolhe outro monstro; `DungeonGenerator.generate()` usa `ProceduralForestGenerator` em `gloomy_woods` (l.82-85) e BSP/autômato nos demais biomas; sem `injectSetpiece(x, y, type)` genérico; sem queda de iluminação no covil (só um arco de paredes); sem fauna além dos monstros do mapeamento.
 
 ## Contexto

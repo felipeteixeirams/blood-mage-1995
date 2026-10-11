@@ -1,8 +1,12 @@
 # Pixel Lab: player prompts
 
 **Mestre:** [operations](README.md)
-**Status:** não verificado (depende de ferramenta externa: a interface do Pixel Lab não foi conferida)
+**Status:** não verificado
 **Verificado em:** —
+**Método:** não verificado
+**Fonte:** —
+
+Nota de verificação: depende de ferramenta externa: a interface do Pixel Lab não foi conferida.
 
 Prompts and field values for the player character in Pixel Lab. Global settings and the consistency rule (Style Image): [pixel-lab-config.md](pixel-lab-config.md). The player spritesheet is assembled by `scripts/build_bloodmage_spritesheet.cjs` (see [asset-scripts.md](asset-scripts.md)); never overwrite `public/assets/sprites/player/bloodmage.png` by hand.
 

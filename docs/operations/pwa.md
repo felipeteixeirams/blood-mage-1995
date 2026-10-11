@@ -3,6 +3,8 @@
 **Mestre:** [operations](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `public/`, `public/manifest.webmanifest`, `src/App.tsx`, `src/components/ui/PWAInstallBanner.tsx`
 
 Estado do PWA hoje, por leitura estática (nenhum build rodado; `dist/` e `public/sw.js` não existem no working tree).
 

@@ -3,6 +3,8 @@
 **Mestre:** [gameplay](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/data/achievements.json`, `src/utils/localStorage.ts`, `src/`, `src/components/AchievementsModal.tsx`
 
 Meta-progressão por conquistas, persistida em `localStorage` e paga em Cristais de Sangue (`bloodCrystals`): `src/data/achievements.json`. Leitura estática do código; nenhum teste rodado.
 

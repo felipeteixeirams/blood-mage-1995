@@ -3,6 +3,8 @@
 **Mestre:** [gameplay](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/components/InventoryModal.tsx`, `src/components/hud/LootLog.tsx`, `src/data/campaignItems.json`, `src/data/relics.json`
 
 Leitura estática do código (sem rodar o jogo). Cobre drops de equipamento, raridades, atributos, equipamento/inventário, relíquias, itens de campanha e orbes. XP, upgrades e prestígio estão em progression-and-prestige.
 

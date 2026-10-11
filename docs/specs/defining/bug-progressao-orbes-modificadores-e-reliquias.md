@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** B
+**Depende de:** nenhum
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): bug confirmado em `Collectible` (sem `new`), `gameStore.toggleModifier` e `gameStore.unlockRelic` (sem chamador). Não validado em execução.
 
 ## Contexto

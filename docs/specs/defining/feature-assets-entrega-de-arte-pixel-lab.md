@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** B
+**Depende de:** ADR 0013
 **Origem:** dividida de discovery-assets-arte-ui-audio-e-sprites (critérios AAS-24..37, ex-PL-1..14 de feature-guia-pixel-lab, decisões 18 a 27 e fatos da parte 01), 2026-10-11
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): nenhum critério abaixo está implementado. Hoje só jogador, baú e UI têm arte física; inimigos, NPCs, `spr_portal`, `spr_skeleton_remains` e tiles seguem procedurais. `verify-assets` já falha por PNG inválido e por grade errada em `required` (base de ENT-3 e ENT-4).
 

@@ -3,6 +3,8 @@
 **Mestre:** [gameplay](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/data/talents.json`, `src/data/upgrades.json`, `src/utils/localStorage.ts`, `src/components/TalentsModal.tsx`
 
 Leitura estática do código e dos dados (nada foi executado). Meta-progressão permanente comprada com Cristais de Sangue; fonte: `src/data/talents.json` (9 nós).
 

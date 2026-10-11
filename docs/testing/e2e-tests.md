@@ -1,8 +1,12 @@
 # Testes E2E e Golden (Playwright)
 
 **Mestre:** [testing](README.md)
-**Status:** verificado por leitura estática e por listagem; execução dos testes não validada
+**Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `.husky/pre-commit`, `src/`, `./tests/e2e`, `src/App.tsx`
+
+Nota de verificação: por leitura estática e por listagem; execução dos testes não validada.
 
 Descrição dos testes em `tests/e2e/` e da configuração do Playwright. Conferido por leitura de `playwright.config.ts`, dos 5 arquivos `*.spec.ts`, de `package.json`, de `src/` e da [ADR 0009](../decisions/0009-testes-pre-commit-e-e2e.md).
 

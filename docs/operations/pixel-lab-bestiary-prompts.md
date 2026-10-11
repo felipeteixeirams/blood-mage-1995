@@ -1,8 +1,12 @@
 # Pixel Lab: bestiary prompts
 
 **Mestre:** [operations](README.md)
-**Status:** não verificado (depende de ferramenta externa: a interface do Pixel Lab não foi conferida)
+**Status:** não verificado
 **Verificado em:** —
+**Método:** não verificado
+**Fonte:** —
+
+Nota de verificação: depende de ferramenta externa: a interface do Pixel Lab não foi conferida.
 
 Prompts and field values for the 11 enemies and bosses. Global settings: [pixel-lab-config.md](pixel-lab-config.md). All entries use **Camera View** `Top-down (low)` and **Detail** `Highly detailed` unless noted. Keys are the `spr_*` entries of `src/game/assets/assetManifest.json`; cell sizes there can differ from the generation size below.
 

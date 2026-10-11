@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** C
+**Depende de:** ADR 0005, ADR 0013
 **Estado vs código:** verificado em 2026-10-11 (leitura estática; nada executado): existem `LightingSystem.ts` (luz do jogador com redução por HP, tochas, braseiros, cascata por `floorDepth`), `LightingPolish.ts` (Glow), `AtmosphereSystem` (ground fog depth 750, upper haze 1995, clima 1996), `ShadowSystem` (`footY = y + altura * 0.38`, depth 8), `ReflectionSystem` (depth 12, `setFrame(entity.frame.name)`; teste com só 2 casos), `AdvancedParticles` (nove emissores, lê `lowPerformanceParticles`, `emitDirectional` restaura a rotação), `AtmosphericTreeShader` e `TerrainDetailFactory`, todos com testes. Faltam: calibrar valores por bioma; testes de contagem de luzes, raio mínimo, fases do flicker, zona líquida, frame sincronizado, transição de bioma, limpeza por entidade/zona, emissores após `stopAll` (a verificar) e ausência de `Graphics`/texturas após o bake.
 **Origem:** consolidada de feature-iluminacao-calibrada, feature-atmosfera-sombras-reflexos-calibrados e feature-particulas-shader-e-terreno-calibrados (2026-10-11); estas, por sua vez, divididas de feature-polimento-grafico-calibracao.
 

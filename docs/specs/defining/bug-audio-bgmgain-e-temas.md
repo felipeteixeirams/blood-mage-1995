@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** A
+**Depende de:** nenhum
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): bug confirmado em `src/utils/soundEngine.ts` (`bgmGain`, `initTinnitus`, `incrementVoices`/`decrementVoices`), `src/utils/bgmSynthesizer.ts` (`scheduleStep`, `bellSteps`) e `src/game/scenes/GameScene.ts` (troca de tema a cada ~400 ms). Não validado em execução.
 
 ## Contexto

@@ -3,6 +3,8 @@
 **Mestre:** [gameplay](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/data/palettes.json`, `src/game/objects/Traps.ts`, `src/game/systems/ChunkStreamer.ts`, `src/game/systems/DungeonFlowController.ts`
 
 Leitura estática (nada foi executado). Decisões em aberto sobre terreno e mundo contínuo estão nos ADRs 0002 e 0003 em `../decisions/README.md`; este documento só descreve o que o código faz. Campanha e Safe House: campaign e safe-house-and-quests (texto, sem link).
 

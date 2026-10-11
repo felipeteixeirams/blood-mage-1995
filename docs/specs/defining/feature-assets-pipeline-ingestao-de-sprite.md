@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** B
+**Depende de:** ADR 0015
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): não existe script `ingest-asset`. Existem `scripts/verify-assets.cjs` (cabeçalho dos binários e manifesto) e `src/game/assets/assetManifest.json` (37 entradas, 19 com `required: true`) com `assetManifest.ts` (`queueAssetLoading`, fallback procedural).
 
 **Origem:** passo C, decisões 2 (parte ingestão), 4, 5 e 6, escopo, contrato do `ingest-asset` e critérios PA-3, PA-4 e PA-5 de `discovery-assets-pipeline-de-arte-com-ia.md` (removida).

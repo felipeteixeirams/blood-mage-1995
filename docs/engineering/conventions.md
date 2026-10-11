@@ -3,6 +3,8 @@
 **Mestre:** [engineering](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `.husky/pre-commit`, `../`, `.husky/`, `src/data/`
 
 Verificado por listagens de diretórios, `grep` e leitura de `.husky/` e `package.json`. Nenhum script foi executado.
 

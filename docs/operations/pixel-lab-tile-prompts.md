@@ -1,8 +1,12 @@
 # Pixel Lab: tile prompts
 
 **Mestre:** [operations](README.md)
-**Status:** não verificado (depende de ferramenta externa: a interface do Pixel Lab não foi conferida)
+**Status:** não verificado
 **Verificado em:** —
+**Método:** não verificado
+**Fonte:** —
+
+Nota de verificação: depende de ferramenta externa: a interface do Pixel Lab não foi conferida.
 
 Prompts and field values for environment tiles and floor decals. Global settings: [pixel-lab-config.md](pixel-lab-config.md). All entries use **Character Type** `Humanoid`, **Generation Mode** `Standard` and **Detail** `Highly detailed` (the tool's required fields; the subject is a tile). Floor tiles use the flat camera and no outline. Check `src/game/assets/assetManifest.json` for the tile keys that exist.
 

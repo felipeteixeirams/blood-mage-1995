@@ -3,6 +3,8 @@
 **Mestre:** [operations](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `.husky/`, `.husky/pre-commit`, `artifacts/api-server`, `artifacts/bloodmage`
 
 Verificação por leitura estática de `package.json`, `vite.config.ts`, `playwright.config.ts`, `.husky/`. Nenhum comando foi executado.
 

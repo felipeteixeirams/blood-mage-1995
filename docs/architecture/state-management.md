@@ -3,6 +3,8 @@
 **Mestre:** [architecture](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `src/`, `src/data/achievements.json`, `src/game/PhaserGame.tsx`, `src/store/gameStore.ts`
 
 Descreve `src/store/gameStore.ts` (1272 linhas) e como React e Phaser trocam informação hoje. Verificação por leitura estática de `gameStore.ts`, `PhaserGame.tsx`, `GameScene.ts`, `Player.ts` e `localStorage.ts`; nada foi executado.
 

@@ -4,6 +4,7 @@
 **Status:** Proposta
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
 **Aprovada por:**
+**Specs afetadas:** [feature-mundo-topologia-continua](../specs/defining/feature-mundo-topologia-continua.md)
 
 ## Contexto
 Três escolhas técnicas de terreno existem no código sem decisão registrada:

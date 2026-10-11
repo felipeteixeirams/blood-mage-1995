@@ -1,8 +1,12 @@
 # Build e Deploy
 
 **Mestre:** [operations](README.md)
-**Status:** verificado (leitura estática; nenhum build ou deploy executado; o que não deu para conferir está em "Não verificado")
+**Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `.husky/pre-commit`, `api/log.ts`, `scripts/post-merge.sh`, `dist/manifest.webmanifest`
+
+Nota de verificação: leitura estática; nenhum build ou deploy executado; o que não deu para conferir está em "Não verificado".
 
 Conferido por leitura de `package.json`, `vercel.json`, `api/log.ts`, `vite.config.ts`, `scripts/*.sh`, `.replit`, `.husky/pre-commit`. Nenhum build, deploy ou script foi executado.
 

@@ -3,6 +3,8 @@
 **Mestre:** [gameplay](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `scripts/render_bgm_samples.cjs`, `src/App.tsx`, `src/components/GameplayHUD.tsx`, `src/components/SoundTestModal.tsx`
 
 Todo o som é sintetizado em runtime com Web Audio; o jogo não carrega arquivo de áudio. O Phaser roda com `audio: { noAudio: true }` (`PhaserGame.tsx`, `MainMenu.tsx`, `SettingsModal.tsx`, `HighScoresModal.tsx`): nada passa pelo `SoundManager` do Phaser. Leitura estática; nada foi executado nem escutado (mixagem e timbre só se validam ouvindo: não validado, precisa de playtest humano).
 

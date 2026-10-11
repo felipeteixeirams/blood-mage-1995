@@ -3,6 +3,8 @@
 **Mestre:** [gameplay](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/App.tsx`, `src/game/scenes/GameScene.ts`, `src/game/systems/`, `src/game/systems/DungeonFlowController.ts`
 
 O que cada sistema de luz, cor, névoa, sombra e feedback de tela faz hoje, quais flags o ligam e os valores por bioma. Leitura estática; o resultado visual não foi visto (não validado: precisa de playtest humano em mais de um bioma). Decisões sobre escuridão e vinheta: [0005](../decisions/0005-iluminacao-escuridao-e-vinheta.md). Mapa dos módulos e achados dormentes: [world-systems.md](../architecture/world-systems.md).
 

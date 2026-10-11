@@ -3,6 +3,8 @@
 **Mestre:** [gameplay](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/game/objects/Enemy.ts`, `src/game/objects/Player.ts`, `src/game/objects/Projectile.ts`, `src/game/scenes/GameScene.ts`
 
 Como o dano é causado e recebido hoje: FSM de ataque dos inimigos, dano do jogador, crítico, knockback, esquiva e telegrafia. Leitura estática do código (nada foi executado). Status, gibs e feedback de impacto: ver `status-and-feedback`. Inimigos e IA: ver `enemies-and-bestiary`.
 

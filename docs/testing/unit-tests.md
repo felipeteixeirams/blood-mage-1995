@@ -3,6 +3,8 @@
 **Mestre:** [testing](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `tests/setup.ts`, `src/`, `src/components/`, `src/data/spells.json`
 
 Configuração e inventário dos testes unitários. Conferido por leitura estática de `vitest.config.ts`, `tests/setup.ts` e da lista de arquivos; os testes não foram executados (sem `node_modules` no worktree), então este documento não afirma que passam.
 

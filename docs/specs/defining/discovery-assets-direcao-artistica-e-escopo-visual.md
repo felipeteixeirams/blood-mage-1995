@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** D
+**Depende de:** ADR 0010, ADR 0013
 **Origem:** dividida de discovery-assets-arte-ui-audio-e-sprites (parte 01 e critérios AAS-18, AAS-19), 2026-10-11
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): parcial. Existe: texturas procedurais como fallback (`src/utils/textureGenerator.ts`); arte física só do jogador (`public/assets/sprites/player/bloodmage.png`, 68x68, 8 direções) e do baú; tint por raridade (`src/utils/equipmentPalette.ts`), glow de loot (`LightingPolish.addItemGlow`), tint de elite (`Enemy.ts`), cores de raridade em `InventoryModal.tsx`. Falta: camadas de armadura e arma no jogador, spritesheets de inimigos (`public/assets/sprites/enemies` vazio), retratos de NPC (`DialogueModal.tsx` usa ícones Lucide), tilesets externos (`public/assets/tilesets` vazio), ícones de skill e inventário em pixel art, sprites de loot, túmulo, VFX de magia em arte. Nenhum critério abaixo está implementado.
 

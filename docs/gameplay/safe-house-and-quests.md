@@ -3,6 +3,8 @@
 **Mestre:** [gameplay](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/components/`, `src/data/`, `src/data/campaignItems.json`, `src/data/campaignQuests.json`
 
 Leitura estática do código (nada foi executado). A geração dos mapas está em world-generation (texto, sem link).
 

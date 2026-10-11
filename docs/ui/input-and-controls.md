@@ -3,6 +3,8 @@
 **Mestre:** [ui](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/game/systems/InputManager.ts`, `src/utils/haptics.ts`, `src/utils/joystickResponse.ts`, `src/components/GameplayHUD.tsx`
 
 Como a entrada do jogador chega ao jogo: teclado, gamepad, toque (joystick) e haptics. O mapa de teclas do HUD e a lista de botões estão em [hud.md](hud.md); aqui ficam as camadas de entrada e o que não está lá. Leitura estática; feeling de controle touch/gamepad: não validado, precisa de playtest humano.
 

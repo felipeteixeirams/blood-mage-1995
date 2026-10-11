@@ -3,6 +3,8 @@
 **Mestre:** [gameplay](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/data/upgrades.json`, `src/components/LevelUpModal.tsx`, `src/data/contracts.json`, `src/data/runModifiers.json`
 
 Leitura estática do código (sem rodar o jogo). Traz valores, limites e o que o código lê ou deixa de ler. Status de sobrevivência: ver `status-and-feedback`. Itens e relíquias estão em loot-and-items.
 

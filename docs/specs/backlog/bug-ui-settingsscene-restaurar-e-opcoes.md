@@ -3,6 +3,8 @@
 **Mestre:** [backlog](README.md)
 **Estágio:** backlog
 **Aprovação do responsável:** aprovada por Felipe Teixeira em 2026-10-11, conforme conversa de 2026-10-11 (decisões conforme a coluna Recomendação)
+**Classe:** A
+**Depende de:** nenhum
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): bug confirmado em `src/game/scenes/SettingsScene.ts` (`buildButtons`, `setFromPointer`) e `src/utils/localStorage.ts` (`SettingsSchema.floatingStick`). Não validado em execução.
 
 ## Contexto

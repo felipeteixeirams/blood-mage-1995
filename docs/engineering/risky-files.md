@@ -3,6 +3,8 @@
 **Mestre:** [engineering](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `src/game/systems/`, `src/types/game.ts`, `src/components/GameplayHUD.tsx`, `src/game/PhaserGame.tsx`
 
 Arquivos cuja alteração incorreta tem maior chance de causar regressão. Cada item abaixo foi conferido contra o código em 2026-10-10 (leitura estática; nenhum teste foi executado). Os níveis são uma classificação de cautela, não uma regra de negócio: o responsável do projeto decide o que pode ou não ser alterado.
 

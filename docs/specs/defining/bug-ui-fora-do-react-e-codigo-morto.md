@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** A
+**Depende de:** nenhum
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): bug confirmado em `GameOverModal`, `MainMenu`, `SettingsModal`, `HighScoresModal`, `GameplayHUD` e `GameScene`. Não validado em execução.
 
 > [ADR 0005](../../decisions/0005-iluminacao-escuridao-e-vinheta.md) (Proposta) trata do `darknessOverlay`; [ADR 0006](../../decisions/0006-audio-e-conquistas.md) trata do áudio e do `AchievementSystem`. Esta spec os cita e não os duplica.

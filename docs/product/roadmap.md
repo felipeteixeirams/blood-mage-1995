@@ -3,6 +3,8 @@
 **Mestre:** [product](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `src/data/monsters.json`, `src/data/relics.json`, `src/game/objects/Player.ts`, `src/game/scenes/`
 
 Este documento lista só o que o código faz hoje. Não há roadmap ratificado; fases e prazos de documentos antigos foram removidos.
 

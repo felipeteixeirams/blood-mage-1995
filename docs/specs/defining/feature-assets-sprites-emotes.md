@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** B
+**Depende de:** nenhum
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): ícones de emote são procedurais, sem arquivo.
 
 **Origem:** categoria "Emotes" do escopo de `feature-assets-mapeamento-de-sprites.md` (removida).

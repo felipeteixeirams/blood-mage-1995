@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** B
+**Depende de:** nenhum
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): bugs confirmados em `src/game/objects/Player.ts` (`updatePlayer`, `updateStatusConditions`), `src/game/scenes/GameScene.ts` (disparo de projétil inimigo) e `src/game/objects/Enemy.ts` (`getTelegraphInfo`). Item "morte por status sem triggerGameOver" NÃO confirmado (ver Contexto). Não validado em execução.
 
 ## Contexto

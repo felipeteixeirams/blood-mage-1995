@@ -4,6 +4,7 @@
 **Status:** Proposta
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
 **Aprovada por:**
+**Specs afetadas:** [feature-assets-pipeline-geracao-de-prompt](../specs/defining/feature-assets-pipeline-geracao-de-prompt.md), [feature-assets-pipeline-ingestao-de-sprite](../specs/defining/feature-assets-pipeline-ingestao-de-sprite.md)
 
 ## Contexto
 O jogo real vive na raiz (`src/`, `package.json`, `vite.config.ts`); a estrutura de workspace pnpm (`pnpm-workspace.yaml`: `artifacts/*`, `lib/*`, `lib/integrations/*`, `scripts`) veio de um scaffolding e quase não se conecta a ele:

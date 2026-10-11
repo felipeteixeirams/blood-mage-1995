@@ -1,8 +1,12 @@
 # Scripts de Build, Deploy e Verificação
 
 **Mestre:** [operations](README.md)
-**Status:** verificado (leitura do código e busca de referências; nenhum script foi executado; pendências em "Não verificado")
+**Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `.husky/pre-commit`, `lib/db`, `./scripts/build-pwa.sh`, `api/log.ts`
+
+Nota de verificação: leitura do código e busca de referências; nenhum script foi executado; pendências em "Não verificado".
 
 Scripts de `scripts/` que buildam, empacotam, verificam e mantêm a documentação. Scripts de arte e áudio estão em [asset-scripts.md](asset-scripts.md). Fluxo de build e Vercel: [build-and-deploy.md](build-and-deploy.md); comandos do dia a dia: [local-development.md](local-development.md).
 

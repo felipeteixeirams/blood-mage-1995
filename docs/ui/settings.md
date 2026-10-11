@@ -3,6 +3,8 @@
 **Mestre:** [ui](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/utils/localStorage.ts`, `src/App.tsx`, `src/components/GameplayHUD.tsx`, `src/components/SettingsModal.tsx`
 
 A tela de opções (`SettingsModal` + `SettingsScene`), o painel rápido do HUD, cada campo de `GameSettings` (chave, padrão, onde é lido) e a persistência. Leitura estática; nada foi executado.
 

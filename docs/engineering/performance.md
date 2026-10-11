@@ -3,6 +3,8 @@
 **Mestre:** [engineering](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `node_modules/phaser`, `src/game/systems/ObjectPool.ts`, `src/game/systems/ViewportCuller.ts`, `vite.config.ts`
 
 Técnicas de performance que o código aplica hoje. Conferido por leitura estática; não houve medição de FPS nem de memória (ver [performance-metrics](performance-metrics.md)).
 

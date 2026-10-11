@@ -4,6 +4,7 @@
 **Status:** Proposta
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
 **Aprovada por:**
+**Specs afetadas:** [bug-controles-joysticks-e-gamepad](../specs/defining/bug-controles-joysticks-e-gamepad.md), [discovery-distribuicao-canais-e-pacotes](../specs/defining/discovery-distribuicao-canais-e-pacotes.md), [feature-controles-mira-e-alvo-inteligente](../specs/defining/feature-controles-mira-e-alvo-inteligente.md), [feature-grafico-camera-e-escala-de-entidades](../specs/defining/feature-grafico-camera-e-escala-de-entidades.md), [feature-ui-hud-escala-e-personalizacao](../specs/defining/feature-ui-hud-escala-e-personalizacao.md)
 
 ## Contexto
 **Joystick.** O padrão atual é flutuante (a base aparece onde o dedo toca): `defaultSettings.floatingStick = true` em `src/utils/localStorage.ts:209`, com comentário explicando que o modo fixo impedia mover para a esquerda. Há inconsistências de padrão no código: o schema Zod usa `.catch(false)` para esse campo (`localStorage.ts:237`), então um valor salvo inválido vira modo **fixo**; `VirtualJoystickSystem` tem padrão interno `false` (`:51`), usado só se a config não passar o campo (a `GameScene` sempre passa, `GameScene.ts:521`, `:533`).

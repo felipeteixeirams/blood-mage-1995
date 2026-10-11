@@ -3,6 +3,8 @@
 **Mestre:** [product](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `src/`, `artifacts/api-server`, `lib/db`, `src/game/`
 
 Verificação por leitura estática do código.
 

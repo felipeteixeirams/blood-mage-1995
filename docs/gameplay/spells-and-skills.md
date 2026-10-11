@@ -3,6 +3,8 @@
 **Mestre:** [gameplay](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/data/spells.json`, `src/types/game.ts`, `src/components/hud/`, `src/components/hud/SkillsOverlay.tsx`
 
 Leitura estática do código e dos dados (nada foi executado). Magias vêm de `src/data/spells.json` (9 registros, tipo `SpellConfig` em `src/types/game.ts`).
 

@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** B
+**Depende de:** nenhum
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): bug confirmado em `src/data/achievements.json`, `src/data/codex.json`, `CombatEffectsSystem` e `gameStore`. Não validado em execução.
 
 > O [ADR 0006](../../decisions/0006-audio-e-conquistas.md) (Proposta) trata do sistema paralelo `AchievementSystem.ts`; esta spec não o duplica.

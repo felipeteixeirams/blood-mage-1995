@@ -3,6 +3,8 @@
 **Mestre:** [architecture](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/utils/SaveMigration.ts`, `src/utils/localStorage.ts`, `src/`, `src/hooks/usePWA.ts`
 
 Como o jogo guarda dados no navegador hoje. Tudo é `localStorage`, sem conta e sem nuvem (ver [conta e dados](../product/account-and-data.md)). Leitura estática de `src/utils/localStorage.ts`, `src/utils/SaveMigration.ts` e dos acessos diretos.
 

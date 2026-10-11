@@ -3,6 +3,8 @@
 **Mestre:** [ui](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `src/data/palettes.json`, `src/index.css`, `src/types/game.ts`, `src/utils/localStorage.ts`
 
 Verificação por leitura estática do código.
 

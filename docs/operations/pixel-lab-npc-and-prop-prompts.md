@@ -1,8 +1,12 @@
 # Pixel Lab: NPC and prop prompts
 
 **Mestre:** [operations](README.md)
-**Status:** não verificado (depende de ferramenta externa: a interface do Pixel Lab não foi conferida)
+**Status:** não verificado
 **Verificado em:** —
+**Método:** não verificado
+**Fonte:** —
+
+Nota de verificação: depende de ferramenta externa: a interface do Pixel Lab não foi conferida.
 
 Prompts and field values for the safe-zone NPCs and the dungeon props. Global settings: [pixel-lab-config.md](pixel-lab-config.md). All entries use **Camera View** `Top-down (low)` and **Detail** `Highly detailed`. Check `src/game/assets/assetManifest.json` for which keys are registered.
 

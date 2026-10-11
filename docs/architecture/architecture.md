@@ -3,6 +3,8 @@
 **Mestre:** [architecture](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `api/log.ts`, `artifacts/`, `lib/`, `node_modules/phaser`
 
 Mapa do que o código faz hoje. Verificação por leitura estática (imports, `grep`, contagem de linhas); nada foi executado.
 

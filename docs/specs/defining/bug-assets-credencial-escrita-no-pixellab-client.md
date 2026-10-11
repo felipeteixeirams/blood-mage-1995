@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** A
+**Depende de:** nenhum
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): `scripts/pixellab_client.cjs` (l.17-20) usa `process.env.PIXELLAB_API_KEY` ou, na falta dela, a constante `DEFAULT_TOKEN`, que tem um token escrito no arquivo. O valor não é reproduzido aqui.
 
 **Origem:** item PA-6 de `discovery-assets-pipeline-de-arte-com-ia.md` (removida; a pendência dela previa esta spec própria, por ser segurança).

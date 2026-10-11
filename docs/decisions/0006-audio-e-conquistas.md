@@ -4,6 +4,7 @@
 **Status:** Proposta
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
 **Aprovada por:**
+**Specs afetadas:** [feature-audio-fisico-hibrido](../specs/defining/feature-audio-fisico-hibrido.md), [feature-audio-mixer-dinamico](../specs/defining/feature-audio-mixer-dinamico.md)
 
 ## Contexto
 **Áudio.** As quatro instâncias de `Phaser.Game` usam `audio.noAudio: true` (`PhaserGame.tsx:56`, `MainMenu.tsx:53`, `SettingsModal.tsx:34`, `HighScoresModal.tsx:29`); todo som vem de `src/utils/soundEngine.ts` (Web Audio, `AudioContext` em `:62`) e `bgmSynthesizer.ts`. `assetManifest.ts:112` ainda sabe carregar `type: 'audio'` com `scene.load.audio`, mas o `assetManifest.json` não tem nenhuma entrada de áudio. `public/audio_samples/` tem 5 `.wav`.

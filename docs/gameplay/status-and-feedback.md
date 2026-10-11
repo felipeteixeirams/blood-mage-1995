@@ -3,6 +3,8 @@
 **Mestre:** [gameplay](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/components/hud/PlayerStatus.tsx`, `src/data/monsters.json`, `src/game/objects/Enemy.ts`, `src/game/objects/Player.ts`
 
 Status de sobrevivência do jogador e de inimigos, feedback de impacto, gibs e sangue. Verificado por leitura estática; valores são o que o código faz hoje, não balance ratificado. Não validado: precisa de playtest humano. Dano e FSM: ver `combat`.
 

@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** B
+**Depende de:** nenhum
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): projéteis e VFX são procedurais; o manifesto os declara como `required: false`, sem arquivo.
 
 **Origem:** categoria "Feitiços e VFX" do escopo e questão 2 de `feature-assets-mapeamento-de-sprites.md` (removida).

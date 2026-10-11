@@ -4,6 +4,8 @@
 **Status:** Proposta | Aprovada | Rejeitada | Substituída por NNNN
 **Proposta por:** quem escreveu (pessoa ou modelo), data
 **Aprovada por:** nome do responsável, data — preencher só após aprovação explícita
+**Specs afetadas:** links para as specs em `docs/specs/` que dependem desta decisão | nenhuma
+**Substitui:** NNNN (só se houver) | **Substituída por:** NNNN (obrigatório se o status for Substituída)
 
 ## Contexto
 Qual problema exige uma decisão e por que agora. Inclua o que já existe no código ou nos documentos, deixando claro que **existir no código não é decisão**.

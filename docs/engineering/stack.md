@@ -3,6 +3,8 @@
 **Mestre:** [engineering](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-10
+**Método:** estático
+**Fonte:** `src/`, `public/assets`, `public/audio_samples/`, `public/fonts`
 
 Verificado por leitura de `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `vite.config.ts`, `vitest.config.ts`, `playwright.config.ts`, `tsconfig*.json` e `vercel.json`. **Nenhum script foi executado** (o checkout não tem `node_modules`); a tabela de scripts diz isso por linha.
 

@@ -102,10 +102,17 @@ for (const cat of refCats) {
   if (!existsSync(dir)) continue
   for (const f of listFiles(dir).filter((f) => f.endsWith('.md') && !f.endsWith(sep + 'README.md'))) {
     const head = readFileSync(f, 'utf8').split('\n').slice(0, 15).join('\n')
-    if (!/^\*\*Status:\*\*\s+(verificado|não verificado|histórico)\b/m.test(head))
-      err(`(f) ${rel(f)} sem "**Status:** verificado | não verificado | histórico" nas primeiras linhas`)
+    if (!/^\*\*Status:\*\*\s+(verificado|não verificado|histórico)\s*$/m.test(head))
+      err(`(f) ${rel(f)} sem "**Status:** verificado | não verificado | histórico" (só o valor, sem texto extra) nas primeiras linhas`)
     if (!/^\*\*Verificado em:\*\*\s+\S/m.test(head))
       err(`(f) ${rel(f)} sem "**Verificado em:** AAAA-MM-DD | —" nas primeiras linhas`)
+    const met = head.match(/^\*\*Método:\*\*\s*(.*)$/m)
+    if (!met || !/^(estático|executado|não verificado)\s*$/.test(met[1]))
+      err(`(o) ${rel(f)} sem "**Método:** estático | executado | não verificado" nas primeiras linhas`)
+    else if (/^\*\*Status:\*\*\s+verificado\s*$/m.test(head) && met[1].trim() === 'não verificado')
+      err(`(o) ${rel(f)} tem Status verificado com Método não verificado`)
+    if (!/^\*\*Fonte:\*\*\s+\S/m.test(head))
+      err(`(o) ${rel(f)} sem "**Fonte:** \`caminho\`, ... | —" nas primeiras linhas`)
   }
 }
 
@@ -121,12 +128,41 @@ for (const stage of stages) {
   const dir = join(docs, 'specs', stage)
   if (!existsSync(dir)) continue
   for (const f of listFiles(dir).filter((f) => f.endsWith('.md') && !f.endsWith(sep + 'README.md'))) {
-    const head = readFileSync(f, 'utf8').split('\n').slice(0, 12).join('\n')
+    const head = readFileSync(f, 'utf8').split('\n').slice(0, 15).join('\n')
     if (!/^\*\*Estágio:\*\*/m.test(head)) err(`(h) ${rel(f)} sem "**Estágio:**" no cabeçalho`)
     const appr = head.match(/^\*\*Aprovação do responsável:\*\*(.*)$/m)
     if (!appr) { err(`(h) ${rel(f)} sem "**Aprovação do responsável:**" no cabeçalho`); continue }
     if (stage !== 'defining' && !/aprovada por/i.test(appr[1]))
       err(`(h) ${rel(f)} está em ${stage}/ sem aprovação ("aprovada por <nome> em <data>")`)
+  }
+}
+
+// (p) specs: classe de bloqueio e dependências (ADRs citados precisam existir)
+const adrNums = new Set(
+  existsSync(join(docs, 'decisions'))
+    ? listFiles(join(docs, 'decisions')).map((f) => f.split(sep).pop().slice(0, 4)).filter((n) => /^\d{4}$/.test(n))
+    : [],
+)
+for (const stage of stages) {
+  const dir = join(docs, 'specs', stage)
+  if (!existsSync(dir)) continue
+  for (const f of listFiles(dir).filter((f) => f.endsWith('.md') && !f.endsWith(sep + 'README.md'))) {
+    const head = readFileSync(f, 'utf8').split('\n').slice(0, 15).join('\n')
+    if (!/^\*\*Classe:\*\*\s+[A-E]\s*$/m.test(head)) err(`(p) ${rel(f)} sem "**Classe:** A | B | C | D | E" no cabeçalho`)
+    const dep = head.match(/^\*\*Depende de:\*\*\s*(.*)$/m)
+    if (!dep) { err(`(p) ${rel(f)} sem "**Depende de:** ADR NNNN, ... | nenhum" no cabeçalho`); continue }
+    for (const n of dep[1].match(/\d{4}/g) ?? [])
+      if (!adrNums.has(n)) err(`(p) ${rel(f)} depende do ADR ${n}, que não existe em docs/decisions/`)
+  }
+}
+
+// (q) ADRs: specs afetadas; ADR substituída aponta para a substituta
+if (existsSync(join(docs, 'decisions'))) {
+  for (const f of listFiles(join(docs, 'decisions')).filter((f) => /\/\d{4}-[^/]+\.md$/.test(f.split(sep).join('/')))) {
+    const head = readFileSync(f, 'utf8').split('\n').slice(0, 15).join('\n')
+    if (!/^\*\*Specs afetadas:\*\*\s+\S/m.test(head)) err(`(q) ${rel(f)} sem "**Specs afetadas:** [spec](...), ... | nenhuma"`)
+    if (/^\*\*Status:\*\*\s*Substituída/m.test(head) && !/^\*\*Substituída por:\*\*\s+\S/m.test(head))
+      err(`(q) ${rel(f)} está Substituída sem "**Substituída por:** NNNN"`)
   }
 }
 

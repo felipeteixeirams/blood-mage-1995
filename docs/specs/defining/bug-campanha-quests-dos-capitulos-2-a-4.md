@@ -3,6 +3,8 @@
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Classe:** B
+**Depende de:** nenhum
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): bug confirmado em `src/game/systems/DungeonFlowController.ts` (`buildDungeonMap`, único marco `altar_crimson`) e `src/game/scenes/GameScene.ts` (`update`, só avança `discover_zone` por marco). Não validado em execução.
 
 ## Contexto

@@ -3,6 +3,8 @@
 **Mestre:** [gameplay](README.md)
 **Status:** verificado
 **Verificado em:** 2026-10-11
+**Método:** estático
+**Fonte:** `src/data/codex.json`, `src/components/CodexModal.tsx`, `src/game/systems/CodexSystem.ts`, `src/store/gameStore.ts`
 
 Meta-progressão do Códice/Bestiário, persistida em `localStorage` e paga em Cristais de Sangue (`bloodCrystals`): `src/data/codex.json`. Leitura estática do código; nenhum teste rodado.
 

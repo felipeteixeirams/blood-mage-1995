@@ -4,6 +4,7 @@
 **Status:** Aprovada
 **Proposta por:** Claude (Sonnet 5.5), 2026-10-10
 **Aprovada por:** Felipe Teixeira, 2026-10-11, conforme conversa de 2026-10-11 ("pode seguir pelo recomendado")
+**Specs afetadas:** [feature-assets-carga-atlas-e-normal-maps](../specs/defining/feature-assets-carga-atlas-e-normal-maps.md), [feature-audio-fisico-hibrido](../specs/defining/feature-audio-fisico-hibrido.md)
 
 ## Contexto
 `api/log.ts` (função serverless) aceita POST de qualquer origem (`Access-Control-Allow-Origin: *`), sem autenticação, sem limite de taxa, sem limite de tamanho do corpo nem de entradas por requisição, e imprime cada entrada em `console.*` (`[VERCEL_RUNTIME]`). O cliente (`src/utils/logger.ts`) tem `remoteEnabled = true` por padrão e envia `ERROR`, `WARN` e namespaces `TELEMETRY*`/`EVENT:*` por `fetch` e `sendBeacon` para `/api/log` (mesma origem). O CSP do app só permite `connect-src 'self'` para essa rota, então o CORS `*` não é necessário para o próprio jogo.
