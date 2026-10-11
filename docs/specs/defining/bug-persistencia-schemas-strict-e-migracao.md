@@ -78,11 +78,11 @@ Data de todas as verificações: 2026-10-11. Versões do `package.json`: `zod ^3
 | 10 | Safari com prevenção de rastreamento: dados criados por script de uma origem sem interação do usuário nos últimos 7 dias de uso são apagados | mesma fonte do item 7 | 2026-10-11 |
 | 11 | `zod@3.25.x`: a raiz `"zod"` e `"zod/v3"` exportam Zod 3; Zod 4 fica em `"zod/v4"` | https://zod.dev/v4/versioning | 2026-10-11 |
 | 12 | Documentação de Zod 4: chaves desconhecidas são removidas (strip) por padrão; `z.looseObject` deixa passar; `z.strictObject` (ou `.strict()`) rejeita. Isso é Zod 4, não a API da raiz `"zod"` instalada | https://zod.dev/api?id=objects | 2026-10-11 |
+| 13  Zod 3.25.76: a raiz `"zod"` reexporta `./v3/external.js`; `ZodObject` tem `.strict()`, `.strip()`, `.passthrough()` (`unknownKeys` "strict" gera issue `unrecognized_keys` e o parse falha; "strip" descarta chaves extras sem erro, padrão de `z.object`; "passthrough" mantém); `.loose()` NÃO existe em `v3/types.js`; `safeParse` retorna `{ success, data | error }` sem lançar | `node_modules/zod/index.js`, `node_modules/zod/v3/types.js` (linhas 116-131, 1962-1990, 2029-2060, 2243-2262), Zod 3.25.76 | 2026-10-11 |
+| 14  Zustand 5.0.14 `persist`: com versão armazenada diferente de `options.version` (padrão 0) e sem `migrate`, faz `console.error` ("State loaded from storage couldn't be migrated since no migrate function was provided"), descarta o estado salvo, mantém o estado inicial via `merge` e não regrava o storage na hora (o valor antigo permanece até o próximo `setItem`); com `migrate`, chama `migrate(state, version)` e regrava | `node_modules/zustand/esm/middleware.mjs` (linhas 385-424), Zustand 5.0.14 | 2026-10-11 |
 
 **Não verificado em fonte primária:**
 - Se o localStorage é síncrono: a página MDN consultada não afirma isso.
-- Comportamento exato de `.strict()`, `.passthrough()`, `.strip()` e `safeParse` no Zod 3 (versão da raiz `"zod"`): as páginas v3 da doc e o README da tag v3.25.76 não puderam ser lidos pela ferramenta. Também não verificado se `.loose()` existe no Zod 3 (a doc consultada só cita `z.looseObject`, do Zod 4). `node_modules` não está instalado neste worktree, então os tipos instalados não foram conferidos.
-- Passo a passo do estado resultante em Zustand quando a versão diverge sem `migrate`, além do "won't be used".
 
 ## Questões em aberto
 - Há saves reais com chave extra em produção? (sem telemetria para saber)
