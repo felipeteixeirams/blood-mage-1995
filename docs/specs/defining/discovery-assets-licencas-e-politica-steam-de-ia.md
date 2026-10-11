@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** D
 **Depende de:** nenhum
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): nenhuma ferramenta de IA geral é usada; existem só `scripts/pixellab_client.cjs`, `scripts/fetch-spritecook-sprite.cjs` e a skill `spritecook-integration`, nunca executados.
 
 **Origem:** contexto, decisão 1, fatos de licença/Steam e questões de fonte de IA de `discovery-assets-pipeline-de-arte-com-ia.md` (removida).

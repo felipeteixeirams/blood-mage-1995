@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** A
 **Depende de:** nenhum
+**Prioridade:** P1 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): bug confirmado em `DungeonFlowController.loadChunkBiome` e `DungeonGenerator.generate`. Não validado em execução.
 
 > Precisa de playtest para confirmar o efeito visual e de colisão. A leitura estática mostra a causa; não mostra o que o jogador vê. Decisões de arquitetura já tratadas no [ADR 0003](../../decisions/0003-mundo-continuo-e-geradores-de-floresta.md) (Proposta); esta spec não o duplica.

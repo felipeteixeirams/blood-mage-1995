@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** B
 **Depende de:** nenhum
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): não existe. Vampirismo é só atributo (`getEffectiveVampirism`, usado em `CollisionHandlers.ts`); nenhum "Eco Vital" no código.
 
 **Origem:** dividida de `discovery-campanha-progressao-e-lore` (removida em 2026-10-11). Decisão original 8; critérios CP-4 e CP-5. Premissa: [discovery-campanha-premissa-e-paradigma](discovery-campanha-premissa-e-paradigma.md).

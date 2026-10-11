@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** C
 **Depende de:** ADR 0004
+**Prioridade:** P2 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): classes `safe-area-*` em `src/index.css` (l.69-82, margens 16 px vertical e 20 px horizontal) usadas em `src/components/GameplayHUD.tsx` (topo, esquerda, direita e canto inferior, l.547/575); `virtualStickScale`, `leftHandedMode`, `floatingStick`, `virtualControlsOpacity` em `src/types/game.ts`. Faltam escala global do HUD, tamanho de botões e âncoras livres.
 **Origem:** dividida da spec feature-evolucao-de-ui-e-terreno (2026-10-11)
 

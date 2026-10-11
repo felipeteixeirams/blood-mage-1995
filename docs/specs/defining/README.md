@@ -29,6 +29,16 @@ ADRs `Proposta` que desbloqueiam specs (a aprovação é do responsável):
 | 0014 | modais secundários |
 | 0015 | pipeline de arte com IA |
 
+## Prioridade (sugerida, 2026-10-11)
+
+Campo `Prioridade` no cabeçalho de cada spec: P1 quebra a Campanha, o save ou a segurança; P2 afeta o jogador; P3 melhoria ou discovery. Todas estão marcadas "(sugerida)" até o responsável aprovar; a prioridade é decisão de produto dele. O campo `Esforço` (P, M ou G) existe e fica vazio (`—`) até haver medição.
+
+| Prioridade | Specs |
+|---|---|
+| P1 | bug-assets-credencial-escrita-no-pixellab-client, bug-campanha-quests-dos-capitulos-2-a-4, bug-mundo-chunks-sobre-safe-house-e-fosso, bug-persistencia-schemas-strict-e-migracao, bug-combate-dano-por-contato-passivo |
+| P2 | bug-combate-custo-de-skill-duplicado, bug-combate-status-duplicado, bug-controles-joysticks-e-gamepad, bug-distribuicao-pwa-manifest-e-service-worker, bug-progressao-bonus-de-equipamento-acumulam, bug-progressao-conquistas-e-codice-inalcancaveis, bug-progressao-orbes-modificadores-e-reliquias, bug-ui-fora-do-react-e-codigo-morto, feature-controles-mira-e-alvo-inteligente, feature-grafico-camera-e-escala-de-entidades, feature-mundo-topologia-continua, feature-ui-hud-escala-e-personalizacao, feature-ui-modais-secundarios-e-gamepad, bug-ui-settingsscene-restaurar-e-opcoes |
+| P3 | 34 specs (features de baixo impacto imediato, assets e discoveries; ver o campo em cada spec) |
+
 ## Gráfico
 
 | Spec | Resumo |

@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** C
 **Depende de:** ADR 0005, ADR 0013
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática; `node_modules` ausente, nada executado): existem as profundidades sombra 8, reflexo 12, ground fog 750, upper haze 1995 e clima 1996 nos sistemas, e testes dos oito sistemas gráficos; `PostFXSystem.test.ts` cobre callbacks tardios só para dano crítico e infecção. Faltam: baseline visual e de performance (Fase 0), teste das constantes de profundidade, lifecycle por sistema em shutdown/reinício/troca de onda e mapa, smoke WebGL e comparação antes/depois.
 **Origem:** dividida da spec feature-polimento-grafico-calibracao (2026-10-11)
 

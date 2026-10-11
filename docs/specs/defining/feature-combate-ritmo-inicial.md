@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** B
 **Depende de:** nenhum
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): não verificado em execução. Ritmo de 4 a 5 golpes e ausência de stunlock exigem playtest.
 
 **Origem:** dividida de `discovery-campanha-progressao-e-lore` (removida em 2026-10-11). Decisão original 9; critério CP-6. Premissa: [discovery-campanha-premissa-e-paradigma](discovery-campanha-premissa-e-paradigma.md).

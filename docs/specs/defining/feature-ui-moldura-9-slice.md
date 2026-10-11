@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** B
 **Depende de:** nenhum
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Origem:** dividida de discovery-assets-arte-ui-audio-e-sprites (parte 03 e critérios AAS-10, AAS-11), 2026-10-11 (ex-UIA, parte 2)
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): parcial. Existe: HUD e modais em React sobre o canvas Phaser; `border-image` com SVG inline só em `src/components/hud/DialogueModal.tsx` (`borderImageSlice: '20 fill'`, `round`); classes `.gothic-border`, `.blood-border`, `.gold-gothic-border` com `border` sólido e `.font-cinzel` em `src/index.css`; `ui-corner.png`, `ui-plaque.png`, `stone-tile.jpg` em `src/assets/ui/` e `public/assets/ui/`, usadas só por `SettingsScene.ts` e `RecordsScene.ts` (menus em Phaser); `InventoryModal.tsx` já usa `image-rendering: pixelated`. Falta: classe `.gothic-panel`, `gothic_border_slice.png`, `gold_runic_border.png`, `.gothic-button-active`, slices de arte para os modais. Nenhum critério abaixo está implementado.
 

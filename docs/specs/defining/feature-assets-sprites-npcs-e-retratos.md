@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** B
 **Depende de:** nenhum
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): chaves reais: `spr_npc_maelen`; o Clérigo usa `spr_cultist` com tint (`DungeonFlowController.ts`). `spr_npc_cleric` e `portrait_*` não existem em `src/`.
 
 **Origem:** categoria "NPCs e retratos" do escopo e questão 3 de `feature-assets-mapeamento-de-sprites.md` (removida).

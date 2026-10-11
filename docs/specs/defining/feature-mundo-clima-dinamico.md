@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** B
 **Depende de:** nenhum
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): parcial. Existe clima por partículas (`AtmosphereSystem.ts`). Faltam: trovões e chuva leve (`WeatherType` só declarado; nenhum código lê `WorldZoneConfig.weather`).
 
 **Origem:** dividida de `discovery-campanha-progressao-e-lore` (removida em 2026-10-11). Decisão original 7; critérios CP-1, CP-2, CP-3 e CP-7. Premissa: [discovery-campanha-premissa-e-paradigma](discovery-campanha-premissa-e-paradigma.md).

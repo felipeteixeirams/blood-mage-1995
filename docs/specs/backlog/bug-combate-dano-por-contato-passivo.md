@@ -5,6 +5,8 @@
 **Aprovação do responsável:** aprovada por Felipe Teixeira em 2026-10-11, conforme conversa de 2026-10-11 (decisões conforme a coluna Recomendação)
 **Classe:** A
 **Depende de:** nenhum
+**Prioridade:** P1 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): bug confirmado em `src/game/scenes/GameScene.ts` (`physics.add.overlap(player, enemiesGroup)`) e `src/game/systems/CollisionHandlers.ts` (`handleEnemyTouchPlayer`). Não validado em execução.
 
 ## Contexto

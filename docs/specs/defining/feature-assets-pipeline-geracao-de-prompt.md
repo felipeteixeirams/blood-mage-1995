@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** B
 **Depende de:** ADR 0015
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): não existem `tools/`, `docs/ART_STYLE.md`, `spec.yaml` de inimigo nem script `generate-prompt`; `package.json` tem `tsx` mas não tem parser de YAML.
 
 **Origem:** passo A, decisões 2 (parte geração) e 3, escopo e critérios PA-1 e PA-2 de `discovery-assets-pipeline-de-arte-com-ia.md` (removida).

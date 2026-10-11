@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** B
 **Depende de:** nenhum
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): o jogador já tem arte física (`public/assets/sprites/player/bloodmage.png`, 544x1156, células 68x68, 8x17). Variação sem capuz, camadas de manto tier 2/3, cajado e foice hoje só têm tint procedural.
 
 **Origem:** categoria "Jogador" do escopo de `feature-assets-mapeamento-de-sprites.md` (removida).

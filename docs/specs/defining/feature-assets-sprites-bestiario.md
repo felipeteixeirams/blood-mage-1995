@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** B
 **Depende de:** nenhum
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): `public/assets/sprites/enemies/` vazio; os inimigos estão declarados no manifesto como `required: false`, sem arquivo. `spr_gore_abomination` precisa ser reconferida no manifesto.
 
 **Origem:** categoria "Bestiário" do escopo, questão 2 e decisão 2 (ordem) de `feature-assets-mapeamento-de-sprites.md` (removida).

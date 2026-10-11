@@ -156,6 +156,18 @@ for (const stage of stages) {
   }
 }
 
+// (r) specs: prioridade (P1-P3, "(sugerida)" até o responsável aprovar) e esforço (— até haver medição)
+for (const stage of stages) {
+  const dir = join(docs, 'specs', stage)
+  if (!existsSync(dir)) continue
+  for (const f of listFiles(dir).filter((f) => f.endsWith('.md') && !f.endsWith(sep + 'README.md'))) {
+    const head = readFileSync(f, 'utf8').split('\n').slice(0, 18).join('\n')
+    if (!/^\*\*Prioridade:\*\*\s+P[123]( \(sugerida\))?\s*$/m.test(head))
+      err(`(r) ${rel(f)} sem "**Prioridade:** P1 | P2 | P3 (sugerida)" no cabeçalho`)
+    if (!/^\*\*Esforço:\*\*\s+(—|P|M|G)\s*$/m.test(head)) err(`(r) ${rel(f)} sem "**Esforço:** — | P | M | G" no cabeçalho`)
+  }
+}
+
 // (q) ADRs: specs afetadas; ADR substituída aponta para a substituta
 if (existsSync(join(docs, 'decisions'))) {
   for (const f of listFiles(join(docs, 'decisions')).filter((f) => /\/\d{4}-[^/]+\.md$/.test(f.split(sep).join('/')))) {

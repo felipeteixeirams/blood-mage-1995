@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** C
 **Depende de:** ADR 0001, ADR 0004
+**Prioridade:** P2 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): joystick Phaser existe e funciona em tese (`src/game/systems/VirtualJoystickSystem.ts` + `.test.ts`, `src/utils/joystickResponse.ts`, `input.activePointers: 3` e `Scale.RESIZE` em `src/game/PhaserGame.tsx`, settings `controlsMode`, `virtualControlsOpacity`, `floatingStick`, `leftHandedMode`, `virtualStickScale`). Bugs confirmados em `GameScene.ts`, `GameplayHUD.tsx`, `InputManager.ts`, `useGamepadUINavigation.ts`, `App.tsx`. Faltam: um só joystick de movimento, suspensão ao pausar, resize durante o toque, gamepad no joystick de toque, mira sem joystick morto, remoção de `useJoystick`, slot único do gamepad, opção de haptics. Não validado em execução.
 **Origem:** consolidada de feature-joystick-virtual-nativo.md e bug-joysticks-duplicados-e-gamepad.md (2026-10-11)
 

@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** B
 **Depende de:** nenhum
+**Prioridade:** P2 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): bug confirmado em `Player.equipLoot` (`src/game/objects/Player.ts`) e `LootSystem.generateLoot` (`src/game/systems/LootSystem.ts`). Não validado em execução.
 
 ## Contexto

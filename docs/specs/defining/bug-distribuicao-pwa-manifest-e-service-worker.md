@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** B
 **Depende de:** nenhum
+**Prioridade:** P2 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): bug confirmado em `public/manifest.webmanifest`, `vite.config.ts` (`VitePWA`), `src/main.tsx`, `src/App.tsx`, `src/hooks/usePWA.ts`, `src/components/ui/PWAInstallBanner.tsx` e `src/utils/logger.ts` (`exportLogsJson`). Não validado em execução (nenhum build rodado).
 
 ## Contexto

@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** C
 **Depende de:** ADR 0004
+**Prioridade:** P2 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): zoom adaptativo `clamp(altura/300, 1,8, 3,0)` com fator 0,87 abaixo de proporção 1,5 e zoom-out de chefe a 0,85x com lerp 0,04 por frame em `src/game/scenes/GameScene.ts` (~l.1066-1078); escala dos monstros vem de `scale` em `src/data/monsters.json` (0,85 a 2,8). Falta tudo o que está em Escopo (`grep -rn "1920" src` só acha tamanho de mapa/chunk).
 **Origem:** dividida da spec feature-evolucao-de-ui-e-terreno (2026-10-11)
 

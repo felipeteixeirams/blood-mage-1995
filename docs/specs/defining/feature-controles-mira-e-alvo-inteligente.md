@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** C
 **Depende de:** ADR 0004
+**Prioridade:** P2 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): alvo automático com histerese por alcance (1,2x) e cone frontal em `Player.findBestTarget` (`src/game/objects/Player.ts` ~l.776-786) e retículo em `renderTargetLockReticle`. Faltam hitbox de alvo +30% por toque e pontuação por HP e ameaça.
 **Origem:** dividida da spec feature-evolucao-de-ui-e-terreno (2026-10-11)
 

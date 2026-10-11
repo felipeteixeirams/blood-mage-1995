@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** C
 **Depende de:** ADR 0005, ADR 0013
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): o Eixo A está em boa parte implementado (`PostFXSystem` com Vignette, ColorMatrix por bioma e Displacement; Glow por objeto em `LightingPolish.ts` e `Enemy.ts`; `LightingSystem` com luz do jogador, tochas e cor ambiente por andar; `generateNormalMap` com normal maps de 11 inimigos, tiles e props; flags `postProcessingEnabled` e `lowPerformanceParticles`; `PerformanceMonitor` via `?perf`). Faltam: Pixelate, bloom por evento, `setLighting(true)` além de `Enemy.ts`, self-shadow, `maxLights`, normal map do jogador, controle de UI para `postProcessingEnabled`, fallback funcional sem WebGL (`ScreenEffects.render` nunca é chamado) e medição de 60 FPS. Phaser `^4.2.1`, Vite `^7.3.2`.
 **Origem:** dividida de `discovery-grafico-evolucao-pendente` (removida em 2026-10-11), que consolidou a pasta discovery-evolucao-grafica-avancada (5 partes, removida). O mixer dinâmico de áudio ficou em [feature-audio-mixer-dinamico](feature-audio-mixer-dinamico.md).
 

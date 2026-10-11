@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** B
 **Depende de:** nenhum
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): parcial. Existe: pipeline com fallback procedural (`src/game/assets/assetManifest.ts` e `assetManifest.json`; `BootScene.ts` chama `queueAssetLoading` e `generateGameTextures(scene, { force: false })`), `src/game/animations/animationManager.ts`, `scripts/verify-assets.cjs`, `src/game/assets/assetIntegrity.test.ts`. Arte física só de jogador (`public/assets/sprites/player/bloodmage.png`, 544x1156, células 68x68, 8x17), baú (`items/chest/` e `chest_open/`, 48x48, 8 direções, `required: true`) e 12 imagens de UI (`src/assets/ui/`, cópia em `public/assets/ui/`). Inimigos, projéteis, itens e tiles são `required: false`, sem arquivo.
 
 **Origem:** contexto, objetivo, decisões 1, 4 e 5, critérios SP-1 a SP-4 e fatos gerais de `feature-assets-mapeamento-de-sprites.md` (removida; era um épico). As categorias viraram specs próprias (ver Referências).

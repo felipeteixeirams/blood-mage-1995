@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** B
 **Depende de:** ADR 0001, ADR 0012
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): não implementado. Não existe `src/data/worldEvents.json`, estado `activeWorldEvent` na store, leitura de cabeçalho `Date` do servidor nem lógica de calendário (`grep -rniE "worldEvent|eclipse|seasonal|sazonal|halloween" src public` sem ocorrência relevante). Existem `src/game/systems/AtmosphereSystem.ts`, `LightingSystem.ts`, `WorldManager.ts`, `PostFXSystem.ts` e `contentIntensity` em `Settings`, onde os eventos vão se apoiar.
 **Origem:** dividida da spec feature-eventos-mundiais-e-sazonais (2026-10-11)
 

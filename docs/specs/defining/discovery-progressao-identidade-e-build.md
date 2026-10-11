@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** D
 **Depende de:** nenhum
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): parcial. Existem: zero-to-hero (`CAMPAIGN_SPELL_UNLOCK_LEVEL` em `gameStore.ts`: nível 3 a 13; adaga em `Player.ts` ~l.565-606) e 6 pares `exclusive_with` em `src/data/talents.json`. Faltam: arquétipos de build nomeados (melee pesado, híbrido, caster puro).
 
 **Origem:** dividida de `discovery-campanha-progressao-e-lore` (removida em 2026-10-11). Decisões originais 3, 5 e 10. Premissa e paradigma: [discovery-campanha-premissa-e-paradigma](discovery-campanha-premissa-e-paradigma.md).

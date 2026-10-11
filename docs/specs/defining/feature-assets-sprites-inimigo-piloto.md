@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** B
 **Depende de:** nenhum
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): `public/assets/sprites/enemies/` está vazio; o manifesto declara os inimigos como `required: false`, sem arquivo. Chaves reais: `spr_skeleton`, `spr_cultist`; o Clérigo usa `spr_cultist` com tint (`DungeonFlowController.ts`). `src/game/objects/Player.ts` e `Enemy.ts` não chamam `setOrigin`.
 
 **Origem:** decisões 2 (parte "inimigo piloto primeiro") e 3, critério SP-5 e a pendência "escolher uma unidade pequena" de `feature-assets-mapeamento-de-sprites.md` (removida).

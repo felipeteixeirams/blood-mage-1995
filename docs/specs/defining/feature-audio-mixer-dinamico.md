@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** C
 **Depende de:** ADR 0006
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): SFX 100% sintetizados e BGM procedural; mixer parcial (HP <= 25% sobe o BPM em 12% e liga batimento; estática espacial com `StereoPannerNode`). Faltam: percussão mais intensa com HP <= 30%, distorção em `frenzy`, áudio espacial de ameaças e SFX novos.
 **Origem:** dividida de `discovery-grafico-evolucao-pendente` (removida em 2026-10-11): Eixo C restante (GEP-12 a GEP-14, decisão 8). Os efeitos gráficos ficaram em [feature-grafico-efeitos-restantes](feature-grafico-efeitos-restantes.md).
 

@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** B
 **Depende de:** nenhum
+**Prioridade:** P2 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): bug confirmado em `GameplayHUD.handleSkillAction` (`src/components/GameplayHUD.tsx`) e `Player.cast*` (`src/game/objects/Player.ts`). Não validado em execução.
 
 ## Contexto

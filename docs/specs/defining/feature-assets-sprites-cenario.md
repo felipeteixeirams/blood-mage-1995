@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** B
 **Depende de:** nenhum
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): tiles são procedurais e `required: false` no manifesto, sem arquivo. `spr_destructible_urn` não existe em `src/`.
 
 **Origem:** categoria "Cenário" do escopo e questão 2 de `feature-assets-mapeamento-de-sprites.md` (removida).

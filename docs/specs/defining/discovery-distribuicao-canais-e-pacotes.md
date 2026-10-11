@@ -5,6 +5,8 @@
 **Aprovação do responsável:** pendente
 **Classe:** E
 **Depende de:** ADR 0004, ADR 0010, ADR 0011, ADR 0012
+**Prioridade:** P3 (sugerida)
+**Esforço:** —
 **Estado vs código:** verificado em 2026-10-11 (leitura estática): `scripts/build-twa.sh` existe, exige `bubblewrap` no PATH (sai com 1 se ausente), roda `npm run build` e cria `twa-manifest.json` padrão sob demanda com `sha256Fingerprints` de placeholder e identificadores fixos (`com.felipeteixeira.bloodmage1995`, `bloodmage-1995.vercel.app`); falta `twa-manifest.json` versionado. `scripts/build-steam.sh` existe, instala `electron` e `electron-builder` sob demanda e cria `electron-builder.yml` cujo `files` lista `main.js`, que não existe; `electron` não está em `package.json`; faltam `main.js`, `electron-builder.yml` e as dependências. Não há política de privacidade em `src/`, `public/` nem `vercel.json`; `public/` tem `assets`, `audio_samples`, `favicon.svg`, `fonts`, `icon-*.png`, `manifest.webmanifest`, `robots.txt`; falta `public/privacy.html` (se a decisão 6 for A). Nada validado em execução.
 **Origem:** consolidada de feature-empacotamento-twa-play-store, feature-empacotamento-steam-electron e feature-politica-de-privacidade (2026-10-11)
 
