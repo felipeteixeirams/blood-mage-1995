@@ -82,6 +82,7 @@ Todos provisórios (aprovação e decisão 2 pendentes).
 3. O Glow aparece em WebGL real? Não verificado.
 4. O fallback Canvas do pós-processamento depende da integração do fallback em `ScreenEffects.render`; fora desta spec até ser decidido.
 5. Metas de performance do Glow (depende do ADR 0013).
+- Não validado: precisa de playtest humano. O Glow aparece em WebGL real? O jogo sem WebGL (renderer Canvas, filtros inativos) mantém visual aceitável? Só se verifica rodando o jogo (achado de 2026-10-11).
 
 ## Pendências para promover a backlog
 - Aprovação do responsável e decisões 1 a 3.

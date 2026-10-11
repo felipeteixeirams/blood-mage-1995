@@ -87,6 +87,7 @@ Data de todas as verificações: 2026-10-11. Versões do `package.json`: `zod ^3
 ## Questões em aberto
 - Há saves reais com chave extra em produção? (sem telemetria para saber)
 - Qual o teto de design de selos não gastos?
+- Não verificado: se `gameStore` usa `persist` do Zustand. `grep "persist("` em `src/store` não achou nada, então `version`/`migrate` do Zustand podem não se aplicar; confirmar antes de decidir entre `SaveMigration` e `persist` (achado de 2026-10-11). Também sem fonte: se o localStorage é síncrono (a página MDN consultada não afirma).
 
 ## Referências
 [persistência](../../architecture/persistence.md), [conta e dados](../../product/account-and-data.md), [risky-files](../../engineering/risky-files.md), [ADR 0011](../../decisions/0011-conta-e-dados-do-jogador.md).

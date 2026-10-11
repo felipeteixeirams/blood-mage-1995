@@ -106,6 +106,7 @@ Discovery: todos provisórios e dependentes de decisão de produto. Prefixo `GEP
 - `setLighting` em tiles e partículas: o componente `Lighting` está em `ParticleEmitter` e `TilemapLayerBase` no Phaser 4.2.1 instalado (ver Fatos); custo e resultado visual não verificados (só `Enemy.ts` o usa hoje).
 - Normal map do jogador: por derivada ou arte manual.
 - Estimativas de esforço do original não verificadas (filtros 2 a 3 dias; Light2D e normal maps 3 a 5 dias, com risco de FPS em mobile; normal maps no `textureGenerator` 1 a 2 dias; mixer 2 dias; SFX novos 1 a 2 dias).
+- Não validado: precisa de playtest humano. Custo e aparência de Pixelate (existe `addPixelate`), self-shadow e `setLighting` em tiles e partículas; comportamento real sem WebGL (achado de 2026-10-11).
 
 ## Pendências para promover a backlog
 - Discovery: depende de decisão de produto; sem aprovação do responsável.

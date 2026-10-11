@@ -116,6 +116,7 @@ Todos provisórios.
 6. Emissores realmente continuam vivos após `stopAll`/`stopAmbient`/troca de cena? Não verificado; GCB-13 cobre o resultado.
 7. Metas de performance (ADR 0013).
 8. Quem valida o aceite visual: ver decisões 3 e 4 de [feature-grafico-validacao-e-lifecycle](feature-grafico-validacao-e-lifecycle.md).
+- Não validado: precisa de playtest humano. Custo em FPS e aparência de self-shadow e `setLighting` em tiles e partículas; o suporte existe no Phaser 4.2.1, mas o resultado visual e a performance não foram medidos (achado de 2026-10-11).
 
 ## Pendências para promover a backlog
 - Aprovação do responsável e decisões 1 a 4; ADR 0005 aprovado.
