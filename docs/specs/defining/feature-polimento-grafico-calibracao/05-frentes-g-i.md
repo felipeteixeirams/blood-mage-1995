@@ -1,14 +1,15 @@
-# Polimento Gráfico por Calibração dos Sistemas Existentes (parte 5: Frentes G a I: partículas, shader/terreno e lifecycle)
+# Polimento gráfico por calibração dos sistemas existentes (parte 5: Frentes G a I, partículas, shader e lifecycle)
 
 **Mestre:** [feature-polimento-grafico-calibracao](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Estado vs código:** verificado em 2026-10-11 (leitura estática; `node_modules` ausente, nada executado): parcial. Existem as correções de integração das Frentes A e B e os sistemas com testes: `LightingPolish.applyBloomFilter` (`src/game/systems/LightingPolish.ts`) chama `enableFilters()` uma vez por sprite, limpa o Glow anterior antes de reaplicar, remove no evento `destroy` e em `cleanup()`, com `MAX_ACTIVE_BLOOM_TARGETS = 16` e Glow desligado por `postProcessingEnabled === false` ou `lowPerformanceParticles`; `PostFXSystem.createFilters` usa `camera.filters.external` (com `internal` como alternativa) e guarda `activeFloorDepth`; `PostFXSystem.test.ts` cobre callbacks tardios de `effectCriticalDamage`/`effectInfection`; `AdvancedParticles.emitDirectional` restaura a rotação (teste existe). Faltam: validar `filters.external` no Phaser 4.2.1, Glow em WebGL real, remoção do Glow ao reciclar sem destruir, calibração visual das Frentes C a H, testes de zona líquida do `ReflectionSystem` (só 2 testes), validação antes/depois e orçamento de performance medido.
 
-**Estado vs código:** verificado em 2026-10-10 (leitura estática; `node_modules` ausente, nada executado): parcial. As correções de integração das Frentes A e B existem: `LightingPolish.applyBloomFilter` chama `enableFilters()` só uma vez por sprite, limpa o Glow anterior antes de reaplicar, remove no evento `destroy` e em `cleanup()`, com `MAX_ACTIVE_BLOOM_TARGETS = 16` e desligamento por `postProcessingEnabled === false` ou `lowPerformanceParticles`; `PostFXSystem.createFilters` usa `camera.filters.external` (com `internal` como alternativa), guarda `activeFloorDepth` e reaplica a matriz do bioma, e `PostFXSystem.test.ts` cobre callbacks tardios de `effectCriticalDamage`/`effectInfection` que não apagam tint mais novo. Existem os sistemas e testes citados (`LightingSystem`, `LightingPolish`, `PostFXSystem`, `AtmosphereSystem`, `ShadowSystem` com `footY = y + altura*0.38`, `ReflectionSystem` com `setFrame` sincronizado, `AdvancedParticles` com `lowPerformanceParticles`, `AtmosphericTreeShader`, `TerrainDetailFactory`). Não verificado: se `filters.external` é a coleção correta no Phaser 4.2.1 instalado; se o Glow aparece em WebGL real; se o Glow é removido ao reciclar sem destruir (hoje só em `destroy`/`cleanup`); toda a calibração visual das Frentes C a H e a validação antes/depois (precisa de playtest e screenshots humanos); orçamento de performance medido.
+Parte 5 de 8. Índice: [README](README.md).
 
-Parte 5 de 7. Índice das partes: [parte 1](01-visao-e-escopo.md).
+## Anexo: Frentes G a I
 
----
+Requisitos e calibração de cada frente; os critérios de aceite estão na [parte 8](08-criterios-e-pendencias.md).
 
 ## 5.7 Frente G — Calibração do `AdvancedParticles`
 
@@ -34,21 +35,13 @@ Aprimorar o comportamento dos emissores existentes por meio de parâmetros e tim
 - Harmonizar lifespan e fade para que partículas não desapareçam antes de comunicar o impacto.
 - Ajustar escala inicial/final para evitar partículas grandes demais em baixa resolução.
 - Refinar velocidade, gravidade e ângulo dos emissores direcionais.
-- Garantir que o ângulo configurado não fique persistente indevidamente no próximo efeito.
 - Ajustar alpha e tint para separar sangue, poeira, ácido, energia e crítico usando os recursos já disponíveis.
 - Calibrar profundidade dos emissores para manter a ordem de renderização existente.
 - Preservar a redução de densidade em `lowPerformanceParticles`.
 - Corrigir emissores que continuam vivos depois de `stopAll`, `stopAmbient` ou troca de cena.
 - Reutilizar os emissores atuais sem criar um emissor por ocorrência de impacto.
 
-### Critérios de aceite
-
-- [ ] Os cinco efeitos de combate têm silhuetas de movimento distintas mesmo usando as texturas atuais.
-- [ ] O impacto aparece no mesmo momento do dano e desaparece sem resíduo.
-- [ ] Trails não acumulam partículas além do necessário.
-- [ ] Clima e ambiente permanecem sutis durante combate.
-- [ ] `lowPerformanceParticles` reduz custo mantendo a leitura do evento.
-- [ ] Nenhuma emissão órfã continua após shutdown da cena.
+Já existe: `emitDirectional` restaura a rotação do emissor após emitir (teste em `AdvancedParticles.test.ts`).
 
 ---
 
@@ -68,14 +61,6 @@ Refinar os parâmetros visuais da floresta, árvores e detalhes assados já exis
 - Reduzir repetição perceptível por meio de parâmetros existentes de escala, rotação e variação, sem criar novas famílias de assets.
 - Manter o padrão `bake once, render many`.
 - Validar que a alteração de parâmetros não aumenta criação de `Graphics` por frame.
-
-### Critérios de aceite
-
-- [ ] Árvores respondem ao vento sem parecerem deslocar-se do terreno.
-- [ ] A névoa aplicada pelo shader combina com o `AtmosphereSystem`.
-- [ ] AO e iluminação não fecham detalhes da copa, tronco ou chão.
-- [ ] Detalhes assados continuam estáveis a 60 FPS.
-- [ ] Não há criação contínua de texturas ou Graphics durante gameplay.
 
 ---
 
@@ -109,11 +94,3 @@ Garantir que os refinamentos apareçam na ordem correta e sejam limpos sem efeit
   - callbacks atrasados.
 - Manter a separação React para UI e Phaser para mundo/efeitos.
 - Manter fallback Canvas/headless para testes.
-
-### Critérios de aceite
-
-- [ ] Trocar de cena ou reiniciar uma run não duplica luzes, partículas, shadows ou reflections.
-- [ ] Nenhum efeito temporário permanece ativo depois de `reset` ou `shutdown`.
-- [ ] A ordem de profundidade permanece estável em gameplay.
-- [ ] O HUD não é coberto por upper haze ou partículas de mundo.
-- [ ] Os testes unitários conseguem instanciar os sistemas sem depender de Canvas nativo completo.

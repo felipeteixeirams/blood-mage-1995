@@ -1,72 +1,42 @@
-# Proposta de Discovery — Evolução de UI e Assets Externos Góticos (Pixel Art) (parte 4: Orçamento de performance e telemetria de falhas)
+# Evolução de UI e assets externos góticos: orçamento e telemetria (parte 4)
 
 **Mestre:** [discovery-ui-e-assets-externos](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Estado vs código:** verificado em 2026-10-11 (leitura estática): parcial. Existe: `PerformanceMonitor` (ativado por `?perf`), `src/utils/logger.ts` (envia ao `/api/log`), `Sentry.init` em `src/main.tsx` (só com `VITE_SENTRY_DSN`), CSP com `connect-src` para Sentry em `vercel.json`, `vite-plugin-pwa` com `globPatterns` `**/*.{js,css,html,woff2,png,svg}` e limite de 5 MB por arquivo em `vite.config.ts`. Falta: qualquer medição do tamanho do pacote inicial ou da VRAM, teste ou script que imponha os limites abaixo, tamanho máximo de frame validado, `webp`/`json`/`mp3` no precache do PWA, envio de `loaderror` ao Sentry (a cargo de [AES](../discovery-assets-externos-e-sprites.md)).
 
-**Estado vs código:** verificado em 2026-10-10 (leitura estática): parcial. Existe: síntese procedural de áudio como única fonte sonora (`src/utils/soundEngine.ts`, `src/utils/bgmSynthesizer.ts`, só `AudioContext`), `src/utils/telemetry.ts` e `src/utils/logger.ts`, `Sentry.init` em `src/main.tsx` (condicionado a DSN), fontes locais em `public/fonts/`, imagens de UI em `src/assets/ui/` e `public/assets/ui/` (usadas por `SettingsScene.ts` e `RecordsScene.ts`), `border-image` com SVG inline no `hud/DialogueModal.tsx`, cores de raridade em `InventoryModal.tsx`, tint de elite em `Enemy.ts`. Não existe: `HybridSoundEngine`/carga de áudio físico (nenhum `decodeAudioData` nem `new Audio`; `public/assets/audio` só tem `.gitkeep`), classe `.gothic-panel` e `gothic_border_slice.png`, `AssetLoader` centralizado, reporte de `loaderror` ao Sentry (o loader usa só `logger`), camadas de equipamento no sprite do jogador, retratos de NPC em pixel art (o diálogo usa ícones Lucide), tela de Créditos, sprites de inimigos/NPCs/tiles externos, medição do orçamento de 2,5 MB.
+Parte 4 de 6. Índice das partes: [README](README.md).
 
-Parte 4 de 5. Índice das partes: [parte 1](01-visao-e-escopo-visual.md).
+## Escopo
+Se aprovado, todo asset externo respeita um orçamento. Os limites abaixo são do original e sem aprovação; o **mecanismo** (lazy-loading, compressão, atlas, telemetria de imagem) é de [AES](../discovery-assets-externos-e-sprites.md).
 
----
+| Item | Limite proposto |
+|---|---|
+| Piso isométrico / parede | 64x32 / 32x32 |
+| Personagem e inimigo médio, por frame | 48x48 ou 64x64 |
+| Inimigo grande ou chefe, por frame | 128x128 |
+| Ícone de menu ou skill | 32x32 ou 48x48 |
+| Pacote inicial do PWA (Título, Menu, Safe Zone) | 2,5 MB |
+| PNG de produção | paleta de 256 cores via `pngquant` |
+| Fundos e tilesets em WebP | qualidade 80 |
+| Ícones de inventário e magias | um único atlas (1 draw call) |
 
-## 5. Limites de Performance, Compactação e Orçamento de VRAM
+Telemetria de falha de áudio e de imagem: o original propunha um listener `loaderror` que registra no `logger` e envia `captureMessage` ao Sentry com tags `system: 'asset-loader'`, `asset_key` e `asset_type`, e `extra` com URL tentada e `userAgent`. Esse comportamento é especificado em AES (critérios AES-6 e AES-7); o de áudio físico está na parte 3. O exemplo do original usa `window.Sentry` e `fileObj: any`, que não servem neste projeto (o Sentry é importado de `@sentry/react`; TypeScript strict proíbe `any`).
 
-Dispositivos móveis de entrada possuem fortes limitações de memória gráfica (VRAM) e processamento. Para evitar lentidão na taxa de quadros (micro-stuttering) ou fechamento abrupto do navegador, todas as adições de artes físicas seguirão um orçamento rigoroso.
+## Fora de escopo
+- Implementar o loader, a compressão e o CI (AES).
+- Medir VRAM em aparelhos reais além do que a decisão do ADR 0013 vier a definir.
+- Criar a infraestrutura de Sentry (já existe, `src/main.tsx`).
 
-### 5.1. Resoluções Máximas de Pixel Art (Fidelidade Controlada)
-Para manter o visual clássico e o consumo de memória sob controle, os sprites deverão respeitar as seguintes grades de tamanho:
-* **Pisos e Paredes (Tiles):** Máximo **64x32** (isométrico de chão) e **32x32** (blocos de parede).
-* **Sprites de Personagem/Inimigos Médios:** Máximo **48x48** ou **64x64** por frame de animação.
-* **Inimigos Grandes / Chefes:** Máximo **128x128** por frame de animação.
-* **Ícones de Menu/Habilidades:** Máximo **32x32** ou **48x48** com alta definição cromática.
+## Arquivos e contratos
+- Criar: verificação do orçamento (script ou teste) em `scripts/verify-assets.cjs` e `src/game/assets/assetIntegrity.test.ts` (estender, sem novo arquivo se possível).
+- Alterar: `vite.config.ts` (`globPatterns` do PWA, se formatos novos forem usados).
+- Atualizar no mesmo commit: `docs/engineering/performance.md`, `docs/engineering/performance-metrics.md`, `docs/operations/pwa.md` e `Verificado em`.
+- Não tocar: `PerformanceMonitor.ts`.
+- Contrato: limites da tabela acima; a verificação falha com a chave e a medida excedida.
 
-### 5.2. Orçamento de Kilobytes e Carregamento sob Demanda (Lazy-Loading)
-O limite de tamanho total do pacote inicial de carregamento (*initial bundle size*) do jogo PWA deve ser estritamente preservado:
-* **Limite Inicial do PWA:** Máximo **2.5 MB** para as cenas iniciais (Título, Menu Principal e Safe Zone).
-* **Carregamento Assíncrono por Cenas:** Os spritesheets e trilhas dos biomas mais avançados (ex: Masmorras Nível 2+, Áreas de Chefe) devem ser carregados dinamicamente apenas quando o jogador for transicionar para a cena correspondente.
+Critérios, verificação e pendências: [parte 6](06-criterios-e-pendencias.md).
 
-### 5.3. Ferramentas e Processamento de Compactação Gráfica
-Nenhum arquivo PNG bruto deve ser publicado em produção:
-1. **Compressão de Spritesheets:** Uso obrigatório de compactação com perda controlada via `pngquant` com limitação de paleta para 256 cores (estilo retrô legítimo), reduzindo o peso do arquivo em até 70% sem alterar os detalhes visuais perceptíveis.
-2. **Utilização de WebP:** Sempre que compatível (navegadores modernos e aplicativos empacotados), converter as texturas de plano de fundo e tilesets para o formato `.webp` com fator de qualidade ajustado para **80%**, obtendo tamanhos de arquivo até 40% menores que o PNG.
-3. **Texture Atlas (Spritesheet Único):** Reunir todos os ícones de inventário e magias em um único arquivo de Atlas utilizando ferramentas como o *TexturePacker* ou *Shoebox*. Isso reduz a quantidade de requisições HTTP e otimiza as *Draw Calls* do WebGL no Phaser para apenas 1 (um único envio de imagem para a placa de vídeo).
-
----
-
-## 6. Telemetria de Falhas e Logs Estruturados
-
-Para garantir que o jogo nunca "fique mudo" ou com "quadrados invisíveis" sem sabermos, propõe-se um validador no pipeline de carregamento que reportará falhas silenciosas de recursos externos ao Sentry.
-
-### 6.1. Exemplo de Captura de Falha de Imagem no Phaser
-```typescript
-export function registerAssetLoadingListeners(scene: Phaser.Scene) {
-  scene.load.on('loaderror', (fileObj: any) => {
-    const errorMsg = `Falha ao carregar asset: [${fileObj.key}] de ${fileObj.url}`;
-
-    // Log estruturado local usando o serviço de logger do jogo
-    logger.error(errorMsg, {
-      system: 'asset-loader',
-      key: fileObj.key,
-      url: fileObj.url,
-      type: fileObj.type
-    });
-
-    // Envio para telemetria de produção (Sentry)
-    if ((window as any).Sentry) {
-      (window as any).Sentry.captureMessage(errorMsg, {
-        level: 'warning',
-        tags: {
-          system: 'asset-loader',
-          asset_key: fileObj.key,
-          asset_type: fileObj.type
-        },
-        extra: {
-          attempted_url: fileObj.url,
-          browser_info: navigator.userAgent
-        }
-      });
-    }
-  });
-}
-```
+## Referências
+- [Performance](../../../engineering/performance.md), [Métricas de performance](../../../engineering/performance-metrics.md), [ADR 0013](../../../decisions/0013-metas-de-performance.md)
+- [Telemetria e logs](../../../operations/telemetry-and-logging.md), [PWA](../../../operations/pwa.md)

@@ -1,41 +1,41 @@
-# Avaliação arquitetural: Phaser 4.2.1 e renderização procedural avançada (parte 4: Matriz de priorização, riscos e referências)
+# Evolução gráfica avançada: matriz, riscos e referências (parte 4)
 
 **Mestre:** [discovery-evolucao-grafica-avancada](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Estado vs código:** verificado em 2026-10-11 (leitura estática): a matriz e os riscos são propostas; o que já está feito do Eixo A consta na [parte 2](02-eixo-a-graficos.md).
 
-**Estado vs código:** não verificado
+Parte 4 de 5. Índice das partes: [README](README.md).
 
-Parte 4 de 4. Índice das partes: [README.md](README.md).
-
-## Matriz de Priorização
+## Escopo
+Matriz de priorização proposta (sem aprovação; decisão 1 da parte 1):
 
 | Eixo | Impacto visual | Esforço | Assets externos | Fase sugerida |
-|------|----------------|---------|-----------------|---------------|
-| **A. Filtros postFX** | Alto | Médio | Não | Fase 3 (agora) |
-| **A. Iluminação + normal maps** | Muito Alto | Médio-Alto | Não (normal maps procedurais) | Fase 3 (agora) |
-| **B. Pipeline de assets** | — (habilita Fase 3+ arte) | Baixo | — | Quando arte externa for aprovada |
-| **C. Áudio/trilha híbrida** | Médio | Alto | Sim (música) | Fase 3+, decisão de produção |
+|---|---|---|---|---|
+| A. Filtros postFX | Alto | Médio | Não | Agora (parte já feita) |
+| A. Iluminação e normal maps | Muito alto | Médio-alto | Não | Agora (parte já feita) |
+| B. Pipeline de assets | habilita arte externa | Baixo | n/a | Quando houver arte aprovada |
+| C. Áudio e trilha híbrida | Médio | Alto | Sim (música) | Decisão de produção |
 
-> **Recomendação:** implementar o **Eixo A** antes de qualquer decisão de arte externa. O Eixo A valida o teto de qualidade procedural e informa se/pra quando a produção de sprites é necessária — evita investimento prematuro.
+Recomendação do original: fazer o Eixo A antes de qualquer decisão de arte externa, para validar o teto da qualidade procedural e evitar investimento prematuro.
 
----
+## Fora de escopo
+Planejar fases e datas de produção.
 
-## Riscos e Mitigação
+## Arquivos e contratos
+Nenhum arquivo é alterado por esta parte; ela só registra riscos e referências.
+
+Riscos e mitigações propostas:
 
 | Risco | Impacto | Mitigação |
-|-------|---------|-----------|
-| Iluminação Light2D custa FPS em mobile | Alto | `maxLights` baixo, raios curtos, toggle de performance, validar com `PerformanceMonitor` |
-| Filtros WebGL quebram em Canvas | Médio | Manter `ScreenEffects` como fallback; feature-detect de WebGL |
-| Normal maps procedurais ficam "falsos" | Médio | Gerar por derivada do sprite + ajuste manual via Laigter |
-| PWA offline + áudio grande | Médio | Streaming, cache estratégia por tipo de arquivo |
-
----
+|---|---|---|
+| Light2D custa FPS em mobile | Alto | `maxLights` baixo, raios curtos, toggle de performance, medir com `PerformanceMonitor` |
+| Filtros WebGL não existem em Canvas | Médio | Fallback decidido no ADR 0005; detectar WebGL (já feito por `isWebGL`) |
+| Normal maps procedurais ficam "falsos" | Médio | Derivada do sprite e ajuste manual (Laigter) |
+| PWA offline com áudio grande | Médio | Streaming e cache por tipo; `globPatterns` hoje não inclui `mp3`, `webp` nem `json` |
 
 ## Referências
-
-- `_ARCHIVED_SPECS_EVOLUCAO_2026_09_REFACTOR.md` — spec-alvo (contextos 4 e 7, matriz Fase 3)
-- `01_TECH_STACK.md` — stack atual (Phaser 4.2.1, Vite 7)
-- `02_PERFORMANCE_OPTIMIZATION.md` — gates de performance
-- `04_PERFORMANCE_METRICS.md` — métricas a validar
-- `00_DUNGEON_SIEGE_EVOLUTION.md` — roadmap geral de features
+- [lighting-and-effects](../../../gameplay/lighting-and-effects.md), [audio](../../../gameplay/audio.md), [performance](../../../engineering/performance.md), [performance-metrics](../../../engineering/performance-metrics.md), [asset-scripts](../../../operations/asset-scripts.md)
+- [ADR 0005](../../../decisions/0005-iluminacao-escuridao-e-vinheta.md), [ADR 0006](../../../decisions/0006-audio-e-conquistas.md), [ADR 0013](../../../decisions/0013-metas-de-performance.md)
+- [Assets externos e sprites](../discovery-assets-externos-e-sprites.md), [UI e assets externos](../discovery-ui-e-assets-externos/README.md)
+- O original citava `_ARCHIVED_SPECS_EVOLUCAO_2026_09_REFACTOR.md`, `01_TECH_STACK.md`, `02_PERFORMANCE_OPTIMIZATION.md`, `04_PERFORMANCE_METRICS.md` e `00_DUNGEON_SIEGE_EVOLUTION.md`; nenhum existe mais no repositório (verificado em 2026-10-11), então não são linkados.

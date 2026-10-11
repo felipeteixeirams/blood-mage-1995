@@ -1,87 +1,62 @@
-# Polimento Gráfico por Calibração dos Sistemas Existentes (parte 1: Resumo executivo e escopo fechado)
+# Polimento gráfico por calibração dos sistemas existentes (parte 1: contexto, decisões e escopo)
 
 **Mestre:** [feature-polimento-grafico-calibracao](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Estado vs código:** verificado em 2026-10-11 (leitura estática; `node_modules` ausente, nada executado): parcial. Existem as correções de integração das Frentes A e B e os sistemas com testes: `LightingPolish.applyBloomFilter` (`src/game/systems/LightingPolish.ts`) chama `enableFilters()` uma vez por sprite, limpa o Glow anterior antes de reaplicar, remove no evento `destroy` e em `cleanup()`, com `MAX_ACTIVE_BLOOM_TARGETS = 16` e Glow desligado por `postProcessingEnabled === false` ou `lowPerformanceParticles`; `PostFXSystem.createFilters` usa `camera.filters.external` (com `internal` como alternativa) e guarda `activeFloorDepth`; `PostFXSystem.test.ts` cobre callbacks tardios de `effectCriticalDamage`/`effectInfection`; `AdvancedParticles.emitDirectional` restaura a rotação (teste existe). Faltam: validar `filters.external` no Phaser 4.2.1, Glow em WebGL real, remoção do Glow ao reciclar sem destruir, calibração visual das Frentes C a H, testes de zona líquida do `ReflectionSystem` (só 2 testes), validação antes/depois e orçamento de performance medido.
 
-**Estado vs código:** verificado em 2026-10-10 (leitura estática; `node_modules` ausente, nada executado): parcial. As correções de integração das Frentes A e B existem: `LightingPolish.applyBloomFilter` chama `enableFilters()` só uma vez por sprite, limpa o Glow anterior antes de reaplicar, remove no evento `destroy` e em `cleanup()`, com `MAX_ACTIVE_BLOOM_TARGETS = 16` e desligamento por `postProcessingEnabled === false` ou `lowPerformanceParticles`; `PostFXSystem.createFilters` usa `camera.filters.external` (com `internal` como alternativa), guarda `activeFloorDepth` e reaplica a matriz do bioma, e `PostFXSystem.test.ts` cobre callbacks tardios de `effectCriticalDamage`/`effectInfection` que não apagam tint mais novo. Existem os sistemas e testes citados (`LightingSystem`, `LightingPolish`, `PostFXSystem`, `AtmosphereSystem`, `ShadowSystem` com `footY = y + altura*0.38`, `ReflectionSystem` com `setFrame` sincronizado, `AdvancedParticles` com `lowPerformanceParticles`, `AtmosphericTreeShader`, `TerrainDetailFactory`). Não verificado: se `filters.external` é a coleção correta no Phaser 4.2.1 instalado; se o Glow aparece em WebGL real; se o Glow é removido ao reciclar sem destruir (hoje só em `destroy`/`cleanup`); toda a calibração visual das Frentes C a H e a validação antes/depois (precisa de playtest e screenshots humanos); orçamento de performance medido.
+Parte 1 de 8. Índice: [README](README.md).
 
-## Partes desta spec
+## Contexto
+O Bloodmage 1995 tem uma camada gráfica procedural ampla: Light2D, Glow, pós-processamento de câmera, cascata de cor por profundidade, névoa por bioma, clima, sombras direcionais, reflexos líquidos, partículas de combate, shader de árvores e texturas assadas (`src/game/systems/`, `src/game/shaders/`; satélites [iluminação e efeitos](../../../gameplay/lighting-and-effects.md) e [sistemas de mundo](../../../architecture/world-systems.md)). Princípio: melhorar o que existe antes de adicionar algo.
 
-Spec dividida em partes menores; o conteúdo é o do documento original, sem alteração de significado.
+Pontos relevantes do código:
+- Glow, `filters.external` e `floorDepth` já foram corrigidos (ver "Estado vs código"); falta confirmar em WebGL real e calibrar valores.
+- O ADR 0005 (Proposta) registra que o `darknessOverlay` é limpo todo frame em `updateThreatIndicator()`; a calibração da Frente C depende de decidir como a escuridão é obtida.
+- O HUD é React por cima do canvas; a ordem de profundidade vale só entre objetos do mundo (parte 2, "Arquivos e contratos").
 
-| Parte | Assunto |
-|---|---|
-| [1](01-visao-e-escopo.md) | Resumo executivo e escopo fechado |
-| [2](02-estado-atual-e-objetivos.md) | Estado atual, problemas e objetivos de qualidade |
-| [3](03-frentes-a-c.md) | Frentes A a C: Glow, pós-processamento e LightingSystem |
-| [4](04-frentes-d-f.md) | Frentes D a F: atmosfera, sombras e reflexos |
-| [5](05-frentes-g-i.md) | Frentes G a I: partículas, shader/terreno e lifecycle |
-| [6](06-estrategia-performance-testes.md) | Estratégia, orçamento de performance e testes |
-| [7](07-prioridade-aceite-esforco.md) | Prioridade, critérios globais e esforço |
+## Objetivo
+Fazer os sistemas gráficos atuais entregarem uma imagem final mais coesa e legível, por correção de integração, calibração de parâmetros e remoção de conflitos entre efeitos, sem novos sistemas, assets ou aumento de custo por frame.
+
+## Decisões de que depende
+| ADR | Assunto | Status |
+|---|---|---|
+| [0005](../../../decisions/0005-iluminacao-escuridao-e-vinheta.md) | Iluminação: escuridão e vinheta no gameplay | Proposta |
+| [0013](../../../decisions/0013-metas-de-performance.md) | Metas de performance (FPS, memória, draw calls) | Proposta |
+
+## Fatos técnicos verificados
+| Afirmação | Fonte | Verificado em |
+|---|---|---|
+| `applyBloomFilter` chama `enableFilters()` só se `sprite.filters` não existe, limpa o Glow anterior, adiciona o alvo a `bloomTargets` e remove no evento `destroy` | `src/game/systems/LightingPolish.ts` (linhas 76-107) | 2026-10-11 |
+| `cleanup()` limpa o filtro de cada alvo, esvazia `bloomTargets` e remove as luzes de Glow | `src/game/systems/LightingPolish.ts` (linhas 543-562) | 2026-10-11 |
+| `PostFXSystem` usa `filters.external \|\| filters.internal` e guarda `activeFloorDepth` (padrão de `applyBiomeMatrix`) | `src/game/systems/PostFXSystem.ts` (linhas 42, 69-70, 147) | 2026-10-11 |
+| `ShadowSystem` usa `footY = entity.y + entityHeight * 0.38` e `depth 8` | `src/game/systems/ShadowSystem.ts` (linhas 84, 121) | 2026-10-11 |
+| `ReflectionSystem` usa `depth 12` e `setFrame(entity.frame.name)` | `src/game/systems/ReflectionSystem.ts` (linhas 62, 117) | 2026-10-11 |
+| `AtmosphereSystem`: ground fog `depth 750`, upper haze `1995`, partículas de clima `1996` | `src/game/systems/AtmosphereSystem.ts` (linhas 113, 121, 175) | 2026-10-11 |
+| `AdvancedParticles` lê `lowPerformanceParticles` do store | `src/game/systems/AdvancedParticles.ts` (linha 101) | 2026-10-11 |
+| Existem testes dos 8 sistemas da spec; o de `ReflectionSystem` tem 2 casos | `src/game/systems/*.test.ts`, `src/game/shaders/AtmosphericTreeShader.test.ts` | 2026-10-11 |
+| `phaser` declarado como `^4.2.1`; o pacote não está instalado neste ambiente, então a API de filtros do Phaser não foi conferida | `package.json` (`node_modules` ausente) | 2026-10-11 |
 
 ## Decisões a confirmar
+| # | Decisão | Opções | Recomendação |
+|---|---|---|---|
+| 1 | Escopo fechado: calibrar sistemas existentes sem nova abstração, sistema, asset ou aumento de limites (16 alvos de Glow) | A) fechado; B) permitir abstração pontual | A: nova abstração exige spec própria aprovada |
+| 2 | Valores-alvo de calibração (Glow, pós-processamento, luz, atmosfera, sombra, reflexo, partículas) | A) definir antes; B) definir após o baseline da Fase 0, por bioma, com screenshots | B: sem baseline não há como julgar "melhor" |
+| 3 | Objetivos de qualidade visual (parte 2) como critério de aceite humano | A) aceitar; B) reescrever | A, validados com as 10 cenas da parte 6 |
+| 4 | Metas numéricas de performance (FPS mínimo, frame time, memória) | A) usar o ADR 0013 quando aprovado; B) definir aqui | A: evita duas fontes de meta |
+| 5 | Ordem da Frente C frente ao ADR 0005 (escuridão por Light2D, overlay ou ambos) | A) decidir o 0005 antes da Frente C; B) calibrar só `ambientColor` | A: o valor de `ambientColor` depende da opção |
+| 6 | Quem valida o aceite visual e como | A) responsável com tabela antes/depois das 10 cenas; B) só testes automatizados | A: contraste e legibilidade não são testáveis por máquina |
 
-Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aqui está decidido.
+## Escopo
+Só o que falta (o que já existe está em "Estado vs código"):
+- Confirmar contra o Phaser 4.2.1 instalado a coleção de filtros de tela cheia (`external` ou `internal`) e alinhar implementação e mocks de `PostFXSystem.test.ts`.
+- Confirmar em WebGL real o Glow (item, magia, monstro forte, portal) e remover o Glow de sprite de pool devolvido sem `destroy`.
+- Garantir que `reset()` do `PostFXSystem` preserve a gradação do bioma e que medo, dano crítico e level-up em sequência não deixem tint ou displacement presos.
+- Calibrar, por bioma e frente, os valores existentes de: iluminação (`ambientColor`, raio e cor do jogador, tocha e braseiro, flicker), Glow, vignette/ColorMatrix/displacement/tint, atmosfera, sombras, reflexos, partículas, shader de árvores e texturas assadas (valores-alvo: decisão 2).
+- Verificar profundidades relativas e limpeza (luzes, filtros, tweens, emissores, sombras, reflexos, callbacks) em shutdown, troca de andar, onda e mapa.
+- Registrar baseline antes e depois e ampliar os testes (parte 6).
 
-1. Escopo fechado: calibrar sistemas existentes sem criar abstrações novas (regra de nova abstração).
-2. Valores-alvo de calibração por frente (glow, pós-processamento, luz, atmosfera, sombra).
-3. Objetivos de qualidade visual da seção 4.
-4. Critérios de aceite de cada frente.
-
----
-
-> **Domínio:** Renderização Phaser 4, iluminação, pós-processamento, atmosfera, sombras, reflexos, partículas e validação visual.  
-> **Princípio:** melhorar o que já existe antes de adicionar qualquer coisa.
-
----
-
-## 1. Resumo Executivo
-
-O *Bloodmage 1995* já possui uma camada gráfica procedural ampla: Light2D, Glow, pós-processamento de câmera, cascata de cor por profundidade, névoa por bioma, clima, sombras direcionais, reflexos líquidos, partículas de combate, shaders atmosféricos e texturas assadas.
-
-O objetivo desta spec não é expandir esse conjunto. O objetivo é fazer os sistemas atuais entregarem uma imagem final mais coesa, legível e refinada por meio de:
-
-1. correção de integrações que podem impedir efeitos de serem aplicados;
-2. calibração de intensidade, raio, alpha, blending, timing e profundidade;
-3. composição consistente entre luz, cor, névoa, sombra, reflexo e partículas;
-4. remoção de conflitos entre efeitos simultâneos;
-5. preservação do orçamento de performance atual.
-
-O resultado esperado é uma melhoria perceptível na qualidade visual sem:
-
-- criar novos sistemas;
-- criar novas mecânicas;
-- trocar o renderer;
-- migrar para Three.js, Unity ou Godot;
-- adicionar novos tipos de partículas;
-- adicionar novos assets externos;
-- substituir a direção visual procedural;
-- aumentar indiscriminadamente a densidade de efeitos.
-
----
-
-## 2. Escopo Fechado
-
-### 2.1 Incluído
-
-- Correção da inicialização e limpeza dos filtros já utilizados.
-- Validação da coleção de filtros de câmera efetivamente aplicada pelo Phaser 4.2.1.
-- Calibração dos valores existentes de iluminação por bioma.
-- Calibração do flicker atual de tochas e braseiros.
-- Refinamento dos parâmetros de Glow já aplicados a itens, monstros, magias, portais e impactos.
-- Refinamento das transições existentes de ColorMatrix, vignette, displacement e tint.
-- Preservação correta da gradação por bioma após efeitos temporários.
-- Ajuste da névoa, haze e clima existentes sem ultrapassar os limites de visibilidade.
-- Ajuste de posição, escala, rotação e alpha das sombras existentes.
-- Ajuste de alpha, tint, offset e ripple dos reflexos existentes.
-- Ajuste de velocidade, escala, lifespan, alpha, quantidade e blending das partículas existentes.
-- Ajuste dos parâmetros do shader atmosférico e da geração procedural já existentes.
-- Correção de lifecycle, pooling, limpeza e reuso quando isso afetar o resultado visual.
-- Testes automatizados e validação visual em gameplay.
-
-### 2.2 Fora do escopo
-
+## Fora de escopo
 - Novos sistemas de renderização.
 - Novos efeitos visuais com nova API pública.
 - Novos tipos de partículas ou novas texturas de partículas.
@@ -94,4 +69,4 @@ O resultado esperado é uma melhoria perceptível na qualidade visual sem:
 - Reescrita do renderer.
 - Aumento do número máximo de filtros, luzes ou partículas como solução primária.
 
-Se uma melhoria exigir uma nova abstração, ela deve primeiro ser avaliada como correção do sistema existente. Uma expansão só pode ser criada mediante uma nova spec aprovada.
+Se uma melhoria exigir nova abstração, avaliá-la primeiro como correção do sistema existente; expansão só por nova spec aprovada.

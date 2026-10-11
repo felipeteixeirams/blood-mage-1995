@@ -1,100 +1,95 @@
-# GDD & Especificação: Eventos Mundiais e Sazonais (Atmosphere & Retention)
+# Eventos mundiais e sazonais
 
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Estado vs código:** verificado em 2026-10-11 (leitura estática): não implementado. Não existe `src/data/worldEvents.json`, estado `activeWorldEvent` na store, leitura de cabeçalho `Date` do servidor nem lógica de calendário (`grep -rniE "worldEvent|eclipse|seasonal|sazonal|halloween" src public` sem ocorrência relevante). Reaproveitáveis: `frenzy` como `AIState` em `src/types/game.ts` e `src/game/objects/Enemy.ts`; `statusEffectOnHit` com `infection` (`src/types/game.ts`); `src/game/systems/AtmosphereSystem.ts`, `LightingSystem.ts`, `WorldManager.ts` (raio de luz por bioma), `PostFXSystem.ts`; `contentIntensity` em `Settings`. Não existe status de congelamento (só `bleeding`, `poison`, `infection`).
 
-**Estado vs código:** verificado: não implementado (verificado em 2026-10-10). `grep -rniE "worldEvent|activeWorldEvent|eclipse|village.?siege|infection.?rift|halloween|solst|seasonal|sazonal" src public` não retorna nada relevante (única ocorrência de "necrose" é o upgrade "Necrose Vampírica" em `src/data/upgrades.json`); `src/data/worldEvents.json` não existe; não há leitura de cabeçalho `Date` do servidor.
+## Contexto
+Proposta de eventos dinâmicos (globais e por data real) para variar atmosfera, regras de spawn, loot e iluminação, ancorada no lore gótico (sem decoração natalina moderna). Referências de design: Dead Frontier 2 e Diablo. O objetivo de retenção é justificativa de produto, não verificada; metas em [ADR 0012](../../decisions/0012-monetizacao-preco-e-metas-de-retencao.md).
+
+## Objetivo
+Se aprovado, o jogo muda atmosfera, spawn e loot durante janelas de tempo definidas em `src/data/worldEvents.json`, ativadas por um estado global lido pela cena de jogo.
+
+## Decisões de que depende
+| ADR | Assunto | Status |
+|---|---|---|
+| [0001](../../decisions/0001-ponte-phaser-react-so-zustand.md) | Ponte Phaser-React só via Zustand | **Proposta** |
+| [0005](../../decisions/0005-iluminacao-escuridao-e-vinheta.md) | Iluminação, escuridão e vinheta | **Proposta** (Eclipse altera o raio de luz) |
+| [0012](../../decisions/0012-monetizacao-preco-e-metas-de-retencao.md) | Monetização, preço e metas de retenção | **Proposta** |
+
+## Fatos técnicos verificados
+| Afirmação | Fonte | Verificado em |
+|---|---|---|
+| Não há `worldEvents.json`, `activeWorldEvent` nem lógica de calendário | `grep` em `src` e `public`; `ls src/data` | 2026-10-11 |
+| `frenzy` existe como estado de IA, não como modificador passivo | `src/types/game.ts` (`AIState`), `src/game/objects/Enemy.ts` | 2026-10-11 |
+| `infection` é um `statusEffectOnHit`; não há status de congelamento | `src/types/game.ts` | 2026-10-11 |
+| Raio de luz por bioma existe (`lightRadius`) | `src/game/systems/WorldManager.ts` | 2026-10-11 |
+| Único endpoint de servidor é `api/log.ts`; sem endpoint de tempo | `ls api` | 2026-10-11 |
+| NPCs (Clérigo, Alquimista, Ferreiro, Ancião) existem na Safe House | `src/game/systems/DungeonFlowController.ts`, `src/i18n/ptBR.ts` | 2026-10-11 |
 
 ## Decisões a confirmar
+| # | Decisão | Opções | Recomendação |
+|---|---|---|---|
+| 1 | Existência e regras dos três eventos globais (Eclipse de Sangue, Cerco ao Vilarejo, Rifts de Infecção) | todos / subconjunto / nenhum | Começar só pelo Eclipse (reusa luz, `frenzy` e loot) |
+| 2 | Eventos sazonais por data real (Noite dos Ancestrais, Banquete do Gelo) | calendário real / sem sazonais | Adiar até o Eclipse validado |
+| 3 | Fonte de tempo | a) relógio do dispositivo; b) cabeçalho `Date` do servidor de hospedagem | a: o jogo é offline e solo; b só se anticheat de evento importar |
+| 4 | Retenção como justificativa de escopo | manter / remover | Definir métrica no ADR 0012 antes |
+| 5 | Efeitos de gameplay do Eclipse (luz -30%, ataque +15%, drop de Cristais e Épico/Lendário +50%) | aprovar / ajustar | Aprovar após playtest; são valores da proposta original |
+| 6 | Agenda dos eventos (duração de 2 h do Eclipse, cadência, janelas sazonais) | a definir | Responsável define o calendário |
+| 7 | Cerco: combate na Room 0 e consequências a NPCs (loja fechada 10 min ou taxa maior; desconto de 20% por 1 h; Baú de Suprimentos Rúnicos) | aprovar / redesenhar | Redesenhar: afeta Safe House e economia, sem ADR |
+| 8 | Rift: aura de Infecção e dreno de MP, selar em 5 s, ondas, recompensa | aprovar / ajustar | Aprovar após decisão 1 |
+| 9 | Conteúdo de arte e recompensas sazonais (skin "Mago Esquelético do Fosso", paleta "Necrose Sombria", feitiço "Lança de Gelo de Sangue", congelar 1 s) | aprovar / adiar | Adiar: exige arte, novo status e feitiço |
+| 10 | Respeitar `contentIntensity` reduzido e `atmosphereEffectsEnabled` nos efeitos | sim / não | Sim |
 
-Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aqui está decidido.
+## Escopo
+Se aprovado (por evento aprovado na decisão 1):
+- Criar `src/data/worldEvents.json` com id, janela de tempo e parâmetros do evento.
+- Criar o estado `activeWorldEvent` em `gameStore.ts` e a verificação de calendário ao iniciar.
+- A `GameScene` (delegando a um sistema em `src/game/systems/`) aplica luz, partículas, multiplicador de spawn e de loot do evento ativo.
+- Eclipse: luz reduzida, inimigos em `frenzy`, bônus de drop, partículas de brasa e sussurros no `soundEngine`.
+- Cerco e Rifts: conforme decisões 7 e 8.
 
-1. Existência e regras dos três eventos globais propostos e seus efeitos de gameplay.
-2. Eventos sazonais por data real (Halloween, Natal/Ano Novo) e o uso do calendário do dispositivo.
-3. Arquitetura de sincronização de calendário (cliente x servidor).
-4. Objetivo de retenção como justificativa de escopo.
+## Fora de escopo
+- Servidor de tempo próprio e anticheat de relógio (a menos que a decisão 3 escolha `Date` do servidor).
+- Cooperativo ([discovery-multijogador-cooperativo.md](discovery-multijogador-cooperativo.md)).
+- Arte final de skins e novos feitiços (decisão 9).
 
----
+## Arquivos e contratos
+- Criar: `src/data/worldEvents.json`, sistema novo em `src/game/systems/` (nome a definir). Alterar: `src/store/gameStore.ts` (`activeWorldEvent`), `src/game/scenes/GameScene.ts` (só delegar; ler `docs/engineering/risky-files.md`).
+- Contrato do JSON (campos, fuso, formato de intervalo), valores numéricos finais e tratamento de data inválida: a definir (decisões 3, 5 e 6).
+- Comunicação React/Phaser só via Zustand (ADR 0001).
 
-> Proposta conceitual e técnica para a criação de Eventos Mundiais e Sazonais dinâmicos em Bloodmage 1995. Inspirada em estratégias de engajamento de grandes RPGs de sobrevivência e ação como Dead Frontier 2 e Diablo, esta proposta descreve eventos globais temporais e comemorações sazonais que alteram a atmosfera, as mecânicas de combate e as recompensas para maximizar a retenção sem prejudicar o clima grimdark do jogo.
+## Critérios de aceite
+- **EV-1** Quando a data/hora corrente cair na janela de um evento do `worldEvents.json`, o gameStore deve definir `activeWorldEvent` com o id do evento (provisório).
+- **EV-2** Quando a janela do evento terminar, o gameStore deve limpar `activeWorldEvent` (provisório).
+- **EV-3** Se a leitura da fonte de tempo falhar, então o jogo deve iniciar sem evento ativo (provisório).
+- **EV-4** Enquanto o Eclipse de Sangue estiver ativo, o LightingSystem deve reduzir o raio de iluminação do jogador em 30% (provisório).
+- **EV-5** Enquanto o Eclipse de Sangue estiver ativo, o Enemy deve surgir em estado `frenzy` (provisório).
+- **EV-6** Enquanto o Eclipse de Sangue estiver ativo, o LootSystem deve aumentar em 50% o drop de Cristais de Sangue e a chance de Épico e Lendário (provisório).
+- **EV-7** Se `contentIntensity` for `reduced` ou `atmosphereEffectsEnabled` for falso, então a GameScene não deve ativar partículas e filtros do evento (provisório).
+- **EV-8** Quando o jogador sair do jogo ou a cena for encerrada, a GameScene deve limpar tweens, timers, partículas e listeners do evento (provisório).
 
----
+## Plano de verificação
+| Critério | Como verificar |
+|---|---|
+| EV-1, EV-2, EV-3 | Teste unitário da função de calendário com relógio simulado (arquivo novo, ex. `src/game/systems/WorldEventSystem.test.ts`) |
+| EV-4, EV-5, EV-6 | Teste unitário dos multiplicadores; padrão de `LootSystem.test.ts` e `LightingSystem.test.ts` |
+| EV-7, EV-8 | Teste de sistema e passo manual alternando as configurações |
+| Atmosfera e game feel | Não validado: precisa de playtest humano (testar em mais de um bioma) |
 
-## 1. Contexto & Objetivos
+## Questões em aberto
+1. Decisões 1 a 10 sem resposta; valores numéricos vêm da proposta original e não têm aprovação.
+2. Agenda (cadência do Eclipse, datas sazonais, fuso) e formato do `worldEvents.json`: a definir.
+3. Eventos sazonais pedem arte, status de congelamento e feitiço novos que não existem.
+4. Cerco depende de combate na Room 0 e de efeito em lojas, sem spec de Safe House que o suporte; "cooperativo" não existe no jogo.
+5. Fonte de tempo (decisão 3) e comportamento offline/PWA.
 
-Eventos dinâmicos em tempo real são um dos pilares mais fortes de engajamento e marketing orgânico em jogos modernos de serviço móveis e desktop. Eles trazem dinamismo, alterando temporariamente a rotina e incentivando os jogadores a entrarem no jogo em horários e dias específicos.
+## Pendências para promover a backlog
+- Aprovação do responsável; ADRs 0001, 0005 e 0012 aprovados.
+- Decisões 1 a 10 e questões 1 a 5 resolvidas; dividir por evento (a spec atual é um épico).
+- Remover "(provisório)" dos critérios e preencher *Arquivos e contratos*.
 
-Esta especificação define a arquitetura para **Eventos Globais Dinâmicos** e **Eventos Sazonais Calendários** em *Bloodmage 1995*, projetados de forma que fiquem integrados ao universo gótico sombrio de terror do fim dos anos 90 do jogo.
-
-### Objetivos do Sistema:
-1.  **Foco em Retenção Sazonal:** Criar gatilhos estéticos e mecânicos para datas comemorativas reais que gerem picos de logins de usuários.
-2.  **Dinamismo e Atmosfera Mutável:** Fazer o mundo parecer vivo e imprevisível, mudando regras de spawn de monstros e efeitos de iluminação e áudio.
-3.  **Desenho Não-Invasivo:** Respeitar a cultura dos jogadores e manter as comemorações sazonais perfeitamente contextualizadas no lore medieval gótico do jogo (ex: sem decorações coloridas de natal modernas, mas sim rituais de solstício de inverno sombrios).
-
----
-
-## 2. Tipos de Eventos Globais Propostos
-
-Para manter a jogabilidade dinâmica e tática, propomos três modelos de eventos rotativos de curto prazo:
-
-```
-                  [ Eventos em Bloodmage 1995 ]
-                                │
-         ┌──────────────────────┼──────────────────────┐
-         ▼                      ▼                      ▼
- [ Eclipse de Sangue ]   [ Cerco ao Vilarejo ]  [ Rifts de Infecção ]
-(Clima e Drops Globais)   (Invasão à Safe Town)   (Zonas de Perigo)
-```
-
-### 🔴 Evento A: O Eclipse de Sangue (Atmospheric Event)
-*   **Conceito:** Um evento global e cíclico de 2 horas de duração que mergulha todo o reino em uma escuridão rúnica avermelhada.
-*   **Mecânicas de Combate:**
-    *   *Escuridão Profunda:* O raio da aura de iluminação do jogador é reduzido em 30%. A névoa de escuridão visual ganha tons vermelhos intensos.
-    *   *Fúria dos Monstros:* Todos os inimigos surgem com o modificador passivo `frenzy` ativado e velocidade de ataque aumentada em 15%.
-    *   *Dádiva Carmesim:* O drop de Cristais de Sangue e a chance de encontrar equipamentos das categorias Épico e Lendário são aumentados em 50%.
-*   **Efeitos Estéticos:** Partículas de cinza e faíscas de brasas vermelhas flutuam constantemente pela tela. O som ambiente ganha sussurros reverberados adicionais no `soundEngine`.
-
-### 🛡️ Evento B: O Cerco ao Vilarejo Seguro (Village Siege)
-*   **Conceito:** Evento defensivo cooperativo ou solo onde os limites da Safe Town (Room 0) são rompidos e ondas de monstros tentam atacar os NPCs sobreviventes.
-*   **Mecânicas de Combate:**
-    *   O combate é temporariamente habilitado nos limites da Room 0.
-    *   O jogador deve proteger os 4 NPCs sobreviventes (Clérigo, Alquimista, Ferreiro, Ancião) das hordas invasoras.
-    *   Se as defesas falharem, os NPCs podem ficar feridos temporariamente (fechando suas lojas por 10 minutos ou cobrando taxas mais altas para recuperação).
-    *   *Sucesso Defensivo:* Completar o cerco com sucesso concede a todos os jogadores presentes um **Baú de Suprimentos Rúnicos** e 20% de desconto temporário nas compras com o Ferreiro e Alquimista por 1 hora.
-
-### ☣️ Evento C: Rifts de Infecção (Infection Rifts)
-*   **Conceito:** Fendas espaciais tóxicas que rasgam o chão dos cenários de forma aleatória durante as runs.
-*   **Mecânicas de Combate:**
-    *   Uma fenda roxa pulsante surge no centro de um andar. Ela emana uma aura ácida constante.
-    *   Ficar perto do Rift causa o status condition de **Infecção** gradual e drena o MP do jogador.
-    *   O jogador pode interagir por 5 segundos com o Rift para "selá-lo", mas o ato de selagem gera ondas rápidas de inimigos infectados e agressivos que devem ser derrotados.
-    *   *Recompensa:* Selar o Rift concede Cristais de Sangue de forma concentrada e materiais raros para a criação de curativos lendários (antídotos e antibióticos).
-
----
-
-## 3. Eventos Sazonais Alinhados à Identidade Visual Gótica
-
-Grandes datas comemorativas reais serão adaptadas e rebatizadas para se encaixarem organicamente no folclore de *Bloodmage 1995*:
-
-### 🎃 Solstício de Outono / Noite dos Ancestrais (Halloween)
-*   **Descrição:** Os véus entre o mundo dos vivos e o fosso dos mortos se tornam finos.
-*   **Mudanças Visuais:** Pequenas abóboras entalhadas rústicas com fogo de sangue roxo decoram as bordas da Safe Town. Os inimigos esqueletos usam máscaras e coroas de ossos.
-*   **Recompensas Sazonais:** Desbloqueio da skin exclusiva **"Mago Esquelético do Fosso"** e da paleta de sangue **"Necrose Sombria"** (sangue de cor preta com partículas de fumaça cinzenta).
-
-### ❄️ Solstício de Inverno / O Banquete do Gelo (Natal/Ano Novo)
-*   **Descrição:** Uma era de gelo escuro e vento congelante atinge o vilarejo seguro.
-*   **Mudanças Visuais:** Uma névoa fria esbranquiçada e neve caindo cobrem as cenas de combate. Tochas ganham uma chama azul de gelo.
-*   **Mecânicas Sazonais:** Inimigos têm ataques que congelam levemente a velocidade de movimento do jogador por 1 segundo, mas o jogador ganha acesso ao feitiço temporário rúnico **"Lança de Gelo de Sangue"**.
-
----
-
-## 4. Arquitetura Técnica de Sincronização de Calendário
-
-Para que os eventos sazonais e de hora em hora funcionem sem a necessidade de um servidor de tempo ultra-complexo, propõe-se usar a API de tempo do navegador e checagens com o fuso horário internacional (UTC):
-
-1.  **Checagem de Tempo Confiável:** Ao iniciar o jogo, o cliente faz uma requisição HTTP simples de cabeçalho `Date` para o servidor backend ou de hospedagem (Vercel) para obter a data e hora mundiais confiáveis, evitando que o jogador manipule o relógio local do sistema operacional para burlar eventos.
-2.  **Ativação do Estado de Evento:** Se a data/hora coincidir com os intervalos definidos no arquivo de configuração do jogo `src/data/worldEvents.json`, o estado global do Zustand `activeWorldEvent` é definido para a ID correspondente.
-3.  **Gatilho das Cenas Phaser:** A `GameScene` escuta a mudança no Zustand e ativa os filtros de pós-processamento, os emissores de partículas climáticas (chuva de brasas, neve) e altera os multiplicadores de spawn e loot correspondentes ao evento em tempo real.
-
----
+## Referências
+- [world-generation.md](../../gameplay/world-generation.md), [enemies-and-bestiary.md](../../gameplay/enemies-and-bestiary.md), [lighting-and-effects.md](../../gameplay/lighting-and-effects.md)
+- [feature-atmosfera-e-tensao.md](feature-atmosfera-e-tensao.md)

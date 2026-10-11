@@ -1,64 +1,38 @@
-# Avaliação arquitetural: Phaser 4.2.1 e renderização procedural avançada (parte 3: Eixos B e C: assets externos e áudio híbrido)
+# Evolução gráfica avançada: Eixos B e C, assets externos e áudio (parte 3)
 
 **Mestre:** [discovery-evolucao-grafica-avancada](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Estado vs código:** verificado em 2026-10-11 (leitura estática). Eixo B: manifesto e fallback procedural por chave existem (`src/game/assets/assetManifest.ts`), carga por cena, atlas e compressão não. Eixo C: SFX 100% sintetizados (`src/utils/soundEngine.ts`), BGM procedural (`src/utils/bgmSynthesizer.ts`), mixer parcial (HP <= 25% sobe o BPM em 12% e liga batimento; estática espacial com `StereoPannerNode`), sem trilha composta e sem arquivo de áudio no jogo. Falta: tudo o que as specs dos eixos listam.
 
-**Estado vs código:** não verificado
+Parte 3 de 5. Índice das partes: [README](README.md).
 
-Parte 3 de 4. Índice das partes: [README.md](README.md).
+## Escopo
+Esta discovery **não** especifica B nem C para não duplicar. Quem é dono de cada um:
 
-## Eixo B — Pipeline de Integração de Assets Externos 🔵 Gatilho futuro
+| Eixo | Dono | Nota |
+|---|---|---|
+| B. Pipeline de assets externos | [discovery-assets-externos-e-sprites](../discovery-assets-externos-e-sprites.md) (AES) | loader por cena, atlas, compressão, substituição por chave, telemetria |
+| B. Limites de tamanho, formatos de arte e orçamento | [UIA partes 1 e 4](../discovery-ui-e-assets-externos/04-orcamento-e-telemetria.md) | resoluções e 2,5 MB |
+| C. Trilha composta e áudio físico | [UIA parte 3](../discovery-ui-e-assets-externos/03-audio.md) | SFX físicos e BGM por arquivo |
 
-**Objetivo:** quando arte externa for aprovada (Fase 3+ do `SPECS_EVOLUCAO.md`), integrar com qualidade sem perder desempenho — e sem quebrar o pipeline procedural.
+Resta aqui, se aprovado, só o que as duas specs não cobrem do Eixo C (mixer dinâmico sobre a Web Audio):
+- Intensificar a percussão quando o HP está em 30% ou menos (hoje: BPM x1,12 e batimento a 25%).
+- Aplicar distorção ao som quando um chefe entra em `frenzy`.
+- Áudio espacial por `StereoPanner` ou HRTF para a posição de ameaças (hoje só a estática espacial usa `StereoPanner`).
+- SFX novos sintetizados (custo baixo, estimado em 1 a 2 dias, não verificado).
 
-### B.1 — Formatos recomendados (discovery)
+Formatos propostos pelo original (referência, sem aprovação): sprite e UI em PNG com atlas JSON; fundos em WebP com JPG de fallback; spritesheet animado com JSON; esqueleto em DragonBones JSON; vídeo em WebM com MP4 de fallback; SFX em OGG ou WebM mono com MP3 de fallback; música em Opus ou M4A estéreo de 96 a 192 kbps com MP3 de fallback (iOS não toca OGG, conforme o original, não verificado). O original cita pastas `src/assets/sprites/`, `audio/`, `video/`, `BitmapText` no lugar de `Text`, `assetsInlineLimit` e `build.assetsDir`; nada disso foi verificado nem decidido.
 
-| Categoria | Formato primário | Fallback | Motivo |
-|-----------|------------------|----------|--------|
-| Sprite/UI | PNG + atlas JSON (hash) | — | Transparência + 1 draw call por conjunto |
-| Textura/fundo | WebP | JPG | ~40% menor, Vite gerencia hashing |
-| Sprite animado | Spritesheet/atlas + JSON (TexturePacker) | — | Padding evita bleeding; `Phaser.Animations` nativo |
-| Esqueleto | DragonBones JSON (suporte nativo Phaser) | — | Alternativa grátis ao Spine |
-| Cutscene/vídeo | WebM (VP9/AV1) | MP4 (H.264) | Transparência só em WebM VP8/Chrome |
-| SFX | OGG/WebM (mono) | MP3 | Melhor qualidade/peso |
-| Música | Opus/M4A (stereo 96–192kbps) | MP3 | Streaming; iOS não toca OGG |
+Estimativas do original para o Eixo B (loader por cena 1 dia, script de compressão 1 dia, substituição por chave meio dia) e para a mixagem dinâmica (2 dias) não foram verificadas.
 
-### B.2 — Estratégia de integração
+## Fora de escopo
+- Qualquer item de B (AES) e de trilha e áudio físico (UIA).
+- Fontes e licenças de música (decisão de produção; [UIA parte 5](../discovery-ui-e-assets-externos/05-licencas-repositorios-plano.md)).
 
-- **Pastas por tipo**: `src/assets/sprites/`, `audio/`, `video/` (já existe `assets/ui` e `assets/images`)
-- **Loader por cena + lazy-load**: boot carrega só shared (UI, player); demais por cena/bioma
-- **Substituição incremental**: asset novo sobrescreve a **mesma key** do gerador procedural (`spr_bloodmage`) → zero refactor
-- **Compressão**: `pngquant`/`oxipng` (40–70% menor), WebP, dimensões potência de 2
-- **Draw calls**: agrupar sprites por textura, evitar mix de blend modes no mesmo batch
-- **Texto**: `BitmapText` no lugar de `Text` (renderiza pre-rendered font atlas, mais barato)
-- **Cache PWA**: `vite-plugin-pwa` já configurado — assets hasheados cache-first; áudio/vídeo grandes via `public/` ou CDN
-- **Otimal**: `assetsInlineLimit`, `build.assetsDir` no `vite.config.ts`
+## Arquivos e contratos
+- Alterar (mixer dinâmico): `src/utils/soundEngine.ts`, `src/utils/bgmSynthesizer.ts`, disparo em `src/game/systems/` (não acumular em `GameScene.ts`).
+- Atualizar no mesmo commit: `docs/gameplay/audio.md` e `Verificado em`.
+- Contrato: efeitos respeitam mute, `sfxVolume` e `atmosphereEffectsEnabled`; nenhum nó de áudio criado por frame sem reuso.
 
-### Esforço estimado (Eixo B)
-
-- Infra de pastas + loader por cena: **Baixo** (1 dia)
-- Script de compressão (pngquant/WebP): **Baixo** (1 dia)
-- Mecanismo de substituição por key: **Baixo** (meio dia)
-
----
-
-## Eixo C — Áudio Avançado (trilha híbrida) 🔵 Gatilho futuro
-
-**Objetivo:** manter SFX 100% sintetizados (melhor custo/valor do procedural) e adicionar trilha composta em momentos de alta carga emocional.
-
-### C.1 — Estratégia
-
-- **Manter SFX sintetizados** (`soundEngine.ts`) — onde o procedural entrega mais por custo
-- **Trilha composta** (loop exploração por bioma, combate, boss, menu): Opus 96–128kbps, streaming via service worker (não impacta load inicial)
-- **Mixer dinâmico por cima**: Web Audio continua como mixer — intensificar percussão quando HP ≤ 30%, distorção quando boss entra em `frenzy`
-- **Áudio espacial**: `StereoPannerNode`/HRTF para posição direcional (já existe o "static radio" de ameaça)
-- **Fontes**: OpenGameArt/itch.io (CC) ou Epidemic Sound (pago) — decisão de produção, fora do time de engenharia
-
-### Esforço estimado (Eixo C)
-
-- SFX novos sintetizados: **Baixo** (1–2 dias)
-- Mixer dinâmico: **Médio** (2 dias)
-- Trilha composta: **Alto** — depende de produção musical
-
----
+Critérios, verificação e pendências: [parte 5](05-criterios-e-pendencias.md).

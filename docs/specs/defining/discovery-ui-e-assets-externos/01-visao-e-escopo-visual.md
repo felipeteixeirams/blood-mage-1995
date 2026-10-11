@@ -1,94 +1,97 @@
-# Proposta de Discovery — Evolução de UI e Assets Externos Góticos (Pixel Art) (parte 1: Visão artística e escopo visual)
+# Evolução de UI e assets externos góticos: visão e escopo visual (parte 1)
 
 **Mestre:** [discovery-ui-e-assets-externos](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Estado vs código:** verificado em 2026-10-11 (leitura estática): parcial. Existe: texturas procedurais como fallback (`src/utils/textureGenerator.ts`), arte física só do jogador (`public/assets/sprites/player/bloodmage.png`, 68x68, 8 direções) e do baú, tint do personagem por raridade do equipamento (`src/utils/equipmentPalette.ts`), glow de loot por raridade (`LightingPolish.addItemGlow`), tint de elite (`Enemy.ts`), cores de raridade em `InventoryModal.tsx`. Falta: camadas de armadura e arma no sprite do jogador, spritesheets de inimigos (`public/assets/sprites/enemies` vazio), retratos de NPC (o `DialogueModal.tsx` usa ícones Lucide), tilesets externos (`public/assets/tilesets` vazio), ícones de skill e inventário em pixel art, sprites de loot no chão, túmulo do jogador, VFX de magia em arte.
 
-**Estado vs código:** verificado em 2026-10-10 (leitura estática): parcial. Existe: síntese procedural de áudio como única fonte sonora (`src/utils/soundEngine.ts`, `src/utils/bgmSynthesizer.ts`, só `AudioContext`), `src/utils/telemetry.ts` e `src/utils/logger.ts`, `Sentry.init` em `src/main.tsx` (condicionado a DSN), fontes locais em `public/fonts/`, imagens de UI em `src/assets/ui/` e `public/assets/ui/` (usadas por `SettingsScene.ts` e `RecordsScene.ts`), `border-image` com SVG inline no `hud/DialogueModal.tsx`, cores de raridade em `InventoryModal.tsx`, tint de elite em `Enemy.ts`. Não existe: `HybridSoundEngine`/carga de áudio físico (nenhum `decodeAudioData` nem `new Audio`; `public/assets/audio` só tem `.gitkeep`), classe `.gothic-panel` e `gothic_border_slice.png`, `AssetLoader` centralizado, reporte de `loaderror` ao Sentry (o loader usa só `logger`), camadas de equipamento no sprite do jogador, retratos de NPC em pixel art (o diálogo usa ícones Lucide), tela de Créditos, sprites de inimigos/NPCs/tiles externos, medição do orçamento de 2,5 MB.
+Parte 1 de 6. Índice das partes: [README](README.md).
 
-## Partes desta spec
+## Contexto
+O jogo usa `textureGenerator.ts` (canvas) como fonte de todas as texturas, com carga opcional de arquivos via `assetManifest.json`. Esta discovery propõe um modelo híbrido: arte física (PNG/WebP) e áudio físico (MP3/OGG) onde o ganho de imersão é maior, com os geradores procedurais como fallback sob a mesma chave. Estética de referência: Diablo I e II e Dungeon Siege 1 (pixel art gótica de meados dos anos 90), mobile-first, com alto contraste e contorno legível em telas pequenas.
 
-Spec dividida em partes menores; o conteúdo é o do documento original, sem alteração de significado.
+Divisão com [discovery-assets-externos-e-sprites](../discovery-assets-externos-e-sprites.md) (AES): esta spec define **o que** entra (direção artística, escopo visual, orçamento, UI, áudio, licenças); AES define **como carregar** (AssetLoader, lazy-loading, atlas, telemetria de `loaderror` de imagem, compressão). Nada de carregador é especificado aqui.
 
-| Parte | Assunto |
-|---|---|
-| [1](01-visao-e-escopo-visual.md) | Visão artística e escopo visual |
-| [2](02-ui-react-9slice.md) | Eixo B: UI híbrida React + Phaser e 9-slice |
-| [3](03-audio.md) | Eixo C: transição gradual de áudio |
-| [4](04-orcamento-e-telemetria.md) | Orçamento de performance e telemetria de falhas |
-| [5](05-licencas-repositorios-plano.md) | Licenças, repositórios e plano de transição |
+Paleta Grimdark proposta (aprovação pendente):
+
+| Cor | Hex | Uso |
+|---|---|---|
+| Deep Charcoal | `#171309` | Fundo de painéis e masmorras |
+| Crimson Blood Red | `#990000` | Hemomancia, sangue, orbes vitais |
+| Tarnished Gold | `#B8860B` | Bordas góticas, botões rúnicos ativos, itens raros |
+| Bone White | `#E3DAC9` | Ossos, fontes rúnicas |
+| Abyssal Void | `#000000` | Sombras absolutas e névoa |
+
+## Objetivo
+Se aprovada, o jogo troca gradualmente arte e som procedurais por assets externos góticos licenciados, mantendo o fallback procedural e a legibilidade em mobile.
+
+## Decisões de que depende
+| ADR | Assunto | Status |
+|---|---|---|
+| [0006](../../../decisions/0006-audio-e-conquistas.md) | Áudio só pelo `soundEngine` (afeta o áudio físico, parte 3) | Proposta |
+| [0013](../../../decisions/0013-metas-de-performance.md) | Metas de performance e bundle (orçamento, parte 4) | Proposta |
+| [0010](../../../decisions/0010-canais-de-distribuicao.md) | Canais PWA, Play Store e Steam (licenças e créditos, parte 5) | Proposta |
+
+## Fatos técnicos verificados
+| Afirmação | Fonte | Verificado em |
+|---|---|---|
+| O jogador tem spritesheet física 68x68; inimigos, projéteis, itens e tiles são `required: false` sem arquivo | `src/game/assets/assetManifest.json`, `public/assets/` | 2026-10-11 |
+| Equipamento tinge o personagem por raridade (palette swap); não há camadas independentes | `src/utils/equipmentPalette.ts` | 2026-10-11 |
+| `DialogueModal.tsx` usa ícones Lucide, não retratos | `src/components/hud/DialogueModal.tsx` (linha 2) | 2026-10-11 |
+| Fontes locais existem (Cinzel, UnifrakturMaguntia, Press Start 2P, VT323) | `public/fonts/` | 2026-10-11 |
 
 ## Decisões a confirmar
+| # | Decisão | Opções | Recomendação |
+|---|---|---|---|
+| 1 | Direção artística e paleta | A) paleta proposta; B) outra | A, por coerência com o CSS atual (`#b8860b` já em uso) |
+| 2 | Ordem de migração de arte | A) jogador -> inimigos -> tiles -> UI; B) tiles primeiro | A: o jogador já tem arte e valida o pipeline |
+| 3 | Equipamento visível | A) camadas de spritesheet; B) manter tint por raridade | B até haver arte; camadas multiplicam animações |
+| 4 | Retratos de NPC com piscada e fala | A) imagem estática; B) animados | A: menor custo de arte |
+| 5 | Origem da arte | A) pacotes CC0/CC-BY; B) arte própria/IA ([pipeline de arte com IA](../discovery-pipeline-de-arte-com-ia.md)) | A para prototipar; B depende de orçamento de arte (decisão de negócio) |
+| 6 | Divisão de UI (parte 2) | A) modais e HUD em React com moldura 9-slice; B) parte no Phaser | A: `CLAUDE.md` exige UI só em React (o original dizia "HUD no Phaser") |
+| 7 | Estratégia de áudio (parte 3) | A) BGM física e SFX críticos físicos, resto sintetizado; B) tudo físico; C) nada físico | A: o discovery de evolução gráfica recomenda manter SFX sintetizados |
+| 8 | Como tocar a BGM física (parte 3) | A) `HTMLAudioElement` por streaming; B) mesmo `AudioContext` via `MediaElementSource` | B: preserva volume, mute e filtros do mixer atual; A foge do mixer |
+| 9 | Orçamento e limites (parte 4) | A) limites do original; B) outros | A como ponto de partida, após medir o pacote atual |
+| 10 | Licenças aceitas (parte 5) | A) CC0, CC-BY, OGA-BY; B) só CC0 | A, com crédito obrigatório para CC-BY e OGA-BY |
+| 11 | Onde fica a tela de Créditos (parte 5) | A) Configurações; B) Menu Principal; C) ambos | A: um ponto de entrada só |
 
-Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aqui está decidido.
+## Escopo
+Se aprovado, arte externa (sob o fallback procedural) para:
 
-1. Direção artística, paleta e resoluções máximas de pixel art.
-2. Divisão de UI: menus complexos no React com assets estéticos (9-slice CSS), HUD no Phaser.
-3. Estratégia de transição de áudio (SFX/BGM) e formatos.
-4. Orçamento de KB/VRAM, lazy-loading e telemetria de falha de imagem.
-5. Licenças permitidas e repositórios de arte recomendados.
+### Personagem principal
+- Spritesheet com ataque de foice, conjuração, hit e morte, além das 8 direções que já existem.
+- Camadas independentes de manto (armadura) e foice/cajado (arma), conforme decisão 3.
 
----
+### Inimigos
+- Spritesheets de cães infernais (corrida e mordida com windup), cultistas (conjuração e morte) e mortos-vivos (rastejar e erguer).
+- Elites continuam diferenciados por `setTint()` (sem arquivo novo).
 
-> Este documento detalha a viabilidade técnica, o design de arte, o plano de transição e o gerenciamento de recursos para evoluir o visual e a sonoplastia do **Bloodmage 1995** a partir de assets externos gratuitos ou licenciados. O objetivo é atingir a estética gótica sombria de meados dos anos 90 (estilo *Diablo I*, *Diablo II* e *Dungeon Siege 1*), no formato de **Pixel Art de Alta Resolução/Fidelidade** e sonorização imersiva, sem comprometer a robustez técnica do jogo.
+### NPCs
+- Retratos em pixel art do Clérigo, Alquimista e Ferreiro no diálogo; sprites estáticos ou de respiração nas Safe Zones.
 
----
+### Cenário e props
+- Tilesets góticos (pedra úmida, grades, rachaduras, poças de sangue); baús, altares rúnicos, recipientes de cinzas e corpos vasculháveis com estado fechado e aberto; portões góticos que abrem após mini-chefes.
 
-## 1. Visão Geral e Direcionamento Artístico
+### Ícones, runas e inventário
+- Molduras rúnicas circulares nos slots de skill; ícones de foice, explosão e círculo; runas em pedra com glow de ativação; grade do inventário em ferro cinzelado; miniaturas de itens com cores de raridade (comum cinza, raro azul, épico roxo, lendário dourado).
 
-O **Bloodmage 1995** usa hoje `textureGenerator.ts` (canvas HTML5) como fallback de todas as texturas, com carga opcional de arquivos via `assetManifest.json` (só o jogador e o baú têm arte física), e `soundEngine.ts` para síntese via Web Audio API.
+### Loot e túmulo
+- Loot no chão como objetos (poções vermelhas e azuis, sacos de couro, pergaminhos); túmulo ou corpo do jogador com fumaça ou facho vermelho.
 
-Contudo, para atingir o nível de **imersão comercial e "game juice"** necessários para competir no mercado (como PWA Premium ou em lojas como Steam e Google Play Store), propõe-se uma transição para um **modelo híbrido de carregamento**:
-* **Assets Físicos Sombrios:** Utilizar recursos visuais (PNG/WebP compactados) e sonoros (MP3/OGG) de alta qualidade para focar o jogador em elementos cruciais (mago, monstros, runas, efeitos sonoros de feitiços e trilhas ambientais).
-* **Fallback Procedural Resiliente:** Manter os geradores de canvas e síntese de áudio como fallbacks ativos de segurança. Caso os assets externos falhem (erros de rede, corrupção de cache ou ausência física), a engine renderiza os gráficos procedurais e sintetiza os sons em tempo de execução, impedindo falhas críticas ou travamentos de tela.
+### VFX
+- Corte carmim com rastro, feixe de sangue, explosões necromânticas; ataques inimigos com bolas de fogo sombrio, garras de sombra e projéteis venenosos verdes com rastro legível.
 
-### 🎨 Paleta de Cores e Diretrizes de Estilo
-Todas as escolhas de assets devem alinhar-se à paleta **Grimdark** oficial do jogo:
-* **Deep Charcoal (`#171309`):** Fundo de painéis e profundidade das masmorras.
-* **Crimson Blood Red (`#990000`):** Feitiços de hemomancia, sangue, orbes vitais.
-* **Tarnished Gold (`#B8860B`):** Bordas ornamentadas góticas, botões rúnicos ativos, itens raros.
-* **Bone White (`#E3DAC9`):** Texturas de ossos, fontes rúnicas/Courier.
-* **Abyssal Void (`#000000`):** Sombras absolutas e névoa da guerra.
+## Fora de escopo
+- Carregador, atlas, lazy-loading e compressão (AES).
+- Produção da arte e escolha de pacotes específicos (decisões 1 e 5).
+- Mudar a mecânica de combate, telégrafos ou balance.
 
----
+## Arquivos e contratos
+- Esta parte não altera arquivos: define o que a arte cobre. Chaves de textura seguem `src/game/assets/assetManifest.json`; asset novo usa a mesma chave do gerador procedural (contrato de AES).
+- Tamanhos máximos por frame: ver parte 4.
 
-## 2. Escopo e Mapeamento de Melhorias Visuais
+Critérios, verificação e pendências: [parte 6](06-criterios-e-pendencias.md).
 
-Sendo um jogo focado prioritariamente em **Mobile-First**, cada elemento precisa de alta legibilidade em telas compactas de smartphones, garantindo alto contraste e contornos bem definidos.
-
-### 2.1. O Personagem Principal (Bloodmage)
-* **O que muda:** Substituição do sprite atual por uma spritesheet com animações fluidas de 8 direções de movimento, ataques com foice, conjuração de magias, hit (recebimento de dano) e morte.
-* **Equipamentos Visíveis:** Implementação de camadas de spritesheet independentes (*layers*):
-  * *Camada Base:* Corpo do Mago.
-  * *Camada de Armadura:* Manto (que muda visualmente conforme o item equipado no slot de armadura).
-  * *Camada de Arma:* Foice ou Cajado em movimento conforme o item equipado na mão principal.
-
-### 2.2. Inimigos e Criaturas
-* **Spritesheets Dedicados:** Cães infernais com animações de corrida e mordida com windup; cultistas conjurando feitiços e morrendo em poças de sangue; mortos-vivos rastejando ou se erguendo.
-* **Variações de Elite/Campeões:** Uso de tinting WebGL via shader dinâmico (`sprite.setTint()`) para diferenciar monstros de elite (ex: aura dourada, esmeralda ou roxo corrupto) sem carregar novos arquivos.
-
-### 2.3. NPCs (Non-Player Characters)
-* **Retratos Dinâmicos (Portraits):** Caixa de diálogos exibindo o rosto ilustrado em pixel art do Clérigo, Alquimista ou Ferreiro, com pequenas animações de piscada ou fala (estilo *Diablo I*).
-* **Visual in-game:** Sprites estáticos ou com animações de respiração (*idle*) bem integradas aos hubs de segurança (Safe Zones).
-
-### 2.4. Cenário e Ambientação (Tilesets e Props)
-* **Masmorra e Estepes:** Utilização de tilesets góticos escuros com paredes de pedra úmida, grades de ferro oxidadas, rachaduras no chão e poças de sangue.
-* **Props Interativos (Scavenging):** Baús de madeira com dobradiças de metal envelhecido, altares de sacrifício rúnicos, recipientes de cinzas e corpos vasculháveis que alteram visualmente o estado de "fechado" para "aberto/vazio".
-* **Gargalos e Passagens:** Portões góticos gigantescos com correntes pesadas que se abrem fisicamente após derrotar os mini-chefes.
-
-### 2.5. Ícones de Habilidades, Runas e Inventário
-* **Skill Slots:** Molduras rúnicas circulares de pedra com bordas metálicas envelhecidas.
-* **Ícones de Habilidades (Foice, Explosão, Círculo):** Imagens de pixel art de alta definição com alto contraste, fáceis de identificar sob sol e brilho de tela mobile.
-* **Runas e Talentos:** Runas góticas em pedra entalhada com iluminação interna (glow procedural ou WebGL) indicando a ativação.
-
-### 2.6. Grade de Inventário e Slots
-* **Grade (Grid Layout):** Slots representados por caixas de ferro cinzelado com fundo de feltro escuro escurecido.
-* **Itens Equipáveis (Armas, Mantos e Relíquias):** Miniaturas limpas de foices, cajados, mantos tecidos, anéis e olhos rúnicos correspondentes às raridades (Comum = Cinza, Raro = Azul, Épico = Roxo, Lendário = Dourado).
-
-### 2.7. Coletáveis e Loot Drops no Chão
-* **Visual Físico no Chão:** Itens dropados não são textos, mas pequenos objetos em pixel art brilhante (potes de poções vermelhas/azuis, sacos de couro com cristais, pergaminhos antigos).
-* **O "Cadáver" do Jogador (Túmulo):** Um monumento gótico ou um corpo de aventureiro caído que emite uma sutil fumaça ou facho de luz vermelha indicando onde os itens perdidos estão depositados.
-
-### 2.8. Efeitos de Magia (VFX)
-* **Hemomancia do Jogador:** Efeitos de corte de Foice Carmim com rastro de partículas avermelhadas fluidas; feixe de hemomancia composto por laser de sangue espesso; explosões necromânticas com estilhaços de ossos e carne.
-* **Ataques dos Inimigos:** Bolas de fogo sombrio, garras de sombra rasgando a tela, projéteis venenosos esverdeados com rastros visíveis para esquiva ágil do jogador.
+## Referências
+- [Assets externos e sprites](../discovery-assets-externos-e-sprites.md), [Mapeamento de sprites](../feature-mapeamento-de-sprites.md)
+- [lighting-and-effects](../../../gameplay/lighting-and-effects.md), [asset-scripts](../../../operations/asset-scripts.md)

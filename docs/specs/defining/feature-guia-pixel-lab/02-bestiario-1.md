@@ -1,16 +1,17 @@
-# Guia Direto para Pixel Lab (Bloodmage 1995) (parte 2: Bestiário, inimigos 1 a 6)
+# Guia para Pixel Lab (parte 2: bestiário, inimigos 1 a 6)
 
 **Mestre:** [feature-guia-pixel-lab](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Estado vs código:** verificado em 2026-10-11 (leitura estática): parcial; é um guia de prompts para ferramenta externa e as entregas são arte. Existe: cliente da API (`scripts/pixellab_client.cjs`), montagem do jogador (`scripts/stitch_pixellab_bloodmage.cjs`, `scripts/build_bloodmage_spritesheet.cjs`) e `public/assets/sprites/player/bloodmage.png` (544x1156, chave `spr_bloodmage`, células 68x68, `required: true` em `src/game/assets/assetManifest.json`); baú `public/assets/sprites/items/chest.png` (48x48) e 8 direções aberto/fechado, `required: true` (origem do PNG não verificada; `scripts/generate_chest_assets.cjs` é procedural). Não existe: arte física de inimigos (`public/assets/sprites/enemies/` vazio; 11 chaves `spr_*` no manifesto com `required: false` e fallback procedural), `spr_bloodmage_hoodless`, os 4 NPCs do guia, `spr_portal` e `spr_skeleton_remains` no manifesto (o código usa os dois) e os tiles do guia (`public/assets/tilesets/` vazio; manifesto tem `tile_ground` e `tile_wall_brick`). Divergência de tamanho: o guia propõe 48px e 64px; o manifesto usa células 68x68 (jogador) e 32x40, 36x28, 48x56, 64x72 etc. para inimigos.
 
-**Estado vs código:** verificado em 2026-10-10: parcial; é um guia de prompts para ferramenta externa, sem código a implementar. Existe: cliente da API (`scripts/pixellab_client.cjs`), montagem da spritesheet do jogador a partir de export PixelLab (`scripts/stitch_pixellab_bloodmage.cjs`, `scripts/build_bloodmage_spritesheet.cjs`) e `public/assets/sprites/player/bloodmage.png` (chave `spr_bloodmage`, células 68x68, `required: true` em `src/game/assets/assetManifest.json`), mais GIFs em `public/assets/sprites/player/animated/`. Baú: `public/assets/sprites/items/chest*` (8 direções, aberto/fechado) existe; origem não verificada (há também `scripts/generate_chest_assets.cjs`, procedural). Não existe: `spr_bloodmage_hoodless`; sprites de inimigos (`public/assets/sprites/enemies/` só tem `.gitkeep`; as chaves `spr_skeleton`, `spr_cultist`, `spr_hound`, `spr_golem`, `spr_specter`, `spr_boss`, `spr_zombie_shambler`, `spr_vampire_stalker`, `spr_werewolf_lycan`, `spr_bat_swarm`, `spr_gore_abomination` estão no manifesto com `required: false` e usam fallback procedural); NPCs; `spr_portal`, `spr_skeleton_remains`; tiles `tile_*` (`public/assets/tilesets/` só tem `.gitkeep`). Divergência de tamanho: o guia propõe 48px para o jogador e inimigos; o manifesto usa células 68x68 (jogador) e 32x40, 36x28, 48x56, 64x72 etc. para inimigos planejados.
+Parte 2 de 6. Índice: [README](README.md).
 
-Parte 2 de 5. Índice das partes: [parte 1](01-config-e-jogador.md).
+## Anexo: bestiário, inimigos 1 a 6
 
----
+Prompts e campos do Pixel Lab; as entregas e critérios estão na [parte 1](01-config-e-jogador.md) e na [parte 6](06-criterios-e-pendencias.md).
 
-## 👹 Categoria 2: Bestiário (Inimigos e Monstros)
+## Categoria 2: Bestiário (Inimigos e Monstros)
 
 ### 1. `spr_skeleton` (Skeleton Warrior — Esqueleto com Espada)
 * **Character Type:** `Humanoid`
@@ -41,7 +42,7 @@ Parte 2 de 5. Índice das partes: [parte 1](01-config-e-jogador.md).
 ---
 
 ### 3. `spr_hound` (Hell Hound — Cão Infernal)
-* **Character Type:** `Quadruped` ⚠️ *(Importante selecionar quadrúpede)*
+* **Character Type:** `Quadruped`  *(Importante selecionar quadrúpede)*
 * **Generation Mode:** `Pro` (8 rotations)
 * **Camera View:** `Top-down (low)`
 * **Character Size:** `48px`

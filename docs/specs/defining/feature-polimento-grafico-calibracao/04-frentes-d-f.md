@@ -1,14 +1,15 @@
-# Polimento Gráfico por Calibração dos Sistemas Existentes (parte 4: Frentes D a F: atmosfera, sombras e reflexos)
+# Polimento gráfico por calibração dos sistemas existentes (parte 4: Frentes D a F, atmosfera, sombras e reflexos)
 
 **Mestre:** [feature-polimento-grafico-calibracao](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Estado vs código:** verificado em 2026-10-11 (leitura estática; `node_modules` ausente, nada executado): parcial. Existem as correções de integração das Frentes A e B e os sistemas com testes: `LightingPolish.applyBloomFilter` (`src/game/systems/LightingPolish.ts`) chama `enableFilters()` uma vez por sprite, limpa o Glow anterior antes de reaplicar, remove no evento `destroy` e em `cleanup()`, com `MAX_ACTIVE_BLOOM_TARGETS = 16` e Glow desligado por `postProcessingEnabled === false` ou `lowPerformanceParticles`; `PostFXSystem.createFilters` usa `camera.filters.external` (com `internal` como alternativa) e guarda `activeFloorDepth`; `PostFXSystem.test.ts` cobre callbacks tardios de `effectCriticalDamage`/`effectInfection`; `AdvancedParticles.emitDirectional` restaura a rotação (teste existe). Faltam: validar `filters.external` no Phaser 4.2.1, Glow em WebGL real, remoção do Glow ao reciclar sem destruir, calibração visual das Frentes C a H, testes de zona líquida do `ReflectionSystem` (só 2 testes), validação antes/depois e orçamento de performance medido.
 
-**Estado vs código:** verificado em 2026-10-10 (leitura estática; `node_modules` ausente, nada executado): parcial. As correções de integração das Frentes A e B existem: `LightingPolish.applyBloomFilter` chama `enableFilters()` só uma vez por sprite, limpa o Glow anterior antes de reaplicar, remove no evento `destroy` e em `cleanup()`, com `MAX_ACTIVE_BLOOM_TARGETS = 16` e desligamento por `postProcessingEnabled === false` ou `lowPerformanceParticles`; `PostFXSystem.createFilters` usa `camera.filters.external` (com `internal` como alternativa), guarda `activeFloorDepth` e reaplica a matriz do bioma, e `PostFXSystem.test.ts` cobre callbacks tardios de `effectCriticalDamage`/`effectInfection` que não apagam tint mais novo. Existem os sistemas e testes citados (`LightingSystem`, `LightingPolish`, `PostFXSystem`, `AtmosphereSystem`, `ShadowSystem` com `footY = y + altura*0.38`, `ReflectionSystem` com `setFrame` sincronizado, `AdvancedParticles` com `lowPerformanceParticles`, `AtmosphericTreeShader`, `TerrainDetailFactory`). Não verificado: se `filters.external` é a coleção correta no Phaser 4.2.1 instalado; se o Glow aparece em WebGL real; se o Glow é removido ao reciclar sem destruir (hoje só em `destroy`/`cleanup`); toda a calibração visual das Frentes C a H e a validação antes/depois (precisa de playtest e screenshots humanos); orçamento de performance medido.
+Parte 4 de 8. Índice: [README](README.md).
 
-Parte 4 de 7. Índice das partes: [parte 1](01-visao-e-escopo.md).
+## Anexo: Frentes D a F
 
----
+Requisitos e calibração de cada frente; os critérios de aceite estão na [parte 8](08-criterios-e-pendencias.md).
 
 ## 5.4 Frente D — Calibração do `AtmosphereSystem`
 
@@ -26,15 +27,6 @@ Aprimorar a composição das camadas atuais de ground fog, upper haze e partícu
 - Manter o emissor de clima alinhado à área visível da câmera.
 - Preservar a redução de frequência em dispositivos de baixa performance.
 - Evitar clima em áreas onde a atmosfera não deve aparecer, respeitando o lifecycle atual.
-
-### Critérios de aceite
-
-- [ ] Ground fog adiciona profundidade sem ocultar pés, telégrafos ou loot.
-- [ ] Upper haze é percebido como camada distante e não como véu sobre os sprites.
-- [ ] A transição de bioma ocorre sem salto de alpha ou tint.
-- [ ] Durante combate intenso, a leitura melhora sem a cena perder completamente a atmosfera.
-- [ ] O modo de baixa performance reduz custo sem deixar partículas presas ou acumuladas.
-- [ ] A atmosfera é destruída e recriada corretamente em troca de mapa/bioma.
 
 ---
 
@@ -56,15 +48,6 @@ Melhorar a ancoragem e a resposta das sombras já existentes, mantendo o modelo 
 - Ocultar, destruir e registrar sombras de forma consistente com o lifecycle das entidades.
 - Evitar atualização visual de entidades inativas ou fora do contexto renderizado quando o sistema já puder ignorá-las.
 
-### Critérios de aceite
-
-- [ ] A sombra permanece presa ao pé durante movimento e mudança de escala.
-- [ ] A direção da projeção responde suavemente à fonte mais próxima.
-- [ ] A sombra de contato não desliza em áreas sem luz.
-- [ ] Jogador, inimigos comuns e chefes têm proporções visualmente coerentes.
-- [ ] Nenhuma sombra aparece acima do piso ou sobre o corpo da entidade.
-- [ ] O fallback não produz quadrado sólido ou artefato visível.
-
 ---
 
 ## 5.6 Frente F — Refinamento do `ReflectionSystem`
@@ -84,12 +67,3 @@ Fazer os reflexos existentes de sangue e água parecerem parte da superfície, s
 - Confirmar que frame e textura do objeto original são sincronizados em objetos animados.
 - Manter limpeza de reflexos quando entidades ou zonas forem removidas.
 - Respeitar o toggle existente sem deixar reflexos invisíveis consumindo atualização.
-
-### Critérios de aceite
-
-- [ ] Reflexo aparece somente dentro da zona líquida correspondente.
-- [ ] Sangue e água possuem leituras visuais diferentes sem depender apenas de brilho.
-- [ ] O reflexo acompanha animação e posição do objeto.
-- [ ] A ondulação é perceptível apenas em observação próxima, sem tremulação.
-- [ ] O reflexo desaparece corretamente ao sair da poça.
-- [ ] Não existem sprites de reflexo órfãos após destruição da entidade.

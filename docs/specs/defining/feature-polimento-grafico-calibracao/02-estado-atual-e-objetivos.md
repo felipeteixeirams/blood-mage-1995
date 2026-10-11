@@ -1,15 +1,29 @@
-# Polimento Gráfico por Calibração dos Sistemas Existentes (parte 2: Estado atual, problemas e objetivos de qualidade)
+# Polimento gráfico por calibração dos sistemas existentes (parte 2: arquivos, contratos e estado atual)
 
 **Mestre:** [feature-polimento-grafico-calibracao](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Estado vs código:** verificado em 2026-10-11 (leitura estática; `node_modules` ausente, nada executado): parcial. Existem as correções de integração das Frentes A e B e os sistemas com testes: `LightingPolish.applyBloomFilter` (`src/game/systems/LightingPolish.ts`) chama `enableFilters()` uma vez por sprite, limpa o Glow anterior antes de reaplicar, remove no evento `destroy` e em `cleanup()`, com `MAX_ACTIVE_BLOOM_TARGETS = 16` e Glow desligado por `postProcessingEnabled === false` ou `lowPerformanceParticles`; `PostFXSystem.createFilters` usa `camera.filters.external` (com `internal` como alternativa) e guarda `activeFloorDepth`; `PostFXSystem.test.ts` cobre callbacks tardios de `effectCriticalDamage`/`effectInfection`; `AdvancedParticles.emitDirectional` restaura a rotação (teste existe). Faltam: validar `filters.external` no Phaser 4.2.1, Glow em WebGL real, remoção do Glow ao reciclar sem destruir, calibração visual das Frentes C a H, testes de zona líquida do `ReflectionSystem` (só 2 testes), validação antes/depois e orçamento de performance medido.
 
-**Estado vs código:** verificado em 2026-10-10 (leitura estática; `node_modules` ausente, nada executado): parcial. As correções de integração das Frentes A e B existem: `LightingPolish.applyBloomFilter` chama `enableFilters()` só uma vez por sprite, limpa o Glow anterior antes de reaplicar, remove no evento `destroy` e em `cleanup()`, com `MAX_ACTIVE_BLOOM_TARGETS = 16` e desligamento por `postProcessingEnabled === false` ou `lowPerformanceParticles`; `PostFXSystem.createFilters` usa `camera.filters.external` (com `internal` como alternativa), guarda `activeFloorDepth` e reaplica a matriz do bioma, e `PostFXSystem.test.ts` cobre callbacks tardios de `effectCriticalDamage`/`effectInfection` que não apagam tint mais novo. Existem os sistemas e testes citados (`LightingSystem`, `LightingPolish`, `PostFXSystem`, `AtmosphereSystem`, `ShadowSystem` com `footY = y + altura*0.38`, `ReflectionSystem` com `setFrame` sincronizado, `AdvancedParticles` com `lowPerformanceParticles`, `AtmosphericTreeShader`, `TerrainDetailFactory`). Não verificado: se `filters.external` é a coleção correta no Phaser 4.2.1 instalado; se o Glow aparece em WebGL real; se o Glow é removido ao reciclar sem destruir (hoje só em `destroy`/`cleanup`); toda a calibração visual das Frentes C a H e a validação antes/depois (precisa de playtest e screenshots humanos); orçamento de performance medido.
+Parte 2 de 8. Índice: [README](README.md).
 
-Parte 2 de 7. Índice das partes: [parte 1](01-visao-e-escopo.md).
+## Arquivos e contratos
+**Alterar (somente parâmetros, lifecycle e testes):** `src/game/systems/{LightingSystem,LightingPolish,PostFXSystem,AtmosphereSystem,ShadowSystem,ReflectionSystem,AdvancedParticles,TerrainDetailFactory}.ts`, `src/game/shaders/AtmosphericTreeShader.ts`, `src/game/scenes/GameScene.ts` (ordem de atualização, sem acumular lógica; ver `docs/engineering/risky-files.md`) e os testes `*.test.ts` correspondentes.
+**Atualizar no mesmo commit:** `docs/gameplay/lighting-and-effects.md` e `Verificado em`.
+**Não tocar:** APIs públicas de `PostFXSystem` (`setEnabled`, `reset`, `setBiome`, `setVignette`, `setDisplacement`, `setTint`), `MAX_ACTIVE_BLOOM_TARGETS = 16`, texturas e emissores existentes; nenhum asset novo.
 
----
+**Contratos (valores atuais, a preservar):**
+| Item | Valor atual |
+|---|---|
+| Profundidades | sombra 8; reflexo 12; entidades 20 ou mais; ground fog 750; upper haze 1995; clima 1996 |
+| Glow | no máximo 16 alvos; desligado com `postProcessingEnabled === false` ou `lowPerformanceParticles` |
+| Glow por raridade | common 0x94a3b8/0,35; rare 0x3b82f6/0,65; epic 0xa855f7/0,85; legendary 0xf59e0b/1,1; portal 0x06b6d4/0,95 |
+| Sombra | `footY = y + altura * 0.38` |
+| Emissores cobertos | `blood_splatter`, `bone_dust`, `acid_splash`, `spectral_burst`, `critical_hit`, `atmospheric_fog`, `torch_embers`, `forest_pollen`, `spell_trail` |
 
+Valores calibrados novos: "a definir" (decisão 2 da parte 1); constam como questão em aberto na parte 8.
+
+## Anexo: estado atual e objetivos de qualidade
 ## 3. Estado Atual e Pontos Identificados
 
 ### 3.1 Sistemas existentes considerados fonte da implementação

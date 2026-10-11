@@ -1,114 +1,113 @@
-# Discovery: Multijogador Cooperativo e Interatividade (P2P WebRTC)
+# Discovery: multijogador cooperativo (P2P WebRTC)
 
 **Mestre:** [defining](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Estado vs código:** verificado em 2026-10-11 (leitura estática): não implementado. Sem WebRTC, PeerJS, sinalização, lobby nem "co-op" em `src`, `package.json` e `vite.config.ts`. Existem apenas pontos de reuso: estado de nocaute do jogador (`isUnconscious` em `src/game/objects/Player.ts`, regeneração passiva de 2% do HP máximo por segundo), `LootSystem` (`src/game/systems/LootSystem.ts`, sorteio local com `Math.random`) e o estilo de modais React góticos (`src/components/ui/ModalBase.tsx`). `DungeonGenerator.ts` não recebe seed e usa `Math.random`.
 
-**Estado vs código:** verificado em 2026-10-10: não implementado. `grep -rniE "webrtc|peerjs|RTCPeer|signaling|multiplayer|cooperativ|co-op" src public scripts package.json vite.config.ts` sem resultados; `DungeonGenerator.ts` não recebe seed (`grep -in seed` vazio); nenhuma dependência de rede P2P em `package.json`. O jogo segue offline-first (Zustand + `localStorage`).
+## Contexto
+- Discovery técnico de longo prazo, depois da campanha solo; o jogo é offline-first (Zustand + `localStorage`).
+- Proposta original: sessões cooperativas de até 4 jogadores, P2P por WebRTC (malha), com um servidor de sinalização leve só para trocar SDP/ICE; o criador do lobby é a autoridade da masmorra (inimigos, baús, mapa); clientes enviam movimento e ações, interpolam posições recebidas e fazem predição local do próprio movimento.
+- Mecânicas propostas: mundo compartilhado (inimigos, portões, baús), magias com efeito em aliados (círculo de transmutação, escudo de ossos, fragmentos de alma coletáveis), ressurreição por canalização, loot individual por jogador e lobby por código curto.
+- Correção em relação ao texto original: a regeneração passiva do nocaute é de 2% do HP máximo por segundo (`Player.ts`), não "1 HP/s".
+- A ponte Phaser-React é só Zustand ([ADR 0001](../../decisions/0001-ponte-phaser-react-so-zustand.md)); a camada de rede teria de respeitá-la.
+- O PvP é objetivo de prazo mais longo e está fora desta spec.
+
+## Objetivo
+Se aprovado, até 4 jogadores exploram a mesma masmorra em sessão cooperativa sem servidor de simulação, conectando-se por um código.
+
+## Decisões de que depende
+| ADR | Assunto | Status |
+|---|---|---|
+| [0001](../../decisions/0001-ponte-phaser-react-so-zustand.md) | Ponte Phaser-React só via Zustand (a rede não pode usar eventos globais para gameplay) | Proposta |
+| [0011](../../decisions/0011-conta-e-dados-do-jogador.md) | Conta e dados (identidade de jogador na sessão) | Proposta |
+| [0013](../../decisions/0013-metas-de-performance.md) | Metas de performance (60 FPS com rede) | Proposta |
+
+## Fatos técnicos verificados
+| Afirmação | Fonte | Verificado em |
+|---|---|---|
+| Sem biblioteca ou código de rede P2P | `grep -rniE "webrtc\|peerjs\|RTCPeer\|signaling\|multiplayer\|co-op" src package.json vite.config.ts` sem resultado | 2026-10-11 |
+| `DungeonGenerator` sem seed, com `Math.random` | `src/game/systems/DungeonGenerator.ts` (`generate(mapW, mapH, biome, _offsetX, _offsetY)`) | 2026-10-11 |
+| `LootSystem` sorteia com `Math.random`, sem noção de jogador | `src/game/systems/LootSystem.ts` | 2026-10-11 |
+| Nocaute do jogador existe e regenera 2% do HP máximo por segundo | `src/game/objects/Player.ts` (~l.317-342) | 2026-10-11 |
+| Há uma só instância de jogador no `GameScene` | `src/game/scenes/GameScene.ts` (`this.player`) | 2026-10-11 |
 
 ## Decisões a confirmar
+| # | Decisão | Opções | Recomendação |
+|---|---|---|---|
+| 1 | O jogo terá cooperativo? Escopo da cooperação | não / co-op leve / PvP | Só decidir após a campanha solo; se sim, co-op leve |
+| 2 | Arquitetura de rede | A) P2P WebRTC com host autoritativo e sinalização; B) servidor autoritativo | A: custo baixo; B só se anti-trapaça for requisito |
+| 3 | Tamanho da sessão | 2 / até 4 jogadores | Começar com 2: malha de 4 multiplica tráfego e casos de desconexão |
+| 4 | Biblioteca | PeerJS ou WebRTC bruto | A decidir após o protótipo; não verificada em fonte primária |
+| 5 | Servidor de sinalização | serviço gratuito, serverless, próprio | A definir (custo e privacidade são do responsável) |
+| 6 | Lobby por código ("Runa de Invocação") | código alfanumérico curto / convite por link | Código curto (proposta original) |
+| 7 | Loot | individual por jogador / compartilhado | Individual (proposta original), evita disputa |
+| 8 | Ressurreição por canalização (3 s, 20% de HP, custo de vida do conjurador) | valores da proposta original | Provisório; balance é do responsável |
+| 9 | Magias cooperativas | círculo, escudo de ossos, fragmentos de alma | Só após o protótipo base |
 
-Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aqui está decidido.
+## Escopo
+Condicional às decisões 1 a 3.
+- Protótipo técnico: dois clientes conectados por WebRTC trocando mensagens, sem simulação.
+- Sincronização mínima: posição e sprite do segundo jogador na Safe House.
+- `DungeonGenerator` e geradores de zona aceitam um seed determinístico recebido do host.
+- Lobby React (Tela de Aliança): host gera código, convidado digita código, indicador de conexão.
+- Host autoritativo: spawn de inimigos, baús e dano; clientes enviam entrada e recebem estado.
+- Interpolação de posições remotas e predição do jogador local.
+- Loot individual e ressurreição cooperativa (decisões 7 e 8).
 
-1. Se o jogo terá cooperativo e o escopo das mecânicas de cooperação.
-2. Arquitetura P2P via WebRTC com broker de sinalização (alternativa: servidor autoritativo).
-3. UI do lobby (Tela de Aliança).
-4. Objetivos de negócio citados (solo developer) como justificativa.
+## Fora de escopo
+- PvP e ranking competitivo.
+- Servidor dedicado de simulação.
+- Matchmaking com desconhecidos.
+- Chat e voz.
 
----
+## Arquivos e contratos
+- Criar (nomes provisórios, a confirmar): `src/network/` (transporte e protocolo), componente React do lobby em `src/components/`, campos de rede no `gameStore` (sem `CustomEvent`).
+- Alterar: `src/game/systems/DungeonGenerator.ts` e `ProceduralForestGenerator.ts` (seed), `src/game/systems/LootSystem.ts` (jogador alvo). Arquivos de risco: ler `docs/engineering/risky-files.md` antes de tocar `GameScene.ts`, `Player.ts`, `Enemy.ts`, `DungeonGenerator.ts`, `gameStore.ts`.
+- Contrato de mensagem: versão do protocolo, tipo, tick, carga (movimento, ação, estado); formato a definir.
+- Não tocar: `localStorage.ts` para dados de rede (estado de sessão não persiste).
+- Valores (limite de jogadores, taxa de envio, timeout): a definir.
 
-> **Tipo: discovery e exploração técnica**
->
-> **Arquitetura Base Atual:** O projeto é estritamente **Offline-First**, com simulação local síncrona no Phaser e persistência validada via Zod no `localStorage`.
->
-> **Propósito deste Discovery:** Mapear a viabilidade técnica e arquitetural de sessões cooperativas leves P2P (WebRTC Mesh de até 4 jogadores) sem servidores dedicados caros, como um spike exploratório de longo prazo pós-campanha singleplayer.
+## Critérios de aceite
+Todos dependem de decisão aberta.
+- **MP-1** Quando o host cria uma sala, o lobby React deve exibir um código de convite (provisório).
+- **MP-2** Quando um convidado insere um código válido, o sistema de rede deve estabelecer a conexão com o host (provisório).
+- **MP-3** Se o código é inválido ou a sala não existe, então o lobby deve exibir mensagem de erro sem iniciar a partida (provisório).
+- **MP-4** Dado o mesmo seed do host, o DungeonGenerator deve gerar o mesmo mapa em todos os clientes (provisório).
+- **MP-5** Enquanto conectado, o sistema deve exibir ao jogador local a posição e o sprite dos outros jogadores (provisório).
+- **MP-6** Enquanto a sessão está ativa, o host deve decidir spawn e dano dos inimigos (provisório).
+- **MP-7** Se um peer perde a conexão, então o host deve remover o jogador da sessão e a partida dos demais deve continuar (provisório).
+- **MP-8** Se o host perde a conexão, então os clientes devem encerrar a sessão e voltar ao menu com mensagem (provisório).
+- **MP-9** Quando um inimigo morre, o LootSystem deve gerar drops separados para cada jogador (provisório).
+- **MP-10** Quando um aliado canaliza a ressurreição por 3 s ao lado de um jogador inconsciente, o jogo deve reanimá-lo com 20% do HP (provisório).
+- **MP-11** Se o aliado se afasta antes dos 3 s, então a canalização deve ser cancelada e o jogador continua inconsciente (provisório).
+- **MP-12** O jogo solo (sem sessão) deve funcionar sem rede, como hoje (provisório).
 
----
+## Plano de verificação
+| Critério | Como verificar |
+|---|---|
+| MP-1 a MP-3 | teste de componente do lobby com transporte simulado; manual com dois navegadores |
+| MP-4 | teste unitário do DungeonGenerator: mesmo seed, mesmas salas |
+| MP-5, MP-6 | manual com dois navegadores; não validado: precisa de playtest humano |
+| MP-7, MP-8 | teste unitário do protocolo com desconexão simulada |
+| MP-9 | teste unitário do LootSystem com 2 jogadores |
+| MP-10, MP-11 | teste unitário da canalização; manual: não validado, precisa de playtest humano |
+| MP-12 | teste: jogo inicia e roda sem módulo de rede ativo |
 
-## 1. Contexto & Objetivos
+## Questões em aberto
+- Cooperativo entra no escopo do jogo (decisão 1)? Servidor de sinalização e custo (decisão 5).
+- Tamanho da sessão, biblioteca, taxa de envio, timeout.
+- NAT e restrições de rede móvel em WebRTC: não verificados em fonte primária.
+- Efeito dos geradores com `Math.random` fora do `DungeonGenerator` (loot, detalhes) no determinismo: não verificado.
+- Efeito da rede nos 60 FPS em mobile: exige execução.
 
-Embora o combate PvP (Jogador vs. Jogador) seja um objetivo de longo prazo, a prioridade para o amadurecimento multiplayer de *Bloodmage 1995* é a **cooperação e a interatividade**. Permitir que jogadores explorem as profundezas das masmorras, protejam a Safe Town (Vila Segura) juntos e compartilhem a tensão dos eventos mundiais cria um ecossistema mais acolhedor e focado em engajamento e retenção.
-
-### Objetivos de Negócio (Solo Developer):
-*   **Custo Zero de Infraestrutura:** Implementar uma arquitetura de rede que não necessite de servidores dedicados de simulação física caros para rodar o jogo, tornando o projeto viável para um desenvolvedor solo.
-*   **Aumento de Retenção orgânica:** Jogar com amigos aumenta significativamente as sessões de jogo e a divulgação boca a boca.
-*   **Simplicidade e Estabilidade:** Utilizar conexões diretas para sincronização de estado básico, focando no cooperativo leve antes de tentar sincronizações competitivas ultra-precisas.
-
----
-
-## 2. Visão Geral da Jogabilidade Cooperativa
-
-Proposta: o multijogador operaria sob o conceito de **Sessões Compartilhadas (Co-op de até 4 Jogadores)**. Os jogadores poderão convidar amigos ou parear com aventureiros no vilarejo seguro (Room 0) para desbravar os biomas contínuos.
-
-```
-       [ Jogador 1 (Host) ]
-          /           \
-     (WebRTC)       (WebRTC)
-        /               \
-[ Jogador 2 ]       [ Jogador 3 ]
-```
-
-### Mecânicas de Cooperação Core:
-1.  **Exploração Conectada:** Todos os jogadores compartilham o mesmo estado da masmorra gerado pelo Host. Inimigos, portões, baús e scavengeables são sincronizados.
-2.  **Sinergia de Magias de Sangue:** As magias de sangue interagem de forma cooperativa:
-    *   *Círculo de Transmutação:* O círculo rúnico de um jogador no chão também cura e concede bônus de dano para companheiros que pisarem nele.
-    *   *Escudo de Ossos:* Habilidades de escudo podem ser conjuradas para proteger aliados sob risco de morte.
-    *   *Sinfonia Necromântica:* Matar inimigos gera fragmentos de almas e poças de sangue que podem ser coletados por qualquer membro do grupo.
-3.  **Ressurreição Cooperativa (Prevenção de Nocaute):**
-    *   Quando um companheiro entra no estado de **Inconsciência (Nocaute)**, em vez de esperar a regeneração passiva de 1 HP/s, um aliado pode interagir com o corpo caído por 3 segundos para canalizar uma "Transfusão de Sangue", reanimando o parceiro instantaneamente com 20% de HP (compartilhando um custo de vida do conjurador).
-4.  **Loot Individualizado (Instanced Loot):**
-    *   Para evitar conflito ("loot-stealing"), cada jogador enxerga e coleta seus próprios drops de itens gerados pelo `LootSystem`, baseados em sua própria sorte e nível de prestígio.
-
----
-
-## 3. Arquitetura Técnica: P2P via WebRTC com Broker de Sinalização
-
-Para eliminar os custos de manter servidores dedicados rodando loops de física Phaser de alta frequência, a arquitetura proposta é **Peer-to-Peer (P2P) baseada em WebRTC**, utilizando um servidor de sinalização (Signaling Server) extremamente leve e barato de manter (podendo rodar em servidores serverless/WebSockets básicos ou instâncias gratuitas).
-
-### Componentes de Rede:
-
-```
-┌────────────────────────────────────────────────────────┐
-│               Servidor de Sinalização                  │
-│  (Apenas conecta os peers no início - WebSockets/HTTP)  │
-└───────────────┬────────────────────────┬───────────────┘
-                │                        │ (Troca de SDP/Ice Candidates)
-                ▼                        ▼
-      ┌──────────────────┐     ┌──────────────────┐
-      │  Jogador 1 (Host)│◄───►│  Jogador 2 (Peer)│
-      │  (Simula a Sala) │P2P  │(Envia inputs/pos)│
-      └──────────────────┘     └──────────────────┘
-```
-
-1.  **Servidor de Sinalização (Signaling):** Utilizado apenas para "apresentar" os jogadores (troca de metadados de conexão SDP e ICE Candidates). Após estabelecida a conexão WebRTC, o tráfego do servidor de sinalização cai para zero.
-2.  **O Host (Autoridade da Sala):** O jogador que cria o lobby atua como a autoridade lógica da masmorra. Ele gerencia o spawn dos inimigos, o estado dos baús e a geração procedural do mapa.
-3.  **Os Clientes (Peers):** Enviam suas coordenadas de movimento, ações de ataque/esquiva e cooldowns para o Host. O Host processa e devolve a posição sincronizada de todos os monstros e projéteis ativos.
-
-### Estratégias de Mitigação de Latência:
-*   **Interpolação de Posições (Client-side Interpolation):** Para evitar "teleportes" visuais de monstros ou aliados causados por flutuações de ping, os clientes interpolam suavemente as posições recebidas nos últimos frames em vez de aplicá-las instantaneamente.
-*   **Previsão de Input de Movimento (Client-side Prediction):** O próprio jogador se move instantaneamente na tela local sem esperar o pacote do Host confirmar a posição física. Se houver discrepância leve com o Host, ela é corrigida de forma suave (soft correction).
-
----
-
-## 4. UI/UX: Modais de Conectividade e Lobby
-
-Proposta: a interface do multijogador cooperativo seguiria o estilo gótico já usado nos modais React:
-
-### Tela de Aliança (Lobby de Conexão):
-*   Uma seção estilizada como um pergaminho rústico de pedra escura com bordas de ferro batido e ornamentos rúnicos dourados.
-*   **Conexão Simplificada por Código:** O Host gera uma "Runa de Invocação" (um código alfanumérico curto, ex: `ANX-995`). Outros jogadores inserem essa runa na aba "Invocar Aliados" para se conectar instantaneamente via WebRTC.
-*   **Indicador de Conexão:** Pequenos corações pulsando em vermelho (ping estável) ou cinza escuro de pedra (lag/desconexão).
-
----
-
-## 5. Próximos Passos para o Desenvolvimento
-
-1.  **Fase de Protótipo Técnico:** Criar uma branch de pesquisa para validar a biblioteca `PeerJS` ou WebRTC bruto rodando em conjunto com o ciclo de atualização do Phaser.
-2.  **Sincronização Mínima Viável:** Sincronizar primeiro apenas a posição e sprite do segundo jogador na Room 0 (Safe Town).
-3.  **Geração Cooperativa de Masmorras:** Modificar a inicialização do `DungeonGenerator` para aceitar uma semente de mapa (seed) gerada pelo Host, garantindo que ambos gerem o mesmo mapa localmente.
-
----
+## Pendências para promover a backlog
+- Discovery; depende de decisão de produto, custo e arquitetura: aprovação do responsável.
+- ADRs 0001, 0011 e 0013 aprovados.
+- Decisões 1 a 9 respondidas; questões em aberto resolvidas.
+- Fatos a verificar: biblioteca de WebRTC, NAT/TURN, determinismo da geração.
+- Dividir em specs (protótipo, seed, lobby, host autoritativo, loot, ressurreição): hoje é um épico.
 
 ## Referências
-
-- [architecture](../../architecture/README.md) — padrões do Phaser e do store
+- [architecture](../../architecture/README.md), [world-generation](../../gameplay/world-generation.md), [feature-topologia-de-mundo-continuo](feature-topologia-de-mundo-continuo.md)
+- [ADR 0001](../../decisions/0001-ponte-phaser-react-so-zustand.md), [ADR 0011](../../decisions/0011-conta-e-dados-do-jogador.md), [ADR 0013](../../decisions/0013-metas-de-performance.md)

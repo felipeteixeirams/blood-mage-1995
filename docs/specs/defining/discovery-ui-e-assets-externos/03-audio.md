@@ -1,104 +1,52 @@
-# Proposta de Discovery — Evolução de UI e Assets Externos Góticos (Pixel Art) (parte 3: Eixo C: transição gradual de áudio)
+# Evolução de UI e assets externos góticos: transição de áudio (parte 3)
 
 **Mestre:** [discovery-ui-e-assets-externos](README.md)
 **Estágio:** defining
 **Aprovação do responsável:** pendente
+**Estado vs código:** verificado em 2026-10-11 (leitura estática): parcial. Existe: todo o som sintetizado por `src/utils/soundEngine.ts` (29 métodos `play*`, `AudioContext` criado sob demanda, volumes `sfxVolume` e `bgmVolume`, mute) e `src/utils/bgmSynthesizer.ts` (4 temas); Phaser com `audio.noAudio: true` nas quatro instâncias de `Phaser.Game`; 5 WAVs em `public/audio_samples/` referenciados só por `SoundTestModal.tsx`; `public/assets/audio/` vazio. Falta: carga de áudio físico no jogo (nenhum `decodeAudioData` nem `new Audio` em `src/`), `HybridSoundEngine`, telemetria de falha de áudio. Ver [audio](../../../gameplay/audio.md).
 
-**Estado vs código:** verificado em 2026-10-10 (leitura estática): parcial. Existe: síntese procedural de áudio como única fonte sonora (`src/utils/soundEngine.ts`, `src/utils/bgmSynthesizer.ts`, só `AudioContext`), `src/utils/telemetry.ts` e `src/utils/logger.ts`, `Sentry.init` em `src/main.tsx` (condicionado a DSN), fontes locais em `public/fonts/`, imagens de UI em `src/assets/ui/` e `public/assets/ui/` (usadas por `SettingsScene.ts` e `RecordsScene.ts`), `border-image` com SVG inline no `hud/DialogueModal.tsx`, cores de raridade em `InventoryModal.tsx`, tint de elite em `Enemy.ts`. Não existe: `HybridSoundEngine`/carga de áudio físico (nenhum `decodeAudioData` nem `new Audio`; `public/assets/audio` só tem `.gitkeep`), classe `.gothic-panel` e `gothic_border_slice.png`, `AssetLoader` centralizado, reporte de `loaderror` ao Sentry (o loader usa só `logger`), camadas de equipamento no sprite do jogador, retratos de NPC em pixel art (o diálogo usa ícones Lucide), tela de Créditos, sprites de inimigos/NPCs/tiles externos, medição do orçamento de 2,5 MB.
+Parte 3 de 6. Índice das partes: [README](README.md).
 
-Parte 3 de 5. Índice das partes: [parte 1](01-visao-e-escopo-visual.md).
+## Escopo
+Se aprovado, SFX de alta prioridade (conjuração, impacto de foice, rugidos) e a música migram gradualmente para arquivos, com a síntese Web Audio como fallback:
+- Para SFX: ao pedir o som de uma chave, tentar o arquivo sob demanda (cache de `AudioBuffer` por chave); se faltar ou falhar, executar a síntese atual da mesma chave.
+- Para BGM: arquivo em loop (1m30s a 2m) por streaming; se falhar, o `bgmSynthesizer` continua sendo a trilha.
+- Falha de áudio físico é registrada no `logger` e enviada ao Sentry (a telemetria de imagem é de [AES](../discovery-assets-externos-e-sprites.md)).
+- Formatos propostos: SFX `.mp3` mono, 22.050 ou 32.000 Hz, CBR 64 kbps (10 a 30 KB cada); BGM `.mp3` estéreo, 44.100 Hz, 96 ou 128 kbps.
 
----
-
-## 4. Eixo C - Transição Gradual de Áudio (SFX e BGM)
-
-Atualmente, o `soundEngine.ts` sintetiza ondas senoidais, dentes-de-serra e ruídos programáticos via Web Audio API. Para evoluir a experiência auditiva para algo digno de horror medieval, propõe-se um modelo de carregamento gradativo de arquivos físicos de áudio.
-
-### 4.1. Estratégia de Transição Híbrida do SoundEngine
-Os efeitos de alta prioridade (conjuração de magias, impactos de foice, rugidos de monstros) e músicas de fundo serão migrados gradualmente para arquivos compactados (`.mp3` ou `.ogg`), mantendo o gerador Web Audio como fallback silencioso para evitar erros de execução.
+Esboço conceitual do original (não é código aprovado; TypeScript strict proíbe `any` e o `Sentry` não é global, é importado de `@sentry/react`):
 
 ```typescript
-// Estrutura conceitual do SoundEngine Híbrido
-import { logger } from './logger';
-
-export class HybridSoundEngine {
-  private audioContext: AudioContext;
-  private sfxCache: Map<string, AudioBuffer> = new Map();
-  private bgmElement: HTMLAudioElement | null = null;
-
-  constructor() {
-    this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-  }
-
-  /**
-   * Tenta tocar um arquivo de som físico. Caso falhe ou não exista, ativa a síntese via Web Audio.
-   */
-  async playSFX(key: string, fallbackSynthFn: () => void): Promise<void> {
-    try {
-      const cached = this.sfxCache.get(key);
-      if (cached) {
-        this.playBuffer(cached);
-        return;
-      }
-
-      // Tenta carregar o arquivo sob demanda (lazy-loading)
-      const url = `/assets/audio/sfx/${key}.mp3`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`SFX file not found: ${key}`);
-
-      const arrayBuffer = await response.arrayBuffer();
-      const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-
-      this.sfxCache.set(key, audioBuffer);
-      this.playBuffer(audioBuffer);
-    } catch (error) {
-      logger.warn(`Falha ao tocar SFX físico '${key}'. Ativando fallback procedural.`, error);
-
-      // Envia telemetria do erro silencioso
-      this.reportAudioErrorToSentry(key, error);
-
-      // Roda o sintetizador antigo de ondas
-      fallbackSynthFn();
-    }
-  }
-
-  /**
-   * Executa streaming de música longa diretamente por elemento HTMLAudio
-   */
-  playBGM(key: string, volume: number = 0.4): void {
-    if (this.bgmElement) {
-      this.bgmElement.pause();
-    }
-
-    this.bgmElement = new Audio(`/assets/audio/bgm/${key}.mp3`);
-    this.bgmElement.loop = true;
-    this.bgmElement.volume = volume;
-
-    this.bgmElement.play().catch(error => {
-      logger.warn(`Erro no streaming da trilha ${key}. Usando silêncio de segurança.`, error);
-    });
-  }
-
-  private playBuffer(buffer: AudioBuffer): void {
-    const source = this.audioContext.createBufferSource();
-    source.buffer = buffer;
-    source.connect(this.audioContext.destination);
-    source.start(0);
-  }
-
-  private reportAudioErrorToSentry(key: string, error: any): void {
-    // Integração com Sentry para logs silenciosos em produção
-    if ((window as any).Sentry) {
-      (window as any).Sentry.captureException(error, {
-        tags: { system: 'audio-engine', asset_key: key },
-        extra: { message: `Audio asset failed to stream or load. Procedural fallback activated.` }
-      });
-    }
+async playSFX(key: string, fallbackSynthFn: () => void): Promise<void> {
+  try {
+    const cached = this.sfxCache.get(key);
+    if (cached) { this.playBuffer(cached); return; }
+    const response = await fetch(`/assets/audio/sfx/${key}.mp3`);
+    if (!response.ok) throw new Error(`SFX file not found: ${key}`);
+    const buffer = await this.audioContext.decodeAudioData(await response.arrayBuffer());
+    this.sfxCache.set(key, buffer);
+    this.playBuffer(buffer);
+  } catch (error) {
+    logger.warn(`Falha no SFX físico '${key}'. Fallback procedural.`, error);
+    fallbackSynthFn();
   }
 }
 ```
 
-### 4.2. Diretrizes de Compactação e Formatos de Áudio
-Para manter o carregamento instantâneo do PWA, o áudio deve ser altamente otimizado:
-* **Efeitos Sonoros (SFX):** Formato `.mp3` mono, taxa de amostragem reduzida para **22.050 Hz** ou **32.000 Hz**, taxa de bits constante (CBR) de **64 kbps**. Essa compressão combina perfeitamente com a estética rústica e crua de meados dos anos 90, pesando apenas de 10 KB a 30 KB por arquivo de som.
-* **Trilhas de Fundo (BGM):** Formato `.mp3` estéreo, taxa de amostragem de **44.100 Hz**, taxa de bits de **96 kbps** ou **128 kbps**. As faixas devem ser curtas (loops de 1m30s a 2m) e tocadas via streaming (`new Audio()`), evitando carregar todo o arquivo na memória RAM do dispositivo.
+## Fora de escopo
+- Gravar ou licenciar o áudio (licenças: [parte 5](05-licencas-repositorios-plano.md)).
+- Trocar a síntese dos SFX que já funcionam bem sem arquivo (o discovery de [evolução gráfica](../discovery-evolucao-grafica-avancada/README.md) propõe manter SFX 100% sintetizados; ver decisão 1).
+- Reabrir `noAudio` no Phaser (ADR 0006, opção C).
+
+## Arquivos e contratos
+- Alterar: `src/utils/soundEngine.ts` (carga e cache de buffers; reuso do `AudioContext` e do ganho mestre existentes, sem segundo contexto), `src/utils/bgmSynthesizer.ts` apenas se a BGM física for aprovada.
+- Criar: `public/assets/audio/sfx/<chave>.mp3` e `public/assets/audio/bgm/<chave>.mp3` (binários, nunca editar com ferramentas de texto).
+- Atualizar no mesmo commit: `docs/gameplay/audio.md`, `docs/operations/telemetry-and-logging.md` e `Verificado em`.
+- Não tocar: temas e sequenciador procedurais existentes, `GameScene.ts`.
+- Contrato: a chave de SFX é a mesma do método `play*` correspondente; áudio físico respeita `sfxVolume`, `bgmVolume` e mute; ausência do arquivo nunca gera exceção visível ao jogador.
+
+Critérios, verificação e pendências: [parte 6](06-criterios-e-pendencias.md).
+
+## Referências
+- [Áudio](../../../gameplay/audio.md), [ADR 0006](../../../decisions/0006-audio-e-conquistas.md)
+- [Atmosfera e tensão](../feature-atmosfera-e-tensao.md), [bug de áudio bgmGain e temas](../bug-audio-bgmgain-e-temas.md)
