@@ -29,9 +29,19 @@ Existem, para cada canal aprovado, configuração versionada e reprodutível que
 | `build-steam.sh` usa `npm` e cria config padrão sob demanda | `scripts/build-steam.sh` | 2026-10-11 |
 | `package.json` está em `version: 0.0.0` | `package.json` | 2026-10-11 |
 | Sem menção a política de privacidade em `src/`, `public/`, `vercel.json` | `grep -rniE "privacy\|privacidade" src public vercel.json` | 2026-10-11 |
-| Compatibilidade do Bubblewrap com a stack e requisitos da Play Store | não verificado (fonte primária pendente) | — |
-| Compatibilidade do Phaser 4.2.1 com Electron e requisitos da Steam | não verificado (fonte primária pendente) | — |
-| Requisitos de política de privacidade da Play Store e da Steam | não verificado (fonte primária pendente) | — |
+| Bubblewrap CLI exige Node >= 18, JDK 17 e Android command line tools; comandos `init`, `build` (APK+AAB assinados), `validate`, `fingerprint`, `play` | https://github.com/GoogleChromeLabs/bubblewrap/tree/main/packages/cli | 2026-10-11 |
+| Digital Asset Links: `bubblewrap fingerprint generateAssetLinks` gera o arquivo, publicado em `/.well-known/assetlinks.json` na raiz do domínio; formato interno não descrito nessa página | https://developer.chrome.com/docs/android/trusted-web-activity/quick-start | 2026-10-11 |
+| PWABuilder é alternativa gráfica que usa a biblioteca do Bubblewrap para gerar o projeto TWA | https://developer.chrome.com/docs/android/trusted-web-activity/quick-start | 2026-10-11 |
+| Play: novos apps e updates devem mirar Android 16 (API 36) desde 2026-08-31; extensão possível até 2026-11-01; página atualizada em 2026-10-01 (confirmar no Play Console) | https://developer.android.com/google/play/requirements/target-sdk | 2026-10-11 |
+| Play: conta de desenvolvedor com taxa única de US$ 25; contas pessoais criadas após 2023-11-13 têm requisitos de teste antes de publicar (detalhes não lidos) | https://support.google.com/googleplay/android-developer/answer/6112435 | 2026-10-11 |
+| Play: formulário Data safety é obrigatório (exceto só teste interno) e exige URL de política de privacidade mesmo sem coleta de dados | https://support.google.com/googleplay/android-developer/answer/10787469 | 2026-10-11 |
+| Electron estável mais recente na página do blog: 44 (2026-08-25; Chromium 152, Node 24.18.1) | https://www.electronjs.org/blog | 2026-10-11 |
+| Tauri: tauri-cli 2.12.2 (Latest) e crate tauri 2.12.3, ambos de 10 out (ano não exibido) | https://github.com/tauri-apps/tauri/releases | 2026-10-11 |
+| Tauri: documentação não cita tamanho numérico de instalador, só que binários são pequenos por padrão; tamanho típico de Electron e Tauri não verificado | https://v2.tauri.app/concept/size/ | 2026-10-11 |
+| steamworks.js suporta Electron (exige `contextIsolation: false` e `nodeIntegration: true`, não funciona no renderer por padrão); versão e data da última release não verificadas; greenworks não verificado | https://github.com/ceifa/steamworks.js | 2026-10-11 |
+| Steam Direct: US$ 100 por produto; 21 dias entre pagar e lançar nos primeiros títulos; página "coming soon" pública por ao menos 2 semanas; revisão de loja e build de 1 a 5 dias | https://partner.steamgames.com/doc/gettingstarted/onboarding | 2026-10-11 |
+| Steam: a página de onboarding não lista requisito específico de política de privacidade; remete ao Steam Distribution Agreement e à Steam Privacy Policy | https://partner.steamgames.com/doc/gettingstarted/onboarding | 2026-10-11 |
+| Não verificado: compatibilidade do Phaser 4.2.1 com Electron 44 e Tauri; tamanho de instalador; Steamworks via Tauri | fonte primária pendente | — |
 
 ## Decisões a confirmar
 | # | Decisão | Opções | Recomendação |
