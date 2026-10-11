@@ -21,7 +21,9 @@ O padrão da base documental diz que o conhecimento vive em `docs/`, com `docs/R
 ## Objetivo
 Proposta: uma única fonte para cada conhecimento, tudo que descreve o projeto em `docs/`, e o que é configuração de ferramenta (skills, memória) sem cópias divergentes.
 
-## Decisões a confirmar
+## Decisões
+Aprovadas em 2026-10-11 pelo responsável: 1, 3, 4 e 5, conforme a coluna Recomendação, e a 2 (manter `.jules/` e `.agents/` por ora). Pendência: ver Questões em aberto.
+
 | # | Decisão | Opções | Recomendação |
 |---|---|---|---|
 | 1 | Qual cópia das skills fica | `.claude/skills/` (Claude Code), `skills/`, ambas | `.claude/skills/` como fonte única: é a que o `CLAUDE.md` cita; mover `spritecook-integration` para lá. |
@@ -58,7 +60,7 @@ Alterar o conteúdo das skills, o procedimento do PAT em `AGENTS.md` e qualquer 
 | BD-5 | `test -e` sobre os caminhos citados no `CLAUDE.md` |
 
 ## Questões em aberto
-O que o Google AI Studio lê (`.agents/`, `.aistudio/`, `AGENTS.md`) e se o Jules ainda usa `.jules/`. O Replit foi descartado pelo responsável. As decisões 1 a 5 seguem sem aprovação registrada.
+Contradição entre decisões aprovadas: a 1 pede uma única cópia das skills em `.claude/skills/` (BD-1), e a 2 mantém `.agents/`, que contém uma cópia (`.agents/skills/`). Falta o responsável confirmar o que o Google AI Studio lê: remover só `.agents/skills/` e manter `.agents/memory/` (recomendo) ou manter `.agents/skills/` e ajustar BD-1.
 
 ## Referências
 [Documento mestre das specs](README.md); `docs/engineering/stack-and-conventions.md` (estrutura do repositório); ADR 0015 em `docs/decisions/`.
