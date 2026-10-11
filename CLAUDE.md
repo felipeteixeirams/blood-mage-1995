@@ -5,8 +5,8 @@ ARPG 2D em tempo real, solo (Phaser 4.2.1 + React 19 + TypeScript + Zustand + Ta
 ## Contexto do projeto
 Entrada: `docs/README.md` (bootstrap → `README.md` mestre da categoria → satélite). Leia só o que a tarefa exige; prefira a documentação a ler código em massa.
 - Antes de propor ou implementar feature: `docs/architecture/README.md`. Como uma mecânica funciona hoje (combate, magias, talentos, loot, campanha, HUD): `docs/gameplay/README.md`.
-- Antes de mexer em `Player.ts`, `Enemy.ts`, `GameScene.ts`, `DungeonGenerator.ts`, `gameStore.ts` ou `localStorage.ts`: `docs/critical/README.md`.
-- Stack e convenções: `docs/engineering/stack-and-conventions.md`. Erro estranho: `docs/troubleshooting/README.md`.
+- Antes de mexer em `Player.ts`, `Enemy.ts`, `GameScene.ts`, `DungeonGenerator.ts`, `gameStore.ts` ou `localStorage.ts`: `docs/engineering/risky-files.md`.
+- Stack e convenções: `docs/engineering/README.md`. Telas e HUD: `docs/ui/README.md`. Erro estranho: `docs/troubleshooting/README.md`.
 - Specs: `docs/specs/{defining,backlog,in-progress}`. Mova a spec de estágio ao começar ou concluir.
 - Ao criar, mover ou aposentar um documento: atualize o mestre da pasta e rode `pnpm run docs:check`.
 - **Documentação em dia:** mudança de código que altera o que um documento descreve atualiza o documento **no mesmo commit** (e o `Verificado em`). O `docs:check` avisa quando uma verificação passa de 30 dias.

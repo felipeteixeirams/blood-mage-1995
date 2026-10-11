@@ -205,5 +205,5 @@ requisito, já em vigor).
 - Nunca crie UI dentro do Canvas Phaser — toda UI é React (`src/components/`).
 - Ponte Phaser↔React é 100% Zustand (`docs/architecture/state-management.md`) — nunca `CustomEvent`/`dispatchEvent`.
 - `Player.ts`, `Enemy.ts`, `GameScene.ts`, `DungeonGenerator.ts` são
-  arquivos críticos Nível 1 (`docs/critical/critical-files.md`) — ver
+  arquivos críticos Nível 1 (`docs/engineering/risky-files.md`) — ver
   antes de mexer, mesmo pra algo aparentemente pequeno.

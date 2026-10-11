@@ -11,8 +11,8 @@ O pre-commit roda `docs:check` e `verify` (assets + typecheck + build); nem os t
 
 | Documento | Conteúdo | Status |
 |---|---|---|
-| [testing-gates](testing-gates.md) | Scripts reais do `package.json`, `verify-assets`, hook de pre-commit | verificado |
+| [verification-scripts](verification-scripts.md) | Scripts reais do `package.json`, `verify-assets`, hook de pre-commit | verificado |
 | [unit-tests](unit-tests.md) | Configuração do Vitest, `tests/setup.ts`, inventário e cobertura | verificado |
 | [e2e-tests](e2e-tests.md) | Playwright: configuração, specs, golden screenshots, problemas encontrados | não verificado |
 
-Veja também a categoria de guardrails: [critical](../critical/README.md).
+Veja também a categoria de guardrails: [critical](../engineering/README.md).

@@ -43,4 +43,4 @@ _Em branco até o responsável decidir._
 ## Consequências
 - Se B: ajuste em `RotateDeviceOverlay.tsx` e `localStorage.ts` (arquivo crítico), teste de `localStorage` para o padrão.
 - Se C: spec de HUD responsivo; afeta `GameplayHUD.tsx` e o manifest.
-- `docs/product/mobile-first-bible.md` (não ratificado) cita as mesmas metas.
+- `docs/product/product-principles.md` (não ratificado) cita as mesmas metas.

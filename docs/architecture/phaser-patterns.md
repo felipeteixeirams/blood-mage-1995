@@ -4,7 +4,7 @@
 **Status:** verificado
 **Verificado em:** 2026-10-10
 
-Padrões que o código de `src/game/` usa hoje. Verificação por leitura estática; nenhum teste ou build foi executado. Lista de sistemas: [game-systems.md](game-systems.md). Arquivos de risco e bugs conhecidos: [../critical/README.md](../critical/README.md).
+Padrões que o código de `src/game/` usa hoje. Verificação por leitura estática; nenhum teste ou build foi executado. Lista de sistemas: [game-systems.md](game-systems.md). Arquivos de risco e bugs conhecidos: [../engineering/README.md](../engineering/README.md).
 
 ## Reaproveitamento de objetos
 

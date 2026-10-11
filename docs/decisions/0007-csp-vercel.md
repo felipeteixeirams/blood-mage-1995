@@ -35,4 +35,4 @@
 _Em branco até o responsável decidir._
 
 ## Consequências
-- Edição de `vercel.json`; atualizar `docs/critical/security.md`. Reteste de PWA, Sentry e Phaser em preview.
+- Edição de `vercel.json`; atualizar `docs/engineering/security.md`. Reteste de PWA, Sentry e Phaser em preview.

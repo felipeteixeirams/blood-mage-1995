@@ -42,7 +42,7 @@ Descrição dos testes em `tests/e2e/` e da configuração do Playwright. Confer
 | `safe-house-animations.spec.ts` usa `window.__PHASER_GAME__` em 20 pontos, mas nenhum arquivo do projeto (fora do próprio spec) o define | busca por `__PHASER_GAME__` em `.ts/.tsx/.html/.js`; esses testes provavelmente não conseguem passar, não confirmado por execução |
 | Os baselines de `golden.spec.ts-snapshots/` são `main-menu-chromium-linux.png`, `main-menu-chromium-win32.png`, `settings-modal-chromium-win32.png` e `high-scores-modal-chromium-win32.png`: em Linux só o menu principal tem referência | Playwright nomeia o baseline por plataforma |
 | Os e2e dependem do dev server (`npm run dev`, porta 3000); o `vite.config.ts` usa `strictPort: true` | `playwright.config.ts`, `vite.config.ts` |
-| Nenhum hook nem CI executa os e2e (ver [testing-gates](testing-gates.md)) | `.husky/pre-commit`, ausência de `.github` |
+| Nenhum hook nem CI executa os e2e (ver [verification-scripts](verification-scripts.md)) | `.husky/pre-commit`, ausência de `.github` |
 
 ## Não verificado
 

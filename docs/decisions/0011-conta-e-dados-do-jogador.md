@@ -6,7 +6,7 @@
 **Aprovada por:**
 
 ## Contexto
-Hoje o progresso fica só no `localStorage` do navegador (prefixo `bloodmage_1995_`), acessado por `src/utils/localStorage.ts` (schemas Zod) e por `SaveMigration.ts` e `usePWA.ts`. Não há login, conta nem identificador de jogador na nuvem; o `package.json` não tem dependência de auth, Supabase, Firebase ou pagamento e `src/` não usa esses termos. Existem `lib/db` (Drizzle/PostgreSQL) e `artifacts/api-server` (Express) no workspace, que `src/` não importa. O recorde (alto escore) também é local. Documentos antigos citavam login (Google) e cloud save (Supabase) como fase futura; a spec `docs/specs/defining/cloud-save-fase5.md` não está aprovada.
+Hoje o progresso fica só no `localStorage` do navegador (prefixo `bloodmage_1995_`), acessado por `src/utils/localStorage.ts` (schemas Zod) e por `SaveMigration.ts` e `usePWA.ts`. Não há login, conta nem identificador de jogador na nuvem; o `package.json` não tem dependência de auth, Supabase, Firebase ou pagamento e `src/` não usa esses termos. Existem `lib/db` (Drizzle/PostgreSQL) e `artifacts/api-server` (Express) no workspace, que `src/` não importa. O recorde (alto escore) também é local. Documentos antigos citavam login (Google) e cloud save (Supabase) como fase futura; a spec `docs/specs/defining/feature-cloud-save.md` não está aprovada.
 
 ## Opções
 | Opção | Prós | Contras |
@@ -20,7 +20,7 @@ Hoje o progresso fica só no `localStorage` do navegador (prefixo `bloodmage_199
 |---|---|---|
 | Persistência só em `localStorage` | `src/utils/localStorage.ts`; `grep` de `supabase\|firebase\|auth` em `src/` e `package.json` sem uso | 2026-10-10 |
 | `src/` não importa `lib/*` nem `@workspace/*` | `grep -rn "@workspace/" src` sem resultado | 2026-10-10 |
-| Spec de cloud save está em `defining/` | `docs/specs/defining/cloud-save-fase5.md` | 2026-10-10 |
+| Spec de cloud save está em `defining/` | `docs/specs/defining/feature-cloud-save.md` | 2026-10-10 |
 
 ## Suposições (não verificadas)
 - Que usuários precisam de sincronização entre aparelhos (sem dados de uso).

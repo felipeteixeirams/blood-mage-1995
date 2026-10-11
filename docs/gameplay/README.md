@@ -14,5 +14,5 @@
 | [campaign-and-safe-house.md](campaign-and-safe-house.md) | Campanha x Arcade, zonas e capítulos, Safe House e Maelen, quests, diálogos e save de campanha | verificado |
 | [world-generation.md](world-generation.md) | Quem chama quem na geração, mapa BSP+autômato, ChunkStreamer, portais e andares, ambiente por bioma, armadilhas | verificado |
 | [achievements-and-codex.md](achievements-and-codex.md) | 16 conquistas (runStats, desbloqueio x resgate de cristais) e Códice de 17 entradas | verificado |
-| [hud-and-modals.md](hud-and-modals.md) | Componentes do HUD em jogo, atalhos de teclado, gamepad, joystick flutuante, hooks e i18n | verificado |
-| [modals-reference.md](modals-reference.md) | Modais e telas fora do HUD (ModalBase, cenas Phaser embutidas) e componentes não montados | verificado |
+
+Telas e HUD: [ui](../ui/README.md).

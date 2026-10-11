@@ -9,6 +9,6 @@
 | [state-management.md](state-management.md) | Store Zustand, ponte React-Phaser (canais, campos, callbacks), conquistas e run stats | verificado |
 | [phaser-patterns.md](phaser-patterns.md) | Pooling, IA de inimigos, extração/delegação de `GameScene`, texturas procedurais | verificado |
 | [game-systems.md](game-systems.md) | Inventário dos 41 módulos de `src/game/systems/`: ordem de `create()`, combate, feedback, entrada, dados e código morto | verificado |
-| [game-systems-world.md](game-systems-world.md) | Módulos de mundo, geração, iluminação e pós-processamento; streaming de chunks da campanha | verificado |
+| [world-systems.md](world-systems.md) | Módulos de mundo, geração, iluminação e pós-processamento; streaming de chunks da campanha | verificado |
 
-Relacionados: [../engineering/README.md](../engineering/README.md) (stack, estrutura de diretórios, scripts) e [../critical/README.md](../critical/README.md) (arquivos de risco e problemas conhecidos).
+Relacionados: [../engineering/README.md](../engineering/README.md) (stack, estrutura de diretórios, scripts) e [../engineering/risky-files.md](../engineering/risky-files.md) (arquivos de risco).

@@ -35,4 +35,4 @@
 _Em branco até o responsável decidir._
 
 ## Consequências
-- Editar `api/log.ts`; teste do handler; atualizar `docs/critical/security.md`.
+- Editar `api/log.ts`; teste do handler; atualizar `docs/engineering/security.md`.

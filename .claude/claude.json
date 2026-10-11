@@ -14,7 +14,7 @@
     "contextPriority": [
       "CLAUDE.md",
       ".claude/skills/",
-      "docs/critical/",
+      "docs/engineering/",
       "docs/architecture/",
       "src/",
       "docs/specs/"
@@ -57,7 +57,7 @@
       ".claude/skills/phaser-4-physics-combat/SKILL.md",
       ".claude/skills/phaser-4-fx-filters/SKILL.md",
       ".claude/skills/phaser-4-playtest-harness/SKILL.md",
-      "docs/critical/critical-files.md",
+      "docs/engineering/risky-files.md",
       "docs/troubleshooting/README.md",
       "docs/architecture/phaser-patterns.md"
     ],

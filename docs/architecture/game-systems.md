@@ -4,7 +4,7 @@
 **Status:** verificado
 **Verificado em:** 2026-10-10
 
-Inventário dos 41 módulos de produção de `src/game/systems/` (fora `*.test.ts`), por leitura estática do código e de quem o instancia e chama (`grep` em `src/`). Esta página cobre combate, UI/feedback, entrada, dados/persistência e utilitários, mais a ordem de `create()`. Mundo, iluminação e pós-processamento: [game-systems-world.md](game-systems-world.md). Nenhum teste ou build foi executado; "sem chamada" significa nenhuma chamada em código de produção (testes não contam).
+Inventário dos 41 módulos de produção de `src/game/systems/` (fora `*.test.ts`), por leitura estática do código e de quem o instancia e chama (`grep` em `src/`). Esta página cobre combate, UI/feedback, entrada, dados/persistência e utilitários, mais a ordem de `create()`. Mundo, iluminação e pós-processamento: [world-systems.md](world-systems.md). Nenhum teste ou build foi executado; "sem chamada" significa nenhuma chamada em código de produção (testes não contam).
 
 ## Ordem em `GameScene.create()`
 
@@ -68,7 +68,7 @@ Consequência da ordem: o primeiro `buildDungeonMap()` roda quando `atmosphereSy
 | Item | Situação | Evidência |
 |---|---|---|
 | `AchievementSystem`, `AchievementNotification` | Mortos: sem importador de produção | `grep` de imports |
-| `ScreenEffects` | Dormente: `update` roda a cada frame e `effectDeath`/`setChromaticAberration`/`triggerFearDistortion` são chamados, mas `render(gameCanvas)` nunca é chamado e `getCanvas()` não tem consumidor; nada é desenhado | ver [game-systems-world.md](game-systems-world.md) |
+| `ScreenEffects` | Dormente: `update` roda a cada frame e `effectDeath`/`setChromaticAberration`/`triggerFearDistortion` são chamados, mas `render(gameCanvas)` nunca é chamado e `getCanvas()` não tem consumidor; nada é desenhado | ver [world-systems.md](world-systems.md) |
 | `ScreenShake.continuous`, `ObjectPool.releaseAll`, `ViewportCuller.getCulledCount`, `AdvancedParticles.startAmbient/emitDirectional` | Métodos públicos sem chamada | `grep` |
 
 A decisão de manter ou remover esses módulos é do responsável (ver `docs/decisions`).

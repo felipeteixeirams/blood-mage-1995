@@ -34,5 +34,5 @@ O `CLAUDE.md` fala em "alvo de 60 FPS, inclusive em mobile/touch". Não existe m
 _Em branco até o responsável decidir._
 
 ## Consequências
-- Se B: registrar a meta em `docs/critical/performance-metrics.md` e as medições com data.
+- Se B: registrar a meta em `docs/engineering/performance-metrics.md` e as medições com data.
 - Se C: depende do conserto do e2e (0009).

@@ -47,4 +47,4 @@ _Em branco até o responsável decidir._
 
 ## Consequências
 - Se A: registrar a restrição em `docs/architecture/` (arquivo de geração de terreno) e corrigir o comentário "Simplex" no código.
-- Se B/C/D: spec própria; `DungeonGenerator.ts` é arquivo crítico (ver `docs/critical/README.md`); testes `HeightmapGenerator.test.ts`, `DungeonGenerator.test.ts` e `TerrainTraversability.test.ts` precisam ser revistos.
+- Se B/C/D: spec própria; `DungeonGenerator.ts` é arquivo crítico (ver `docs/engineering/risky-files.md`); testes `HeightmapGenerator.test.ts`, `DungeonGenerator.test.ts` e `TerrainTraversability.test.ts` precisam ser revistos.
