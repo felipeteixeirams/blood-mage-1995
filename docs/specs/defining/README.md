@@ -4,6 +4,34 @@
 **Leia quando:** for propor, refinar ou pedir aprovação de uma spec, ou antes de implementar algo que possa já ter spec aqui. Mestre de specs: [specs](../README.md).
 
 
+
+## Triagem (2026-10-11)
+
+Classificação por tipo de bloqueio, feita por leitura das specs e dos ADRs. Nenhuma decisão de negócio foi tomada: a coluna "Bloqueio" só diz o que falta antes de promover a `backlog/`. Toda spec ainda precisa da aprovação do responsável.
+
+| Classe | Significado | Specs |
+|---|---|---|
+| A. Técnica | Correção de código com recomendações já descritas; sem regra de negócio central em aberto (restam só aprovação e valores pontuais) | bug-audio-bgmgain-e-temas, bug-grafico-iluminacao-e-efeitos-sem-consumidor, bug-mundo-chunks-sobre-safe-house-e-fosso, bug-persistencia-schemas-strict-e-migracao, bug-ui-fora-do-react-e-codigo-morto |
+| B. Regra de negócio | Depende de balance, conteúdo, UX ou escopo que é do responsável | bug-combate-custo-de-skill-duplicado, bug-combate-status-duplicado, bug-progressao-bonus-de-equipamento-acumulam, bug-progressao-conquistas-e-codice-inalcancaveis, bug-progressao-orbes-modificadores-e-reliquias, bug-distribuicao-pwa-manifest-e-service-worker, bug-campanha-quests-dos-capitulos-2-a-4 (sem volta à Safe House), feature-eventos-infraestrutura-mundial, feature-eventos-eclipse-de-sangue, feature-ui-idioma-espanhol |
+| C. Aguarda ADR proposto | Depende de ADR ainda `Proposta` (ver tabela abaixo) | bug-controles-joysticks-e-gamepad, feature-controles-mira-e-alvo-inteligente, feature-grafico-camera-e-escala-de-entidades, feature-ui-hud-escala-e-personalizacao, feature-ui-modais-secundarios-e-gamepad, feature-grafico-calibracao-visual-por-bioma, feature-grafico-glow-e-pos-processamento-calibrados, feature-grafico-validacao-e-lifecycle, feature-mundo-topologia-continua |
+| D. Discovery ou épico | Precisa ser dividido em specs menores antes de virar backlog | discovery-assets-arte-ui-audio-e-sprites, discovery-assets-pipeline-de-arte-com-ia, discovery-campanha-progressao-e-lore, discovery-grafico-evolucao-pendente, feature-assets-mapeamento-de-sprites |
+| E. Congelada | Fora do escopo atual por decisão aprovada | discovery-distribuicao-canais-e-pacotes (ADR 0010: só PWA) |
+
+Uma spec pode estar em mais de uma classe (por exemplo, eventos são B e também dependem do ADR 0001); a tabela usa a classe que mais pesa.
+
+ADRs `Proposta` que desbloqueiam specs (a aprovação é do responsável):
+
+| ADR | Specs que dependem |
+|---|---|
+| 0001 | joysticks, modais secundários, eventos (infraestrutura e eclipse) |
+| 0004 | joysticks, mira, câmera, escala do HUD |
+| 0005 | calibração visual, validação gráfica, evolução gráfica |
+| 0013 | calibração visual, glow, validação gráfica, evolução gráfica, assets |
+| 0002 e 0003 | topologia contínua |
+| 0006 | evolução gráfica, áudio híbrido (assets) |
+| 0014 | modais secundários |
+| 0015 | pipeline de arte com IA |
+
 ## Gráfico
 
 | Spec | Resumo |
