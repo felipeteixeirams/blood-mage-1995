@@ -65,4 +65,4 @@ Alterar o conteúdo das skills, o procedimento do PAT em `AGENTS.md` e qualquer 
 Nenhuma. Risco registrado: não foi verificado se o Google AI Studio lê `.agents/skills/`; a aprovação do responsável cobre a remoção.
 
 ## Referências
-[Documento mestre das specs](../README.md); `docs/engineering/stack-and-conventions.md` (estrutura do repositório); ADR 0015 em `docs/decisions/`.
+[Documento mestre das specs](../README.md); `docs/engineering/repository-structure.md` (estrutura do repositório); ADR 0015 em `docs/decisions/`.

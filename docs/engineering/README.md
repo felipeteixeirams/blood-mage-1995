@@ -5,7 +5,9 @@
 
 | Satélite | Conteúdo | Status |
 |---|---|---|
-| [stack-and-conventions.md](stack-and-conventions.md) | Stack e versões (`package.json` e lock), diretórios, configs, scripts, convenções observadas | verificado (scripts não executados) |
+| [stack.md](stack.md) | Stack e versões (`package.json` e lock), dependências sem uso, configs de build/lint/test e scripts (nenhum executado) | verificado (scripts não executados) |
+| [repository-structure.md](repository-structure.md) | Estrutura de diretórios, onde cada tipo de arquivo mora e papel de `artifacts/`, `lib/` e workspaces | verificado |
+| [conventions.md](conventions.md) | Convenções de código em uso (nomes, testes, imports, idioma, logs, dados), hook de pre-commit e `lint-staged` | verificado |
 | [risky-files.md](risky-files.md) | Arquivos sensíveis por nível de risco (`Player.ts`, `Enemy.ts`, `GameScene.ts`…), com o contrato atual de cada um | verificado |
 | [performance.md](performance.md) | Técnicas de performance presentes no código e suas exceções | verificado |
 | [performance-metrics.md](performance-metrics.md) | O que o código mede (sem metas numéricas medidas) | verificado |

@@ -60,4 +60,4 @@ Ao entrar (ou alcançar) cada zona da Campanha, o objetivo `discover_zone` corre
 2. O marco por zona deve ser só descoberta ou também desbloquear algo (como o altar com `blood_bolt`)? Recomendação: só descoberta.
 
 ## Referências
-- [Campanha e Safe House](../../gameplay/campaign-and-safe-house.md) (seções Quests e Marcos descobríveis)
+- [Campanha e Safe House](../../gameplay/safe-house-and-quests.md) (seções Quests e Marcos descobríveis)

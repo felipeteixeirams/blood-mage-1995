@@ -4,7 +4,7 @@
 **Status:** verificado
 **Verificado em:** 2026-10-11
 
-Como o dano é causado e recebido hoje: FSM de ataque dos inimigos, dano do jogador, crítico, knockback, esquiva, status, telegrafia e feedback. Leitura estática do código (nada foi executado). Inimigos e IA: ver `enemies-and-bestiary`.
+Como o dano é causado e recebido hoje: FSM de ataque dos inimigos, dano do jogador, crítico, knockback, esquiva e telegrafia. Leitura estática do código (nada foi executado). Status, gibs e feedback de impacto: ver `status-and-feedback`. Inimigos e IA: ver `enemies-and-bestiary`.
 
 ## FSM de ataque do inimigo (Windup, Strike, Recovery)
 Campo `Enemy.attackPhase`: `none | windup | strike | recovery`. Iniciada por `startWindup(time, durationMs, attackType, targetPos)`, avançada em `updateEnemy`.
@@ -76,20 +76,6 @@ Hit flash: tint branco 33 ms, vermelho 90 ms, depois tint base (`frenzy` volta a
 ## Knockouts e morte
 `stats.knockoutCount`: HP 0 => inconsciente no 1o e 2o; no 3o, `isDefinitivelyDead`. Inconsciente: velocidade 0, regen 2% do HP máx efetivo por s (bloqueada por infecção), acorda com `hp >= 5%` do máx. `playerHitByEnemy` chama `triggerGameOver` quando `takeDamage` retorna true. Inimigos em combate viram `patrol_away_from_player` enquanto o jogador está inconsciente/morto.
 
-## Status de sobrevivência do jogador
-Em `Player.updatePlayer` dois mecanismos rodam juntos a cada frame:
-
-| Condição | Percentual (`updateStatusConditions`) | Tick fixo (`updatePlayer`, via `takeDamage`) | Outro efeito |
-|---|---|---|---|
-| bleeding | 2% do `maxHp`/s só andando | 3 HP / 1500 ms | velocidade x0.8; gotas no chão |
-| poison | 1.5% do `maxHp`/s | 4 HP / 2000 ms | regen de mana 2/s (normal 4/s) |
-| infection | teto de HP em 80% do `maxHp` | 2 HP / 3000 ms | dano recebido x1.2; sem regen em nocaute |
-
-Curas: Z (atadura), X (antídoto), V (antibiótico) => `GameScene.useCurativeItem` => `ScavengingSystem`. Os ticks fixos passam por `takeDamage` e concedem 800 ms de i-frames.
-
-## Status em inimigos (`StatusEffectSystem`)
-Tipos: burning, frozen, cursed, poison, bleeding. `applyStatus(target, type, durationMs=3000, dps=10)`; reaplicar mantém o maior `remainingMs` e `dps`. Tick a cada 400 ms (burning) ou 800 ms; dano `max(1, round(dps*intervalo/1000))` via `takeDamage`. frozen: tint 0x67e8f9, animação a 0.25x. cursed: tint 0xa855f7 e dano recebido x1.25. Aplicadores: `PlayerSkillSystem` (burning 3500 ms, cursed 4000/3500 ms, bleeding 4000 ms).
-
 ## Telegrafia (`EnemyTelegraphSystem`)
 Desenha no chão (depth 740) só inimigos em tela (+120 px); desligada se `settings.postProcessingEnabled === false`. `Enemy.getTelegraphInfo(time)` só retorna dados em windup/strike; `progress` = fração do windup.
 
@@ -103,29 +89,11 @@ Desenha no chão (depth 740) só inimigos em tela (+120 px); desligada se `setti
 
 Cor padrão 0xef4444; 0x8b5cf6 (`cultist_acolyte`, `specter_wraith`); 0xdc2626 (golem, abomination); afixos: cursed 0xa855f7, frenzied 0xf97316, teleporter 0x9333ea, reflective 0x0284c7. Preenchimento cresce com `progress` (alfa 0.10 a 0.32); no strike alfa 0.5 e contorno branco.
 
-## Feedback de impacto (`CombatFeel.handleHitImpact`)
-| Gatilho | Shake (intensidade / ms) | Hit-stop |
-|---|---|---|
-| padrão | 0.002 / 60 | não |
-| dano > 15 | 0.004 / 100 | não |
-| crítico | 0.006 / 130 | 40 ms |
-| skill especial | 0.01 / 200 | 80 ms |
-| HP do inimigo <= 20% | conforme linha acima | 40 ms |
-
-Hit-stop pausa `physics.world` e ignora novo pedido enquanto ativo. Shake respeita `settings.screenShakeEnabled`. Vibrações em `triggerVibration` (`damage_taken` 50 ms, `critical_hit`, `execution`, `bleeding_tick`...).
-
-## Gibs e sangue
-Em `CombatEffectsSystem.handleEnemyDeath`: score, combo (janela 2500 ms, texto a partir de 3), XP (`xpDrop`, x1.5 com `fury_pit`), afixo elite dá 4 a 7 cristais, rolagem de loot.
-- **Execução:** morte por `crimson_scythe`/`hellfire_nova`/`blood_ritual_circle`/`hemomancy_beam` com o inimigo em HP <= 15% antes do golpe => `spawnProceduralGore` (fatias do sprite, hit-stop 140 ms).
-- **Gib score** (`DismembermentSystem.calculateDismemberment`): `fragility*0.35 + (spellGib/2)*0.30 + min(overkillRatio*1.5, 1)*0.35 + levelBonus`, com `levelBonus = clamp((nivel-1)*0.04, -0.2, 0.3)`; crítico +0.20, execução +0.60; x0.40 se `bodyType` boss, x0.70 se `dense_abomination`. `>= 0.72` ou execução: `total_destruction`; `>= 0.35`: `partial_dismemberment`; senão `normal_collapse`. Na morte, `damageAmount = maxHp*0.9` e `isCrit = wasLowHp`.
-- `Enemy.takeDamage` chama `spawnGibs()` se morreu por execução, crítico ou overkill (`hp <= -50% maxHp` ou dano `>= 150% maxHp`).
-- `settings.contentIntensity === 'reduced'` converte gibs em `normal_collapse` e reduz sangue. `BloodSplatterSystem` mantém até 140 decals e muda a cor por tipo (osso, espectro, abominação).
-- `gore_abomination` explode ao morrer (raio 110, dano fixo 28 ao jogador). `zombie_shambler` libera 2 `bat_swarm`.
-
 ## Onde fica no código
-- `src/game/objects/Enemy.ts`: `updateEnemy`, `startWindup`, `takeDamage`, `getTelegraphInfo`, `spawnGibs`.
-- `src/game/objects/Player.ts`: `takeDamage`, `triggerDash`, `updateStatusConditions`, `castDaggerStrike`, `castBloodBolt`.
+- `src/game/objects/Enemy.ts`: `updateEnemy`, `startWindup`, `takeDamage`, `getTelegraphInfo`.
+- `src/game/objects/Player.ts`: `takeDamage`, `triggerDash`, `castDaggerStrike`, `castBloodBolt`.
 - `src/game/objects/Projectile.ts`: `fire`, `releaseToPool`, `updateProjectile` (vida 2500 ms; some em parede via `isTraversable`).
 - `src/game/systems/CollisionHandlers.ts`: `handleProjectileHitEnemy`, `handleMeleeHitEnemy`, `playerHitByEnemy`, `handleEnemyTouchPlayer`.
-- `src/game/systems/`: `CombatEffectsSystem`, `CombatFeel`, `EnemyTelegraphSystem`, `StatusEffectSystem`, `DismembermentSystem`, `BloodSplatterSystem`.
-- `src/game/scenes/GameScene.ts`: `update` (resolução do ataque), overlap de toque.
+- `src/game/systems/EnemyTelegraphSystem.ts`; `src/game/scenes/GameScene.ts`: `update` (resolução do ataque), overlap de toque.
+
+Relacionados: status-and-feedback, enemies-and-bestiary, spells, progression-and-prestige; arquivos de risco em [risky-files](../engineering/risky-files.md) e padrões em [phaser-patterns](../architecture/phaser-patterns.md).

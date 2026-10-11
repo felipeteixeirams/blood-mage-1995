@@ -4,7 +4,7 @@
 **Status:** verificado
 **Verificado em:** 2026-10-11
 
-Leitura estática do código (sem rodar o jogo). Complementa o resumo de prestígio de `docs/architecture/architecture.md` (seção "Status de sobrevivência e prestígio"), que não é repetido aqui: este arquivo traz valores, limites e o que o código lê ou deixa de ler. Itens e relíquias estão em loot-and-items.
+Leitura estática do código (sem rodar o jogo). Traz valores, limites e o que o código lê ou deixa de ler. Status de sobrevivência: ver `status-and-feedback`. Itens e relíquias estão em loot-and-items.
 
 ## XP e níveis
 - `Player.addXp(amount)`: soma em `currentXp`, soma `floor(amount/2)` em `souls`; se `currentXp >= nextLevelXp`, sobe 1 nível, subtrai `nextLevelXp`, faz `nextLevelXp = floor(nextLevelXp * 1.4)` e soma 1 em `pendingStatPoints`. Retorna `true` se subiu. Sobe no máximo 1 nível por chamada (XP excedente fica acumulado).
@@ -53,7 +53,8 @@ Ativos em `gameStore.activeModifiers` (ids), alterados por `toggleModifier`/`cle
 | fury_pit | inimigos nascem em `frenzy` (`Enemy`); XP x1.5 | `startFrenzy`/`xpMultiplier` não lidos |
 
 ## Prestígio e dificuldades (valores)
-Fluxo geral em `architecture.md`. Complementos conferidos em `gameStore.ts`, `localStorage.ts` e `PrestigeModal.tsx`:
+Conferido em `gameStore.ts`, `localStorage.ts` e `PrestigeModal.tsx`; valores são o que o código faz hoje, não balance ratificado (não validado: precisa de playtest humano):
+- `PrestigeModal.tsx` (lazy em `App.tsx`) abre pela tecla P ou pelo botão em `hud/ActionButtons.tsx`, sobre `ModalBase`. `canPrestige`: nível >= 10, ou `floorDepth` >= 3, ou 30 abates. O reset da instância viva usa o comando `prestigeResetRequested`, tratado em `PhaserGame.tsx` por `GameScene.applyPrestigeReset()`.
 - `getPrestigeModifiers()` por ponto de selo: `carnage` dano x(1 + 0.03n); `dark_vitality` HP máx +8n; `runic_flow` recarga +0.025n; `deep_vampirism` vampirismo +0.005n; `macabre_fortune` drop x(1 + 0.06n). Teto 5 por selo (`allocateBloodSeal` retorna `false` acima). Uso em `Player.getEffective*` e `CombatEffectsSystem` (`dropMult`).
 - `performPrestige`: `level = min(10, level + 1)`; `unspentSealPoints + 1`; `totalSacrifices + 1`. O modal chama `performPrestige()` sem selo, então o ponto fica pendente para `allocateBloodSeal`. Zera só `playerStats` (nível 1, XP 0, `nextLevelXp` 100, HP/mana cheios, onda 1, andar 1, `pendingStatPoints` 0); equipamento, relíquias, talentos e Cristais não mudam.
 - Persistência: `bloodmage_1995_prestige`, Zod com `.catch`: `level` 0-10, `unspentSealPoints` 0-10 (acima de 10 o campo cai para 0 ao carregar), selos 0-5.

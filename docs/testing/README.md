@@ -15,4 +15,4 @@ O pre-commit roda `docs:check` e `verify` (assets + typecheck + build); nem os t
 | [unit-tests](unit-tests.md) | Configuração do Vitest, `tests/setup.ts`, inventário e cobertura | verificado |
 | [e2e-tests](e2e-tests.md) | Playwright: configuração, specs, golden screenshots, problemas encontrados | não verificado |
 
-Veja também a categoria de guardrails: [critical](../engineering/README.md).
+Veja também a categoria de guardrails: [engineering](../engineering/README.md).

@@ -44,7 +44,7 @@ Proposta: toda conquista e entrada do Códice tem um caminho real de desbloqueio
 ## Arquivos e contratos
 - Alterar: `src/data/achievements.json`, `src/data/codex.json`, `src/store/gameStore.ts` (`redeemAchievement`, `resetRunStats`, chamadas de `unlockCodexEntry`, `unlockCampaignSpell`), `src/game/systems/CombatEffectsSystem.ts`, `src/game/systems/DungeonFlowController.ts` (andar/tempo), `src/game/systems/CodexSystem.ts` se preciso.
 - Testes: `gameStore` e `CodexSystem` (arquivos de teste existentes).
-- Docs no mesmo commit: `docs/gameplay/achievements-and-codex.md`.
+- Docs no mesmo commit: `docs/gameplay/achievements.md`.
 - Valores concretos (alvos, tempos): dependem das decisões.
 
 ## Critérios de aceite (provisórios)
@@ -70,4 +70,4 @@ Proposta: toda conquista e entrada do Códice tem um caminho real de desbloqueio
 - `crystals_hoarded` e `deaths_total` devem continuar acumulados de vida inteira?
 
 ## Referências
-- `docs/gameplay/achievements-and-codex.md`; [ADR 0006](../../decisions/0006-audio-e-conquistas.md)
+- `docs/gameplay/achievements.md`; [ADR 0006](../../decisions/0006-audio-e-conquistas.md)

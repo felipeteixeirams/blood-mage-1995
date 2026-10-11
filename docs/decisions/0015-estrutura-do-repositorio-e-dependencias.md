@@ -45,5 +45,5 @@ Existir no repositório não é decisão: remover ou manter é escolha de escopo
 _Em branco até o responsável decidir._
 
 ## Consequências
-- Se B/D: ajustar `pnpm-workspace.yaml`, `package.json` (scripts `typecheck:game`), `scripts/post-merge.sh`, `.replit` e `docs/engineering/stack-and-conventions.md`; regenerar `pnpm-lock.yaml`.
+- Se B/D: ajustar `pnpm-workspace.yaml`, `package.json` (scripts `typecheck:game`), `scripts/post-merge.sh`, `.replit` e `docs/engineering/stack.md`; regenerar `pnpm-lock.yaml`.
 - Se C: remover dependências do `package.json` e lockfile; pre-commit (`verify`) valida o build.

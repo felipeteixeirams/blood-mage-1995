@@ -4,7 +4,7 @@
 **Status:** verificado
 **Verificado em:** 2026-10-11
 
-Inventário das telas e modais fora do HUD de jogo: `src/components/*.tsx` e `src/components/ui/`. HUD, controles e hooks estão em hud.md; Conquistas e Códice em achievements-and-codex.md. Leitura estática.
+Inventário das telas e modais fora do HUD de jogo: `src/components/*.tsx` e `src/components/ui/`. HUD, controles e hooks estão em hud.md; Conquistas e Códice em achievements.md. Leitura estática.
 
 ## Como os modais são montados
 
@@ -27,8 +27,8 @@ Inventário das telas e modais fora do HUD de jogo: `src/components/*.tsx` e `sr
 | `InventoryModal` | arma, armadura e 3 slots de relíquia (equipar/desequipar), atributos efetivos (HP, dano, recarga, vampirismo com bônus de relíquia), histórico de loot, catálogo de relíquias (`relics.json`) com filtro todas/desbloqueadas/equipadas | `equipment`, `playerStats`, `recentLootLog`, `unlockedRelics`, `equipRelicById`, `unequipRelicById`, `getRelicModifiers` | `App.tsx` (atalho I) |
 | `TalentsModal` | árvore de 9 talentos (`talents.json`: categoria offense/defense/utility, `maxLevel`, `costPerLevel`, `exclusive_with`); compra com cristais | `bloodCrystals`, `talentLevels`, `upgradeTalent(id, custo)` (recusa sem saldo ou se exclusivo já tem nível) | `App.tsx` (atalho T; menu) |
 | `PrestigeModal` | Selos de Sangue (5 tipos), dificuldade (NORMAL, PESADELO exige prestígio 1, INFERNO exige 3) e botão de sacrifício com confirmação; testado em `PrestigeModal.test.tsx` | `prestige`, `playerStats`, `canPrestige`, `performPrestige`, `allocateBloodSeal`, `setDifficulty`, `getPrestigeModifiers` | `App.tsx` (atalho P) |
-| `AchievementsModal` | ver achievements-and-codex.md | `achievements`, `runStats`, `redeemAchievement` | `App.tsx` |
-| `CodexModal` | ver achievements-and-codex.md | `codexState`, `claimCodexMilestone`, `getLoreCompletionPercentage`, `bloodCrystals` | `App.tsx` |
+| `AchievementsModal` | ver achievements.md | `achievements`, `runStats`, `redeemAchievement` | `App.tsx` |
+| `CodexModal` | ver achievements.md | `codexState`, `claimCodexMilestone`, `getLoreCompletionPercentage`, `bloodCrystals` | `App.tsx` |
 | `ObservabilityModal` | diagnóstico: abas logs, telemetria e sistema; exporta logs em JSON (`bloodmage_diagnostics_<sessão>.json`), limpa logs; lê `logger` e `telemetry`, sem store | nenhuma | `App.tsx` (atalho O) |
 | `SoundTestModal` | teste de áudio: temas BGM sintetizados (3 listados no componente), amostras `.wav` em `/audio_samples/`, controle de mudo/volumes | `isMuted`, `toggleMute`, `settings`, `updateSettings`; prop `isOpen` | `App.tsx` (atalho M; botão no menu) |
 | `BestiaryModal` | wrapper que apenas renderiza `CodexModal` | nenhuma | **não montado** (só `CodexModal` é usado) |

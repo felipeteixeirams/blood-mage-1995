@@ -49,7 +49,7 @@ O projeto, portanto, tem uma rota de backend própria (`/api/log`); não é apen
 ## 3. Persistência local
 
 - Dados persistidos passam por `src/utils/localStorage.ts`: schemas Zod com `safeParse` na leitura e valor padrão quando a validação falha. Os schemas de talentos, configurações e recordes usam `.strict()` (comentário no código: evita chaves extras). Não foi conferido se todos os schemas do arquivo usam `.strict()`.
-- Novos campos persistidos devem seguir o mesmo padrão (ver [critical-files](risky-files.md)).
+- Novos campos persistidos devem seguir o mesmo padrão (ver [risky-files](risky-files.md)).
 
 ## 4. Segredos
 
