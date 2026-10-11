@@ -24,4 +24,5 @@
 - A documentação descreve o projeto como ele é hoje: sem relatórios de status, sem histórico (o histórico fica no Git).
 - Tamanho: documento de referência e spec com até ~100 linhas e um único assunto; o `docs:check` avisa acima de 150 linhas e falha acima de 300. Título de spec sem numeração antiga (`Spec NN`, `Fase N`).
 - Cada documento de `gameplay/` termina com uma linha `Relacionados:` com links para os satélites de `architecture/` e `engineering/` que cita. Mencionar `nome.md` de um documento existente sem link gera aviso.
+- Pendência de decisão (arquitetura, negócio, escopo, segurança, custo): o documento fica na pasta da categoria que mais lhe cabe, sem inventar a decisão, e o mestre dessa pasta ganha uma seção "Pendências de decisão" com tabela (documento, o que falta decidir, recomendação). O responsável resolve em outra sessão. Pendência com regra de negócio indefinida nunca é decidida por um agente.
 - `pnpm run docs:check` valida tudo isso, mais estrutura, links, frescor (aviso após 30 dias) e critérios EARS (roda no pre-commit).
