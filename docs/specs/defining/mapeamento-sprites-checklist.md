@@ -34,4 +34,4 @@ Comportamento e escopo abaixo são propostas sem aprovação registrada; nada aq
 
 ## Critérios de aceite
 
-A definir (spec ainda sem EARS). Ligação com [sprites-assets-externos-tiers.md](sprites-assets-externos-tiers.md) e [ui-assets-externos-framework.md](ui-assets-externos-framework.md).
+A definir (spec ainda sem EARS). Ligação com [sprites-assets-externos-tiers.md](sprites-assets-externos-tiers.md) e [ui-assets-externos-framework.md](ui-assets-externos-framework-parte-1-visao-e-escopo-visual.md).
