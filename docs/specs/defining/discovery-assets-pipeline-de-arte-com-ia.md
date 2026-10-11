@@ -30,6 +30,14 @@ Se aprovado, adicionar um asset novo de inimigo exige gerar o prompt por script,
 | `verify-assets.cjs` valida cabeçalhos de binários em `src/assets`, `public/assets`, `public/fonts` e o manifesto | `scripts/verify-assets.cjs` | 2026-10-11 |
 | `pixellab_client.cjs` usa `process.env.PIXELLAB_API_KEY` ou um token escrito no arquivo | `scripts/pixellab_client.cjs` (l.17-20) | 2026-10-11 |
 | `package.json` tem `pngjs` e `tsx`; não tem parser de YAML nem `pngquant` | `package.json` | 2026-10-11 |
+| Steam (Content Survey, seção de IA): o foco é IA que gera conteúdo que acompanha o jogo e é consumido por jogadores (arte, som, narrativa, localização); ganho de eficiência no desenvolvimento "não é o foco" da seção | https://partner.steamgames.com/doc/gettingstarted/contentsurvey#ai | 2026-10-11 |
+| Steam, IA pré-gerada (criada em desenvolvimento e distribuída com o jogo): a Valve avalia a saída como avalia conteúdo sem IA; o Acordo de Distribuição exige que o jogo não tenha conteúdo ilegal ou infrator | https://partner.steamgames.com/doc/gettingstarted/contentsurvey#ai | 2026-10-11 |
+| Steam, IA gerada ao vivo (em execução): mesmas regras da pré-gerada, mais informar as salvaguardas (guardrails) aplicadas; a página não define quais são aceitáveis; sem IA gerada ao vivo de conteúdo sexual adulto "no momento" | https://partner.steamgames.com/doc/gettingstarted/contentsurvey#ai | 2026-10-11 |
+| Steam: se o jogo usou serviços de IA no desenvolvimento ou os inclui no produto, o questionário pede descrever a implementação em detalhe (trecho lido por resumo de página, não texto integral) | https://partner.steamgames.com/doc/gettingstarted/contentsurvey#ai | 2026-10-11 |
+| Atualização de jan/2026 (divulgação deixa de exigir ferramentas só de eficiência; data divulgada varia entre 16 e 19/01): só fontes secundárias; anúncio oficial da Valve não localizado. **Não verificado** em fonte primária | https://gigazine.net/gsc_news/en/20260120-steam-updates-ai-disclosure-guidelines (secundária) | 2026-10-11 |
+| PixelLab, termos: seção 1.3 diz que o usuário detém os direitos das criações e pode usá-las comercialmente; 3.3 diz que mantém a propriedade e pode usar, modificar e distribuir as saídas para qualquer fim, exceto treinar outros modelos sem permissão (lido por resumo de página; não é aconselhamento jurídico) | https://www.pixellab.ai/termsofservice | 2026-10-11 |
+| SpriteCook, termos, seção 6: "you may use, reproduce, and distribute outputs you generate", sujeito aos termos e à lei; sem menção explícita a propriedade ou uso comercial; saídas podem não ser únicas; o usuário é o único responsável por avaliar infração; seção 11: sem garantias | https://www.spritecook.ai/terms | 2026-10-11 |
+| Termos de Steam sobre uso de arte de PixelLab/SpriteCook especificamente: nenhuma fonte oficial encontrada. **Não verificado** | n/a | 2026-10-11 |
 
 ## Decisões a confirmar
 | # | Decisão | Opções | Recomendação |
