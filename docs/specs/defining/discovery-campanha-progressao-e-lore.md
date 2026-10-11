@@ -92,6 +92,7 @@ Condicional às decisões 6 a 10.
 - Ritmo de 4 a 5 golpes: não verificado (exige execução).
 - Stunlock: não verificado.
 - Escolha entre mundo único (spec de topologia) e zonas atuais.
+- Premissa de design informada pelo responsável em 2026-10-11: o jogo não terá teletransporte nem volta à Safe House. O modelo atual (quests só com a Maelen na Safe House) fica desalinhado; ver a questão 1 de [bug-campanha-quests-dos-capitulos-2-a-4](bug-campanha-quests-dos-capitulos-2-a-4.md). Alinhar antes de definir o fluxo da Campanha.
 
 ## Pendências para promover a backlog
 - Discovery; depende de decisão de produto: aprovação do responsável.

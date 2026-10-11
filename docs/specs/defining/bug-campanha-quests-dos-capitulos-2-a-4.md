@@ -16,7 +16,7 @@
 Ao entrar (ou alcançar) cada zona da Campanha, o objetivo `discover_zone` correspondente avança uma vez, de modo que as quests ch2 a ch4 possam ser concluídas.
 
 ## Decisões
-Aprovadas em 2026-10-11 as decisões 1 a 3 (conforme a coluna Recomendação) e a questão 2 (só descoberta). Pendente: a questão em aberto 1.
+Aprovadas em 2026-10-11 as decisões 1 a 3 (conforme a coluna Recomendação) e a questão 2 (só descoberta). Pendente: a questão em aberto 1 (desalinhamento: o jogo não terá volta à Safe House). A spec fica em `defining/` até o alinhamento.
 
 | # | Decisão | Opções | Recomendação |
 |---|---|---|---|
@@ -31,7 +31,7 @@ Aprovadas em 2026-10-11 as decisões 1 a 3 (conforme a coluna Recomendação) e 
 ## Fora de escopo
 - Mudar `gloomy_woods`/`altar_crimson` e o desbloqueio de `blood_bolt`.
 - Alterar recompensas, contagens de morte ou árvores de diálogo.
-- Resolver como o jogador volta à Safe House para pegar a quest (questão em aberto 1).
+- Resolver como as quests ch2 a ch4 passam a ser dadas, já que não haverá volta à Safe House (questão em aberto 1; tratar em spec separada).
 
 ## Arquivos e contratos
 - Alterar (se decisão 1 = A): `src/store/gameStore.ts` (`setCampaignZone`) ou `src/game/systems/DungeonFlowController.ts` (`advanceToNextFloor`); testes em `src/store/gameStore.test.ts`.
@@ -58,7 +58,7 @@ Aprovadas em 2026-10-11 as decisões 1 a 3 (conforme a coluna Recomendação) e 
 | Campanha ponta a ponta | Manual (precisa de playtest humano): ch1 até ch4 |
 
 ## Questões em aberto
-1. Maelen (única fonte de `give_quest`) só existe na `safe_house` (andar 1), e não há caminho de volta. Se não houver retorno, as quests ch2 a ch4 nem ficam `active`, e este conserto sozinho não destrava a Campanha. Não verificado se `Continuar` reabre a Safe House. Recomendação: o responsável decidir se a quest é dada em outro ponto ou se há retorno à Safe House (spec separada).
+1. **Desalinhamento a resolver antes de promover (registrado em 2026-10-11).** O responsável informou que o jogo não deve ter teletransporte nem volta à Safe House. Hoje a Maelen (única fonte de `give_quest`) só existe na `safe_house` (andar 1) e não há caminho de volta; logo as quests ch2 a ch4 nunca ficam `active`, e este conserto sozinho não destrava a Campanha. Não verificado se `Continuar` reabre a Safe House. Não decidido: como as quests ch2 a ch4 passam a ser dadas sem retorno. Opções: A) a quest é concedida automaticamente ao concluir a anterior ou ao entrar na zona (sem NPC); B) um NPC da quest aparece dentro da própria zona; C) a Safe House ganha outro modelo (decisão de design maior, fora desta spec). Recomendação: A, é a de menor escopo, não cria retorno nem teletransporte e mantém o modelo de descoberta por zona (decisão 1); a decisão é do responsável.
 2. Resolvida em 2026-10-11: o marco por zona é só descoberta, não desbloqueia nada.
 
 ## Referências
