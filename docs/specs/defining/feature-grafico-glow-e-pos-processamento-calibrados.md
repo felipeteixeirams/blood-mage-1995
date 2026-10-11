@@ -25,11 +25,12 @@ Garantir Glow aplicado e removido corretamente e vignette, ColorMatrix, displace
 | `applyBloomFilter` chama `enableFilters()` só se `sprite.filters` não existe, limpa o Glow anterior, adiciona o alvo a `bloomTargets` e remove no evento `destroy` | `src/game/systems/LightingPolish.ts` (linhas 76-107) | 2026-10-11 |
 | `cleanup()` limpa o filtro de cada alvo, esvazia `bloomTargets` e remove as luzes de Glow | `src/game/systems/LightingPolish.ts` (linhas 543-562) | 2026-10-11 |
 | `PostFXSystem` usa `filters.external \|\| filters.internal` e guarda `activeFloorDepth` (padrão de `applyBiomeMatrix`) | `src/game/systems/PostFXSystem.ts` (linhas 42, 69-70, 147) | 2026-10-11 |
-| `phaser` declarado como `^4.2.1`; pacote não instalado neste ambiente, então a API de filtros não foi conferida | `package.json` (`node_modules` ausente) | 2026-10-11 |
+| Filtros: `enableFilters()` é no-op sem `gl` (só WebGL, marcado `@webglOnly`); `filters` é `null` até habilitar e então retorna `{ internal, external }` (FilterList); FilterList tem `addGlow`, `addPixelate(amount)`, `addBlocky(config)`, `addVignette`, `addColorMatrix`, `addNormalTools`, entre outros; `Pixelate.js` e `Blocky.js` existem em `src/filters` | `node_modules/phaser/src/gameobjects/components/Filters.js` (linhas 75-95, 237-241), `components/FilterList.js`, `src/filters/`, Phaser 4.2.1 | 2026-10-11 |
+| Fallback Canvas: `src/renderer/canvas` existe e `CreateRenderer.js` pode resultar em CANVAS; `enableFilters()` não faz nada sem `gl`. Comportamento do jogo sem WebGL segue não verificado além disso | `node_modules/phaser/src/core/CreateRenderer.js`, `components/Filters.js`, Phaser 4.2.1 | 2026-10-11 |
+| `phaser` declarado como `^4.2.1`; instalado 4.2.1 | `package.json`, `node_modules/phaser/package.json` | 2026-10-11 |
 | Filtros em 4.x se aplicam a qualquer game object ou câmera; lista `internal` (só o objeto) e `external` (contexto de render, geralmente a tela); objeto sem bounds usa o espaço externo | https://github.com/phaserjs/phaser/blob/master/changelog/v4/4.0/CHANGELOG-v4.0.0.md | 2026-10-11 |
 | Glow existe em 4.x (changelog cita `Glow` com `knockout`); Bloom vem por `Phaser.Actions.AddEffectBloom()` (conjunto de filtros); Vignette existe (borda com cor configurável); Pixelate não consta, há `Blocky` (cor única por bloco) | https://github.com/phaserjs/phaser/blob/master/changelog/v4/4.0/CHANGELOG-v4.0.0.md | 2026-10-11 |
 | Filtros são destruídos com o dono, salvo `ignoreDestroy`; existe `GameObject#isDestroyed`; luzes: changelog não cobre destroy | https://github.com/phaserjs/phaser/blob/master/changelog/v4/4.0/CHANGELOG-v4.0.0.md | 2026-10-11 |
-| Canvas em 4.x: ainda disponível, mas deprecated; não suporta as técnicas WebGL (filtros, luzes). Comportamento do jogo sem WebGL além do código local: não verificado | https://github.com/phaserjs/phaser/blob/master/changelog/v4/4.0/CHANGELOG-v4.0.0.md | 2026-10-11 |
 
 ## Decisões a confirmar
 | # | Decisão | Opções | Recomendação |
@@ -77,7 +78,7 @@ Todos provisórios (aprovação e decisão 2 pendentes).
 
 ## Questões em aberto
 1. Valores calibrados de Glow, vignette, ColorMatrix, displacement, tint e CRT: "a definir" após o baseline.
-2. `filters.external` é a coleção correta no Phaser 4.2.1 instalado? Fato não verificado (`node_modules` ausente).
+2. `filters.external` existe no Phaser 4.2.1 instalado (ver Fatos técnicos verificados); falta decidir qual coleção usar em cada efeito.
 3. O Glow aparece em WebGL real? Não verificado.
 4. O fallback Canvas do pós-processamento depende de [feature-grafico-avancado-eixo-a.md](feature-grafico-avancado-eixo-a.md) (`ScreenEffects.render`); fora desta spec até ser decidido.
 5. Metas de performance do Glow (depende do ADR 0013).
