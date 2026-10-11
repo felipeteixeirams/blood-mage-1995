@@ -26,6 +26,8 @@ Garantir ordem de renderização estável, limpeza sem efeitos residuais e valid
 | `cleanup()` do `LightingPolish` limpa filtros, `bloomTargets` e luzes de Glow | `src/game/systems/LightingPolish.ts` (543-562) | 2026-10-11 |
 | Existem testes dos 8 sistemas gráficos | `src/game/systems/*.test.ts`, `src/game/shaders/AtmosphericTreeShader.test.ts` | 2026-10-11 |
 | Scripts `verify`, `typecheck`, `test`, `build`, `e2e` existem (`e2e` não validado nesta sessão) | `CLAUDE.md` | 2026-10-11 |
+| Filtros são destruídos com o dono, salvo `ignoreDestroy`; existe `GameObject#isDestroyed`; luzes: changelog não cobre destroy | https://github.com/phaserjs/phaser/blob/master/changelog/v4/4.0/CHANGELOG-v4.0.0.md | 2026-10-11 |
+| `LightsManager`: `enable()`; `shutdown()` limpa as luzes (chamado no shutdown da Scene); `destroy()` chama `shutdown()`; `maxLights` é propriedade definida no game config, sem mudança em runtime; valor padrão não consta na página (não verificado) | https://docs.phaser.io/api-documentation/class/gameobjects-lightsmanager | 2026-10-11 |
 
 ## Decisões a confirmar
 | # | Decisão | Opções | Recomendação |

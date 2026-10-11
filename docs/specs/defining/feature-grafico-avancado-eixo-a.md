@@ -31,6 +31,10 @@ Sem WebGL, o jogo mantém um visual funcional por fallback; com WebGL, o jogador
 | Normal map existe para `tile_ground*`, paredes, `tile_door` e 10 inimigos | `src/utils/textureGenerator.ts:142-1742` | 2026-10-11 |
 | A config de iluminação por bioma está em `LightingSystem` (`BIOME_LIGHTING`), não no `WorldManager` | `src/game/systems/LightingSystem.ts:22` | 2026-10-11 |
 | Suporte a normal map em spritesheet (`addSpriteSheet`) no Phaser 4.2.1 | não verificado | pendente |
+| Em 4.x: `gameObject.setLighting(true)` (sem pipeline), `lights.enable` ainda necessário, `Light.z` explícito, self-shadow global ou por objeto, filtro `NormalTools` para normal maps; iluminar quebra batch. Nome exato da API de self-shadow não consta nas fontes lidas (não verificado) | https://github.com/phaserjs/phaser/blob/master/changelog/v4/4.0/CHANGELOG-v4.0.0.md | 2026-10-11 |
+| Normal map em spritesheet/array de texturas: fontes lidas não documentam; segue não verificado | https://github.com/phaserjs/phaser/blob/master/changelog/v4/4.0/CHANGELOG-v4.0.0.md ; https://docs.phaser.io/api-documentation/class/gameobjects-gameobject | 2026-10-11 |
+| Canvas em 4.x: ainda disponível, mas deprecated; não suporta as técnicas WebGL (filtros, luzes). Comportamento do jogo sem WebGL além do código local: não verificado | https://github.com/phaserjs/phaser/blob/master/changelog/v4/4.0/CHANGELOG-v4.0.0.md | 2026-10-11 |
+| `LightsManager`: `enable()`; `shutdown()` limpa as luzes (chamado no shutdown da Scene); `destroy()` chama `shutdown()`; `maxLights` é propriedade definida no game config, sem mudança em runtime; valor padrão não consta na página (não verificado) | https://docs.phaser.io/api-documentation/class/gameobjects-lightsmanager | 2026-10-11 |
 
 ## Decisões a confirmar
 | # | Decisão | Opções | Recomendação |
