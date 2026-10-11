@@ -5,5 +5,6 @@ Specs com escopo definido e **aprovadas pelo responsável**, prontas para serem 
 | Spec | Resumo |
 |---|---|
 | [base-documental-organizacao-interna-e-validacoes.md](base-documental-organizacao-interna-e-validacoes.md) | Pasta por spec multi-parte, títulos sem numeração antiga, links entre categorias e novas regras do `docs:check` (tamanho, links textuais, frescor); aprovada em 2026-10-11 |
+| [base-documental-fora-de-docs-e-duplicatas.md](base-documental-fora-de-docs-e-duplicatas.md) | Remove skills duplicadas, relatórios e docs desatualizados fora de `docs/` e reduz docs de operação da raiz a ponteiros; aprovada em 2026-10-11 |
 
 Visão geral e ciclo de vida: [specs](../README.md).
