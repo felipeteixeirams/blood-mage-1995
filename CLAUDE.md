@@ -4,7 +4,7 @@ ARPG 2D em tempo real, solo (Phaser 4.2.1 + React 19 + TypeScript + Zustand + Ta
 
 ## Contexto do projeto
 Entrada: `docs/README.md` (bootstrap → `README.md` mestre da categoria → satélite). Leia só o que a tarefa exige; prefira a documentação a ler código em massa.
-- Antes de propor ou implementar feature: `docs/architecture/README.md`.
+- Antes de propor ou implementar feature: `docs/architecture/README.md`. Como uma mecânica funciona hoje (combate, magias, talentos, loot, campanha, HUD): `docs/gameplay/README.md`.
 - Antes de mexer em `Player.ts`, `Enemy.ts`, `GameScene.ts`, `DungeonGenerator.ts`, `gameStore.ts` ou `localStorage.ts`: `docs/critical/README.md`.
 - Stack e convenções: `docs/engineering/stack-and-conventions.md`. Erro estranho: `docs/troubleshooting/README.md`.
 - Specs: `docs/specs/{defining,backlog,in-progress}`. Mova a spec de estágio ao começar ou concluir.
