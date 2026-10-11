@@ -1,7 +1,7 @@
 # Princípios Mobile-First
 
 **Mestre:** [product](README.md)
-**Status:** parcialmente verificado (fatos do código verificados; princípios e metas sem decisão do responsável)
+**Status:** verificado (somente a seção "O que o código faz hoje"; princípios e metas: não verificado)
 **Verificado em:** 2026-10-11 (só a seção "O que o código faz hoje")
 
 Este documento separa o que o código faz hoje (fato) do que seriam princípios ou metas de produto. Os princípios e metas **não têm fonte ratificada** no repositório: não são regra nem critério de aprovação de features. O ADR [0012](../decisions/0012-monetizacao-preco-e-metas-de-retencao.md) (aprovado) adotou "sem metas de retenção definidas por ora"; o ADR [0013](../decisions/0013-metas-de-performance.md) (metas de performance) está como Proposta, sem decisão.

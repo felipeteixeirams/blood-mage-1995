@@ -8,7 +8,7 @@
 | [account-and-data.md](account-and-data.md) | Sem conta/login; dados em `localStorage` via `src/utils/localStorage.ts` | verificado |
 | [roadmap.md](roadmap.md) | O que o código entrega hoje e o que não existe; intenções não ratificadas | verificado |
 | [release-strategy.md](release-strategy.md) | Superfícies de distribuição como existem hoje; intenção de lojas não ratificada | verificado |
-| [product-principles.md](product-principles.md) | O que o código faz hoje para mobile (verificado) e princípios propostos (não ratificados) | parcialmente verificado |
+| [product-principles.md](product-principles.md) | O que o código faz hoje para mobile (verificado) e princípios propostos (não ratificados) | verificado (princípios propostos: não verificado) |
 
 Operação (build, deploy, variáveis): [operations](../operations/README.md).
 
