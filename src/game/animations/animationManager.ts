@@ -471,6 +471,31 @@ export const GAME_ANIMATIONS: AnimationDefinition[] = [
     frameRate: 6,
     repeat: 0,
   },
+
+  // --- NECRO LORD BOSS ---
+  {
+    key: 'boss_idle',
+    textureKey: 'spr_boss',
+    frames: [0],
+    frameRate: 3,
+    repeat: -1,
+  },
+  {
+    key: 'boss_walk',
+    textureKey: 'spr_boss',
+    startFrame: 0,
+    endFrame: 3,
+    frameRate: 5,
+    repeat: -1,
+  },
+  {
+    key: 'boss_cast',
+    textureKey: 'spr_boss',
+    startFrame: 4,
+    endFrame: 6,
+    frameRate: 7,
+    repeat: 0,
+  },
 ];
 
 /**
