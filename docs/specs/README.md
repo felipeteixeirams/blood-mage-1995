@@ -35,4 +35,11 @@ Specs de `backlog/` e `in-progress/` têm critérios de aceite no formato **EARS
 | [ears.md](ears.md) | Padrões EARS, Definition of Ready e papéis |
 | [spec-template.md](spec-template.md) | Modelo de spec |
 
+## Índice de Specs por Arquivo
+
+| Arquivo | Título / Resumo |
+|---|---|
+| [backlog/bug-combate-dano-por-contato-passivo.md](backlog/bug-combate-dano-por-contato-passivo.md) | Bug: dano por contato passivo de inimigos |
+| [backlog/bug-ui-settingsscene-restaurar-e-opcoes.md](backlog/bug-ui-settingsscene-restaurar-e-opcoes.md) | Reset de opções pela SettingsScene e lacunas de opções |
+
 Relacionados: [decisions](../decisions/README.md), [architecture](../architecture/README.md), [testing](../testing/README.md).

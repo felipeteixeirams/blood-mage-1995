@@ -893,6 +893,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     else if (key === 'spr_werewolf_lycan') prefix = 'lycan';
     else if (key === 'spr_bat_swarm') prefix = 'bat';
     else if (key === 'spr_gore_abomination') prefix = 'abomination';
+    else if (key === 'spr_boss') prefix = 'boss';
 
     if (!prefix) return;
 
